@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Drylake
 
-## Getting Started
+**Tomorrow Starts Here.**
 
-First, run the development server:
+Official website for Drylake.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Drylake builds intelligent software, AI systems and business automation around real business problems.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Brand Principles
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Drylake is built around three core values:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Innovation
+2. Integrity
+3. Impact
 
-## Learn More
+## Website Purpose
 
-To learn more about Next.js, take a look at the following resources:
+The Drylake website serves as the company's primary digital presence and a foundation for future marketing and lead generation.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The website is designed to:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Clearly communicate what Drylake does
+- Explain Drylake's problem-first approach
+- Generate project enquiries
+- Support future SEO and marketing campaigns
+- Establish a strong technology brand
+- Work exceptionally well across mobile and desktop devices
 
-## Deploy on Vercel
+## Core Capabilities
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Drylake currently presents four primary capability areas:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- AI & Intelligent Systems
+- Business Automation
+- Custom Software
+- Systems Integration
+
+The service architecture can expand as the company develops.
+
+## Technology Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Motion
+- Lucide React
+- Vercel
+
+## Project Structure
+
+```text
+drylake-website/
+├── app/
+│   ├── about/
+│   │   └── page.tsx
+│   ├── contact/
+│   │   └── page.tsx
+│   ├── privacy/
+│   │   └── page.tsx
+│   ├── solutions/
+│   │   └── page.tsx
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+│
+├── components/
+│   ├── layout/
+│   │   ├── Footer.tsx
+│   │   └── Navbar.tsx
+│   ├── sections/
+│   │   ├── About.tsx
+│   │   ├── Approach.tsx
+│   │   ├── ContactCTA.tsx
+│   │   ├── Hero.tsx
+│   │   └── Solutions.tsx
+│   └── ui/
+│       └── Container.tsx
+│
+├── public/
+│   ├── brand/
+│   │   └── drylake-logo-white.png
+│   └── images/
+│
+└── README.md
