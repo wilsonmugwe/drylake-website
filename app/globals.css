@@ -109,13 +109,9 @@ button:disabled {
 }
 
 /* =========================================================
-   BUTTON CONTRAST SYSTEM
+   BUTTON CONTRAST
 
-   Important:
-   Buttons must be readable BEFORE hover.
-
-   button-dark  = black background / white content
-   button-light = white background / black content
+   Buttons remain readable before hover.
    ========================================================= */
 
 .button-dark,
@@ -141,7 +137,7 @@ button:disabled {
 }
 
 /* =========================================================
-   LIGHT GRID
+   STANDARD LIGHT GRID
    ========================================================= */
 
 .light-grid {
@@ -160,7 +156,7 @@ button:disabled {
 }
 
 /* =========================================================
-   DARK GRID
+   STANDARD DARK GRID
    ========================================================= */
 
 .hero-grid {
@@ -176,6 +172,53 @@ button:disabled {
     );
 
   background-size: 72px 72px;
+}
+
+/* =========================================================
+   LARGE DRYLAKE DARK GRID
+
+   Used on the opening hero and footer.
+
+   These intentionally use much larger boxes so the effect
+   feels architectural rather than like graph paper.
+   ========================================================= */
+
+.hero-large-grid {
+  background-color: #000000;
+
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.045) 1px,
+      transparent 1px
+    );
+
+  background-size: 160px 160px;
+}
+
+/* =========================================================
+   MOBILE DARK GRID
+   ========================================================= */
+
+.mobile-dark-grid {
+  background-color: #090909;
+
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px
+    );
+
+  background-size: 96px 96px;
 }
 
 /* =========================================================
@@ -213,7 +256,7 @@ button:disabled {
 }
 
 /* =========================================================
-   MINERAL / OFF-WHITE TEXTURE
+   MINERAL TEXTURE
    ========================================================= */
 
 .mineral-texture::before {
@@ -265,7 +308,7 @@ button:disabled {
 }
 
 /* =========================================================
-   TECHNICAL VISUAL SYSTEM
+   TECHNICAL PANELS
    ========================================================= */
 
 .tech-panel {
@@ -439,7 +482,9 @@ select:focus-visible {
 }
 
 /* =========================================================
-   MOBILE
+   MOBILE COMPACTION
+
+   This is intentionally more aggressive than desktop.
    ========================================================= */
 
 @media (max-width: 640px) {
@@ -448,13 +493,18 @@ select:focus-visible {
     background-size: 48px 48px;
   }
 
+  .hero-large-grid {
+    background-size: 96px 96px;
+  }
+
   .section-label {
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
+    font-size: 0.62rem;
+    letter-spacing: 0.13em;
   }
 
   .tech-label {
-    font-size: 0.58rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
   }
 }
 

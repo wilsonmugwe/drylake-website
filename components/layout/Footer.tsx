@@ -27,39 +27,95 @@ const groups = [
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-black/10 bg-white py-10 text-black">
-      <div className="pointer-events-none absolute bottom-0 right-0 h-48 w-48">
-        <div className="absolute inset-0 rounded-full border border-black/[0.035]" />
-        <div className="absolute inset-12 rounded-full border border-black/[0.05]" />
+    <footer className="relative overflow-hidden border-t border-white/10 bg-black text-white">
+      {/* =====================================================
+          SUBTLE BACKGROUND GRID
+          ===================================================== */}
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)
+          `,
+          backgroundSize: "160px 160px",
+        }}
+      />
+
+      {/* =====================================================
+          DECORATIVE SYSTEM RINGS
+          ===================================================== */}
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-32 -right-24 hidden h-80 w-80 lg:block"
+      >
+        <div className="absolute inset-0 rounded-full border border-white/[0.05]" />
+
+        <div className="absolute inset-12 rounded-full border border-white/[0.06]" />
+
+        <div className="absolute inset-24 rounded-full border border-white/[0.08]" />
       </div>
 
       <Container className="relative z-10">
-        <div className="grid gap-12 lg:grid-cols-[1.2fr_1.8fr]">
+        {/* =====================================================
+            MAIN FOOTER
+            ===================================================== */}
+
+        <div className="grid gap-10 py-10 sm:py-12 lg:grid-cols-[1.25fr_1.75fr] lg:gap-16 lg:py-14">
+          {/* =================================================
+              BRAND
+              ================================================= */}
+
           <div>
-            <Link href="/" aria-label="Drylake home">
+            <Link
+              href="/"
+              aria-label="Drylake home"
+              className="inline-flex items-center"
+            >
               <Image
-                src="/brand/drylake-logo-white.png"
-                alt="Drylake"
-                width={170}
-                height={60}
-                className="h-auto w-[130px]"
+                src="/brand/drylake-logo-black.png"
+                alt="Drylake Technologies"
+                width={1536}
+                height={1024}
+                className="
+                  h-[110px]
+                  w-[165px]
+                  object-contain
+                  object-center
+
+                  sm:h-[125px]
+                  sm:w-[190px]
+
+                  lg:h-[135px]
+                  lg:w-[205px]
+                "
               />
             </Link>
 
-            <p className="mt-5 text-sm font-medium text-black">
+            <p className="mt-1 text-sm font-semibold text-white">
               Tomorrow Starts Here.
             </p>
 
-            <p className="mt-2 flex items-center gap-2 text-sm text-black/50">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-              Perth, Western Australia
-            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#f26a2e]" />
+
+              <p className="text-sm text-white/45">
+                Perth, Western Australia
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          {/* =================================================
+              NAVIGATION
+              ================================================= */}
+
+          <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:gap-x-12">
             {groups.map((group) => (
               <div key={group.title}>
-                <p className="section-label text-black/40">
+                <p className="section-label text-white/35">
                   {group.title}
                 </p>
 
@@ -68,7 +124,7 @@ export default function Footer() {
                     <Link
                       key={link.label}
                       href={link.href}
-                      className="w-fit text-sm text-black/60 transition-colors hover:text-black"
+                      className="w-fit text-sm text-white/70 transition-colors hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -79,12 +135,21 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-black/10 pt-6 text-xs text-black/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Drylake.</p>
+        {/* =====================================================
+            BOTTOM BAR
+            ===================================================== */}
 
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 border-t border-white/10 py-5 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} Drylake.
+          </p>
+
+          <div className="flex items-center gap-2.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-            <p>Innovation · Integrity · Impact</p>
+
+            <p>
+              Innovation · Integrity · Impact
+            </p>
           </div>
         </div>
       </Container>

@@ -9,33 +9,29 @@ export default function ContactCTA() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden bg-[#090909] py-20 text-white sm:py-24 lg:py-28">
-      {/* =====================================================
-          BACKGROUND GRID
-          ===================================================== */}
+    <section className="hero-large-grid relative overflow-hidden bg-[#090909] py-14 text-white sm:py-20 lg:py-28">
+      {/* Background glow */}
 
-      <div className="hero-grid pointer-events-none absolute inset-0 opacity-20" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_50%,rgba(255,255,255,0.045),transparent_28%)]" />
 
       {/* =====================================================
-          DESKTOP SYSTEM VISUAL
+          DESKTOP SYSTEM
           ===================================================== */}
 
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-52 top-1/2 hidden h-[40rem] w-[40rem] -translate-y-1/2 lg:block"
       >
-        <div className="absolute inset-0 rounded-full border border-white/[0.06]" />
+        <div className="absolute inset-0 rounded-full border border-white/[0.08]" />
 
-        <div className="absolute inset-[16%] rounded-full border border-white/[0.08]" />
+        <div className="absolute inset-[16%] rounded-full border border-white/[0.1]" />
 
-        <div className="absolute inset-[32%] rounded-full border border-white/[0.08]" />
+        <div className="absolute inset-[32%] rounded-full border border-white/[0.12]" />
 
-        {/* Crosshair */}
         <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.04]" />
 
         <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.04]" />
 
-        {/* Rotating signal */}
         <motion.div
           animate={
             reduceMotion
@@ -49,12 +45,11 @@ export default function ContactCTA() {
             repeat: Infinity,
             ease: "linear",
           }}
-          className="absolute inset-[8%] rounded-full border border-dashed border-white/10"
+          className="absolute inset-[8%] rounded-full border border-dashed border-white/15"
         >
           <span className="signal-dot absolute left-1/2 top-[-4px] h-2 w-2 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
         </motion.div>
 
-        {/* Core */}
         <div className="orange-glow absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f26a2e]" />
 
         <span className="tech-label absolute left-[55%] top-[54%] text-white/25">
@@ -63,28 +58,24 @@ export default function ContactCTA() {
       </div>
 
       {/* =====================================================
-          MOBILE SYSTEM VISUAL
+          MOBILE SYSTEM
           ===================================================== */}
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -right-24 h-60 w-60 lg:hidden"
+        className="pointer-events-none absolute -bottom-24 -right-24 h-52 w-52 lg:hidden"
       >
-        <div className="absolute inset-0 rounded-full border border-white/[0.07]" />
+        <div className="absolute inset-0 rounded-full border border-white/[0.08]" />
 
-        <div className="absolute inset-10 rounded-full border border-white/[0.08]" />
+        <div className="absolute inset-9 rounded-full border border-white/[0.1]" />
 
-        <div className="absolute inset-20 rounded-full border border-white/[0.1]" />
+        <div className="absolute inset-[72px] rounded-full border border-white/[0.14]" />
 
-        <div className="absolute left-1/2 top-10 h-2 w-2 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
+        <div className="absolute left-1/2 top-9 h-2 w-2 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
       </div>
 
-      {/* =====================================================
-          CONTENT
-          ===================================================== */}
-
       <Container className="relative z-10">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
           <p className="section-label text-white/45">
@@ -92,9 +83,9 @@ export default function ContactCTA() {
           </p>
         </div>
 
-        <div className="mt-6 flex flex-col gap-9 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mt-5 flex flex-col gap-7 sm:mt-6 sm:gap-9 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="max-w-5xl text-[clamp(3.2rem,8vw,8rem)] font-semibold leading-[0.86] tracking-[-0.07em] text-white">
+            <h2 className="max-w-5xl text-[clamp(2.8rem,12vw,4.5rem)] font-semibold leading-[0.88] tracking-[-0.065em] text-white sm:text-[clamp(3.5rem,8vw,8rem)]">
               Tell us what is
               <br />
 
@@ -103,35 +94,27 @@ export default function ContactCTA() {
               </span>
             </h2>
 
-            <p className="mt-6 max-w-lg text-base leading-7 text-white/60">
+            <p className="mt-4 max-w-lg text-sm leading-6 text-white/60 sm:mt-6 sm:text-base sm:leading-7">
               Describe the problem in your own words. We&apos;ll start there.
             </p>
           </div>
 
-          {/* =================================================
-              CTA BUTTON
-              ================================================= */}
-
           <Link
             href="/contact"
-            className="button-light group flex w-full items-center justify-between rounded-full border border-white bg-white px-6 py-4 font-semibold transition-transform hover:-translate-y-1 sm:w-fit sm:min-w-[230px]"
+            className="button-light group flex w-full items-center justify-between rounded-full border border-white bg-white px-5 py-3.5 text-sm font-semibold transition-transform hover:-translate-y-1 sm:w-fit sm:min-w-[230px] sm:px-6 sm:py-4"
           >
-            <span className="text-black">
-              Start a Project
-            </span>
+            <span>Start a Project</span>
 
             <ArrowUpRight
               size={18}
-              className="text-black transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+              className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
             />
           </Link>
         </div>
 
-        {/* =====================================================
-            SIGNAL LINE
-            ===================================================== */}
+        {/* Signal line */}
 
-        <div className="mt-14 flex max-w-xl items-center gap-4 border-t border-white/10 pt-5">
+        <div className="mt-8 flex max-w-xl items-center gap-3 border-t border-white/10 pt-4 sm:mt-14 sm:gap-4 sm:pt-5">
           <span className="tech-label text-white/25">
             INPUT
           </span>

@@ -20,25 +20,50 @@ export default function Navbar() {
   return (
     <>
       {/* =====================================================
-          DESKTOP / MOBILE HEADER
+          NAVBAR
+          Pure black so it blends directly into the hero.
           ===================================================== */}
 
-      <header className="absolute inset-x-0 top-0 z-50 border-b border-black/[0.07] bg-white/90 text-black backdrop-blur-xl">
+      <header className="absolute inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-black text-white">
         <Container>
-          <nav className="flex h-20 items-center justify-between lg:h-24">
-            {/* Logo */}
+          <nav className="flex h-[92px] items-center justify-between sm:h-[100px] lg:h-[112px]">
+            {/* =================================================
+                LOGO
+
+                Important:
+                - No overflow-hidden
+                - No CSS scale
+                - object-contain preserves the whole PNG
+                - The image is given more HEIGHT because the
+                  source image is relatively tall.
+                ================================================= */}
+
             <Link
               href="/"
               aria-label="Drylake home"
-              className="relative z-50"
+              className="relative z-50 flex shrink-0 items-center"
             >
               <Image
-                src="/brand/drylake-logo-white.png"
-                alt="Drylake"
-                width={180}
-                height={60}
+                src="/brand/drylake-logo-black.png"
+                alt="Drylake Technologies"
+                width={1536}
+                height={1024}
                 priority
-                className="h-auto w-[125px] object-contain sm:w-[145px]"
+                className="
+                  h-[82px]
+                  w-[125px]
+                  object-contain
+                  object-center
+
+                  sm:h-[90px]
+                  sm:w-[140px]
+
+                  lg:h-[102px]
+                  lg:w-[155px]
+
+                  xl:h-[106px]
+                  xl:w-[165px]
+                "
               />
             </Link>
 
@@ -46,31 +71,61 @@ export default function Navbar() {
                 DESKTOP NAVIGATION
                 ================================================= */}
 
-            <div className="hidden items-center gap-8 lg:flex">
+            <div className="hidden items-center gap-7 lg:flex xl:gap-9">
               {links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="relative text-sm text-black/60 transition-colors after:absolute after:-bottom-2 after:left-0 after:h-px after:w-0 after:bg-[#f26a2e] after:transition-all hover:text-black hover:after:w-full"
+                  className="
+                    relative
+                    text-sm
+                    font-medium
+                    text-white/70
+                    transition-colors
+                    after:absolute
+                    after:-bottom-2
+                    after:left-0
+                    after:h-px
+                    after:w-0
+                    after:bg-[#f26a2e]
+                    after:transition-all
+                    hover:text-white
+                    hover:after:w-full
+                  "
                 >
                   {link.label}
                 </Link>
               ))}
 
-              {/* Primary CTA */}
+              {/* Desktop CTA */}
+
               <Link
                 href="/contact"
-                className="button-dark group flex items-center gap-2 rounded-full border border-black bg-black px-5 py-3 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+                className="
+                  button-light
+                  group
+                  flex
+                  items-center
+                  gap-2
+                  rounded-full
+                  border
+                  border-white
+                  bg-white
+                  px-5
+                  py-3
+                  text-sm
+                  font-semibold
+                  transition-transform
+                  hover:-translate-y-0.5
+                "
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-                <span className="text-white">
-                  Start a Project
-                </span>
+                <span>Start a Project</span>
 
                 <ArrowUpRight
                   size={16}
-                  className="text-white transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 />
               </Link>
             </div>
@@ -84,84 +139,143 @@ export default function Navbar() {
               aria-label={open ? "Close navigation" : "Open navigation"}
               aria-expanded={open}
               onClick={() => setOpen((value) => !value)}
-              className="relative z-50 flex h-11 w-11 items-center justify-center rounded-full border border-black bg-white text-black lg:hidden"
+              className="
+                relative
+                z-50
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                rounded-full
+                border
+                border-white/30
+                bg-black
+                text-white
+                lg:hidden
+              "
             >
-              {open ? <X size={19} /> : <Menu size={19} />}
+              {open ? <X size={18} /> : <Menu size={18} />}
             </button>
           </nav>
         </Container>
       </header>
 
       {/* =====================================================
-          MOBILE NAVIGATION
+          MOBILE MENU
           ===================================================== */}
 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ y: "-100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
+            initial={{
+              y: "-100%",
+            }}
+            animate={{
+              y: 0,
+            }}
+            exit={{
+              y: "-100%",
+            }}
             transition={{
-              duration: 0.45,
+              duration: 0.4,
               ease: [0.76, 0, 0.24, 1],
             }}
-            className="fixed inset-0 z-40 bg-white text-black lg:hidden"
+            className="
+              mobile-dark-grid
+              fixed
+              inset-0
+              z-40
+              bg-black
+              text-white
+              lg:hidden
+            "
           >
-            <Container className="flex min-h-[100svh] flex-col justify-center pt-20">
-              <div>
+            <Container className="flex min-h-[100svh] flex-col justify-center pt-[92px]">
+              {/* Navigation links */}
+
+              <div className="border-t border-white/10">
                 {links.map((link, index) => (
                   <motion.div
                     key={link.label}
                     initial={{
                       opacity: 0,
-                      y: 25,
+                      y: 10,
                     }}
                     animate={{
                       opacity: 1,
                       y: 0,
                     }}
                     transition={{
-                      delay: 0.1 + index * 0.06,
+                      delay: 0.08 + index * 0.045,
                     }}
                   >
                     <Link
                       href={link.href}
                       onClick={() => setOpen(false)}
-                      className="flex items-center justify-between border-b border-black/10 py-4 text-[clamp(2.5rem,11vw,4rem)] font-medium tracking-[-0.06em] text-black"
+                      className="
+                        flex
+                        items-center
+                        justify-between
+                        border-b
+                        border-white/10
+                        py-3
+                        text-[1.45rem]
+                        font-medium
+                        tracking-[-0.035em]
+                        text-white
+
+                        sm:py-3.5
+                        sm:text-[1.7rem]
+                      "
                     >
                       <span>{link.label}</span>
 
-                      <span className="h-1.5 w-1.5 rounded-full bg-black/20" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                     </Link>
                   </motion.div>
                 ))}
               </div>
 
               {/* Mobile CTA */}
+
               <Link
                 href="/contact"
                 onClick={() => setOpen(false)}
-                className="button-dark mt-9 flex items-center justify-between rounded-full border border-black bg-black px-6 py-4 font-semibold"
+                className="
+                  button-light
+                  mt-5
+                  flex
+                  items-center
+                  justify-between
+                  rounded-full
+                  border
+                  border-white
+                  bg-white
+                  px-5
+                  py-3
+                  text-sm
+                  font-semibold
+                "
               >
-                <span className="flex items-center gap-2 text-white">
+                <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
                   Start a Project
                 </span>
 
-                <ArrowUpRight
-                  size={18}
-                  className="text-white"
-                />
+                <ArrowUpRight size={17} />
               </Link>
 
-              {/* Bottom tagline */}
-              <p className="absolute bottom-7 left-5 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-black/40">
+              {/* Mobile tagline */}
+
+              <div className="mt-5 flex items-center gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-                Tomorrow Starts Here.
-              </p>
+                <p className="text-[0.62rem] uppercase tracking-[0.16em] text-white/35">
+                  Tomorrow Starts Here.
+                </p>
+              </div>
             </Container>
           </motion.div>
         )}
