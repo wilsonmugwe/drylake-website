@@ -1,109 +1,74 @@
-"use client";
-
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import Container from "@/components/ui/Container";
 
 export default function ContactCTA() {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section className="hero-large-grid relative overflow-hidden bg-[#090909] py-14 text-white sm:py-20 lg:py-28">
-      {/* Background glow */}
-
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_50%,rgba(255,255,255,0.045),transparent_28%)]" />
-
-      {/* =====================================================
-          DESKTOP SYSTEM
-          ===================================================== */}
+    <section className="hero-large-grid relative overflow-hidden bg-black py-14 text-white sm:py-20 lg:py-28">
+      {/* architectural rings */}
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-52 top-1/2 hidden h-[40rem] w-[40rem] -translate-y-1/2 lg:block"
+        className="pointer-events-none absolute -right-28 -top-28 h-[280px] w-[280px] sm:-right-32 sm:-top-32 sm:h-[420px] sm:w-[420px] lg:-right-40 lg:-top-40 lg:h-[520px] lg:w-[520px]"
       >
-        <div className="absolute inset-0 rounded-full border border-white/[0.08]" />
+        <div className="absolute inset-0 rounded-full border border-white/[0.05]" />
 
-        <div className="absolute inset-[16%] rounded-full border border-white/[0.1]" />
+        <div className="absolute inset-[18%] rounded-full border border-white/[0.06]" />
 
-        <div className="absolute inset-[32%] rounded-full border border-white/[0.12]" />
+        <div className="absolute inset-[36%] rounded-full border border-white/[0.08]" />
 
-        <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.04]" />
+        <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.035]" />
 
-        <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.04]" />
+        <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.035]" />
 
-        <motion.div
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  rotate: 360,
-                }
-          }
-          transition={{
-            duration: 45,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute inset-[8%] rounded-full border border-dashed border-white/15"
-        >
-          <span className="signal-dot absolute left-1/2 top-[-4px] h-2 w-2 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
-        </motion.div>
-
-        <div className="orange-glow absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f26a2e]" />
-
-        <span className="tech-label absolute left-[55%] top-[54%] text-white/25">
-          START / 001
-        </span>
+        <span className="signal-dot absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f26a2e]" />
       </div>
 
-      {/* =====================================================
-          MOBILE SYSTEM
-          ===================================================== */}
+      {/* technical detail */}
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -right-24 h-52 w-52 lg:hidden"
+        className="pointer-events-none absolute bottom-8 right-8 hidden items-center gap-3 lg:flex"
       >
-        <div className="absolute inset-0 rounded-full border border-white/[0.08]" />
+        <span className="tech-label text-white/20">
+          INPUT
+        </span>
 
-        <div className="absolute inset-9 rounded-full border border-white/[0.1]" />
+        <div className="h-px w-12 bg-white/15" />
 
-        <div className="absolute inset-[72px] rounded-full border border-white/[0.14]" />
-
-        <div className="absolute left-1/2 top-9 h-2 w-2 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
       </div>
 
       <Container className="relative z-10">
-        <div className="flex items-center gap-2.5">
+        <p className="section-label flex items-center gap-2.5 text-white/40">
           <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-          <p className="section-label text-white/45">
-            Start a Project
-          </p>
-        </div>
+          Start a Project
+        </p>
 
-        <div className="mt-5 flex flex-col gap-7 sm:mt-6 sm:gap-9 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mt-4 flex flex-col gap-6 sm:mt-6 sm:gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
           <div>
-            <h2 className="max-w-5xl text-[clamp(2.8rem,12vw,4.5rem)] font-semibold leading-[0.88] tracking-[-0.065em] text-white sm:text-[clamp(3.5rem,8vw,8rem)]">
+            <h2 className="max-w-5xl text-[clamp(2.9rem,8vw,8rem)] font-semibold leading-[0.86] tracking-[-0.07em]">
               Tell us what is
               <br />
 
-              <span className="text-white/35">
+              <span className="text-white/30">
                 slowing you down.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-lg text-sm leading-6 text-white/60 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-lg text-sm leading-6 text-white/50 sm:mt-6 sm:text-base sm:leading-7">
               Describe the problem in your own words. We&apos;ll start there.
             </p>
           </div>
 
           <Link
             href="/contact"
-            className="button-light group flex w-full items-center justify-between rounded-full border border-white bg-white px-5 py-3.5 text-sm font-semibold transition-transform hover:-translate-y-1 sm:w-fit sm:min-w-[230px] sm:px-6 sm:py-4"
+            className="button-light group flex w-full items-center justify-between rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold transition-transform hover:-translate-y-0.5 sm:w-fit sm:min-w-[230px] sm:px-6 sm:py-4"
           >
-            <span>Start a Project</span>
+            <span>
+              Start a conversation
+            </span>
 
             <ArrowUpRight
               size={18}
@@ -112,33 +77,19 @@ export default function ContactCTA() {
           </Link>
         </div>
 
-        {/* Signal line */}
+        {/* mobile technical endpoint */}
 
-        <div className="mt-8 flex max-w-xl items-center gap-3 border-t border-white/10 pt-4 sm:mt-14 sm:gap-4 sm:pt-5">
-          <span className="tech-label text-white/25">
-            INPUT
+        <div className="mt-7 flex items-center gap-3 border-t border-white/10 pt-4 sm:mt-10 lg:hidden">
+          <span className="tech-label text-white/20">
+            PROBLEM
           </span>
 
-          <div className="relative h-px flex-1 bg-white/10">
-            <motion.div
-              animate={
-                reduceMotion
-                  ? undefined
-                  : {
-                      left: ["0%", "100%"],
-                    }
-              }
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className="absolute -top-[3px] h-1.5 w-1.5 rounded-full bg-[#f26a2e]"
-            />
-          </div>
+          <div className="h-px flex-1 bg-white/10" />
 
-          <span className="tech-label text-white/25">
-            START
+          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
+          <span className="tech-label text-white/30">
+            START HERE
           </span>
         </div>
       </Container>
