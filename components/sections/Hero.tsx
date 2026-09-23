@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useMotionValue, useSpring } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from "motion/react";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import type { MouseEvent } from "react";
 import Container from "@/components/ui/Container";
 
 export default function Hero() {
+  const reduceMotion = useReducedMotion();
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -21,6 +28,8 @@ export default function Hero() {
   });
 
   function handleMouseMove(event: MouseEvent<HTMLElement>) {
+    if (reduceMotion) return;
+
     const rect = event.currentTarget.getBoundingClientRect();
 
     mouseX.set((event.clientX - rect.left - rect.width / 2) * 0.035);
@@ -30,43 +39,43 @@ export default function Hero() {
   return (
     <section
       onMouseMove={handleMouseMove}
-      className="hero-grid relative flex min-h-[100svh] overflow-hidden bg-[#070707] text-white"
+      className="light-grid relative flex min-h-[100svh] overflow-hidden bg-white text-black"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(255,255,255,0.08),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_35%,rgba(0,0,0,0.055),transparent_28%)]" />
 
       <motion.div
         style={{ x, y }}
-        className="pointer-events-none absolute right-[-16rem] top-[15%] hidden h-[44rem] w-[44rem] rounded-full border border-white/10 lg:block"
+        className="pointer-events-none absolute right-[-17rem] top-[14%] hidden h-[46rem] w-[46rem] rounded-full border border-black/10 lg:block"
       >
-        <div className="absolute inset-[10%] rounded-full border border-white/[0.08]" />
-        <div className="absolute inset-[23%] rounded-full border border-white/[0.08]" />
-        <div className="absolute inset-[36%] rounded-full border border-white/15" />
+        <div className="absolute inset-[10%] rounded-full border border-black/[0.07]" />
+        <div className="absolute inset-[23%] rounded-full border border-black/[0.07]" />
+        <div className="absolute inset-[36%] rounded-full border border-black/15" />
 
         <motion.div
-          animate={{ rotate: 360 }}
+          animate={reduceMotion ? undefined : { rotate: 360 }}
           transition={{
-            duration: 40,
+            duration: 45,
             repeat: Infinity,
             ease: "linear",
           }}
-          className="absolute inset-[5%] rounded-full border border-dashed border-white/15"
+          className="absolute inset-[5%] rounded-full border border-dashed border-black/15"
         />
 
-        <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_50px_rgba(255,255,255,0.8)]" />
+        <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black" />
       </motion.div>
 
-      <div className="pointer-events-none absolute -right-28 bottom-12 h-72 w-72 rounded-full border border-white/10 lg:hidden">
-        <div className="absolute inset-12 rounded-full border border-white/10" />
-        <div className="absolute inset-24 rounded-full border border-white/20" />
+      <div className="pointer-events-none absolute -right-24 bottom-24 h-64 w-64 rounded-full border border-black/10 lg:hidden">
+        <div className="absolute inset-10 rounded-full border border-black/10" />
+        <div className="absolute inset-20 rounded-full border border-black/15" />
       </div>
 
-      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-7 pt-28 sm:pb-10 lg:justify-center lg:pb-0 lg:pt-24">
+      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-center pb-12 pt-32 lg:pt-28">
         <div className="max-w-5xl">
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="section-label mb-5 text-white/40 sm:mb-7"
+            transition={{ duration: 0.55 }}
+            className="section-label mb-6 text-black/40"
           >
             Tomorrow Starts Here.
           </motion.p>
@@ -79,61 +88,50 @@ export default function Hero() {
               delay: 0.08,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="max-w-5xl text-[clamp(3.5rem,10vw,8.7rem)] font-semibold leading-[0.85] tracking-[-0.075em]"
+            className="max-w-5xl text-[clamp(3.6rem,10vw,9rem)] font-semibold leading-[0.84] tracking-[-0.075em]"
           >
-            Build better.
+            The boring part
             <br />
-            Operate smarter.
-            <br />
-            Grow faster.
+            <span className="text-black/30">is the hard part.</span>
           </motion.h1>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.32 }}
-            className="mt-7 lg:mt-10"
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mt-8"
           >
-            <p className="max-w-xl text-base leading-7 text-white/55 sm:text-lg">
-              Intelligent software, AI and automation built around real
-              business problems.
+            <p className="max-w-xl text-base leading-7 text-black/55 sm:text-lg">
+              Drylake builds software and handles the technical work that gets
+              in the way of the work you actually do.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/contact"
-                className="group flex items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-semibold text-black transition-transform hover:scale-[1.025]"
+                href="#solutions"
+                className="group flex items-center justify-center gap-2 rounded-full bg-black px-6 py-4 text-sm font-semibold text-white transition-transform hover:scale-[1.025]"
               >
-                Start a Project
-                <ArrowUpRight
-                  size={17}
-                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                />
+                See what we do
+                <ArrowDown size={16} />
               </Link>
 
               <Link
-                href="#solutions"
-                className="flex items-center justify-center rounded-full border border-white/20 px-6 py-4 text-sm font-semibold transition-colors hover:bg-white hover:text-black"
+                href="/contact"
+                className="group flex items-center justify-center gap-2 rounded-full border border-black/15 px-6 py-4 text-sm font-semibold transition-all hover:bg-black hover:text-white"
               >
-                Explore Solutions
+                Bring us a problem
+                <ArrowUpRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
               </Link>
             </div>
           </motion.div>
         </div>
 
-        <div className="mt-10 flex items-end justify-between lg:absolute lg:bottom-9 lg:left-12 lg:right-12 xl:left-16 xl:right-16">
-          <p className="hidden text-xs uppercase tracking-[0.17em] text-white/30 sm:block">
-            Innovation · Integrity · Impact
-          </p>
-
-          <Link
-            href="#solutions"
-            aria-label="View Drylake solutions"
-            className="ml-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/20 transition-all hover:bg-white hover:text-black"
-          >
-            <ArrowDown size={17} />
-          </Link>
-        </div>
+        <p className="absolute bottom-8 hidden text-xs uppercase tracking-[0.17em] text-black/30 sm:block">
+          Innovation · Integrity · Impact
+        </p>
       </Container>
     </section>
   );

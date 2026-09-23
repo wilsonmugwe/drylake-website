@@ -19,18 +19,26 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Drylake builds intelligent software, AI systems and business automation around real business problems.",
+    "Drylake builds practical software and technical systems for Australian businesses.",
 
   keywords: [
     "Drylake",
-    "AI automation",
-    "business automation",
     "custom software",
-    "AI systems",
+    "business automation",
     "systems integration",
+    "technical setup",
     "technology company",
+    "Perth technology company",
+    "Australian technology company",
+    "Perth",
+    "Western Australia",
     "Australia",
   ],
+
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

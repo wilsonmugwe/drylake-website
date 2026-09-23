@@ -5,62 +5,67 @@ import ContactCTA from "@/components/sections/ContactCTA";
 import Container from "@/components/ui/Container";
 
 export const metadata: Metadata = {
-  title: "Solutions",
+  title: "What We Do",
   description:
-    "Explore Drylake's AI, automation, custom software and systems integration capabilities.",
+    "Custom software, automation, systems integration and practical technical setup from Drylake.",
 };
 
 const solutions = [
   {
-    title: "AI & Intelligent Systems",
+    title: "Custom Software",
     description:
-      "AI assistants, intelligent workflows and purpose-built AI systems designed around real operational requirements.",
+      "Applications and digital platforms designed around the way your organisation actually operates.",
+    detail:
+      "Useful when existing software forces your process into the wrong shape, creates unnecessary manual work or simply cannot do what the operation requires.",
   },
   {
     title: "Business Automation",
     description:
-      "Automated workflows that reduce repetitive administration, improve response times and connect business processes.",
-  },
-  {
-    title: "Custom Software",
-    description:
-      "Applications and digital platforms built specifically around your organisation, users and workflows.",
+      "Reliable workflows that reduce repetitive administration and connect the steps between people and systems.",
+    detail:
+      "The goal is not automation for its own sake. It is removing work that should not require somebody's attention every time.",
   },
   {
     title: "Systems Integration",
     description:
-      "Connect existing software, platforms and data so information can move reliably across the organisation.",
+      "Connect the software, services and data your organisation already uses.",
+    detail:
+      "When information has to be copied manually between systems, we look for a more reliable way for it to move.",
+  },
+  {
+    title: "Technical Setup",
+    description:
+      "Domains, business email, websites, forms, bookings, migrations and the technical details around them.",
+    detail:
+      "Not every technology problem needs a new platform. Sometimes the useful answer is simply getting the existing pieces configured properly.",
   },
 ];
 
 export default function SolutionsPage() {
   return (
-    <main>
-      <div className="relative bg-[#080808] text-white">
-        <Navbar />
+    <main className="bg-white text-black">
+      <Navbar />
 
-        <Container className="pb-20 pt-36 sm:pb-24 sm:pt-44 lg:pb-28">
-          <p className="section-label text-white/35">Drylake / Solutions</p>
+      <Container className="pb-20 pt-36 sm:pb-24 sm:pt-44 lg:pb-28">
+        <p className="section-label text-black/35">Drylake / What We Do</p>
 
-          <h1 className="mt-6 max-w-5xl text-[clamp(3.5rem,9vw,8rem)] font-semibold leading-[0.87] tracking-[-0.07em]">
-            Technology for
-            <br />
-            real problems.
-          </h1>
+        <h1 className="mt-6 max-w-5xl text-[clamp(3.5rem,9vw,8rem)] font-semibold leading-[0.87] tracking-[-0.07em]">
+          Technology for
+          <br />
+          <span className="text-black/25">real problems.</span>
+        </h1>
 
-          <p className="mt-7 max-w-xl text-base leading-7 text-white/50 sm:text-lg">
-            We choose technology based on the problem, not the other way
-            around.
-          </p>
-        </Container>
-      </div>
+        <p className="mt-7 max-w-xl text-base leading-7 text-black/50 sm:text-lg">
+          We choose technology based on the problem, not the other way around.
+        </p>
+      </Container>
 
-      <section className="mineral-texture relative bg-[#f1efe8] py-16 sm:py-20 lg:py-24">
-        <Container className="relative z-10">
+      <section className="mineral-texture bg-[#f2f0e9] py-16 sm:py-20 lg:py-24">
+        <Container>
           {solutions.map((solution, index) => (
-            <div
+            <article
               key={solution.title}
-              className="grid gap-5 border-b border-black/10 py-8 lg:grid-cols-[120px_1fr_1fr] lg:items-start lg:py-10"
+              className="grid gap-5 border-b border-black/10 py-9 lg:grid-cols-[100px_0.8fr_1.2fr] lg:gap-12 lg:py-12"
             >
               <span className="font-mono text-xs text-black/30">
                 0{index + 1}
@@ -70,10 +75,16 @@ export default function SolutionsPage() {
                 {solution.title}
               </h2>
 
-              <p className="max-w-lg text-base leading-7 text-black/50">
-                {solution.description}
-              </p>
-            </div>
+              <div>
+                <p className="max-w-lg text-base leading-7 text-black/65">
+                  {solution.description}
+                </p>
+
+                <p className="mt-4 max-w-lg text-sm leading-6 text-black/40">
+                  {solution.detail}
+                </p>
+              </div>
+            </article>
           ))}
         </Container>
       </section>

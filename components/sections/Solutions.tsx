@@ -4,9 +4,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import {
   ArrowUpRight,
-  Bot,
-  Boxes,
-  Code2,
+  Braces,
+  Cable,
+  Settings2,
   Workflow,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -14,31 +14,31 @@ import Container from "@/components/ui/Container";
 const solutions = [
   {
     number: "01",
-    title: "AI & Intelligent Systems",
+    title: "Custom Software",
     description:
-      "Practical AI systems, assistants and intelligent workflows designed around how your business actually operates.",
-    icon: Bot,
+      "Purpose-built applications and digital platforms for problems that off-the-shelf software does not solve properly.",
+    icon: Braces,
   },
   {
     number: "02",
     title: "Business Automation",
     description:
-      "Replace repetitive work and disconnected processes with reliable automated workflows.",
+      "Reduce repetitive administration and connect workflows that currently depend on somebody remembering the next step.",
     icon: Workflow,
   },
   {
     number: "03",
-    title: "Custom Software",
+    title: "Systems Integration",
     description:
-      "Purpose-built digital platforms and applications that solve problems generic software cannot.",
-    icon: Code2,
+      "Connect the software, platforms and data your organisation already depends on.",
+    icon: Cable,
   },
   {
     number: "04",
-    title: "Systems Integration",
+    title: "Technical Setup",
     description:
-      "Connect the tools, data and platforms your business already depends on.",
-    icon: Boxes,
+      "Domains, business email, websites, forms, bookings and the technical details that should simply work.",
+    icon: Settings2,
   },
 ];
 
@@ -46,17 +46,22 @@ export default function Solutions() {
   return (
     <section
       id="solutions"
-      className="mineral-texture relative overflow-hidden bg-[#f1efe8] py-20 text-[#090909] sm:py-24 lg:py-28"
+      className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-20 text-black sm:py-24 lg:py-28"
     >
       <Container className="relative z-10">
         <div className="grid gap-8 border-b border-black/10 pb-10 lg:grid-cols-[0.7fr_1.3fr] lg:items-end">
-          <div>
-            <p className="section-label text-black/40">01 / What We Build</p>
-          </div>
+          <p className="section-label text-black/40">01 / What We Do</p>
 
-          <h2 className="max-w-4xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
-            Technology built around the problem.
-          </h2>
+          <div>
+            <h2 className="max-w-4xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
+              Technology built around
+              <span className="text-black/30"> the problem.</span>
+            </h2>
+
+            <p className="mt-5 max-w-xl leading-7 text-black/50">
+              We choose the technology after we understand what needs to work.
+            </p>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2">
@@ -64,13 +69,14 @@ export default function Solutions() {
             const Icon = solution.icon;
 
             return (
-              <motion.div
+              <motion.article
                 key={solution.title}
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="group border-b border-black/10 py-8 transition-colors lg:min-h-[250px] lg:p-9 lg:odd:border-r"
+                whileHover={{ y: -4 }}
+                className="group border-b border-black/10 py-8 lg:min-h-[285px] lg:p-9 lg:odd:border-r"
               >
                 <div className="flex h-full flex-col justify-between gap-12">
                   <div className="flex items-start justify-between">
@@ -78,8 +84,8 @@ export default function Solutions() {
                       {solution.number}
                     </span>
 
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 transition-all duration-300 group-hover:bg-black group-hover:text-white">
-                      <Icon size={18} strokeWidth={1.6} />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-black/10 transition-all duration-300 group-hover:rotate-6 group-hover:bg-black group-hover:text-white">
+                      <Icon size={19} strokeWidth={1.6} />
                     </div>
                   </div>
 
@@ -93,23 +99,21 @@ export default function Solutions() {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </motion.article>
             );
           })}
         </div>
 
-        <div className="pt-9">
-          <Link
-            href="/solutions"
-            className="group inline-flex items-center gap-2 text-sm font-semibold"
-          >
-            Explore all solutions
-            <ArrowUpRight
-              size={16}
-              className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-            />
-          </Link>
-        </div>
+        <Link
+          href="/solutions"
+          className="group mt-9 inline-flex items-center gap-2 text-sm font-semibold"
+        >
+          Explore what we do
+          <ArrowUpRight
+            size={16}
+            className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+          />
+        </Link>
       </Container>
     </section>
   );

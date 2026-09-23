@@ -16,7 +16,7 @@ const values = [
   },
   {
     title: "Impact",
-    text: "Technology should create meaningful and measurable value.",
+    text: "Create technology that produces meaningful value.",
   },
 ];
 
@@ -24,13 +24,11 @@ export default function About() {
   return (
     <section
       id="about"
-      className="mineral-texture relative overflow-hidden bg-[#f1efe8] py-20 sm:py-24 lg:py-28"
+      className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-20 text-black sm:py-24 lg:py-28"
     >
       <Container className="relative z-10">
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
-            <p className="section-label text-black/40">03 / Drylake</p>
-          </div>
+        <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+          <p className="section-label text-black/40">05 / Drylake</p>
 
           <div>
             <motion.h2
@@ -39,14 +37,18 @@ export default function About() {
               viewport={{ once: true }}
               className="max-w-4xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]"
             >
-              Technology should solve problems,
-              <span className="text-black/30"> not create more of them.</span>
+              Built close to
+              <span className="text-black/30"> the problem.</span>
             </motion.h2>
 
             <p className="mt-7 max-w-2xl text-base leading-7 text-black/55 sm:text-lg">
-              Drylake builds intelligent technology around real operational
-              needs. We combine software, AI and automation to help
-              organisations work more effectively and create room for growth.
+              Drylake is a Perth-based technology company building practical
+              software and technical systems for Australian businesses.
+            </p>
+
+            <p className="mt-4 max-w-2xl text-base leading-7 text-black/55 sm:text-lg">
+              We start by understanding how the operation actually works.
+              Technology comes after.
             </p>
 
             <Link
@@ -64,8 +66,12 @@ export default function About() {
 
         <div className="mt-16 grid border-t border-black/10 md:grid-cols-3">
           {values.map((value, index) => (
-            <div
+            <motion.div
               key={value.title}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.07 }}
               className="border-b border-black/10 py-7 md:border-b-0 md:p-7 md:first:pl-0 md:not-last:border-r"
             >
               <span className="font-mono text-xs text-black/30">
@@ -79,7 +85,7 @@ export default function About() {
               <p className="mt-3 max-w-sm text-sm leading-6 text-black/50">
                 {value.text}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </Container>
