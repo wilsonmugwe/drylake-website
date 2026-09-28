@@ -28,10 +28,7 @@ const groups = [
 export default function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-white/10 bg-black text-white">
-      {/* =====================================================
-          SUBTLE BACKGROUND GRID
-          ===================================================== */}
-
+      {/* Background grid */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-40"
@@ -44,31 +41,20 @@ export default function Footer() {
         }}
       />
 
-      {/* =====================================================
-          DECORATIVE SYSTEM RINGS
-          ===================================================== */}
-
+      {/* Decorative rings */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -bottom-32 -right-24 hidden h-80 w-80 lg:block"
       >
         <div className="absolute inset-0 rounded-full border border-white/[0.05]" />
-
         <div className="absolute inset-12 rounded-full border border-white/[0.06]" />
-
         <div className="absolute inset-24 rounded-full border border-white/[0.08]" />
       </div>
 
       <Container className="relative z-10">
-        {/* =====================================================
-            MAIN FOOTER
-            ===================================================== */}
-
+        {/* Main footer */}
         <div className="grid gap-10 py-10 sm:py-12 lg:grid-cols-[1.25fr_1.75fr] lg:gap-16 lg:py-14">
-          {/* =================================================
-              BRAND
-              ================================================= */}
-
+          {/* Brand */}
           <div>
             <Link
               href="/"
@@ -77,7 +63,7 @@ export default function Footer() {
             >
               <Image
                 src="/brand/drylake-logo-black.png"
-                alt="Drylake Technologies"
+                alt="Drylake"
                 width={1536}
                 height={1024}
                 className="
@@ -85,10 +71,8 @@ export default function Footer() {
                   w-[165px]
                   object-contain
                   object-center
-
                   sm:h-[125px]
                   sm:w-[190px]
-
                   lg:h-[135px]
                   lg:w-[205px]
                 "
@@ -106,12 +90,14 @@ export default function Footer() {
                 Perth, Western Australia
               </p>
             </div>
+
+            <div className="mt-5 space-y-1 text-xs leading-5 text-white/35">
+              <p>Drylake Pty Ltd</p>
+              <p>ABN 70 702 662 557</p>
+            </div>
           </div>
 
-          {/* =================================================
-              NAVIGATION
-              ================================================= */}
-
+          {/* Navigation */}
           <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:gap-x-12">
             {groups.map((group) => (
               <div key={group.title}>
@@ -119,7 +105,10 @@ export default function Footer() {
                   {group.title}
                 </p>
 
-                <nav className="mt-4 flex flex-col gap-3">
+                <nav
+                  className="mt-4 flex flex-col gap-3"
+                  aria-label={`${group.title} links`}
+                >
                   {group.links.map((link) => (
                     <Link
                       key={link.label}
@@ -135,13 +124,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* =====================================================
-            BOTTOM BAR
-            ===================================================== */}
-
+        {/* Bottom bar */}
         <div className="flex flex-col gap-3 border-t border-white/10 py-5 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} Drylake.
+            © {new Date().getFullYear()} Drylake Pty Ltd. All rights reserved.
           </p>
 
           <div className="flex items-center gap-2.5">

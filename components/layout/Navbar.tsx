@@ -19,25 +19,12 @@ export default function Navbar() {
 
   return (
     <>
-      {/* =====================================================
-          NAVBAR
-          Pure black so it blends directly into the hero.
-          ===================================================== */}
-
       <header className="absolute inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-black text-white">
         <Container>
-          <nav className="flex h-[92px] items-center justify-between sm:h-[100px] lg:h-[112px]">
-            {/* =================================================
-                LOGO
-
-                Important:
-                - No overflow-hidden
-                - No CSS scale
-                - object-contain preserves the whole PNG
-                - The image is given more HEIGHT because the
-                  source image is relatively tall.
-                ================================================= */}
-
+          <nav
+            className="flex h-[92px] items-center justify-between sm:h-[100px] lg:h-[112px]"
+            aria-label="Primary navigation"
+          >
             <Link
               href="/"
               aria-label="Drylake home"
@@ -45,7 +32,7 @@ export default function Navbar() {
             >
               <Image
                 src="/brand/drylake-logo-black.png"
-                alt="Drylake Technologies"
+                alt="Drylake"
                 width={1536}
                 height={1024}
                 priority
@@ -54,23 +41,17 @@ export default function Navbar() {
                   w-[125px]
                   object-contain
                   object-center
-
                   sm:h-[90px]
                   sm:w-[140px]
-
                   lg:h-[102px]
                   lg:w-[155px]
-
                   xl:h-[106px]
                   xl:w-[165px]
                 "
               />
             </Link>
 
-            {/* =================================================
-                DESKTOP NAVIGATION
-                ================================================= */}
-
+            {/* Desktop navigation */}
             <div className="hidden items-center gap-7 lg:flex xl:gap-9">
               {links.map((link) => (
                 <Link
@@ -97,8 +78,6 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              {/* Desktop CTA */}
-
               <Link
                 href="/contact"
                 className="
@@ -120,7 +99,6 @@ export default function Navbar() {
                 "
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
                 <span>Start a Project</span>
 
                 <ArrowUpRight
@@ -130,14 +108,12 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* =================================================
-                MOBILE MENU BUTTON
-                ================================================= */}
-
+            {/* Mobile menu button */}
             <button
               type="button"
               aria-label={open ? "Close navigation" : "Open navigation"}
               aria-expanded={open}
+              aria-controls="mobile-navigation"
               onClick={() => setOpen((value) => !value)}
               className="
                 relative
@@ -161,22 +137,14 @@ export default function Navbar() {
         </Container>
       </header>
 
-      {/* =====================================================
-          MOBILE MENU
-          ===================================================== */}
-
+      {/* Mobile menu */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{
-              y: "-100%",
-            }}
-            animate={{
-              y: 0,
-            }}
-            exit={{
-              y: "-100%",
-            }}
+            id="mobile-navigation"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
             transition={{
               duration: 0.4,
               ease: [0.76, 0, 0.24, 1],
@@ -192,8 +160,6 @@ export default function Navbar() {
             "
           >
             <Container className="flex min-h-[100svh] flex-col justify-center pt-[92px]">
-              {/* Navigation links */}
-
               <div className="border-t border-white/10">
                 {links.map((link, index) => (
                   <motion.div
@@ -224,20 +190,16 @@ export default function Navbar() {
                         font-medium
                         tracking-[-0.035em]
                         text-white
-
                         sm:py-3.5
                         sm:text-[1.7rem]
                       "
                     >
                       <span>{link.label}</span>
-
                       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                     </Link>
                   </motion.div>
                 ))}
               </div>
-
-              {/* Mobile CTA */}
 
               <Link
                 href="/contact"
@@ -260,14 +222,11 @@ export default function Navbar() {
               >
                 <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
                   Start a Project
                 </span>
 
                 <ArrowUpRight size={17} />
               </Link>
-
-              {/* Mobile tagline */}
 
               <div className="mt-5 flex items-center gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />

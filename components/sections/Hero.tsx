@@ -14,10 +14,6 @@ import Container from "@/components/ui/Container";
 export default function Hero() {
   const reduceMotion = useReducedMotion();
 
-  /* =========================================================
-     DESKTOP CURSOR RESPONSE
-     ========================================================= */
-
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -50,18 +46,14 @@ export default function Hero() {
       onMouseMove={handleMouseMove}
       className="hero-large-grid relative overflow-hidden bg-black text-white"
     >
-      {/* =====================================================
-          BACKGROUND DEPTH
-          ===================================================== */}
-
+      {/* Background depth */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_42%,rgba(255,255,255,0.055),transparent_30%)]" />
 
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.015)_45%,transparent_60%)]" />
 
-      {/* subtle vertical architecture */}
       <div className="pointer-events-none absolute bottom-0 right-[30%] top-0 hidden w-px bg-white/[0.045] xl:block" />
 
-      {/* top technical coordinate */}
+      {/* Technical coordinate */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute right-5 top-[118px] hidden items-center gap-3 sm:right-8 sm:flex lg:right-12 lg:top-[138px] xl:right-16"
@@ -73,17 +65,12 @@ export default function Hero() {
         <span className="h-1 w-1 rounded-full bg-[#f26a2e]" />
       </div>
 
-      {/* =====================================================
-          DESKTOP SYSTEM VISUAL
-          ===================================================== */}
-
+      {/* Desktop system visual */}
       <motion.div
         style={{ x, y }}
         aria-hidden="true"
         className="pointer-events-none absolute right-[-13rem] top-[13%] hidden h-[48rem] w-[48rem] lg:block"
       >
-        {/* technical labels */}
-
         <span className="tech-label absolute left-[8%] top-[14%] text-white/25">
           SYS / 001
         </span>
@@ -96,34 +83,22 @@ export default function Hero() {
           ACTIVE / SYSTEM
         </span>
 
-        {/* crosshair */}
-
+        {/* Crosshair */}
         <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.07]" />
-
         <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.07]" />
 
-        {/* crosshair marks */}
-
         <div className="absolute left-1/2 top-[7%] h-3 w-px -translate-x-1/2 bg-white/30" />
-
         <div className="absolute bottom-[7%] left-1/2 h-3 w-px -translate-x-1/2 bg-white/30" />
-
         <div className="absolute left-[7%] top-1/2 h-px w-3 -translate-y-1/2 bg-white/30" />
-
         <div className="absolute right-[7%] top-1/2 h-px w-3 -translate-y-1/2 bg-white/30" />
 
-        {/* bullseye rings */}
-
+        {/* Rings */}
         <div className="absolute inset-[2%] rounded-full border border-white/[0.12]" />
-
         <div className="absolute inset-[13%] rounded-full border border-white/[0.14]" />
-
         <div className="absolute inset-[27%] rounded-full border border-white/[0.16]" />
-
         <div className="absolute inset-[39%] rounded-full border border-white/[0.2]" />
 
-        {/* outer orbit */}
-
+        {/* Outer orbit */}
         <motion.div
           animate={
             reduceMotion
@@ -144,8 +119,7 @@ export default function Hero() {
           <div className="absolute bottom-[13%] right-[13%] h-1.5 w-1.5 rounded-full bg-white/50" />
         </motion.div>
 
-        {/* inner orbit */}
-
+        {/* Inner orbit */}
         <motion.div
           animate={
             reduceMotion
@@ -164,24 +138,17 @@ export default function Hero() {
           <div className="absolute right-[10%] top-[18%] h-2 w-2 rounded-full bg-white/60" />
         </motion.div>
 
-        {/* horizontal connections */}
-
+        {/* Connections */}
         <div className="absolute left-[22%] top-[48%] h-px w-[20%] bg-white/20" />
-
         <div className="absolute right-[22%] top-[48%] h-px w-[20%] bg-white/20" />
 
         <div className="absolute left-[19%] top-[calc(48%-4px)] h-2 w-2 rounded-full border border-white/40 bg-black" />
-
         <div className="absolute right-[19%] top-[calc(48%-4px)] h-2 w-2 rounded-full border border-white/40 bg-black" />
 
-        {/* vertical connections */}
-
         <div className="absolute left-1/2 top-[27%] h-[14%] w-px -translate-x-1/2 bg-white/15" />
-
         <div className="absolute bottom-[27%] left-1/2 h-[14%] w-px -translate-x-1/2 bg-white/15" />
 
-        {/* core */}
-
+        {/* Core */}
         <div className="orange-glow absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black">
           <motion.div
             animate={
@@ -204,8 +171,7 @@ export default function Hero() {
           DRYLAKE / CORE
         </span>
 
-        {/* nodes */}
-
+        {/* Nodes */}
         <div className="absolute left-[29%] top-[27%] flex items-center gap-2">
           <span className="h-1 w-1 rounded-full bg-white/50" />
 
@@ -223,23 +189,16 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* =====================================================
-          MOBILE SYSTEM VISUAL
-          Smaller + pushed out of content area
-          ===================================================== */}
-
+      {/* Mobile system visual */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -bottom-16 -right-20 h-[220px] w-[220px] sm:-bottom-20 sm:-right-20 sm:h-[290px] sm:w-[290px] lg:hidden"
       >
         <div className="absolute inset-0 rounded-full border border-white/[0.08]" />
-
         <div className="absolute inset-[32px] rounded-full border border-white/[0.11] sm:inset-10" />
-
         <div className="absolute inset-[64px] rounded-full border border-white/[0.16] sm:inset-[78px]" />
 
         <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.05]" />
-
         <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.05]" />
 
         <motion.div
@@ -269,18 +228,7 @@ export default function Hero() {
         </span>
       </div>
 
-      {/* =====================================================
-          HERO CONTENT
-          
-          MOBILE:
-          - no forced 760px minimum
-          - significantly smaller top/bottom padding
-          - tighter internal spacing
-          
-          DESKTOP:
-          - restores full viewport treatment
-          ===================================================== */}
-
+      {/* Hero content */}
       <Container
         className="
           relative z-10 flex flex-col justify-center
@@ -290,8 +238,6 @@ export default function Hero() {
         "
       >
         <div className="max-w-5xl">
-          {/* tagline */}
-
           <motion.p
             initial={{
               opacity: 0,
@@ -311,8 +257,7 @@ export default function Hero() {
             Tomorrow Starts Here.
           </motion.p>
 
-          {/* headline */}
-
+          {/* Primary page heading */}
           <motion.h1
             initial={{
               opacity: 0,
@@ -345,8 +290,6 @@ export default function Hero() {
               is the hard part.
             </span>
           </motion.h1>
-
-          {/* description + CTAs */}
 
           <motion.div
             initial={{
@@ -398,11 +341,7 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* =====================================================
-            BOTTOM DETAILS
-            Hidden on phones to avoid wasting vertical space
-            ===================================================== */}
-
+        {/* Bottom details */}
         <div className="absolute bottom-7 hidden items-center gap-3 sm:flex lg:bottom-8">
           <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
@@ -411,7 +350,7 @@ export default function Hero() {
           </p>
         </div>
 
-        <div className="absolute bottom-8 right-5 hidden items-center gap-3 xl:flex sm:right-8 lg:right-12 xl:right-16">
+        <div className="absolute bottom-8 right-5 hidden items-center gap-3 sm:right-8 lg:right-12 xl:right-16 xl:flex">
           <span className="tech-label text-white/25">
             SYSTEM
           </span>
@@ -420,7 +359,6 @@ export default function Hero() {
 
           <span className="tech-label flex items-center gap-2 text-white/35">
             <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
             ACTIVE
           </span>
         </div>
