@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -87,9 +88,11 @@ export default function RootLayout({
   return (
     <html lang="en-AU">
       <body className={`${geist.variable} ${geistMono.variable}`}>
-        <OrganizationSchema />
-        {children}
-        <Analytics />
+        <ClerkProvider>
+          <OrganizationSchema />
+          {children}
+          <Analytics />
+        </ClerkProvider>
       </body>
     </html>
   );

@@ -3,8 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  LayoutDashboard,
+  LogIn,
+  Menu,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { useState } from "react";
+import { Show, UserButton } from "@clerk/nextjs";
 import Container from "@/components/ui/Container";
 
 const links = [
@@ -17,6 +25,8 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
+  const closeMenu = () => setOpen(false);
+
   return (
     <>
       <header className="absolute inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-black text-white">
@@ -25,6 +35,7 @@ export default function Navbar() {
             className="flex h-[92px] items-center justify-between sm:h-[100px] lg:h-[112px]"
             aria-label="Primary navigation"
           >
+            {/* Logo */}
             <Link
               href="/"
               aria-label="Drylake home"
@@ -52,7 +63,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop navigation */}
-            <div className="hidden items-center gap-7 lg:flex xl:gap-9">
+            <div className="hidden items-center gap-5 lg:flex xl:gap-7">
               {links.map((link) => (
                 <Link
                   key={link.label}
@@ -78,6 +89,83 @@ export default function Navbar() {
                 </Link>
               ))}
 
+              {/* Signed-out authentication controls */}
+              <Show when="signed-out">
+                <div className="ml-1 flex items-center gap-2">
+                  <Link
+                    href="/sign-in"
+                    className="
+                      rounded-full
+                      px-3
+                      py-2
+                      text-sm
+                      font-medium
+                      text-white/70
+                      transition-colors
+                      hover:text-white
+                    "
+                  >
+                    Sign In
+                  </Link>
+
+                  <Link
+                    href="/sign-up"
+                    className="
+                      rounded-full
+                      border
+                      border-white/20
+                      px-4
+                      py-2.5
+                      text-sm
+                      font-medium
+                      text-white
+                      transition-colors
+                      hover:border-white/40
+                      hover:bg-white/[0.06]
+                    "
+                  >
+                    Create Account
+                  </Link>
+                </div>
+              </Show>
+
+              {/* Signed-in authentication controls */}
+              <Show when="signed-in">
+                <div className="ml-1 flex items-center gap-3">
+                  <Link
+                    href="/client"
+                    className="
+                      flex
+                      items-center
+                      gap-2
+                      rounded-full
+                      border
+                      border-white/20
+                      px-4
+                      py-2.5
+                      text-sm
+                      font-medium
+                      text-white
+                      transition-colors
+                      hover:border-white/40
+                      hover:bg-white/[0.06]
+                    "
+                  >
+                    <LayoutDashboard size={15} />
+                    Client Portal
+                  </Link>
+
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "h-9 w-9",
+                      },
+                    }}
+                  />
+                </div>
+              </Show>
+
+              {/* Primary business CTA */}
               <Link
                 href="/contact"
                 className="
@@ -99,6 +187,7 @@ export default function Navbar() {
                 "
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
                 <span>Start a Project</span>
 
                 <ArrowUpRight
@@ -137,7 +226,7 @@ export default function Navbar() {
         </Container>
       </header>
 
-      {/* Mobile menu */}
+      {/* Mobile navigation */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -154,12 +243,14 @@ export default function Navbar() {
               fixed
               inset-0
               z-40
+              overflow-y-auto
               bg-black
               text-white
               lg:hidden
             "
           >
-            <Container className="flex min-h-[100svh] flex-col justify-center pt-[92px]">
+            <Container className="flex min-h-[100svh] flex-col justify-center pb-8 pt-[92px]">
+              {/* Public links */}
               <div className="border-t border-white/10">
                 {links.map((link, index) => (
                   <motion.div
@@ -178,7 +269,7 @@ export default function Navbar() {
                   >
                     <Link
                       href={link.href}
-                      onClick={() => setOpen(false)}
+                      onClick={closeMenu}
                       className="
                         flex
                         items-center
@@ -195,18 +286,119 @@ export default function Navbar() {
                       "
                     >
                       <span>{link.label}</span>
+
                       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                     </Link>
                   </motion.div>
                 ))}
               </div>
 
+              {/* Mobile authentication */}
+              <div className="mt-5">
+                {/* Signed out */}
+                <Show when="signed-out">
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Link
+                      href="/sign-in"
+                      onClick={closeMenu}
+                      className="
+                        flex
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-full
+                        border
+                        border-white/20
+                        px-4
+                        py-3
+                        text-sm
+                        font-semibold
+                        text-white
+                        transition-colors
+                        hover:border-white/40
+                        hover:bg-white/[0.05]
+                      "
+                    >
+                      <LogIn size={16} />
+                      Sign In
+                    </Link>
+
+                    <Link
+                      href="/sign-up"
+                      onClick={closeMenu}
+                      className="
+                        flex
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-full
+                        border
+                        border-white
+                        bg-white
+                        px-4
+                        py-3
+                        text-sm
+                        font-semibold
+                        text-black
+                        transition-transform
+                        hover:-translate-y-0.5
+                      "
+                    >
+                      <UserPlus size={16} />
+                      Create Account
+                    </Link>
+                  </div>
+                </Show>
+
+                {/* Signed in */}
+                <Show when="signed-in">
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href="/client"
+                      onClick={closeMenu}
+                      className="
+                        flex
+                        flex-1
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-full
+                        border
+                        border-white/20
+                        px-5
+                        py-3
+                        text-sm
+                        font-semibold
+                        text-white
+                        transition-colors
+                        hover:border-white/40
+                        hover:bg-white/[0.05]
+                      "
+                    >
+                      <LayoutDashboard size={16} />
+                      Client Portal
+                    </Link>
+
+                    <div className="flex h-11 w-11 items-center justify-center">
+                      <UserButton
+                        appearance={{
+                          elements: {
+                            avatarBox: "h-10 w-10",
+                          },
+                        }}
+                      />
+                    </div>
+                  </div>
+                </Show>
+              </div>
+
+              {/* Project CTA */}
               <Link
                 href="/contact"
-                onClick={() => setOpen(false)}
+                onClick={closeMenu}
                 className="
                   button-light
-                  mt-5
+                  mt-3
                   flex
                   items-center
                   justify-between
@@ -228,6 +420,7 @@ export default function Navbar() {
                 <ArrowUpRight size={17} />
               </Link>
 
+              {/* Tagline */}
               <div className="mt-5 flex items-center gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
