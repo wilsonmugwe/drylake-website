@@ -23,17 +23,29 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminClientsPage() {
+  // ---------------------------------------------------------
+  // Authentication
+  // ---------------------------------------------------------
+
   const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in?redirect_url=/admin/clients");
   }
 
+  // ---------------------------------------------------------
+  // Platform-admin authorization
+  // ---------------------------------------------------------
+
   const platformAdmin = await isPlatformAdmin();
 
   if (!platformAdmin) {
     redirect("/client");
   }
+
+  // ---------------------------------------------------------
+  // Load organisations
+  // ---------------------------------------------------------
 
   const supabase = createAdminSupabaseClient();
 
@@ -52,6 +64,7 @@ export default async function AdminClientsPage() {
   return (
     <main className="min-h-screen bg-[#080808] text-white">
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-12">
+        {/* Header */}
         <header className="flex items-center justify-between border-b border-white/10 pb-6">
           <Link
             href="/admin"
@@ -62,7 +75,10 @@ export default async function AdminClientsPage() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-[#f26a2e]" />
+            <ShieldCheck
+              size={14}
+              className="text-[#f26a2e]"
+            />
 
             <p className="text-xs uppercase tracking-[0.18em] text-white/35">
               Platform Admin
@@ -70,6 +86,7 @@ export default async function AdminClientsPage() {
           </div>
         </header>
 
+        {/* Page heading */}
         <section className="flex flex-col gap-6 py-14 sm:flex-row sm:items-end sm:justify-between sm:py-16">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
@@ -86,15 +103,22 @@ export default async function AdminClientsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-white/35">
+          <Link
+            href="/admin/clients/new"
+            className="flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition-colors hover:bg-white/90"
+          >
             <Plus size={16} />
-            Create client — next
-          </div>
+            Create Client
+          </Link>
         </section>
 
+        {/* Error state */}
         {error ? (
           <section className="rounded-[2rem] border border-red-500/20 bg-red-500/[0.04] p-8">
-            <Building2 size={22} className="text-red-400" />
+            <Building2
+              size={22}
+              className="text-red-400"
+            />
 
             <h2 className="mt-6 text-xl font-medium">
               Unable to load clients
@@ -106,6 +130,7 @@ export default async function AdminClientsPage() {
             </p>
           </section>
         ) : organizations && organizations.length > 0 ? (
+          /* Organisation list */
           <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
             <div className="border-b border-white/10 px-6 py-5 sm:px-8">
               <p className="text-xs uppercase tracking-[0.18em] text-white/35">
@@ -118,12 +143,13 @@ export default async function AdminClientsPage() {
 
             <div>
               {organizations.map((organization) => (
-                <div
+                <Link
                   key={organization.id}
-                  className="flex items-center justify-between gap-5 border-b border-white/10 px-6 py-5 last:border-b-0 sm:px-8"
+                  href={`/admin/clients/${organization.id}`}
+                  className="group flex items-center justify-between gap-5 border-b border-white/10 px-6 py-5 transition-colors last:border-b-0 hover:bg-white/[0.035] sm:px-8"
                 >
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.025]">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.025] transition-colors group-hover:border-white/20">
                       <Building2
                         size={18}
                         className="text-[#f26a2e]"
@@ -131,7 +157,7 @@ export default async function AdminClientsPage() {
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate font-medium">
+                      <p className="truncate font-medium text-white">
                         {organization.name}
                       </p>
 
@@ -148,16 +174,20 @@ export default async function AdminClientsPage() {
 
                     <ChevronRight
                       size={17}
-                      className="text-white/25"
+                      className="text-white/25 transition-all group-hover:translate-x-1 group-hover:text-white/60"
                     />
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
         ) : (
+          /* Empty state */
           <section className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-8 sm:p-10">
-            <Building2 size={22} className="text-[#f26a2e]" />
+            <Building2
+              size={22}
+              className="text-[#f26a2e]"
+            />
 
             <h2 className="mt-6 text-2xl font-medium">
               No client organisations
@@ -167,6 +197,14 @@ export default async function AdminClientsPage() {
               Client organisations created for the Drylake platform will
               appear here.
             </p>
+
+            <Link
+              href="/admin/clients/new"
+              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition-colors hover:bg-white/90"
+            >
+              <Plus size={16} />
+              Create your first client
+            </Link>
           </section>
         )}
       </div>
