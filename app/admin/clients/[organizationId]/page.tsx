@@ -7,6 +7,7 @@ import {
   ChevronRight,
   FileText,
   FolderKanban,
+  Mail,
   Receipt,
   ShieldCheck,
   Users,
@@ -31,6 +32,23 @@ type ClientPageProps = {
     organizationId: string;
   }>;
 };
+
+function formatMoney(cents: number, currency: string) {
+  return new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency,
+  }).format(cents / 100);
+}
+
+function formatDate(value: string | null) {
+  if (!value) return null;
+
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
+}
 
 export default async function AdminClientPage({
   params,
@@ -58,16 +76,31 @@ export default async function AdminClientPage({
   const { organizationId } = await params;
 
   // ---------------------------------------------------------
-  // Load organisation
+  // Admin database client
+  //
+  // Created only after platform-admin authorization.
   // ---------------------------------------------------------
 
   const supabase = createAdminSupabaseClient();
+
+  // ---------------------------------------------------------
+  // Load organisation
+  // ---------------------------------------------------------
 
   const { data: organization, error: organizationError } =
     await supabase
       .from("organizations")
       .select(
-        "id, clerk_org_id, name, status, created_at, updated_at"
+        `
+          id,
+          clerk_org_id,
+          name,
+          status,
+          billing_contact_name,
+          billing_email,
+          created_at,
+          updated_at
+        `
       )
       .eq("id", organizationId)
       .maybeSingle();
@@ -89,13 +122,14 @@ export default async function AdminClientPage({
   // Load projects belonging to this organisation
   // ---------------------------------------------------------
 
-  const { data: projects, error: projectsError } = await supabase
-    .from("projects")
-    .select(
-      "id, name, status, progress_override, start_date, target_end_date, created_at"
-    )
-    .eq("organization_id", organization.id)
-    .order("created_at", { ascending: false });
+  const { data: projects, error: projectsError } =
+    await supabase
+      .from("projects")
+      .select(
+        "id, name, status, progress_override, start_date, target_end_date, created_at"
+      )
+      .eq("organization_id", organization.id)
+      .order("created_at", { ascending: false });
 
   if (projectsError) {
     console.error("Admin client projects failed:", {
@@ -104,7 +138,47 @@ export default async function AdminClientPage({
     });
   }
 
-  const projectCount = projects?.length ?? 0;
+  const projectList = projects ?? [];
+  const projectCount = projectList.length;
+
+  // ---------------------------------------------------------
+  // Load invoices belonging to this organisation
+  //
+  // Admin sees every invoice, including drafts and internal
+  // invoices. Client visibility is handled separately.
+  // ---------------------------------------------------------
+
+  const { data: invoices, error: invoicesError } =
+    await supabase
+      .from("invoices")
+      .select(
+        `
+          id,
+          project_id,
+          invoice_number,
+          status,
+          currency,
+          subtotal_cents,
+          tax_cents,
+          total_cents,
+          due_date,
+          paid_at,
+          visible_to_client,
+          created_at
+        `
+      )
+      .eq("organization_id", organization.id)
+      .order("created_at", { ascending: false });
+
+  if (invoicesError) {
+    console.error("Admin client invoices failed:", {
+      code: invoicesError.code,
+      message: invoicesError.message,
+    });
+  }
+
+  const invoiceList = invoices ?? [];
+  const invoiceCount = invoiceList.length;
 
   // ---------------------------------------------------------
   // UI
@@ -166,17 +240,29 @@ export default async function AdminClientPage({
             </div>
           </div>
 
-          <Link
-            href={`/admin/clients/${organization.id}/projects/new`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition-colors hover:bg-white/90"
-          >
-            <Plus size={16} />
-            Create Project
-          </Link>
+          {/* Primary actions */}
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/admin/clients/${organization.id}/invoices/new`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"
+            >
+              <Receipt size={16} />
+              Create Invoice
+            </Link>
+
+            <Link
+              href={`/admin/clients/${organization.id}/projects/new`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition-colors hover:bg-white/90"
+            >
+              <Plus size={16} />
+              Create Project
+            </Link>
+          </div>
         </section>
 
         {/* Overview cards */}
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {/* Projects */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
             <FolderKanban
               size={20}
@@ -192,39 +278,48 @@ export default async function AdminClientPage({
             </p>
           </div>
 
+          {/* Documents */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
             <FileText
               size={20}
               className="text-[#f26a2e]"
             />
 
-            <p className="mt-5 text-3xl font-medium">—</p>
+            <p className="mt-5 text-3xl font-medium">
+              —
+            </p>
 
             <p className="mt-1 text-sm text-white/40">
               Documents
             </p>
           </div>
 
+          {/* Invoices */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
             <Receipt
               size={20}
               className="text-[#f26a2e]"
             />
 
-            <p className="mt-5 text-3xl font-medium">—</p>
+            <p className="mt-5 text-3xl font-medium">
+              {invoiceCount}
+            </p>
 
             <p className="mt-1 text-sm text-white/40">
               Invoices
             </p>
           </div>
 
+          {/* Members */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
             <Users
               size={20}
               className="text-[#f26a2e]"
             />
 
-            <p className="mt-5 text-3xl font-medium">—</p>
+            <p className="mt-5 text-3xl font-medium">
+              —
+            </p>
 
             <p className="mt-1 text-sm text-white/40">
               Members
@@ -232,11 +327,71 @@ export default async function AdminClientPage({
           </div>
         </section>
 
+        {/* Billing Contact */}
+        <section className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 sm:p-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
+                  <Mail
+                    size={18}
+                    className="text-[#f26a2e]"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#f26a2e]">
+                    Billing Contact
+                  </p>
+
+                  <p className="mt-1 text-xs text-white/30">
+                    Invoice and payment communications
+                  </p>
+                </div>
+              </div>
+
+              {organization.billing_email ? (
+                <div className="mt-6">
+                  <p className="font-medium">
+                    {organization.billing_contact_name ||
+                      "Billing contact"}
+                  </p>
+
+                  <p className="mt-1 break-all text-sm text-white/40">
+                    {organization.billing_email}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <p className="font-medium">
+                    No billing contact
+                  </p>
+
+                  <p className="mt-1 text-sm text-white/40">
+                    Add a billing email before issuing invoices.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Link
+              href={`/admin/clients/${organization.id}/billing`}
+              className="inline-flex w-fit shrink-0 items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/60 transition hover:border-white/20 hover:text-white"
+            >
+              {organization.billing_email
+                ? "Edit Billing Contact"
+                : "Add Billing Contact"}
+            </Link>
+          </div>
+        </section>
+
         {/* Projects */}
         <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
           <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
             <div>
-              <h2 className="font-medium">Projects</h2>
+              <h2 className="font-medium">
+                Projects
+              </h2>
 
               <p className="mt-1 text-xs text-white/35">
                 Projects belonging to {organization.name}
@@ -245,7 +400,9 @@ export default async function AdminClientPage({
 
             <span className="text-xs uppercase tracking-[0.15em] text-white/30">
               {projectCount}{" "}
-              {projectCount === 1 ? "project" : "projects"}
+              {projectCount === 1
+                ? "project"
+                : "projects"}
             </span>
           </div>
 
@@ -255,9 +412,9 @@ export default async function AdminClientPage({
                 Unable to load projects.
               </p>
             </div>
-          ) : projects && projects.length > 0 ? (
+          ) : projectList.length > 0 ? (
             <div>
-              {projects.map((project) => (
+              {projectList.map((project) => (
                 <Link
                   key={project.id}
                   href={`/admin/projects/${project.id}`}
@@ -310,6 +467,142 @@ export default async function AdminClientPage({
               >
                 <Plus size={15} />
                 Create Project
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* Billing */}
+        <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
+          <div className="flex flex-col gap-4 border-b border-white/10 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <div>
+              <h2 className="font-medium">
+                Billing
+              </h2>
+
+              <p className="mt-1 text-xs text-white/35">
+                Invoices for {organization.name}
+              </p>
+            </div>
+
+            <Link
+              href={`/admin/clients/${organization.id}/invoices/new`}
+              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-xs font-medium text-white/60 transition hover:border-white/20 hover:text-white"
+            >
+              <Plus size={14} />
+              Create Invoice
+            </Link>
+          </div>
+
+          {invoicesError ? (
+            <div className="px-6 py-8 sm:px-8">
+              <p className="text-sm text-red-400">
+                Unable to load invoices.
+              </p>
+            </div>
+          ) : invoiceList.length > 0 ? (
+            <div>
+              {invoiceList.map((invoice) => {
+                const linkedProject = projectList.find(
+                  (project) =>
+                    project.id === invoice.project_id
+                );
+
+                return (
+                  <Link
+                    key={invoice.id}
+                    href={`/admin/invoices/${invoice.id}`}
+                    className="group flex flex-col gap-5 border-b border-white/10 px-6 py-5 transition-colors last:border-b-0 hover:bg-white/[0.035] sm:flex-row sm:items-center sm:justify-between sm:px-8"
+                  >
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
+                        <Receipt
+                          size={18}
+                          className="text-[#f26a2e]"
+                        />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="font-medium transition-colors group-hover:text-[#f26a2e]">
+                          {invoice.invoice_number}
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/30">
+                          <span>
+                            {formatMoney(
+                              invoice.total_cents,
+                              invoice.currency
+                            )}
+                          </span>
+
+                          <span>
+                            {invoice.currency}
+                          </span>
+
+                          <span>
+                            {invoice.due_date
+                              ? `Due ${formatDate(
+                                  invoice.due_date
+                                )}`
+                              : "No due date"}
+                          </span>
+
+                          <span>
+                            {linkedProject
+                              ? linkedProject.name
+                              : "No project"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-[0.65rem] uppercase tracking-[0.1em] ${
+                          invoice.visible_to_client
+                            ? "border-[#f26a2e]/30 text-[#f26a2e]"
+                            : "border-white/10 text-white/35"
+                        }`}
+                      >
+                        {invoice.visible_to_client
+                          ? "Client visible"
+                          : "Internal"}
+                      </span>
+
+                      <span className="rounded-full border border-white/10 px-2.5 py-1 text-[0.65rem] uppercase tracking-[0.1em] text-white/50">
+                        {invoice.status}
+                      </span>
+
+                      <ChevronRight
+                        size={16}
+                        className="ml-1 text-white/20 transition-all group-hover:translate-x-1 group-hover:text-white/60"
+                      />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="px-6 py-10 sm:px-8">
+              <Receipt
+                size={22}
+                className="text-[#f26a2e]"
+              />
+
+              <h3 className="mt-5 text-lg font-medium">
+                No invoices yet
+              </h3>
+
+              <p className="mt-2 max-w-lg text-sm leading-6 text-white/40">
+                Create the first invoice for this client.
+              </p>
+
+              <Link
+                href={`/admin/clients/${organization.id}/invoices/new`}
+                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/70 transition hover:border-white/20 hover:text-white"
+              >
+                <Plus size={15} />
+                Create Invoice
               </Link>
             </div>
           )}
