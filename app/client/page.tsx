@@ -2,10 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
+  ArrowRight,
   ArrowUpRight,
   Building2,
   FolderKanban,
-  LogOut,
   ShieldCheck,
 } from "lucide-react";
 
@@ -100,14 +100,14 @@ export default async function ClientDashboardPage() {
   // Authenticated Supabase client
   //
   // IMPORTANT:
-  // This uses the Clerk session token.
-  // RLS determines what this client is allowed to retrieve.
+  // Uses the Clerk session token.
+  // Supabase RLS remains the tenant-isolation boundary.
   // ---------------------------------------------------------
 
   const supabase = createServerSupabaseClient();
 
   // ---------------------------------------------------------
-  // Find organisation through Clerk org ID
+  // Find organisation through active Clerk org ID
   // ---------------------------------------------------------
 
   const { data: organization, error: organizationError } =
@@ -115,6 +115,7 @@ export default async function ClientDashboardPage() {
       .from("organizations")
       .select("id, clerk_org_id, name, status")
       .eq("clerk_org_id", orgId)
+      .eq("status", "ACTIVE")
       .maybeSingle();
 
   if (organizationError) {
@@ -164,16 +165,25 @@ export default async function ClientDashboardPage() {
   // ---------------------------------------------------------
   // Load projects
   //
-  // organization_id filter is explicit AND RLS still applies.
+  // Explicit organization filter + RLS.
   // ---------------------------------------------------------
 
-  const { data: projects, error: projectsError } = await supabase
-    .from("projects")
-    .select(
-      "id, name, status, progress_override, start_date, target_end_date, created_at"
-    )
-    .eq("organization_id", organization.id)
-    .order("created_at", { ascending: false });
+  const { data: projects, error: projectsError } =
+    await supabase
+      .from("projects")
+      .select(
+        `
+          id,
+          name,
+          status,
+          progress_override,
+          start_date,
+          target_end_date,
+          created_at
+        `
+      )
+      .eq("organization_id", organization.id)
+      .order("created_at", { ascending: false });
 
   if (projectsError) {
     console.error("Client projects lookup failed:", {
@@ -183,6 +193,68 @@ export default async function ClientDashboardPage() {
   }
 
   const projectList = projects ?? [];
+
+  // ---------------------------------------------------------
+  // Load milestones for the organisation's projects.
+  //
+  // This lets the dashboard show the same automatic progress
+  // calculation as the individual project page.
+  // ---------------------------------------------------------
+
+  const projectIds = projectList.map((project) => project.id);
+
+  let milestones: Array<{
+    id: string;
+    project_id: string;
+    status: string;
+  }> = [];
+
+  let milestonesError: {
+    code?: string;
+    message?: string;
+  } | null = null;
+
+  if (projectIds.length > 0) {
+    const milestoneResult = await supabase
+      .from("milestones")
+      .select("id, project_id, status")
+      .in("project_id", projectIds);
+
+    milestones = milestoneResult.data ?? [];
+    milestonesError = milestoneResult.error;
+
+    if (milestonesError) {
+      console.error("Client dashboard milestones failed:", {
+        code: milestonesError.code,
+        message: milestonesError.message,
+      });
+    }
+  }
+
+  function getProjectProgress(
+    projectId: string,
+    progressOverride: number | null
+  ) {
+    if (progressOverride !== null) {
+      return progressOverride;
+    }
+
+    const projectMilestones = milestones.filter(
+      (milestone) => milestone.project_id === projectId
+    );
+
+    if (projectMilestones.length === 0) {
+      return 0;
+    }
+
+    const completed = projectMilestones.filter(
+      (milestone) => milestone.status === "COMPLETED"
+    ).length;
+
+    return Math.round(
+      (completed / projectMilestones.length) * 100
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#080808] text-white">
@@ -219,8 +291,8 @@ export default async function ClientDashboardPage() {
           </h1>
 
           <p className="mt-4 max-w-xl text-sm leading-6 text-white/45">
-            View your Drylake projects, progress and delivery
-            information.
+            View your Drylake projects, delivery progress and latest
+            project information.
           </p>
         </section>
 
@@ -237,7 +309,7 @@ export default async function ClientDashboardPage() {
             </p>
 
             <p className="mt-1 text-sm text-white/40">
-              Projects
+              {projectList.length === 1 ? "Project" : "Projects"}
             </p>
           </div>
 
@@ -260,14 +332,16 @@ export default async function ClientDashboardPage() {
         {/* Projects */}
         <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
           <div className="border-b border-white/10 px-6 py-5 sm:px-8">
-            <h2 className="font-medium">Projects</h2>
+            <h2 className="font-medium">
+              Projects
+            </h2>
 
             <p className="mt-1 text-xs text-white/35">
               Projects available to your organisation
             </p>
           </div>
 
-          {projectsError ? (
+          {projectsError || milestonesError ? (
             <div className="px-6 py-8 sm:px-8">
               <p className="text-sm text-red-400">
                 Unable to load projects.
@@ -275,28 +349,61 @@ export default async function ClientDashboardPage() {
             </div>
           ) : projectList.length > 0 ? (
             <div>
-              {projectList.map((project) => (
-                <div
-                  key={project.id}
-                  className="flex items-center justify-between gap-6 border-b border-white/10 px-6 py-5 last:border-b-0 sm:px-8"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">
-                      {project.name}
-                    </p>
+              {projectList.map((project) => {
+                const progress = getProjectProgress(
+                  project.id,
+                  project.progress_override
+                );
 
-                    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-white/30">
-                      {project.status.replaceAll("_", " ")}
-                    </p>
-                  </div>
+                return (
+                  <Link
+                    key={project.id}
+                    href={`/client/projects/${project.id}`}
+                    className="group block border-b border-white/10 px-6 py-6 transition-colors last:border-b-0 hover:bg-white/[0.025] sm:px-8"
+                  >
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="truncate font-medium text-white">
+                            {project.name}
+                          </h3>
 
-                  <span className="text-sm text-white/35">
-                    {project.progress_override !== null
-                      ? `${project.progress_override}%`
-                      : "Automatic"}
-                  </span>
-                </div>
-              ))}
+                          <span className="rounded-full border border-white/10 px-2.5 py-1 text-[0.6rem] uppercase tracking-[0.1em] text-white/35">
+                            {project.status.replaceAll("_", " ")}
+                          </span>
+                        </div>
+
+                        <div className="mt-5 flex items-center gap-4">
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full rounded-full bg-[#f26a2e]"
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.max(0, progress)
+                                )}%`,
+                              }}
+                            />
+                          </div>
+
+                          <span className="w-10 text-right text-sm text-white/45">
+                            {progress}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <ArrowRight
+                        size={18}
+                        className="mt-1 shrink-0 text-white/25 transition group-hover:translate-x-1 group-hover:text-white"
+                      />
+                    </div>
+
+                    <p className="mt-4 text-xs text-white/30">
+                      View project
+                    </p>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="px-6 py-10 sm:px-8">

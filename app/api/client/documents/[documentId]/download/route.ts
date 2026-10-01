@@ -2,8 +2,12 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
+
+const BUCKET = "client-documents";
+const SIGNED_URL_LIFETIME_SECONDS = 60;
 
 type RouteContext = {
   params: Promise<{
@@ -11,144 +15,229 @@ type RouteContext = {
   }>;
 };
 
+function errorResponse(
+  message: string,
+  status: number
+) {
+  return NextResponse.json(
+    { error: message },
+    {
+      status,
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
+      },
+    }
+  );
+}
+
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: RouteContext
 ) {
+  // ---------------------------------------------------------
+  // 1. Clerk authentication
+  // ---------------------------------------------------------
+
   const { userId, orgId } = await auth();
 
-  // User must be authenticated.
   if (!userId) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      {
-        status: 401,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
-    );
+    return errorResponse("Unauthorized", 401);
   }
 
-  // A client must have an active organisation.
   if (!orgId) {
-    return NextResponse.json(
-      { error: "No active organisation" },
-      {
-        status: 403,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+    return errorResponse(
+      "No active organisation",
+      403
     );
   }
 
   const { documentId } = await params;
 
   if (!documentId) {
-    return NextResponse.json(
-      { error: "Invalid document" },
-      {
-        status: 400,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+    return errorResponse(
+      "Invalid document",
+      400
     );
   }
 
-  const supabase = createServerSupabaseClient();
+  // ---------------------------------------------------------
+  // 2. Authorization client
+  //
+  // This client carries the user's Clerk session token.
+  // Supabase RLS decides whether this user can retrieve the
+  // document metadata.
+  //
+  // The service-role client MUST NOT be used for this query.
+  // ---------------------------------------------------------
 
-  /*
-   * SECURITY:
-   *
-   * We deliberately do not supply organization_id.
-   *
-   * Supabase/PostgreSQL RLS determines whether the active
-   * Clerk organisation is permitted to see this document.
-   *
-   * Therefore knowing another client's document UUID should
-   * not be enough to retrieve it.
-   */
+  const clientSupabase =
+    createServerSupabaseClient();
+
+  const { data: organization, error: organizationError } =
+    await clientSupabase
+      .from("organizations")
+      .select("id, status")
+      .eq("clerk_org_id", orgId)
+      .eq("status", "ACTIVE")
+      .maybeSingle();
+
+  if (organizationError) {
+    console.error(
+      "Document organisation authorization failed:",
+      {
+        code: organizationError.code,
+        message: organizationError.message,
+      }
+    );
+
+    return errorResponse(
+      "Unable to access document",
+      500
+    );
+  }
+
+  if (!organization) {
+    return errorResponse(
+      "Document not found",
+      404
+    );
+  }
+
+  // ---------------------------------------------------------
+  // 3. Retrieve document through RLS
+  //
+  // RLS is the primary tenant boundary.
+  // visible_to_client is also explicitly required.
+  // ---------------------------------------------------------
+
   const { data: document, error: documentError } =
-    await supabase
+    await clientSupabase
       .from("documents")
       .select(
-        "id, name, storage_path, mime_type, visible_to_client"
+        `
+          id,
+          project_id,
+          name,
+          storage_path,
+          mime_type,
+          visible_to_client
+        `
       )
       .eq("id", documentId)
       .eq("visible_to_client", true)
       .maybeSingle();
 
   if (documentError) {
-    console.error("Document lookup failed:", {
-      code: documentError.code,
-      message: documentError.message,
-    });
-
-    return NextResponse.json(
-      { error: "Unable to access document" },
+    console.error(
+      "Document authorization lookup failed:",
       {
-        status: 500,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        code: documentError.code,
+        message: documentError.message,
       }
+    );
+
+    return errorResponse(
+      "Unable to access document",
+      500
     );
   }
 
-  /*
-   * Use 404 rather than revealing whether another
-   * organisation's document exists.
-   */
+  // Use 404 so another tenant cannot determine whether the
+  // supplied document UUID actually exists.
   if (!document) {
-    return NextResponse.json(
-      { error: "Document not found" },
-      {
-        status: 404,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+    return errorResponse(
+      "Document not found",
+      404
     );
   }
 
-  /*
-   * Generate a temporary signed URL.
-   * The URL expires after 60 seconds.
-   */
+  // ---------------------------------------------------------
+  // 4. Explicit project → organisation verification
+  //
+  // This is defense in depth in addition to documents RLS.
+  // ---------------------------------------------------------
+
+  const { data: project, error: projectError } =
+    await clientSupabase
+      .from("projects")
+      .select("id, organization_id")
+      .eq("id", document.project_id)
+      .eq("organization_id", organization.id)
+      .maybeSingle();
+
+  if (projectError) {
+    console.error(
+      "Document project authorization failed:",
+      {
+        code: projectError.code,
+        message: projectError.message,
+      }
+    );
+
+    return errorResponse(
+      "Unable to access document",
+      500
+    );
+  }
+
+  if (!project) {
+    return errorResponse(
+      "Document not found",
+      404
+    );
+  }
+
+  // ---------------------------------------------------------
+  // 5. Create signed URL
+  //
+  // Authorization has already succeeded through the user's
+  // RLS-scoped client.
+  //
+  // The server-only service-role client is used ONLY to sign
+  // the private storage object.
+  // ---------------------------------------------------------
+
+  const adminSupabase =
+    createAdminSupabaseClient();
+
   const { data: signedData, error: signedUrlError } =
-    await supabase.storage
-      .from("client-documents")
-      .createSignedUrl(document.storage_path, 60, {
-        download: document.name,
-      });
+    await adminSupabase.storage
+      .from(BUCKET)
+      .createSignedUrl(
+        document.storage_path,
+        SIGNED_URL_LIFETIME_SECONDS,
+        {
+          download: document.name,
+        }
+      );
 
-  if (signedUrlError || !signedData?.signedUrl) {
-    console.error("Signed document URL creation failed:", {
-      code: signedUrlError?.name,
-      message: signedUrlError?.message,
-    });
-
-    return NextResponse.json(
-      { error: "Unable to access document" },
+  if (
+    signedUrlError ||
+    !signedData?.signedUrl
+  ) {
+    console.error(
+      "Signed document URL creation failed:",
       {
-        status: 500,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        name: signedUrlError?.name,
+        message: signedUrlError?.message,
       }
+    );
+
+    return errorResponse(
+      "Unable to access document",
+      500
     );
   }
 
-  /*
-   * Never log the signed URL.
-   * Treat it as temporary access credentials.
-   */
-  return NextResponse.redirect(signedData.signedUrl, {
-    status: 302,
-    headers: {
-      "Cache-Control": "private, no-store, max-age=0",
-    },
-  });
+  // Never log signedData.signedUrl.
+  return NextResponse.redirect(
+    signedData.signedUrl,
+    {
+      status: 302,
+      headers: {
+        "Cache-Control":
+          "private, no-store, max-age=0",
+      },
+    }
+  );
 }

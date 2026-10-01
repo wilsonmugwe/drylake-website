@@ -2,20 +2,20 @@ import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
+  ArrowDownToLine,
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
   Circle,
   Clock3,
-  Plus,
+  FileText,
   ShieldCheck,
 } from "lucide-react";
 
-import { isPlatformAdmin } from "@/lib/auth/platform-admin";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Project | Drylake Admin",
+  title: "Project | Drylake",
   robots: {
     index: false,
     follow: false,
@@ -24,7 +24,7 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-type ProjectPageProps = {
+type ClientProjectPageProps = {
   params: Promise<{
     projectId: string;
   }>;
@@ -42,56 +42,129 @@ function formatDate(value: string | null) {
   }).format(date);
 }
 
-export default async function AdminProjectPage({
+function formatDateTime(value: string | null) {
+  if (!value) return "Not published";
+
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatFileSize(sizeBytes: number | null) {
+  if (
+    sizeBytes === null ||
+    !Number.isFinite(sizeBytes) ||
+    sizeBytes < 0
+  ) {
+    return "Unknown size";
+  }
+
+  if (sizeBytes >= 1024 * 1024) {
+    return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  if (sizeBytes >= 1024) {
+    return `${Math.round(sizeBytes / 1024)} KB`;
+  }
+
+  return `${sizeBytes} B`;
+}
+
+function formatFileType(mimeType: string | null) {
+  switch (mimeType) {
+    case "application/pdf":
+      return "PDF";
+
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      return "DOCX";
+
+    case "image/png":
+      return "PNG";
+
+    default:
+      return "File";
+  }
+}
+
+export default async function ClientProjectPage({
   params,
-}: ProjectPageProps) {
+}: ClientProjectPageProps) {
   // ---------------------------------------------------------
   // Authentication
   // ---------------------------------------------------------
 
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
 
   if (!userId) {
-    redirect("/sign-in?redirect_url=/admin");
+    redirect("/sign-in?redirect_url=/client");
   }
 
-  // ---------------------------------------------------------
-  // Platform-admin authorization
-  // ---------------------------------------------------------
-
-  const platformAdmin = await isPlatformAdmin();
-
-  if (!platformAdmin) {
+  if (!orgId) {
     redirect("/client");
   }
 
   const { projectId } = await params;
-
-  const supabase = createAdminSupabaseClient();
+  const supabase = createServerSupabaseClient();
 
   // ---------------------------------------------------------
-  // Load project
+  // Organisation
+  //
+  // RLS also enforces that this organisation matches the
+  // active Clerk organisation.
   // ---------------------------------------------------------
 
-  const { data: project, error: projectError } = await supabase
-    .from("projects")
-    .select(
-      `
-        id,
-        organization_id,
-        name,
-        status,
-        progress_override,
-        start_date,
-        target_end_date,
-        created_at
-      `
-    )
-    .eq("id", projectId)
-    .maybeSingle();
+  const { data: organization, error: organizationError } =
+    await supabase
+      .from("organizations")
+      .select("id, name, status")
+      .eq("clerk_org_id", orgId)
+      .eq("status", "ACTIVE")
+      .maybeSingle();
+
+  if (organizationError) {
+    console.error("Client organisation lookup failed:", {
+      code: organizationError.code,
+      message: organizationError.message,
+    });
+
+    throw new Error(
+      "Unable to load client organisation."
+    );
+  }
+
+  if (!organization) {
+    notFound();
+  }
+
+  // ---------------------------------------------------------
+  // Project
+  //
+  // Explicit organisation constraint provides defense in
+  // depth in addition to the RLS tenant boundary.
+  // ---------------------------------------------------------
+
+  const { data: project, error: projectError } =
+    await supabase
+      .from("projects")
+      .select(
+        `
+          id,
+          organization_id,
+          name,
+          status,
+          progress_override,
+          start_date,
+          target_end_date
+        `
+      )
+      .eq("id", projectId)
+      .eq("organization_id", organization.id)
+      .maybeSingle();
 
   if (projectError) {
-    console.error("Admin project lookup failed:", {
+    console.error("Client project lookup failed:", {
       code: projectError.code,
       message: projectError.message,
     });
@@ -104,33 +177,7 @@ export default async function AdminProjectPage({
   }
 
   // ---------------------------------------------------------
-  // Load parent organisation
-  // ---------------------------------------------------------
-
-  const { data: organization, error: organizationError } =
-    await supabase
-      .from("organizations")
-      .select("id, name, status")
-      .eq("id", project.organization_id)
-      .maybeSingle();
-
-  if (organizationError) {
-    console.error("Project organisation lookup failed:", {
-      code: organizationError.code,
-      message: organizationError.message,
-    });
-
-    throw new Error("Unable to load project organisation.");
-  }
-
-  if (!organization) {
-    notFound();
-  }
-
-  // ---------------------------------------------------------
-  // Load milestones
-  //
-  // Milestones are ordered using the database position field.
+  // Milestones
   // ---------------------------------------------------------
 
   const { data: milestones, error: milestonesError } =
@@ -144,28 +191,94 @@ export default async function AdminProjectPage({
           status,
           position,
           due_date,
-          completed_at,
-          created_at
+          completed_at
         `
       )
       .eq("project_id", project.id)
-      .order("position", { ascending: true })
-      .order("created_at", { ascending: true });
+      .order("position", { ascending: true });
 
   if (milestonesError) {
-    console.error("Admin project milestones failed:", {
+    console.error("Client milestones failed:", {
       code: milestonesError.code,
       message: milestonesError.message,
     });
   }
 
-  const milestoneList = milestones ?? [];
+  // ---------------------------------------------------------
+  // Published client updates only
+  //
+  // Visibility is explicitly constrained in the query in
+  // addition to the database RLS policy.
+  // ---------------------------------------------------------
+
+  const { data: updates, error: updatesError } =
+    await supabase
+      .from("project_updates")
+      .select(
+        `
+          id,
+          title,
+          body,
+          published_at,
+          created_at
+        `
+      )
+      .eq("project_id", project.id)
+      .eq("visible_to_client", true)
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false });
+
+  if (updatesError) {
+    console.error("Client project updates failed:", {
+      code: updatesError.code,
+      message: updatesError.message,
+    });
+  }
 
   // ---------------------------------------------------------
-  // Calculate automatic progress
+  // Client-visible documents only
   //
-  // V1:
-  // Every milestone has equal weight.
+  // This query uses the Clerk-authenticated Supabase client.
+  // RLS remains the primary authorization boundary.
+  //
+  // We also explicitly constrain:
+  //   - project_id
+  //   - visible_to_client
+  //
+  // Storage paths are deliberately NOT selected or exposed.
+  // ---------------------------------------------------------
+
+  const {
+    data: documents,
+    error: documentsError,
+  } = await supabase
+    .from("documents")
+    .select(
+      `
+        id,
+        name,
+        mime_type,
+        size_bytes,
+        created_at
+      `
+    )
+    .eq("project_id", project.id)
+    .eq("visible_to_client", true)
+    .order("created_at", { ascending: false });
+
+  if (documentsError) {
+    console.error("Client project documents failed:", {
+      code: documentsError.code,
+      message: documentsError.message,
+    });
+  }
+
+  const milestoneList = milestones ?? [];
+  const updateList = updates ?? [];
+  const documentList = documents ?? [];
+
+  // ---------------------------------------------------------
+  // Automatic progress
   // ---------------------------------------------------------
 
   const completedMilestones = milestoneList.filter(
@@ -175,7 +288,9 @@ export default async function AdminProjectPage({
   const automaticProgress =
     milestoneList.length > 0
       ? Math.round(
-          (completedMilestones / milestoneList.length) * 100
+          (completedMilestones /
+            milestoneList.length) *
+            100
         )
       : 0;
 
@@ -184,78 +299,36 @@ export default async function AdminProjectPage({
       ? project.progress_override
       : automaticProgress;
 
-  const progressMode =
-    project.progress_override !== null
-      ? "Manual override"
-      : "Automatic";
-
   return (
     <main className="min-h-screen bg-[#080808] text-white">
-      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
         {/* Header */}
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
+        <header className="border-b border-white/10 pb-6">
           <Link
-            href={`/admin/clients/${organization.id}`}
-            className="flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
+            href="/client"
+            className="inline-flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
           >
             <ArrowLeft size={16} />
-            {organization.name}
+            Back to dashboard
           </Link>
-
-          <div className="flex items-center gap-2">
-            <ShieldCheck
-              size={14}
-              className="text-[#f26a2e]"
-            />
-
-            <p className="text-xs uppercase tracking-[0.18em] text-white/35">
-              Platform Admin
-            </p>
-          </div>
         </header>
 
         {/* Project heading */}
-        <section className="flex flex-col gap-8 py-14 sm:flex-row sm:items-end sm:justify-between sm:py-16">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
-              {organization.name}
-            </p>
+        <section className="py-12 sm:py-16">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
+            {organization.name}
+          </p>
 
-            <h1 className="mt-4 text-4xl font-medium tracking-[-0.04em] sm:text-5xl">
-              {project.name}
-            </h1>
+          <h1 className="mt-4 text-4xl font-medium tracking-[-0.04em] sm:text-5xl">
+            {project.name}
+          </h1>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <span className="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-white/50">
-                {project.status.replaceAll("_", " ")}
-              </span>
-
-              <span className="text-xs text-white/30">
-                {progressMode} progress
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/admin/projects/${project.id}/updates/new`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"
-            >
-              <Plus size={16} />
-              Add Update
-            </Link>
-
-            <Link
-              href={`/admin/projects/${project.id}/milestones/new`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition-colors hover:bg-white/90"
-            >
-              <Plus size={16} />
-              Add Milestone
-            </Link>
-          </div>
+          <span className="mt-5 inline-flex rounded-full border border-white/10 px-3 py-1 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-white/50">
+            {project.status.replaceAll("_", " ")}
+          </span>
         </section>
 
-        {/* Overview */}
+        {/* Project overview */}
         <section className="grid gap-4 lg:grid-cols-3">
           {/* Progress */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
@@ -263,19 +336,13 @@ export default async function AdminProjectPage({
               Progress
             </p>
 
-            <div className="mt-5 flex items-end gap-2">
-              <p className="text-4xl font-medium">
-                {displayedProgress}%
-              </p>
-
-              <p className="pb-1 text-xs text-white/35">
-                {progressMode}
-              </p>
-            </div>
+            <p className="mt-5 text-4xl font-medium">
+              {displayedProgress}%
+            </p>
 
             <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-[#f26a2e] transition-all"
+                className="h-full rounded-full bg-[#f26a2e]"
                 style={{
                   width: `${Math.min(
                     100,
@@ -323,7 +390,9 @@ export default async function AdminProjectPage({
         <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
           <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
             <div>
-              <h2 className="font-medium">Milestones</h2>
+              <h2 className="font-medium">
+                Milestones
+              </h2>
 
               <p className="mt-1 text-xs text-white/35">
                 Project delivery checkpoints
@@ -331,7 +400,8 @@ export default async function AdminProjectPage({
             </div>
 
             <span className="text-xs uppercase tracking-[0.15em] text-white/30">
-              {completedMilestones}/{milestoneList.length} completed
+              {completedMilestones}/
+              {milestoneList.length} completed
             </span>
           </div>
 
@@ -342,110 +412,217 @@ export default async function AdminProjectPage({
               </p>
             </div>
           ) : milestoneList.length > 0 ? (
-            <div>
-              {milestoneList.map((milestone) => {
-                const completed =
-                  milestone.status === "COMPLETED";
+            milestoneList.map((milestone) => {
+              const completed =
+                milestone.status === "COMPLETED";
 
-                return (
-                  <div
-                    key={milestone.id}
-                    className="flex flex-col gap-5 border-b border-white/10 px-6 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-8"
-                  >
-                    <div className="flex min-w-0 items-center gap-4">
-                      {completed ? (
-                        <CheckCircle2
-                          size={19}
-                          className="shrink-0 text-[#f26a2e]"
-                        />
-                      ) : (
-                        <Circle
-                          size={19}
-                          className="shrink-0 text-white/25"
-                        />
-                      )}
+              return (
+                <div
+                  key={milestone.id}
+                  className="flex gap-4 border-b border-white/10 px-6 py-5 last:border-b-0 sm:px-8"
+                >
+                  {completed ? (
+                    <CheckCircle2
+                      size={19}
+                      className="mt-0.5 shrink-0 text-[#f26a2e]"
+                    />
+                  ) : (
+                    <Circle
+                      size={19}
+                      className="mt-0.5 shrink-0 text-white/25"
+                    />
+                  )}
 
-                      <div className="min-w-0">
-                        <p className="font-medium">
-                          {milestone.title}
-                        </p>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className="font-medium">
+                        {milestone.title}
+                      </p>
 
-                        {milestone.description ? (
-                          <p className="mt-1 max-w-2xl text-xs leading-5 text-white/40">
-                            {milestone.description}
-                          </p>
-                        ) : null}
-
-                        <p className="mt-1 text-xs text-white/30">
-                          {milestone.due_date
-                            ? `Due ${formatDate(
-                                milestone.due_date
-                              )}`
-                            : "No due date"}
-                        </p>
-                      </div>
+                      <span className="text-[0.65rem] uppercase tracking-[0.1em] text-white/30">
+                        {milestone.status.replaceAll(
+                          "_",
+                          " "
+                        )}
+                      </span>
                     </div>
 
-                    {/* Status management */}
-                    <form
-                      action={`/api/admin/milestones/${milestone.id}/status`}
-                      method="POST"
-                      className="flex shrink-0 items-center gap-2"
-                    >
-                      <select
-                        name="status"
-                        defaultValue={milestone.status}
-                        aria-label={`Status for ${milestone.title}`}
-                        className="rounded-xl border border-white/10 bg-black px-3 py-2 text-xs uppercase tracking-[0.08em] text-white/60 outline-none transition focus:border-white/30"
-                      >
-                        <option value="NOT_STARTED">
-                          Not started
-                        </option>
+                    {milestone.description ? (
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">
+                        {milestone.description}
+                      </p>
+                    ) : null}
 
-                        <option value="IN_PROGRESS">
-                          In progress
-                        </option>
-
-                        <option value="COMPLETED">
-                          Completed
-                        </option>
-                      </select>
-
-                      <button
-                        type="submit"
-                        className="rounded-xl border border-white/10 px-3 py-2 text-xs font-medium text-white/60 transition hover:border-white/20 hover:text-white"
-                      >
-                        Save
-                      </button>
-                    </form>
+                    <p className="mt-2 text-xs text-white/30">
+                      {milestone.due_date
+                        ? `Due ${formatDate(
+                            milestone.due_date
+                          )}`
+                        : "No due date"}
+                    </p>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })
+          ) : (
+            <div className="px-6 py-10 sm:px-8">
+              <p className="text-sm text-white/40">
+                No milestones have been published for this
+                project yet.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Updates */}
+        <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
+          <div className="border-b border-white/10 px-6 py-5 sm:px-8">
+            <h2 className="font-medium">
+              Project Updates
+            </h2>
+
+            <p className="mt-1 text-xs text-white/35">
+              Latest updates from Drylake
+            </p>
+          </div>
+
+          {updatesError ? (
+            <div className="px-6 py-8 sm:px-8">
+              <p className="text-sm text-red-400">
+                Unable to load project updates.
+              </p>
+            </div>
+          ) : updateList.length > 0 ? (
+            updateList.map((update) => (
+              <article
+                key={update.id}
+                className="border-b border-white/10 px-6 py-6 last:border-b-0 sm:px-8"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="font-medium">
+                    {update.title}
+                  </h3>
+
+                  <span className="text-xs text-white/30">
+                    {formatDateTime(
+                      update.published_at
+                    )}
+                  </span>
+                </div>
+
+                <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-white/50">
+                  {update.body}
+                </p>
+              </article>
+            ))
+          ) : (
+            <div className="px-6 py-10 sm:px-8">
+              <p className="text-sm text-white/40">
+                No project updates have been published yet.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Documents */}
+        <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
+          <div className="flex flex-col gap-4 border-b border-white/10 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <div>
+              <h2 className="font-medium">
+                Documents
+              </h2>
+
+              <p className="mt-1 text-xs text-white/35">
+                Secure files shared with your organisation
+              </p>
+            </div>
+
+            {documentList.length > 0 ? (
+              <div className="flex items-center gap-2 text-xs text-white/30">
+                <ShieldCheck
+                  size={14}
+                  className="text-[#f26a2e]"
+                />
+
+                Private access
+              </div>
+            ) : null}
+          </div>
+
+          {documentsError ? (
+            <div className="px-6 py-8 sm:px-8">
+              <p className="text-sm text-red-400">
+                Unable to load project documents.
+              </p>
+            </div>
+          ) : documentList.length > 0 ? (
+            <div>
+              {documentList.map((document) => (
+                <div
+                  key={document.id}
+                  className="flex flex-col gap-5 border-b border-white/10 px-6 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-8"
+                >
+                  <div className="flex min-w-0 items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
+                      <FileText
+                        size={18}
+                        className="text-[#f26a2e]"
+                      />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">
+                        {document.name}
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/30">
+                        <span>
+                          {formatFileType(
+                            document.mime_type
+                          )}
+                        </span>
+
+                        <span>
+                          {formatFileSize(
+                            document.size_bytes
+                          )}
+                        </span>
+
+                        <span>
+                          Shared{" "}
+                          {formatDateTime(
+                            document.created_at
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <a
+                    href={`/api/client/documents/${document.id}/download`}
+                    className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-white/70 transition hover:border-white/20 hover:bg-white/[0.03] hover:text-white"
+                  >
+                    <ArrowDownToLine size={15} />
+                    Download
+                  </a>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="px-6 py-10 sm:px-8">
-              <Circle
+              <FileText
                 size={22}
-                className="text-[#f26a2e]"
+                className="text-white/20"
               />
 
-              <h3 className="mt-5 text-lg font-medium">
-                No milestones yet
+              <h3 className="mt-5 text-base font-medium">
+                No documents available
               </h3>
 
               <p className="mt-2 max-w-lg text-sm leading-6 text-white/40">
-                Add milestones to break the project into measurable
-                delivery checkpoints. Project progress will be
-                calculated automatically as milestones are completed.
+                Documents shared by Drylake for this project
+                will appear here.
               </p>
-
-              <Link
-                href={`/admin/projects/${project.id}/milestones/new`}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/70 transition hover:border-white/20 hover:text-white"
-              >
-                <Plus size={15} />
-                Add first milestone
-              </Link>
             </div>
           )}
         </section>
