@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Building2,
+  CreditCard,
   FolderKanban,
   ShieldCheck,
 } from "lucide-react";
@@ -231,6 +232,10 @@ export default async function ClientDashboardPage() {
     }
   }
 
+  // ---------------------------------------------------------
+  // Calculate project progress
+  // ---------------------------------------------------------
+
   function getProjectProgress(
     projectId: string,
     progressOverride: number | null
@@ -255,6 +260,10 @@ export default async function ClientDashboardPage() {
       (completed / projectMilestones.length) * 100
     );
   }
+
+  // ---------------------------------------------------------
+  // Render dashboard
+  // ---------------------------------------------------------
 
   return (
     <main className="min-h-screen bg-[#080808] text-white">
@@ -291,13 +300,14 @@ export default async function ClientDashboardPage() {
           </h1>
 
           <p className="mt-4 max-w-xl text-sm leading-6 text-white/45">
-            View your Drylake projects, delivery progress and latest
+            View your Drylake projects, delivery progress, billing and latest
             project information.
           </p>
         </section>
 
         {/* Summary */}
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Projects */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
             <FolderKanban
               size={20}
@@ -313,6 +323,7 @@ export default async function ClientDashboardPage() {
             </p>
           </div>
 
+          {/* Organisation */}
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
             <Building2
               size={20}
@@ -327,6 +338,32 @@ export default async function ClientDashboardPage() {
               Organisation status
             </p>
           </div>
+
+          {/* Billing */}
+          <Link
+            href="/client/billing"
+            className="group rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6 transition-colors hover:border-white/20 hover:bg-white/[0.04]"
+          >
+            <div className="flex items-start justify-between">
+              <CreditCard
+                size={20}
+                className="text-[#f26a2e]"
+              />
+
+              <ArrowRight
+                size={17}
+                className="text-white/25 transition-transform group-hover:translate-x-1 group-hover:text-white"
+              />
+            </div>
+
+            <p className="mt-5 text-lg font-medium">
+              Billing
+            </p>
+
+            <p className="mt-1 text-sm text-white/40">
+              View invoices
+            </p>
+          </Link>
         </section>
 
         {/* Projects */}
