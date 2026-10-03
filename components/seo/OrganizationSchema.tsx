@@ -1,18 +1,23 @@
 export default function OrganizationSchema() {
   const schema = {
     "@context": "https://schema.org",
+
     "@type": "Organization",
+
     "@id": "https://drylake.com.au/#organization",
 
     name: "Drylake Pty Ltd",
+
     alternateName: "Drylake",
 
     url: "https://drylake.com.au",
 
-    slogan: "Tomorrow Starts Here.",
-
     description:
-      "Drylake builds practical software, automation and technical systems for businesses in Perth and across Australia.",
+      "Drylake builds operational software, automation and connected systems for Australian businesses held back by manual processes and disconnected tools.",
+
+    email: "hello@drylake.com.au",
+
+    telephone: "+61 420 565 457",
 
     identifier: {
       "@type": "PropertyValue",
@@ -23,7 +28,7 @@ export default function OrganizationSchema() {
     address: {
       "@type": "PostalAddress",
       addressLocality: "Perth",
-      addressRegion: "WA",
+      addressRegion: "Western Australia",
       addressCountry: "AU",
     },
 
@@ -33,10 +38,14 @@ export default function OrganizationSchema() {
     },
 
     knowsAbout: [
+      "Operational Software",
       "Custom Software Development",
       "Business Automation",
       "Systems Integration",
-      "Technical Systems",
+      "Workflow Automation",
+      "Applied Artificial Intelligence",
+      "Web Application Development",
+      "Business Systems",
     ],
   };
 
