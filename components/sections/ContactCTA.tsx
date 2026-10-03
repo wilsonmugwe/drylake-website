@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  Mail,
+  Phone,
+} from "lucide-react";
+
 import Container from "@/components/ui/Container";
 
 export default function ContactCTA() {
@@ -22,11 +27,12 @@ export default function ContactCTA() {
           Start a Conversation
         </p>
 
-        <div className="mt-4 sm:mt-6 lg:flex lg:items-end lg:justify-between lg:gap-12">
+        <div className="mt-4 grid gap-7 sm:mt-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-end lg:gap-16">
           <div>
             <h2 className="max-w-5xl text-[2.7rem] font-semibold leading-[0.88] tracking-[-0.06em] sm:text-[clamp(4rem,8vw,8rem)] sm:leading-[0.86] sm:tracking-[-0.07em]">
               Tell us what&apos;s
               <br />
+
               <span className="text-white/30">
                 slowing you down.
               </span>
@@ -36,19 +42,80 @@ export default function ContactCTA() {
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>
+
+            <Link
+              href="/contact"
+              className="button-light group mt-6 flex w-full items-center justify-between rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold transition-transform hover:-translate-y-0.5 sm:mt-8 sm:w-fit sm:min-w-[230px] sm:px-6 sm:py-4"
+            >
+              <span>Start a conversation</span>
+
+              <ArrowUpRight
+                size={18}
+                className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+              />
+            </Link>
           </div>
 
-          <Link
-            href="/contact"
-            className="button-light group mt-6 flex w-full items-center justify-between rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold transition-transform hover:-translate-y-0.5 sm:mt-8 sm:w-fit sm:min-w-[230px] sm:px-6 sm:py-4 lg:mt-0"
-          >
-            <span>Start a conversation</span>
+          {/* Direct contact */}
+          <div className="border-t border-white/10 pt-5 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <p className="tech-label text-[#f26a2e]">
+              TALK TO A PERSON, NOT A SALES QUEUE.
+            </p>
 
-            <ArrowUpRight
-              size={18}
-              className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-            />
-          </Link>
+            <a
+              href="tel:+61420565457"
+              className="group mt-4 flex items-center justify-between border-b border-white/10 pb-3"
+            >
+              <div className="flex items-center gap-3">
+                <Phone
+                  size={15}
+                  className="text-white/30"
+                />
+
+                <div>
+                  <span className="block text-[0.6rem] uppercase tracking-[0.12em] text-white/25">
+                    Call
+                  </span>
+
+                  <span className="mt-0.5 block text-sm font-medium text-white/70">
+                    +61 420 565 457
+                  </span>
+                </div>
+              </div>
+
+              <ArrowUpRight
+                size={14}
+                className="text-white/20 transition-colors group-hover:text-white"
+              />
+            </a>
+
+            <a
+              href="mailto:hello@drylake.com.au"
+              className="group flex items-center justify-between py-3"
+            >
+              <div className="flex items-center gap-3">
+                <Mail
+                  size={15}
+                  className="text-white/30"
+                />
+
+                <div>
+                  <span className="block text-[0.6rem] uppercase tracking-[0.12em] text-white/25">
+                    Email
+                  </span>
+
+                  <span className="mt-0.5 block text-sm font-medium text-white/70">
+                    hello@drylake.com.au
+                  </span>
+                </div>
+              </div>
+
+              <ArrowUpRight
+                size={14}
+                className="text-white/20 transition-colors group-hover:text-white"
+              />
+            </a>
+          </div>
         </div>
       </Container>
     </section>
