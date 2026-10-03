@@ -181,7 +181,7 @@ export default async function ClientDashboardPage() {
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Link
                     href="/"
-                    className="group inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3.5 text-sm font-medium text-black transition duration-300 hover:bg-white/90"
+                    className="group inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-black transition duration-300 hover:bg-neutral-200"
                   >
                     Return to Drylake
 
