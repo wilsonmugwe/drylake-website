@@ -1,367 +1,478 @@
 "use client";
-
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
 import {
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-} from "motion/react";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
-import type { MouseEvent } from "react";
+  ArrowDown,
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+} from "lucide-react";
 import Container from "@/components/ui/Container";
-
+const inputs = [
+  "Email",
+  "Forms",
+  "Spreadsheets",
+  "Existing software",
+];
+const outputs = [
+  "CRM",
+  "Finance",
+  "Reporting",
+  "Automation",
+];
 export default function Hero() {
   const reduceMotion = useReducedMotion();
-
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const x = useSpring(mouseX, {
-    stiffness: 45,
-    damping: 20,
-  });
-
-  const y = useSpring(mouseY, {
-    stiffness: 45,
-    damping: 20,
-  });
-
-  function handleMouseMove(event: MouseEvent<HTMLElement>) {
-    if (reduceMotion) return;
-
-    const rect = event.currentTarget.getBoundingClientRect();
-
-    mouseX.set(
-      (event.clientX - rect.left - rect.width / 2) * 0.025
-    );
-
-    mouseY.set(
-      (event.clientY - rect.top - rect.height / 2) * 0.025
-    );
-  }
-
   return (
-    <section
-      onMouseMove={handleMouseMove}
-      className="hero-large-grid relative overflow-hidden bg-black text-white"
-    >
+    <section className="hero-large-grid relative min-h-[100svh] overflow-hidden bg-black text-white">
       {/* Background depth */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_42%,rgba(255,255,255,0.055),transparent_30%)]" />
-
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.015)_45%,transparent_60%)]" />
-
-      <div className="pointer-events-none absolute bottom-0 right-[30%] top-0 hidden w-px bg-white/[0.045] xl:block" />
-
-      {/* Technical coordinate */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_42%,rgba(242,106,46,0.08),transparent_28%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.012)_45%,transparent_65%)]" />
+      {/* Architectural divider */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-5 top-[118px] hidden items-center gap-3 sm:right-8 sm:flex lg:right-12 lg:top-[138px] xl:right-16"
+        className="pointer-events-none absolute bottom-0 right-[42%] top-0 hidden w-px bg-white/[0.06] xl:block"
+      />
+      <Container
+        className="
+          relative z-10
+          flex min-h-[100svh] flex-col
+          pb-10 pt-[122px]
+          sm:pb-12 sm:pt-[140px]
+          lg:justify-center lg:pb-16 lg:pt-[150px]
+        "
       >
-        <span className="tech-label text-white/20">
-          31.95° S / 115.86° E
-        </span>
-
-        <span className="h-1 w-1 rounded-full bg-[#f26a2e]" />
-      </div>
-
-      {/* Desktop system visual */}
-      <motion.div
-        style={{ x, y }}
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-13rem] top-[13%] hidden h-[48rem] w-[48rem] lg:block"
-      >
-        <span className="tech-label absolute left-[8%] top-[14%] text-white/25">
-          SYS / 001
-        </span>
-
-        <span className="tech-label absolute bottom-[13%] left-[20%] text-white/20">
-          PERTH / WA
-        </span>
-
-        <span className="tech-label absolute right-[18%] top-[25%] text-white/20">
-          ACTIVE / SYSTEM
-        </span>
-
-        {/* Crosshair */}
-        <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.07]" />
-        <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.07]" />
-
-        <div className="absolute left-1/2 top-[7%] h-3 w-px -translate-x-1/2 bg-white/30" />
-        <div className="absolute bottom-[7%] left-1/2 h-3 w-px -translate-x-1/2 bg-white/30" />
-        <div className="absolute left-[7%] top-1/2 h-px w-3 -translate-y-1/2 bg-white/30" />
-        <div className="absolute right-[7%] top-1/2 h-px w-3 -translate-y-1/2 bg-white/30" />
-
-        {/* Rings */}
-        <div className="absolute inset-[2%] rounded-full border border-white/[0.12]" />
-        <div className="absolute inset-[13%] rounded-full border border-white/[0.14]" />
-        <div className="absolute inset-[27%] rounded-full border border-white/[0.16]" />
-        <div className="absolute inset-[39%] rounded-full border border-white/[0.2]" />
-
-        {/* Outer orbit */}
-        <motion.div
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  rotate: 360,
-                }
-          }
-          transition={{
-            duration: 55,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute inset-[7%] rounded-full border border-dashed border-white/20"
-        >
-          <div className="signal-dot absolute left-1/2 top-[-5px] h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
-
-          <div className="absolute bottom-[13%] right-[13%] h-1.5 w-1.5 rounded-full bg-white/50" />
-        </motion.div>
-
-        {/* Inner orbit */}
-        <motion.div
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  rotate: -360,
-                }
-          }
-          transition={{
-            duration: 38,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute inset-[21%] rounded-full border border-dashed border-white/15"
-        >
-          <div className="absolute right-[10%] top-[18%] h-2 w-2 rounded-full bg-white/60" />
-        </motion.div>
-
-        {/* Connections */}
-        <div className="absolute left-[22%] top-[48%] h-px w-[20%] bg-white/20" />
-        <div className="absolute right-[22%] top-[48%] h-px w-[20%] bg-white/20" />
-
-        <div className="absolute left-[19%] top-[calc(48%-4px)] h-2 w-2 rounded-full border border-white/40 bg-black" />
-        <div className="absolute right-[19%] top-[calc(48%-4px)] h-2 w-2 rounded-full border border-white/40 bg-black" />
-
-        <div className="absolute left-1/2 top-[27%] h-[14%] w-px -translate-x-1/2 bg-white/15" />
-        <div className="absolute bottom-[27%] left-1/2 h-[14%] w-px -translate-x-1/2 bg-white/15" />
-
-        {/* Core */}
-        <div className="orange-glow absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black">
+        <div className="grid flex-1 items-center gap-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.72fr)] lg:gap-14 xl:gap-20">
+          {/* =====================================================
+              LEFT
+          ===================================================== */}
+          <div className="relative z-10">
+            <motion.div
+              initial={
+                reduceMotion
+                  ? undefined
+                  : {
+                      opacity: 0,
+                      y: 8,
+                    }
+              }
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.45,
+              }}
+              className="section-label mb-5 flex items-center gap-3 text-white/45 sm:mb-7"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+              <span>Perth, Western Australia</span>
+              <span className="hidden text-white/20 sm:inline">
+                /
+              </span>
+              <span className="hidden sm:inline">
+                Software Engineering
+              </span>
+            </motion.div>
+            {/* Main headline */}
+            <motion.h1
+              initial={
+                reduceMotion
+                  ? undefined
+                  : {
+                      opacity: 0,
+                      y: 26,
+                    }
+              }
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.75,
+                delay: 0.08,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="
+                max-w-[900px]
+                text-[clamp(3.35rem,14vw,5.2rem)]
+                font-semibold
+                leading-[0.84]
+                tracking-[-0.075em]
+                text-white
+                sm:text-[clamp(4.8rem,10vw,7.5rem)]
+                lg:text-[clamp(5.3rem,7.6vw,8.2rem)]
+              "
+            >
+              Your business
+              <br />
+              shouldn&apos;t run
+              <br />
+              <span className="text-white/38">
+                on workarounds.
+              </span>
+            </motion.h1>
+            {/* Supporting copy */}
+            <motion.div
+              initial={
+                reduceMotion
+                  ? undefined
+                  : {
+                      opacity: 0,
+                      y: 14,
+                    }
+              }
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                duration: 0.6,
+                delay: 0.24,
+              }}
+              className="mt-6 sm:mt-8"
+            >
+              <p className="max-w-[39rem] text-[0.98rem] leading-[1.65] text-white/65 sm:text-lg sm:leading-7">
+                Drylake builds practical software and automation
+                for Australian businesses that have outgrown
+                manual processes, disconnected systems and
+                everyday workarounds.
+              </p>
+              <p className="mt-3 max-w-[36rem] text-sm leading-6 text-white/35 sm:text-[0.95rem]">
+                From repetitive admin and disconnected tools to
+                software that fits the way your business actually
+                works.
+              </p>
+              {/* CTAs */}
+              <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:gap-3">
+                <Link
+                  href="/contact"
+                  className="
+                    button-light
+                    group
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-full
+                    border
+                    border-white
+                    bg-white
+                    px-6
+                    py-3.5
+                    text-sm
+                    font-semibold
+                    transition-transform
+                    hover:-translate-y-0.5
+                    sm:px-7
+                    sm:py-4
+                  "
+                >
+                  <span>Start a conversation</span>
+                  <ArrowUpRight
+                    size={16}
+                    className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
+                </Link>
+                <Link
+                  href="#approach"
+                  className="
+                    group
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-full
+                    border
+                    border-white/25
+                    bg-transparent
+                    px-6
+                    py-3.5
+                    text-sm
+                    font-semibold
+                    text-white
+                    transition-colors
+                    hover:border-white/55
+                    sm:px-7
+                    sm:py-4
+                  "
+                >
+                  <span>See how we work</span>
+                  <ArrowDown
+                    size={16}
+                    className="transition-transform group-hover:translate-y-0.5"
+                  />
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+          {/* =====================================================
+              DESKTOP SYSTEM VISUAL
+          ===================================================== */}
           <motion.div
-            animate={
+            initial={
               reduceMotion
                 ? undefined
                 : {
-                    scale: [1, 1.25, 1],
+                    opacity: 0,
+                    x: 24,
                   }
             }
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
+            animate={{
+              opacity: 1,
+              x: 0,
             }}
-            className="h-2.5 w-2.5 rounded-full bg-[#f26a2e]"
-          />
+            transition={{
+              duration: 0.8,
+              delay: 0.28,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="relative hidden lg:block"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <span className="tech-label text-white/30">
+                Illustrative system
+              </span>
+              <span className="flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.14em] text-white/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+                Connected
+              </span>
+            </div>
+            <div className="relative border border-white/[0.12] bg-black/55 p-5 backdrop-blur-sm xl:p-6">
+              {/* Corner markers */}
+              <div className="absolute left-0 top-0 h-4 w-px bg-white/35" />
+              <div className="absolute left-0 top-0 h-px w-4 bg-white/35" />
+              <div className="absolute bottom-0 right-0 h-4 w-px bg-white/35" />
+              <div className="absolute bottom-0 right-0 h-px w-4 bg-white/35" />
+              {/* Current state */}
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="tech-label text-white/30">
+                    Business today
+                  </span>
+                  <span className="tech-label text-[#f26a2e]/70">
+                    Fragmented
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {inputs.map((item, index) => (
+                    <motion.div
+                      key={item}
+                      initial={
+                        reduceMotion
+                          ? undefined
+                          : {
+                              opacity: 0,
+                              y: 8,
+                            }
+                      }
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        delay: 0.42 + index * 0.06,
+                      }}
+                      className="border border-white/[0.1] bg-white/[0.025] px-3 py-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                        <span className="text-xs text-white/55">
+                          {item}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+              {/* Direction */}
+              <div className="relative flex h-16 items-center justify-center">
+                <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/[0.13]" />
+                <motion.div
+                  animate={
+                    reduceMotion
+                      ? undefined
+                      : {
+                          y: [-5, 5, -5],
+                        }
+                  }
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-black"
+                >
+                  <ArrowDown
+                    size={12}
+                    className="text-[#f26a2e]"
+                  />
+                </motion.div>
+              </div>
+              {/* Connected system */}
+              <div className="border border-[#f26a2e]/45 bg-[#f26a2e]/[0.055]">
+                <div className="flex items-center justify-between border-b border-[#f26a2e]/20 px-4 py-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="orange-glow h-2 w-2 rounded-full bg-[#f26a2e]" />
+                    <span className="text-sm font-semibold text-white">
+                      Operations System
+                    </span>
+                  </div>
+                  <span className="tech-label text-white/25">
+                    Drylake
+                  </span>
+                </div>
+                <div className="grid grid-cols-2">
+                  {outputs.map((item, index) => (
+                    <div
+                      key={item}
+                      className={`
+                        flex items-center gap-2.5 px-4 py-3
+                        ${
+                          index < 2
+                            ? "border-b border-white/[0.07]"
+                            : ""
+                        }
+                        ${
+                          index % 2 === 0
+                            ? "border-r border-white/[0.07]"
+                            : ""
+                        }
+                      `}
+                    >
+                      <Check
+                        size={12}
+                        strokeWidth={2}
+                        className="text-[#f26a2e]"
+                      />
+                      <span className="text-xs text-white/55">
+                        {item}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Outcome */}
+              <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
+                <span className="tech-label text-white/25">
+                  One connected workflow
+                </span>
+                <ArrowRight
+                  size={14}
+                  className="text-white/30"
+                />
+              </div>
+            </div>
+            <p className="mt-3 max-w-sm text-[0.65rem] leading-5 text-white/25">
+              Conceptual example only. Every system is designed
+              around the business, workflow and existing
+              technology.
+            </p>
+          </motion.div>
         </div>
-
-        <span className="tech-label absolute left-[55%] top-[54%] text-white/35">
-          DRYLAKE / CORE
-        </span>
-
-        {/* Nodes */}
-        <div className="absolute left-[29%] top-[27%] flex items-center gap-2">
-          <span className="h-1 w-1 rounded-full bg-white/50" />
-
-          <span className="tech-label text-[0.5rem] text-white/25">
-            NODE 01
-          </span>
-        </div>
-
-        <div className="absolute bottom-[25%] right-[27%] flex items-center gap-2">
-          <span className="h-1 w-1 rounded-full bg-[#f26a2e]" />
-
-          <span className="tech-label text-[0.5rem] text-white/25">
-            SIGNAL
-          </span>
-        </div>
-      </motion.div>
-
-      {/* Mobile system visual */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-16 -right-20 h-[220px] w-[220px] sm:-bottom-20 sm:-right-20 sm:h-[290px] sm:w-[290px] lg:hidden"
-      >
-        <div className="absolute inset-0 rounded-full border border-white/[0.08]" />
-        <div className="absolute inset-[32px] rounded-full border border-white/[0.11] sm:inset-10" />
-        <div className="absolute inset-[64px] rounded-full border border-white/[0.16] sm:inset-[78px]" />
-
-        <div className="absolute left-1/2 top-0 h-full w-px bg-white/[0.05]" />
-        <div className="absolute left-0 top-1/2 h-px w-full bg-white/[0.05]" />
-
+        {/* =====================================================
+            MOBILE SYSTEM VISUAL
+        ===================================================== */}
         <motion.div
-          animate={
+          initial={
             reduceMotion
               ? undefined
               : {
-                  rotate: 360,
+                  opacity: 0,
+                  y: 12,
                 }
           }
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "linear",
+          animate={{
+            opacity: 1,
+            y: 0,
           }}
-          className="absolute inset-5 rounded-full border border-dashed border-white/[0.12]"
+          transition={{
+            duration: 0.6,
+            delay: 0.35,
+          }}
+          className="mt-10 border-y border-white/[0.09] py-5 lg:hidden"
         >
-          <div className="signal-dot absolute left-1/2 top-[-4px] h-2 w-2 -translate-x-1/2 rounded-full bg-[#f26a2e]" />
-        </motion.div>
-
-        <div className="absolute left-1/2 top-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black">
-          <div className="h-2 w-2 rounded-full bg-[#f26a2e]" />
-        </div>
-
-        <span className="tech-label absolute bottom-5 left-6 text-[0.42rem] text-white/20">
-          SYS / 001
-        </span>
-      </div>
-
-      {/* Hero content */}
-      <Container
-        className="
-          relative z-10 flex flex-col justify-center
-          pb-16 pt-[124px]
-          sm:min-h-[720px] sm:pb-20 sm:pt-[145px]
-          lg:min-h-[100svh] lg:pb-20 lg:pt-36
-        "
-      >
-        <div className="max-w-5xl">
-          <motion.p
-            initial={{
-              opacity: 0,
-              y: 8,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.45,
-            }}
-            className="section-label mb-3 flex items-center gap-2.5 text-white/45 sm:mb-5 sm:gap-3"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
-            Tomorrow Starts Here.
-          </motion.p>
-
-          {/* Primary page heading */}
-          <motion.h1
-            initial={{
-              opacity: 0,
-              y: 24,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.75,
-              delay: 0.08,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="
-              max-w-5xl
-              text-[clamp(3rem,13.5vw,4.8rem)]
-              font-semibold
-              leading-[0.87]
-              tracking-[-0.07em]
-              text-white
-              sm:text-[clamp(4rem,10vw,7rem)]
-              lg:text-[clamp(5rem,9vw,9rem)]
-            "
-          >
-            The boring part
-            <br />
-
-            <span className="text-white/38">
-              is the hard part.
+          <div className="mb-4 flex items-center justify-between">
+            <span className="tech-label text-white/30">
+              From workaround
             </span>
-          </motion.h1>
-
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 14,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.6,
-              delay: 0.25,
-            }}
-            className="mt-4 sm:mt-6 lg:mt-7"
-          >
-            <p className="max-w-[34rem] text-[0.9rem] leading-[1.55] text-white/60 sm:text-lg sm:leading-7">
-              Drylake builds software and handles the technical work that gets
-              in the way of the work you actually do.
-            </p>
-
-            <div className="mt-4 flex max-w-md flex-col gap-2 sm:mt-6 sm:flex-row sm:gap-3 lg:mt-7">
-              <Link
-                href="/contact"
-                className="button-light group flex items-center justify-center gap-2 rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold sm:px-6 sm:py-4"
-              >
-                <span>Start a Project</span>
-
-                <ArrowUpRight
-                  size={16}
-                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                />
-              </Link>
-
-              <Link
-                href="#solutions"
-                className="group flex items-center justify-center gap-2 rounded-full border border-white/35 bg-transparent px-5 py-3 text-sm font-semibold text-white transition-colors hover:border-white sm:px-6 sm:py-4"
-              >
-                <span className="text-white">
-                  See what we do
-                </span>
-
-                <ArrowDown
-                  size={16}
-                  className="text-white transition-transform group-hover:translate-y-0.5"
-                />
-              </Link>
+            <ArrowRight
+              size={13}
+              className="text-[#f26a2e]"
+            />
+            <span className="tech-label text-white/50">
+              To workflow
+            </span>
+          </div>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div className="space-y-1.5">
+              <div className="border border-white/[0.08] px-3 py-2 text-[0.68rem] text-white/40">
+                Email
+              </div>
+              <div className="border border-white/[0.08] px-3 py-2 text-[0.68rem] text-white/40">
+                Spreadsheets
+              </div>
+              <div className="border border-white/[0.08] px-3 py-2 text-[0.68rem] text-white/40">
+                Forms
+              </div>
             </div>
-          </motion.div>
-        </div>
-
-        {/* Bottom details */}
-        <div className="absolute bottom-7 hidden items-center gap-3 sm:flex lg:bottom-8">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
-          <p className="text-xs uppercase tracking-[0.17em] text-white/35">
-            Innovation · Integrity · Impact
-          </p>
-        </div>
-
-        <div className="absolute bottom-8 right-5 hidden items-center gap-3 sm:right-8 lg:right-12 xl:right-16 xl:flex">
-          <span className="tech-label text-white/25">
-            SYSTEM
-          </span>
-
-          <div className="h-px w-12 bg-white/15" />
-
-          <span className="tech-label flex items-center gap-2 text-white/35">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-            ACTIVE
-          </span>
-        </div>
+            <ArrowRight
+              size={14}
+              className="text-white/25"
+            />
+            <div className="border border-[#f26a2e]/40 bg-[#f26a2e]/[0.055] px-3 py-4">
+              <span className="mb-1 block text-[0.65rem] uppercase tracking-[0.12em] text-[#f26a2e]">
+                Connected
+              </span>
+              <span className="text-sm font-semibold text-white">
+                Operations system
+              </span>
+            </div>
+          </div>
+        </motion.div>
+        {/* =====================================================
+            TRUST STRIP
+        ===================================================== */}
+        <motion.div
+          initial={
+            reduceMotion
+              ? undefined
+              : {
+                  opacity: 0,
+                }
+          }
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            duration: 0.6,
+            delay: 0.55,
+          }}
+          className="
+            mt-8
+            flex
+            flex-wrap
+            items-center
+            gap-x-4
+            gap-y-2
+            border-t
+            border-white/[0.08]
+            pt-5
+            text-[0.62rem]
+            uppercase
+            tracking-[0.14em]
+            text-white/30
+            sm:gap-x-5
+            lg:mt-12
+          "
+        >
+          <span>Australian company</span>
+          <span className="text-white/12">/</span>
+          <span>Founder-led</span>
+          <span className="text-white/12">/</span>
+          <span>Perth, WA</span>
+          <span className="text-white/12">/</span>
+          <span>ABN 70 702 662 557</span>
+        </motion.div>
       </Container>
     </section>
   );
