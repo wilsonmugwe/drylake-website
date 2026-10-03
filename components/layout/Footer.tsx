@@ -9,13 +9,14 @@ const groups = [
       { label: "Custom Software", href: "/solutions" },
       { label: "Automation", href: "/solutions" },
       { label: "Systems Integration", href: "/solutions" },
-      { label: "Technical Setup", href: "/solutions" },
+      { label: "Web & Digital", href: "/solutions" },
     ],
   },
   {
-    title: "Company",
+    title: "Drylake",
     links: [
       { label: "About", href: "/about" },
+      { label: "How We Work", href: "/#approach" },
       { label: "Contact", href: "/contact" },
     ],
   },
@@ -31,7 +32,7 @@ export default function Footer() {
       {/* Background grid */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-40"
+        className="pointer-events-none absolute inset-0 opacity-35"
         style={{
           backgroundImage: `
             linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
@@ -41,19 +42,9 @@ export default function Footer() {
         }}
       />
 
-      {/* Decorative rings */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-32 -right-24 hidden h-80 w-80 lg:block"
-      >
-        <div className="absolute inset-0 rounded-full border border-white/[0.05]" />
-        <div className="absolute inset-12 rounded-full border border-white/[0.06]" />
-        <div className="absolute inset-24 rounded-full border border-white/[0.08]" />
-      </div>
-
       <Container className="relative z-10">
         {/* Main footer */}
-        <div className="grid gap-10 py-10 sm:py-12 lg:grid-cols-[1.25fr_1.75fr] lg:gap-16 lg:py-14">
+        <div className="grid gap-12 py-12 lg:grid-cols-[1.2fr_1.8fr] lg:gap-20 lg:py-16">
           {/* Brand */}
           <div>
             <Link
@@ -79,11 +70,17 @@ export default function Footer() {
               />
             </Link>
 
-            <p className="mt-1 text-sm font-semibold text-white">
-              Tomorrow Starts Here.
+            <p className="mt-3 max-w-sm text-lg font-medium leading-7 tracking-[-0.025em] text-white/80">
+              Practical software for businesses that have outgrown
+              workarounds.
             </p>
 
-            <div className="mt-3 flex items-center gap-2">
+            <p className="mt-3 max-w-sm text-sm leading-6 text-white/40">
+              Custom software, automation and connected systems for Australian
+              businesses.
+            </p>
+
+            <div className="mt-5 flex items-center gap-2">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#f26a2e]" />
 
               <p className="text-sm text-white/45">
@@ -91,17 +88,17 @@ export default function Footer() {
               </p>
             </div>
 
-            <div className="mt-5 space-y-1 text-xs leading-5 text-white/35">
+            <div className="mt-5 space-y-1 text-xs leading-5 text-white/30">
               <p>Drylake Pty Ltd</p>
               <p>ABN 70 702 662 557</p>
             </div>
           </div>
 
           {/* Navigation */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:gap-x-12">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-9 sm:grid-cols-3 lg:gap-x-12">
             {groups.map((group) => (
               <div key={group.title}>
-                <p className="section-label text-white/35">
+                <p className="section-label text-white/30">
                   {group.title}
                 </p>
 
@@ -113,7 +110,7 @@ export default function Footer() {
                     <Link
                       key={link.label}
                       href={link.href}
-                      className="w-fit text-sm text-white/70 transition-colors hover:text-white"
+                      className="w-fit text-sm text-white/60 transition-colors hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -124,8 +121,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="flex flex-col gap-3 border-t border-white/10 py-5 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+        {/* Bottom */}
+        <div className="flex flex-col gap-4 border-t border-white/10 py-6 text-xs text-white/30 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} Drylake Pty Ltd. All rights reserved.
           </p>
@@ -134,7 +131,7 @@ export default function Footer() {
             <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
             <p>
-              Innovation · Integrity · Impact
+              Founder-led · Perth, Western Australia
             </p>
           </div>
         </div>
