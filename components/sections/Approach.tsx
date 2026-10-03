@@ -1,36 +1,47 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import {
+  AnimatePresence,
+  motion,
+} from "motion/react";
+import {
+  ArrowRight,
+  Check,
+} from "lucide-react";
 import { useState } from "react";
+
 import Container from "@/components/ui/Container";
 
 const stages = [
   {
     title: "Understand",
-    text: "We learn what is happening today, who is involved, where time is being lost and what actually needs to improve.",
+    text: "We learn how the business works today, where time is being lost and what actually needs to improve.",
     visual: ["BUSINESS", "PROBLEM", "GOAL"],
   },
   {
     title: "Design",
-    text: "We work out the simplest useful solution and how it should fit with the systems, people and processes already in the business.",
+    text: "We work out the simplest useful solution and how it should fit with the systems and processes already in the business.",
     visual: ["PROBLEM", "DESIGN", "PLAN"],
   },
   {
     title: "Build",
-    text: "We develop the software, automation or integration in manageable stages, keeping the real business workflow at the centre.",
+    text: "We develop the software, automation or integration in manageable stages around the real business workflow.",
     visual: ["PLAN", "BUILD", "SYSTEM"],
   },
   {
     title: "Launch",
-    text: "We put the solution into the real environment, connect what needs connecting and make sure the people using it can rely on it.",
+    text: "We put the solution into the real environment, connect what matters and make sure the people using it can rely on it.",
     visual: ["SYSTEM", "LAUNCH", "USE"],
   },
-  {
-    title: "Improve",
-    text: "Once the system is being used, we learn from reality, remove friction and evolve it as the business changes.",
-    visual: ["USE", "LEARN", "IMPROVE"],
-  },
+];
+
+const productionDetails = [
+  "Authentication",
+  "Permissions",
+  "Integrations",
+  "Data validation",
+  "Monitoring",
+  "Backups & recovery",
 ];
 
 export default function Approach() {
@@ -39,16 +50,19 @@ export default function Approach() {
   return (
     <section
       id="approach"
-      className="relative overflow-hidden bg-[#f2f0e9] py-16 text-black sm:py-20 lg:py-28"
+      className="relative overflow-hidden bg-[#f2f0e9] py-10 text-black sm:py-20 lg:py-28"
     >
       <Container className="relative z-10">
-        <div className="grid gap-6 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
+        {/* =====================================================
+            HEADER
+            ===================================================== */}
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
           <div>
             <p className="section-label text-black/45">
-              07 / How We Work
+              04 / How We Work
             </p>
 
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-2.5 flex items-center gap-2 sm:mt-4">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
               <span className="tech-label text-black/30">
@@ -58,38 +72,42 @@ export default function Approach() {
           </div>
 
           <div>
-            <h2 className="max-w-4xl text-[clamp(2.7rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
+            <h2 className="max-w-4xl text-[2.4rem] font-semibold leading-[0.93] tracking-[-0.055em] sm:text-[clamp(2.7rem,6vw,6rem)] sm:leading-[0.92] sm:tracking-[-0.065em]">
               Understand first.
               <br />
-              <span className="text-black/30">Build second.</span>
+
+              <span className="text-black/30">
+                Build second.
+              </span>
             </h2>
 
-            <p className="mt-5 max-w-2xl text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
-              You don&apos;t need to arrive with a technical specification. We
-              start by understanding the business problem and work forward from
-              there.
+            <p className="mt-3 max-w-2xl text-sm leading-5 text-black/60 sm:mt-5 sm:text-base sm:leading-7">
+              No technical specification required. We start with the business
+              problem and work forward from there.
             </p>
           </div>
         </div>
 
-        {/* Desktop */}
+        {/* =====================================================
+            DESKTOP PROCESS
+            ===================================================== */}
         <div className="mt-12 hidden lg:block">
           <div className="border border-black/10 bg-white/40 px-8 py-9">
             <div className="relative">
-              <div className="absolute left-[8%] right-[8%] top-6 h-px bg-black/10" />
+              <div className="absolute left-[10%] right-[10%] top-6 h-px bg-black/10" />
 
               <motion.div
                 animate={{
-                  width: `${(active / (stages.length - 1)) * 84}%`,
+                  width: `${(active / (stages.length - 1)) * 80}%`,
                 }}
                 transition={{
                   duration: 0.4,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="absolute left-[8%] top-6 h-px bg-[#f26a2e]"
+                className="absolute left-[10%] top-6 h-px bg-[#f26a2e]"
               />
 
-              <div className="relative grid grid-cols-5">
+              <div className="relative grid grid-cols-4">
                 {stages.map((stage, index) => {
                   const selected = active === index;
                   const passed = index <= active;
@@ -125,7 +143,9 @@ export default function Approach() {
 
                       <span
                         className={`mt-5 text-xl font-medium tracking-[-0.035em] ${
-                          selected ? "text-black" : "text-black/45"
+                          selected
+                            ? "text-black"
+                            : "text-black/45"
                         }`}
                       >
                         {stage.title}
@@ -146,10 +166,21 @@ export default function Approach() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.25 }}
+                  initial={{
+                    opacity: 0,
+                    y: 12,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -12,
+                  }}
+                  transition={{
+                    duration: 0.25,
+                  }}
                 >
                   <div className="grid grid-cols-[1fr_0.8fr] gap-12">
                     <div>
@@ -164,30 +195,34 @@ export default function Approach() {
 
                     <div className="flex items-center">
                       <div className="flex w-full items-center">
-                        {stages[active].visual.map((item, index) => (
-                          <div
-                            key={item}
-                            className="flex min-w-0 flex-1 items-center"
-                          >
-                            <div className="flex min-w-0 flex-col">
-                              <div
-                                className={`h-2.5 w-2.5 rounded-full ${
-                                  index === 1
-                                    ? "bg-[#f26a2e]"
-                                    : "bg-black/25"
-                                }`}
-                              />
+                        {stages[active].visual.map(
+                          (item, index) => (
+                            <div
+                              key={item}
+                              className="flex min-w-0 flex-1 items-center"
+                            >
+                              <div className="flex min-w-0 flex-col">
+                                <div
+                                  className={`h-2.5 w-2.5 rounded-full ${
+                                    index === 1
+                                      ? "bg-[#f26a2e]"
+                                      : "bg-black/25"
+                                  }`}
+                                />
 
-                              <span className="tech-label mt-2 truncate text-[0.48rem] text-black/30">
-                                {item}
-                              </span>
+                                <span className="tech-label mt-2 truncate text-[0.48rem] text-black/30">
+                                  {item}
+                                </span>
+                              </div>
+
+                              {index <
+                                stages[active].visual.length -
+                                  1 && (
+                                <div className="mx-3 h-px flex-1 bg-black/10" />
+                              )}
                             </div>
-
-                            {index < stages[active].visual.length - 1 && (
-                              <div className="mx-3 h-px flex-1 bg-black/10" />
-                            )}
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -197,9 +232,11 @@ export default function Approach() {
           </div>
         </div>
 
-        {/* Mobile */}
-        <div className="mt-8 lg:hidden">
-          <div className="relative border-l border-black/15 pl-5 sm:pl-6">
+        {/* =====================================================
+            COMPACT MOBILE PROCESS
+            ===================================================== */}
+        <div className="mt-6 lg:hidden">
+          <div className="relative border-l border-black/15 pl-4 sm:mt-8 sm:pl-6">
             {stages.map((stage, index) => {
               const selected = active === index;
 
@@ -208,27 +245,33 @@ export default function Approach() {
                   key={stage.title}
                   type="button"
                   onClick={() => setActive(index)}
-                  className="relative block w-full border-b border-black/10 py-4 text-left sm:py-5"
+                  className="relative block w-full border-b border-black/10 py-3 text-left sm:py-5"
                 >
                   <span
-                    className={`absolute -left-[24px] top-[22px] h-2 w-2 rounded-full border-2 border-[#f2f0e9] sm:-left-[29px] sm:top-[27px] sm:h-2.5 sm:w-2.5 ${
-                      selected ? "bg-[#f26a2e]" : "bg-black/20"
+                    className={`absolute -left-[19px] top-[18px] h-2 w-2 rounded-full border-2 border-[#f2f0e9] sm:-left-[29px] sm:top-[27px] sm:h-2.5 sm:w-2.5 ${
+                      selected
+                        ? "bg-[#f26a2e]"
+                        : "bg-black/20"
                     }`}
                   />
 
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
                       <span
-                        className={`font-mono text-[0.65rem] ${
-                          selected ? "text-[#f26a2e]" : "text-black/30"
+                        className={`font-mono text-[0.6rem] ${
+                          selected
+                            ? "text-[#f26a2e]"
+                            : "text-black/30"
                         }`}
                       >
                         0{index + 1}
                       </span>
 
                       <h3
-                        className={`mt-1 text-xl font-medium tracking-[-0.04em] sm:text-2xl ${
-                          selected ? "text-black" : "text-black/50"
+                        className={`text-lg font-medium tracking-[-0.035em] sm:text-2xl ${
+                          selected
+                            ? "text-black"
+                            : "text-black/50"
                         }`}
                       >
                         {stage.title}
@@ -236,9 +279,11 @@ export default function Approach() {
                     </div>
 
                     <ArrowRight
-                      size={16}
+                      size={14}
                       className={
-                        selected ? "text-[#f26a2e]" : "text-black/20"
+                        selected
+                          ? "text-[#f26a2e]"
+                          : "text-black/20"
                       }
                     />
                   </div>
@@ -246,12 +291,21 @@ export default function Approach() {
                   <AnimatePresence initial={false}>
                     {selected && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
+                        initial={{
+                          height: 0,
+                          opacity: 0,
+                        }}
+                        animate={{
+                          height: "auto",
+                          opacity: 1,
+                        }}
+                        exit={{
+                          height: 0,
+                          opacity: 0,
+                        }}
                         className="overflow-hidden"
                       >
-                        <p className="max-w-lg pt-3 text-sm leading-6 text-black/60">
+                        <p className="max-w-lg pb-1 pt-2 text-xs leading-5 text-black/55 sm:pt-3 sm:text-sm sm:leading-6">
                           {stage.text}
                         </p>
                       </motion.div>
@@ -260,6 +314,60 @@ export default function Approach() {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* =====================================================
+            PRODUCTION ENGINEERING
+            Former "Production Matters" section compressed into
+            the process rather than taking another full section.
+            ===================================================== */}
+        <div className="mt-8 border-t border-black/10 pt-6 sm:mt-14 sm:pt-10 lg:mt-16">
+          <div className="grid gap-5 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
+            <div>
+              <p className="section-label text-black/35">
+                Production Matters
+              </p>
+
+              <p className="mt-2 hidden max-w-xs text-sm leading-6 text-black/40 sm:block">
+                A working demo is only the beginning.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-[2rem] font-semibold leading-[0.95] tracking-[-0.055em] sm:text-[clamp(2.7rem,5vw,5rem)]">
+                The boring part
+                <span className="text-black/25">
+                  {" "}is the hard part.
+                </span>
+              </h3>
+
+              <p className="mt-3 max-w-2xl text-sm leading-5 text-black/55 sm:mt-4 sm:leading-6">
+                We engineer the less visible parts that make software
+                dependable when the business starts relying on it.
+              </p>
+
+              {/* Mobile: compact 2-column list.
+                  Desktop retains more generous spacing. */}
+              <div className="mt-4 grid grid-cols-2 border-t border-black/10 sm:mt-6 sm:grid-cols-3">
+                {productionDetails.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2 border-b border-black/10 py-2.5 sm:py-3"
+                  >
+                    <Check
+                      size={11}
+                      strokeWidth={2}
+                      className="shrink-0 text-[#f26a2e] sm:h-[13px] sm:w-[13px]"
+                    />
+
+                    <span className="text-xs text-black/50 sm:text-sm">
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </Container>
