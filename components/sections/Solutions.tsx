@@ -2,52 +2,54 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowUpRight, Check } from "lucide-react";
+import {
+  ArrowUpRight,
+  Bot,
+  Boxes,
+  Workflow,
+} from "lucide-react";
+
 import Container from "@/components/ui/Container";
-import CapabilityVisual from "@/components/visuals/CapabilityVisual";
 
 const solutions = [
   {
     number: "01",
-    title: "Software that fits the business",
-    label: "CUSTOM SOFTWARE",
-    description:
-      "When off-the-shelf software no longer fits the way your business works, we design and build systems around the actual workflow.",
+    label: "OPERATIONAL SOFTWARE",
+    title: "Software that fits the business.",
+    text: "Internal systems, portals and applications designed around the workflows your business actually depends on.",
     examples: [
-      "Internal business systems",
+      "Internal platforms",
       "Client & staff portals",
-      "Workflow platforms",
+      "Workflow systems",
       "Web & mobile applications",
     ],
-    visual: "software" as const,
+    icon: Boxes,
   },
   {
     number: "02",
-    title: "Less repetitive work",
-    label: "AUTOMATION",
-    description:
-      "We identify manual steps that consume time, create errors or depend on somebody remembering what happens next.",
+    label: "AUTOMATION & INTEGRATION",
+    title: "Less repetitive work.",
+    text: "Connect systems, remove duplicate handling and automate routine steps that slow teams down.",
     examples: [
       "Workflow automation",
+      "System integrations",
       "Approvals & notifications",
-      "Document processing",
-      "AI-assisted workflows",
+      "Data synchronisation",
     ],
-    visual: "automation" as const,
+    icon: Workflow,
   },
   {
     number: "03",
-    title: "Systems that work together",
-    label: "INTEGRATION",
-    description:
-      "We connect the software your business already depends on so information can move without constant copying and re-entry.",
+    label: "APPLIED AI",
+    title: "AI where it earns its place.",
+    text: "Use AI where it can improve a real workflow, reduce work or create genuinely useful functionality.",
     examples: [
-      "API integrations",
-      "CRM & finance systems",
-      "Payments",
-      "Data synchronisation",
+      "Document processing",
+      "AI-assisted workflows",
+      "Internal tools",
+      "Decision support",
     ],
-    visual: "integration" as const,
+    icon: Bot,
   },
 ];
 
@@ -55,17 +57,17 @@ export default function Solutions() {
   return (
     <section
       id="solutions"
-      className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-16 text-black sm:py-20 lg:py-28"
+      className="relative overflow-hidden bg-[#f2f0e9] py-10 text-black sm:py-20 lg:py-24"
     >
-      <Container className="relative z-10">
-        {/* Header */}
-        <div className="grid gap-6 border-b border-black/10 pb-8 sm:pb-10 lg:grid-cols-[0.65fr_1.35fr] lg:items-end lg:gap-12">
+      <Container>
+        {/* Heading */}
+        <div className="grid gap-4 border-b border-black/10 pb-6 sm:gap-6 sm:pb-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12 lg:pb-10">
           <div>
-            <p className="section-label text-black/50">
+            <p className="section-label text-black/40">
               02 / What We Do
             </p>
 
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-2.5 flex items-center gap-2 sm:mt-4">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
               <span className="tech-label text-black/30">
@@ -75,108 +77,92 @@ export default function Solutions() {
           </div>
 
           <div>
-            <h2 className="max-w-4xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
+            <h2 className="max-w-4xl text-[2.35rem] font-semibold leading-[0.93] tracking-[-0.055em] sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[0.9] sm:tracking-[-0.065em]">
               Less workaround.
-              <br />
-              <span className="text-black/30">More workflow.</span>
+              <span className="text-black/25"> More workflow.</span>
             </h2>
 
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60 sm:mt-5 sm:text-base sm:leading-7">
-              We improve the way work moves through the business — whether that
-              means building something new, connecting what you already use or
-              automating the steps in between.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-black/55 sm:mt-5 sm:text-base sm:leading-7">
+              We build and connect technology that helps growing businesses
+              operate more effectively.
             </p>
           </div>
         </div>
 
         {/* Solutions */}
         <div className="grid lg:grid-cols-3">
-          {solutions.map((solution, index) => (
-            <motion.article
-              key={solution.title}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{
-                duration: 0.55,
-                delay: index * 0.06,
-              }}
-              className="
-                group border-b border-black/10 py-8
-                lg:border-b-0 lg:border-r lg:px-8 lg:py-10
-                lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0
-              "
-            >
-              <div className="flex h-full flex-col">
+          {solutions.map((solution, index) => {
+            const Icon = solution.icon;
+
+            return (
+              <motion.article
+                key={solution.title}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.05,
+                }}
+                className="
+                  group border-b border-black/10 py-5
+                  sm:py-8
+                  lg:min-h-[390px] lg:border-b-0 lg:border-r lg:px-7
+                  lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0
+                "
+              >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-black/35">
+                  <span className="font-mono text-[0.65rem] text-black/30 sm:text-xs">
                     {solution.number}
                   </span>
 
-                  <span className="tech-label text-black/30">
-                    {solution.label}
-                  </span>
+                  <Icon
+                    size={18}
+                    strokeWidth={1.5}
+                    className="text-black/30 transition-colors group-hover:text-[#f26a2e]"
+                  />
                 </div>
 
-                <div className="mt-6">
-                  <CapabilityVisual type={solution.visual} />
+                <p className="tech-label mt-4 text-black/30 sm:mt-7">
+                  {solution.label}
+                </p>
+
+                <h3 className="mt-1.5 max-w-sm text-xl font-semibold leading-tight tracking-[-0.04em] sm:mt-2 sm:text-2xl">
+                  {solution.title}
+                </h3>
+
+                <p className="mt-2.5 max-w-sm text-sm leading-5 text-black/50 sm:mt-3 sm:leading-6">
+                  {solution.text}
+                </p>
+
+                <div className="mt-4 grid grid-cols-2 gap-x-4 border-t border-black/10 pt-3 sm:mt-6 sm:block sm:pt-4">
+                  {solution.examples.map((example) => (
+                    <div
+                      key={example}
+                      className="flex items-start gap-2 py-1"
+                    >
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#f26a2e]" />
+
+                      <span className="text-xs leading-5 text-black/45 sm:text-sm">
+                        {example}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="mt-7 flex flex-1 flex-col">
-                  <h3 className="max-w-sm text-2xl font-semibold leading-tight tracking-[-0.045em] sm:text-3xl">
-                    {solution.title}
-                  </h3>
-
-                  <p className="mt-4 max-w-lg text-sm leading-6 text-black/60 sm:text-[0.95rem]">
-                    {solution.description}
-                  </p>
-
-                  <div className="mt-6 border-t border-black/10">
-                    {solution.examples.map((example) => (
-                      <div
-                        key={example}
-                        className="flex items-center gap-3 border-b border-black/10 py-3"
-                      >
-                        <Check
-                          size={13}
-                          strokeWidth={2}
-                          className="shrink-0 text-[#f26a2e]"
-                        />
-
-                        <span className="text-xs text-black/55 sm:text-sm">
-                          {example}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.article>
-          ))}
+              </motion.article>
+            );
+          })}
         </div>
 
-        {/* Philosophy */}
-        <div className="mt-10 grid gap-5 border-t border-black/10 pt-8 sm:mt-12 sm:pt-10 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <p className="text-xl font-medium tracking-[-0.03em] sm:text-2xl">
-              Sometimes you shouldn&apos;t build new software.
-            </p>
-
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55">
-              If an existing product already solves the problem properly, we
-              would rather tell you than build something your business
-              doesn&apos;t need.
-            </p>
-          </div>
-
+        <div className="flex justify-end pt-5 sm:border-t sm:border-black/10">
           <Link
             href="/solutions"
-            className="group inline-flex w-fit items-center gap-2 border-b border-black pb-1 text-sm font-semibold"
+            className="group inline-flex items-center gap-2 text-sm font-semibold"
           >
             Explore what we do
 
             <ArrowUpRight
-              size={16}
+              size={15}
               className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
             />
           </Link>
