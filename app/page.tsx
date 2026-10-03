@@ -19,9 +19,11 @@ export default function Home() {
 
       <Hero />
 
+      <Problems />
+
       <Solutions />
 
-      <Problems />
+      <Founders />
 
       <SmallThings />
 
@@ -32,8 +34,6 @@ export default function Home() {
       <Approach />
 
       <About />
-
-      <Founders />
 
       <ContactCTA />
 
