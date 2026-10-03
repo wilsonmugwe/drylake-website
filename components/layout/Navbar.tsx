@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -12,7 +13,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Show, UserButton } from "@clerk/nextjs";
+
 import Container from "@/components/ui/Container";
+
 const links = [
   {
     label: "What We Do",
@@ -31,18 +34,28 @@ const links = [
     href: "/contact",
   },
 ];
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+
   const closeMenu = () => setOpen(false);
+
   return (
     <>
+      {/* =====================================================
+          DESKTOP / MAIN NAVBAR
+      ===================================================== */}
+
       <header className="absolute inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-black text-white">
         <Container>
           <nav
             className="flex h-[92px] items-center justify-between sm:h-[100px] lg:h-[112px]"
             aria-label="Primary navigation"
           >
-            {/* Logo */}
+            {/* =================================================
+                LOGO
+            ================================================= */}
+
             <Link
               href="/"
               aria-label="Drylake home"
@@ -68,7 +81,11 @@ export default function Navbar() {
                 "
               />
             </Link>
-            {/* Desktop navigation */}
+
+            {/* =================================================
+                DESKTOP NAVIGATION
+            ================================================= */}
+
             <div className="hidden items-center gap-5 lg:flex xl:gap-7">
               {links.map((link) => (
                 <Link
@@ -94,7 +111,11 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              {/* Signed-out controls */}
+
+              {/* ===============================================
+                  SIGNED OUT
+              =============================================== */}
+
               <Show when="signed-out">
                 <div className="ml-1 flex items-center gap-2">
                   <Link
@@ -112,6 +133,7 @@ export default function Navbar() {
                   >
                     Sign In
                   </Link>
+
                   <Link
                     href="/sign-up"
                     className="
@@ -132,11 +154,19 @@ export default function Navbar() {
                   </Link>
                 </div>
               </Show>
-              {/* Signed-in controls */}
+
+              {/* ===============================================
+                  SIGNED IN
+
+                  /portal performs the server-side role check:
+                  Platform admin -> /admin
+                  Client user    -> /client
+              =============================================== */}
+
               <Show when="signed-in">
                 <div className="ml-1 flex items-center gap-3">
                   <Link
-                    href="/client"
+                    href="/portal"
                     className="
                       flex
                       items-center
@@ -155,8 +185,10 @@ export default function Navbar() {
                     "
                   >
                     <LayoutDashboard size={15} />
-                    Client Portal
+
+                    Portal
                   </Link>
+
                   <UserButton
                     appearance={{
                       elements: {
@@ -166,7 +198,11 @@ export default function Navbar() {
                   />
                 </div>
               </Show>
-              {/* Primary CTA */}
+
+              {/* ===============================================
+                  PRIMARY CTA
+              =============================================== */}
+
               <Link
                 href="/contact"
                 className="
@@ -188,26 +224,28 @@ export default function Navbar() {
                 "
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
                 <span>Start a Conversation</span>
+
                 <ArrowUpRight
                   size={16}
                   className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 />
               </Link>
             </div>
-            {/* Mobile menu button */}
+
+            {/* =================================================
+                MOBILE MENU BUTTON
+            ================================================= */}
+
             <button
               type="button"
               aria-label={
-                open
-                  ? "Close navigation"
-                  : "Open navigation"
+                open ? "Close navigation" : "Open navigation"
               }
               aria-expanded={open}
               aria-controls="mobile-navigation"
-              onClick={() =>
-                setOpen((value) => !value)
-              }
+              onClick={() => setOpen((value) => !value)}
               className="
                 relative
                 z-50
@@ -224,18 +262,16 @@ export default function Navbar() {
                 lg:hidden
               "
             >
-              {open ? (
-                <X size={18} />
-              ) : (
-                <Menu size={18} />
-              )}
+              {open ? <X size={18} /> : <Menu size={18} />}
             </button>
           </nav>
         </Container>
       </header>
+
       {/* =====================================================
           MOBILE NAVIGATION
       ===================================================== */}
+
       <AnimatePresence>
         {open && (
           <motion.div
@@ -265,7 +301,10 @@ export default function Navbar() {
             "
           >
             <Container className="flex min-h-[100svh] flex-col justify-center pb-8 pt-[92px]">
-              {/* Public links */}
+              {/* ===============================================
+                  PUBLIC LINKS
+              =============================================== */}
+
               <div className="border-t border-white/10">
                 {links.map((link, index) => (
                   <motion.div
@@ -279,9 +318,7 @@ export default function Navbar() {
                       y: 0,
                     }}
                     transition={{
-                      delay:
-                        0.08 +
-                        index * 0.045,
+                      delay: 0.08 + index * 0.045,
                     }}
                   >
                     <Link
@@ -302,16 +339,23 @@ export default function Navbar() {
                         sm:text-[1.7rem]
                       "
                     >
-                      <span>
-                        {link.label}
-                      </span>
+                      <span>{link.label}</span>
+
                       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                     </Link>
                   </motion.div>
                 ))}
               </div>
-              {/* Authentication */}
+
+              {/* ===============================================
+                  AUTHENTICATION
+              =============================================== */}
+
               <div className="mt-5">
+                {/* ---------------------------------------------
+                    SIGNED OUT
+                --------------------------------------------- */}
+
                 <Show when="signed-out">
                   <div className="grid grid-cols-2 gap-2.5">
                     <Link
@@ -336,8 +380,10 @@ export default function Navbar() {
                       "
                     >
                       <LogIn size={16} />
+
                       Sign In
                     </Link>
+
                     <Link
                       href="/sign-up"
                       onClick={closeMenu}
@@ -360,14 +406,22 @@ export default function Navbar() {
                       "
                     >
                       <UserPlus size={16} />
+
                       Create Account
                     </Link>
                   </div>
                 </Show>
+
+                {/* ---------------------------------------------
+                    SIGNED IN
+
+                    Both desktop and mobile now use /portal.
+                --------------------------------------------- */}
+
                 <Show when="signed-in">
                   <div className="flex items-center gap-3">
                     <Link
-                      href="/client"
+                      href="/portal"
                       onClick={closeMenu}
                       className="
                         flex
@@ -388,17 +442,16 @@ export default function Navbar() {
                         hover:bg-white/[0.05]
                       "
                     >
-                      <LayoutDashboard
-                        size={16}
-                      />
-                      Client Portal
+                      <LayoutDashboard size={16} />
+
+                      Portal
                     </Link>
+
                     <div className="flex h-11 w-11 items-center justify-center">
                       <UserButton
                         appearance={{
                           elements: {
-                            avatarBox:
-                              "h-10 w-10",
+                            avatarBox: "h-10 w-10",
                           },
                         }}
                       />
@@ -406,7 +459,11 @@ export default function Navbar() {
                   </div>
                 </Show>
               </div>
-              {/* Main CTA */}
+
+              {/* ===============================================
+                  MAIN CTA
+              =============================================== */}
+
               <Link
                 href="/contact"
                 onClick={closeMenu}
@@ -428,15 +485,20 @@ export default function Navbar() {
               >
                 <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
                   Start a Conversation
                 </span>
-                <ArrowUpRight
-                  size={17}
-                />
+
+                <ArrowUpRight size={17} />
               </Link>
-              {/* Local identity */}
+
+              {/* ===============================================
+                  LOCAL IDENTITY
+              =============================================== */}
+
               <div className="mt-5 flex items-center gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
                 <p className="text-[0.62rem] uppercase tracking-[0.16em] text-white/35">
                   Perth, Western Australia
                 </p>
