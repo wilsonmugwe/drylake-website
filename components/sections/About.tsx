@@ -5,69 +5,39 @@ import { motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import Container from "@/components/ui/Container";
 
-const values = [
+const principles = [
   {
     number: "01",
-    title: "Innovation",
-    text: "Find better ways to solve difficult problems.",
-    code: "BETTER / WAYS",
+    title: "Understand before building.",
+    text: "The business problem comes first. Technology comes after we understand what actually needs to change.",
   },
   {
     number: "02",
-    title: "Integrity",
-    text: "Build responsibly, communicate clearly and do what we say.",
-    code: "CLEAR / WORK",
+    title: "Integrate before replacing.",
+    text: "If something already works, keep it. Good software should connect the business, not create another silo.",
   },
   {
     number: "03",
-    title: "Impact",
-    text: "Create technology that produces meaningful value.",
-    code: "REAL / VALUE",
+    title: "Build for real use.",
+    text: "A system has to work in the operation, not just in a demonstration. Reliability and maintainability matter.",
   },
 ];
 
 export default function About() {
   return (
-    <section
-      id="about"
-      className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-14 text-black sm:py-20 lg:py-28"
-    >
-      {/* architectural depth */}
-
-      <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[28%] lg:block">
-        <div className="absolute left-0 top-0 h-full w-px bg-black/[0.05]" />
-
-        <div className="absolute right-16 top-24 h-52 w-52 rounded-full border border-black/[0.05]" />
-
-        <div className="absolute right-28 top-36 h-28 w-28 rounded-full border border-black/[0.07]" />
-
-        <span className="tech-label absolute right-16 top-16 text-black/20">
-          DRYLAKE / 007
-        </span>
-      </div>
-
-      {/* mobile background geometry */}
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-16 top-12 h-40 w-40 lg:hidden"
-      >
-        <div className="absolute inset-0 rounded-full border border-black/[0.04]" />
-        <div className="absolute inset-10 rounded-full border border-black/[0.06]" />
-      </div>
-
+    <section className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-16 text-black sm:py-20 lg:py-28">
       <Container className="relative z-10">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
+        <div className="grid gap-7 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
           <div>
-            <p className="section-label text-black/50">
-              07 / Drylake
+            <p className="section-label text-black/45">
+              08 / How We Think
             </p>
 
-            <div className="mt-3 flex items-center gap-2 sm:mt-5">
+            <div className="mt-4 flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
               <span className="tech-label text-black/30">
-                PERTH / WESTERN AUSTRALIA
+                DRYLAKE PRINCIPLES
               </span>
             </div>
           </div>
@@ -83,24 +53,19 @@ export default function About() {
               }}
               className="max-w-4xl text-[clamp(2.7rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]"
             >
-              Built close to the problem.
+              Technology should make the business
+              <span className="text-black/30"> simpler.</span>
             </motion.h2>
 
-            <div className="mt-4 max-w-2xl sm:mt-7">
-              <p className="text-sm leading-6 text-black/65 sm:text-lg sm:leading-7">
-                Drylake builds practical software and technical systems around
-                the way businesses actually work.
-              </p>
-
-              <p className="mt-3 text-sm font-medium leading-6 text-black sm:mt-4 sm:text-lg sm:leading-7">
-                We start by understanding how the operation actually works.
-                Technology comes after.
-              </p>
-            </div>
+            <p className="mt-5 max-w-2xl text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
+              Our job isn&apos;t to introduce more technology. It&apos;s to
+              understand where technology can remove friction and make the
+              operation work better.
+            </p>
 
             <Link
               href="/about"
-              className="group mt-5 inline-flex items-center gap-2 border-b border-black pb-1 text-sm font-semibold text-black sm:mt-7"
+              className="group mt-6 inline-flex items-center gap-2 border-b border-black pb-1 text-sm font-semibold"
             >
               About Drylake
 
@@ -112,46 +77,36 @@ export default function About() {
           </div>
         </div>
 
-        {/* =====================================================
-            VALUES
-            ===================================================== */}
-
-        <div className="mt-8 grid border-t border-black/10 sm:mt-12 md:grid-cols-3 lg:mt-14">
-          {values.map((value, index) => (
+        <div className="mt-12 grid border-t border-black/10 md:grid-cols-3 lg:mt-16">
+          {principles.map((principle, index) => (
             <motion.article
-              key={value.title}
+              key={principle.title}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.07 }}
-              className="group relative overflow-hidden border-b border-black/10 py-5 sm:py-7 md:min-h-[270px] md:border-b-0 md:p-8 md:first:pl-0 md:not-last:border-r"
+              className="
+                group border-b border-black/10 py-7
+                md:min-h-[300px] md:border-b-0 md:border-r md:p-8
+                md:first:pl-0 md:last:border-r-0 md:last:pr-0
+              "
             >
-              {/* giant number */}
-
-              <span className="pointer-events-none absolute -right-2 -top-4 text-[6.5rem] font-semibold leading-none tracking-[-0.08em] text-black/[0.025] transition-all duration-500 group-hover:text-black/[0.045] sm:-top-5 sm:text-[10rem]">
-                {value.number}
-              </span>
-
-              <div className="relative z-10 flex h-full flex-col justify-between gap-8 sm:gap-12 md:gap-16">
+              <div className="flex h-full flex-col justify-between gap-14">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-black/40">
-                    {value.number}
+                  <span className="font-mono text-xs text-black/35">
+                    {principle.number}
                   </span>
 
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e] opacity-50 transition-opacity group-hover:opacity-100" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
                 </div>
 
                 <div>
-                  <span className="tech-label text-black/30">
-                    {value.code}
-                  </span>
-
-                  <h3 className="mt-2 text-2xl font-semibold tracking-[-0.05em] transition-transform duration-300 group-hover:translate-x-1 sm:mt-3 sm:text-3xl">
-                    {value.title}
+                  <h3 className="max-w-xs text-2xl font-semibold leading-tight tracking-[-0.045em] sm:text-3xl">
+                    {principle.title}
                   </h3>
 
-                  <p className="mt-2 max-w-sm text-sm leading-6 text-black/60 transition-colors group-hover:text-black/80 sm:mt-3">
-                    {value.text}
+                  <p className="mt-4 max-w-sm text-sm leading-6 text-black/55">
+                    {principle.text}
                   </p>
                 </div>
               </div>
