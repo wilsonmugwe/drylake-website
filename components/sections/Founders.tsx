@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
+
 import Container from "@/components/ui/Container";
 
 const founders = [
@@ -31,7 +32,7 @@ export default function Founders() {
   return (
     <section
       id="about"
-      className="relative overflow-hidden bg-black py-16 text-white sm:py-20 lg:py-28"
+      className="relative overflow-hidden bg-black py-10 text-white sm:py-20 lg:py-28"
     >
       <div
         aria-hidden="true"
@@ -40,13 +41,13 @@ export default function Founders() {
 
       <Container className="relative z-10">
         {/* Header */}
-        <div className="grid gap-7 border-b border-white/10 pb-9 sm:pb-12 lg:grid-cols-[0.65fr_1.35fr] lg:items-end lg:gap-12">
+        <div className="grid gap-4 border-b border-white/10 pb-6 sm:gap-7 sm:pb-12 lg:grid-cols-[0.65fr_1.35fr] lg:items-end lg:gap-12">
           <div>
             <p className="section-label text-white/40">
               03 / Founder-Led
             </p>
 
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-2.5 flex items-center gap-2 sm:mt-4">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
               <span className="tech-label text-white/30">
@@ -56,16 +57,18 @@ export default function Founders() {
           </div>
 
           <div>
-            <h2 className="max-w-4xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.9] tracking-[-0.065em]">
+            <h2 className="max-w-4xl text-[2.4rem] font-semibold leading-[0.92] tracking-[-0.055em] sm:text-[clamp(2.8rem,6vw,6rem)] sm:leading-[0.9] sm:tracking-[-0.065em]">
               Small team.
               <br />
-              <span className="text-white/35">Direct access.</span>
+
+              <span className="text-white/35">
+                Direct access.
+              </span>
             </h2>
 
-            <p className="mt-5 max-w-2xl text-sm leading-6 text-white/55 sm:text-base sm:leading-7">
-              When you work with Drylake, you work directly with the people
-              responsible for understanding the problem and delivering the
-              solution.
+            <p className="mt-3 max-w-2xl text-sm leading-5 text-white/55 sm:mt-5 sm:text-base sm:leading-7">
+              Work directly with the people responsible for understanding the
+              problem and delivering the solution.
             </p>
           </div>
         </div>
@@ -75,38 +78,52 @@ export default function Founders() {
           {founders.map((founder, index) => (
             <motion.article
               key={founder.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{
+                opacity: 0,
+                y: 16,
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+              }}
+              viewport={{
+                once: true,
+              }}
               transition={{
-                duration: 0.5,
-                delay: index * 0.08,
+                duration: 0.45,
+                delay: index * 0.06,
               }}
               className="
-                group relative min-h-[310px] border-b border-white/10 py-8
-                md:min-h-[380px] md:border-b-0 md:px-10 md:py-10
-                md:first:border-r md:first:pl-0 md:last:pr-0
+                group relative border-b border-white/10 py-5
+                sm:py-8
+                md:min-h-[380px]
+                md:border-b-0
+                md:px-10
+                md:py-10
+                md:first:border-r
+                md:first:pl-0
+                md:last:pr-0
               "
             >
-              <div className="flex h-full flex-col justify-between gap-16">
+              <div className="sm:flex sm:h-full sm:flex-col sm:justify-between sm:gap-10 md:gap-16">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-white/25">
+                  <span className="font-mono text-[0.62rem] text-white/25 sm:text-xs">
                     {founder.number}
                   </span>
 
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
                 </div>
 
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/35">
+                <div className="mt-5 sm:mt-8 md:mt-0">
+                  <p className="text-[0.65rem] font-medium uppercase tracking-[0.12em] text-white/35 sm:text-xs">
                     {founder.role}
                   </p>
 
-                  <h3 className="mt-3 max-w-xl text-[clamp(2.4rem,4.5vw,5rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
+                  <h3 className="mt-2 text-[2rem] font-semibold leading-[0.94] tracking-[-0.055em] sm:mt-3 sm:text-[clamp(2.4rem,4.5vw,5rem)] sm:leading-[0.92] sm:tracking-[-0.06em]">
                     {founder.name}
                   </h3>
 
-                  <p className="mt-5 max-w-lg text-sm leading-6 text-white/50 sm:text-base sm:leading-7">
+                  <p className="mt-3 max-w-lg text-sm leading-5 text-white/50 sm:mt-5 sm:text-base sm:leading-7">
                     {founder.focus}
                   </p>
                 </div>
@@ -116,8 +133,8 @@ export default function Founders() {
         </div>
 
         {/* Why founder-led matters */}
-        <div className="border-t border-white/10 pt-8 sm:pt-10">
-          <div className="grid gap-7 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
+        <div className="pt-5 sm:border-t sm:border-white/10 sm:pt-10">
+          <div className="grid gap-3 sm:gap-7 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
             <p className="section-label text-white/30">
               What that means for you
             </p>
@@ -126,19 +143,19 @@ export default function Founders() {
               {principles.map((principle, index) => (
                 <div
                   key={principle}
-                  className="flex items-center gap-4 border-b border-white/10 py-4 first:pt-0"
+                  className="flex items-center gap-3 border-b border-white/10 py-2.5 sm:gap-4 sm:py-4 sm:first:pt-0"
                 >
-                  <span className="font-mono text-[0.6rem] text-[#f26a2e]">
+                  <span className="font-mono text-[0.58rem] text-[#f26a2e] sm:text-[0.6rem]">
                     0{index + 1}
                   </span>
 
-                  <p className="flex-1 text-sm text-white/65 sm:text-base">
+                  <p className="flex-1 text-xs leading-5 text-white/65 sm:text-base">
                     {principle}
                   </p>
 
                   <ArrowRight
-                    size={14}
-                    className="text-white/20"
+                    size={13}
+                    className="text-white/20 sm:h-[14px] sm:w-[14px]"
                   />
                 </div>
               ))}
