@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -14,19 +13,27 @@ import {
 import { useState } from "react";
 import { Show, UserButton } from "@clerk/nextjs";
 import Container from "@/components/ui/Container";
-
 const links = [
-  { label: "What We Do", href: "/#solutions" },
-  { label: "How We Work", href: "/#approach" },
-  { label: "About", href: "/#about" },
-  { label: "Contact", href: "/contact" },
+  {
+    label: "What We Do",
+    href: "/#solutions",
+  },
+  {
+    label: "How We Work",
+    href: "/#approach",
+  },
+  {
+    label: "About",
+    href: "/#about",
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
-
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-
   const closeMenu = () => setOpen(false);
-
   return (
     <>
       <header className="absolute inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-black text-white">
@@ -61,7 +68,6 @@ export default function Navbar() {
                 "
               />
             </Link>
-
             {/* Desktop navigation */}
             <div className="hidden items-center gap-5 lg:flex xl:gap-7">
               {links.map((link) => (
@@ -88,8 +94,7 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-
-              {/* Signed-out authentication controls */}
+              {/* Signed-out controls */}
               <Show when="signed-out">
                 <div className="ml-1 flex items-center gap-2">
                   <Link
@@ -107,7 +112,6 @@ export default function Navbar() {
                   >
                     Sign In
                   </Link>
-
                   <Link
                     href="/sign-up"
                     className="
@@ -128,8 +132,7 @@ export default function Navbar() {
                   </Link>
                 </div>
               </Show>
-
-              {/* Signed-in authentication controls */}
+              {/* Signed-in controls */}
               <Show when="signed-in">
                 <div className="ml-1 flex items-center gap-3">
                   <Link
@@ -154,7 +157,6 @@ export default function Navbar() {
                     <LayoutDashboard size={15} />
                     Client Portal
                   </Link>
-
                   <UserButton
                     appearance={{
                       elements: {
@@ -164,8 +166,7 @@ export default function Navbar() {
                   />
                 </div>
               </Show>
-
-              {/* Primary business CTA */}
+              {/* Primary CTA */}
               <Link
                 href="/contact"
                 className="
@@ -187,23 +188,26 @@ export default function Navbar() {
                 "
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
-                <span>Start a Project</span>
-
+                <span>Start a Conversation</span>
                 <ArrowUpRight
                   size={16}
                   className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 />
               </Link>
             </div>
-
             {/* Mobile menu button */}
             <button
               type="button"
-              aria-label={open ? "Close navigation" : "Open navigation"}
+              aria-label={
+                open
+                  ? "Close navigation"
+                  : "Open navigation"
+              }
               aria-expanded={open}
               aria-controls="mobile-navigation"
-              onClick={() => setOpen((value) => !value)}
+              onClick={() =>
+                setOpen((value) => !value)
+              }
               className="
                 relative
                 z-50
@@ -220,20 +224,31 @@ export default function Navbar() {
                 lg:hidden
               "
             >
-              {open ? <X size={18} /> : <Menu size={18} />}
+              {open ? (
+                <X size={18} />
+              ) : (
+                <Menu size={18} />
+              )}
             </button>
           </nav>
         </Container>
       </header>
-
-      {/* Mobile navigation */}
+      {/* =====================================================
+          MOBILE NAVIGATION
+      ===================================================== */}
       <AnimatePresence>
         {open && (
           <motion.div
             id="mobile-navigation"
-            initial={{ y: "-100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
+            initial={{
+              y: "-100%",
+            }}
+            animate={{
+              y: 0,
+            }}
+            exit={{
+              y: "-100%",
+            }}
             transition={{
               duration: 0.4,
               ease: [0.76, 0, 0.24, 1],
@@ -264,7 +279,9 @@ export default function Navbar() {
                       y: 0,
                     }}
                     transition={{
-                      delay: 0.08 + index * 0.045,
+                      delay:
+                        0.08 +
+                        index * 0.045,
                     }}
                   >
                     <Link
@@ -285,17 +302,16 @@ export default function Navbar() {
                         sm:text-[1.7rem]
                       "
                     >
-                      <span>{link.label}</span>
-
+                      <span>
+                        {link.label}
+                      </span>
                       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                     </Link>
                   </motion.div>
                 ))}
               </div>
-
-              {/* Mobile authentication */}
+              {/* Authentication */}
               <div className="mt-5">
-                {/* Signed out */}
                 <Show when="signed-out">
                   <div className="grid grid-cols-2 gap-2.5">
                     <Link
@@ -322,7 +338,6 @@ export default function Navbar() {
                       <LogIn size={16} />
                       Sign In
                     </Link>
-
                     <Link
                       href="/sign-up"
                       onClick={closeMenu}
@@ -349,8 +364,6 @@ export default function Navbar() {
                     </Link>
                   </div>
                 </Show>
-
-                {/* Signed in */}
                 <Show when="signed-in">
                   <div className="flex items-center gap-3">
                     <Link
@@ -375,15 +388,17 @@ export default function Navbar() {
                         hover:bg-white/[0.05]
                       "
                     >
-                      <LayoutDashboard size={16} />
+                      <LayoutDashboard
+                        size={16}
+                      />
                       Client Portal
                     </Link>
-
                     <div className="flex h-11 w-11 items-center justify-center">
                       <UserButton
                         appearance={{
                           elements: {
-                            avatarBox: "h-10 w-10",
+                            avatarBox:
+                              "h-10 w-10",
                           },
                         }}
                       />
@@ -391,8 +406,7 @@ export default function Navbar() {
                   </div>
                 </Show>
               </div>
-
-              {/* Project CTA */}
+              {/* Main CTA */}
               <Link
                 href="/contact"
                 onClick={closeMenu}
@@ -414,18 +428,17 @@ export default function Navbar() {
               >
                 <span className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-                  Start a Project
+                  Start a Conversation
                 </span>
-
-                <ArrowUpRight size={17} />
+                <ArrowUpRight
+                  size={17}
+                />
               </Link>
-
-              {/* Tagline */}
+              {/* Local identity */}
               <div className="mt-5 flex items-center gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
                 <p className="text-[0.62rem] uppercase tracking-[0.16em] text-white/35">
-                  Tomorrow Starts Here.
+                  Perth, Western Australia
                 </p>
               </div>
             </Container>
