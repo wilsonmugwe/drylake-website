@@ -1,13 +1,29 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
-export default clerkMiddleware({
-  contentSecurityPolicy: {
-    directives: {
-      "frame-src": ["https://challenges.cloudflare.com"],
-      "script-src": ["https://challenges.cloudflare.com"],
-    },
+export default clerkMiddleware(
+  async (auth, req) => {
+    if (req.nextUrl.pathname.startsWith("/client")) {
+      const authState = await auth();
+
+      console.log("[CLERK DEBUG]", {
+        pathname: req.nextUrl.pathname,
+        userId: authState.userId,
+        orgId: authState.orgId,
+        sessionId: authState.sessionId,
+      });
+    }
   },
-});
+  {
+    debug: true,
+
+    contentSecurityPolicy: {
+      directives: {
+        "frame-src": ["https://challenges.cloudflare.com"],
+        "script-src": ["https://challenges.cloudflare.com"],
+      },
+    },
+  }
+);
 
 export const config = {
   matcher: [
