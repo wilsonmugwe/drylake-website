@@ -53,6 +53,13 @@ const solutions = [
   },
 ];
 
+const contexts = [
+  "Construction & trades",
+  "Care & services",
+  "Professional services",
+  "Multi-location businesses",
+];
+
 export default function Solutions() {
   return (
     <section
@@ -60,7 +67,6 @@ export default function Solutions() {
       className="relative overflow-hidden bg-[#f2f0e9] py-10 text-black sm:py-20 lg:py-24"
     >
       <Container>
-        {/* Heading */}
         <div className="grid gap-4 border-b border-black/10 pb-6 sm:gap-6 sm:pb-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12 lg:pb-10">
           <div>
             <p className="section-label text-black/40">
@@ -79,12 +85,14 @@ export default function Solutions() {
           <div>
             <h2 className="max-w-4xl text-[2.35rem] font-semibold leading-[0.93] tracking-[-0.055em] sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[0.9] sm:tracking-[-0.065em]">
               Less workaround.
-              <span className="text-black/25"> More workflow.</span>
+              <span className="text-black/25">
+                {" "}More workflow.
+              </span>
             </h2>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-black/55 sm:mt-5 sm:text-base sm:leading-7">
-              We build and connect technology that helps growing businesses
-              operate more effectively.
+              We build and connect technology that helps growing Australian
+              businesses operate more effectively.
             </p>
           </div>
         </div>
@@ -136,10 +144,13 @@ export default function Solutions() {
                 </p>
 
                 <div className="mt-4 grid grid-cols-2 gap-x-4 border-t border-black/10 pt-3 sm:mt-6 sm:block sm:pt-4">
-                  {solution.examples.map((example) => (
+                  {solution.examples.map((example, exampleIndex) => (
                     <div
                       key={example}
-                      className="flex items-start gap-2 py-1"
+                      className={`
+                        items-start gap-2 py-1
+                        ${exampleIndex > 1 ? "hidden sm:flex" : "flex"}
+                      `}
                     >
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#f26a2e]" />
 
@@ -154,7 +165,28 @@ export default function Solutions() {
           })}
         </div>
 
-        <div className="flex justify-end pt-5 sm:border-t sm:border-black/10">
+        {/* Business contexts */}
+        <div className="border-b border-black/10 py-5 sm:py-6">
+          <p className="tech-label text-black/25">
+            BUILT FOR REAL OPERATIONS
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-x-2 gap-y-1.5 text-xs text-black/45 sm:text-sm">
+            {contexts.map((context, index) => (
+              <span key={context} className="flex items-center gap-2">
+                {index > 0 && (
+                  <span className="text-black/15">
+                    /
+                  </span>
+                )}
+
+                {context}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-5">
           <Link
             href="/solutions"
             className="group inline-flex items-center gap-2 text-sm font-semibold"
