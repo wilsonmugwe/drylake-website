@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -33,15 +33,6 @@ export default async function ClientDashboardPage() {
     redirect("/sign-in?redirect_url=/client");
   }
 
-  // Load authenticated Clerk user so the portal can greet
-  // the client personally.
-  const user = await currentUser();
-
-  const displayName =
-    user?.firstName ||
-    user?.fullName?.split(" ")[0] ||
-    "there";
-
   // ---------------------------------------------------------
   // No organisation membership
   //
@@ -75,8 +66,7 @@ export default async function ClientDashboardPage() {
                 linear-gradient(90deg, rgba(255,255,255,0.75) 1px, transparent 1px)
               `,
               backgroundSize: "72px 72px",
-              maskImage:
-                "linear-gradient(to bottom, black, transparent 88%)",
+              maskImage: "linear-gradient(to bottom, black, transparent 88%)",
               WebkitMaskImage:
                 "linear-gradient(to bottom, black, transparent 88%)",
             }}
@@ -100,9 +90,7 @@ export default async function ClientDashboardPage() {
         ===================================================== */}
 
         <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-5 sm:px-8 lg:px-12">
-          {/* ===================================================
-              HEADER
-          =================================================== */}
+          {/* Header */}
 
           <header className="flex items-center justify-between border-b border-white/[0.08] py-7">
             <Link
@@ -124,9 +112,7 @@ export default async function ClientDashboardPage() {
             </div>
           </header>
 
-          {/* ===================================================
-              MAIN
-          =================================================== */}
+          {/* Main */}
 
           <section className="flex flex-1 items-center py-14 sm:py-20 lg:py-24">
             <div className="grid w-full gap-14 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-24">
@@ -152,11 +138,11 @@ export default async function ClientDashboardPage() {
                 {/* Welcome */}
 
                 <h1 className="mt-8 max-w-2xl text-[3.3rem] font-medium leading-[0.96] tracking-[-0.055em] sm:text-6xl lg:text-[4.7rem]">
-                  Welcome,
+                  Welcome
                   <br />
 
                   <span className="relative inline-block">
-                    {displayName}.
+                    to Drylake.
 
                     <span className="absolute -bottom-3 left-0 h-px w-16 bg-gradient-to-r from-[#f26a2e] to-[#f26a2e]/10" />
                   </span>
@@ -370,9 +356,7 @@ export default async function ClientDashboardPage() {
             </div>
           </section>
 
-          {/* ===================================================
-              FOOTER
-          =================================================== */}
+          {/* Footer */}
 
           <footer className="flex flex-col gap-3 border-t border-white/[0.07] py-6 text-[0.65rem] text-white/20 sm:flex-row sm:items-center sm:justify-between">
             <span>© {new Date().getFullYear()} Drylake Pty Ltd</span>
@@ -403,13 +387,12 @@ export default async function ClientDashboardPage() {
   // Find organisation through active Clerk org ID
   // ---------------------------------------------------------
 
-  const { data: organization, error: organizationError } =
-    await supabase
-      .from("organizations")
-      .select("id, clerk_org_id, name, status")
-      .eq("clerk_org_id", orgId)
-      .eq("status", "ACTIVE")
-      .maybeSingle();
+  const { data: organization, error: organizationError } = await supabase
+    .from("organizations")
+    .select("id, clerk_org_id, name, status")
+    .eq("clerk_org_id", orgId)
+    .eq("status", "ACTIVE")
+    .maybeSingle();
 
   if (organizationError) {
     console.error("Client organisation lookup failed:", {
@@ -506,22 +489,21 @@ export default async function ClientDashboardPage() {
   // Explicit organization filter + RLS.
   // ---------------------------------------------------------
 
-  const { data: projects, error: projectsError } =
-    await supabase
-      .from("projects")
-      .select(
-        `
-          id,
-          name,
-          status,
-          progress_override,
-          start_date,
-          target_end_date,
-          created_at
-        `
-      )
-      .eq("organization_id", organization.id)
-      .order("created_at", { ascending: false });
+  const { data: projects, error: projectsError } = await supabase
+    .from("projects")
+    .select(
+      `
+        id,
+        name,
+        status,
+        progress_override,
+        start_date,
+        target_end_date,
+        created_at
+      `
+    )
+    .eq("organization_id", organization.id)
+    .order("created_at", { ascending: false });
 
   if (projectsError) {
     console.error("Client projects lookup failed:", {
@@ -590,9 +572,7 @@ export default async function ClientDashboardPage() {
       (milestone) => milestone.status === "COMPLETED"
     ).length;
 
-    return Math.round(
-      (completed / projectMilestones.length) * 100
-    );
+    return Math.round((completed / projectMilestones.length) * 100);
   }
 
   // ---------------------------------------------------------
@@ -616,8 +596,7 @@ export default async function ClientDashboardPage() {
               linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)
             `,
             backgroundSize: "80px 80px",
-            maskImage:
-              "linear-gradient(to bottom, black, transparent 80%)",
+            maskImage: "linear-gradient(to bottom, black, transparent 80%)",
             WebkitMaskImage:
               "linear-gradient(to bottom, black, transparent 80%)",
           }}
@@ -667,14 +646,9 @@ export default async function ClientDashboardPage() {
           {/* Projects */}
 
           <div className="rounded-[1.5rem] border border-white/[0.09] bg-white/[0.025] p-6 backdrop-blur-sm">
-            <FolderKanban
-              size={20}
-              className="text-[#f26a2e]"
-            />
+            <FolderKanban size={20} className="text-[#f26a2e]" />
 
-            <p className="mt-5 text-3xl font-medium">
-              {projectList.length}
-            </p>
+            <p className="mt-5 text-3xl font-medium">{projectList.length}</p>
 
             <p className="mt-1 text-sm text-white/40">
               {projectList.length === 1 ? "Project" : "Projects"}
@@ -684,14 +658,9 @@ export default async function ClientDashboardPage() {
           {/* Organisation */}
 
           <div className="rounded-[1.5rem] border border-white/[0.09] bg-white/[0.025] p-6 backdrop-blur-sm">
-            <Building2
-              size={20}
-              className="text-[#f26a2e]"
-            />
+            <Building2 size={20} className="text-[#f26a2e]" />
 
-            <p className="mt-5 text-lg font-medium">
-              {organization.status}
-            </p>
+            <p className="mt-5 text-lg font-medium">{organization.status}</p>
 
             <p className="mt-1 text-sm text-white/40">
               Organisation status
@@ -705,10 +674,7 @@ export default async function ClientDashboardPage() {
             className="group rounded-[1.5rem] border border-white/[0.09] bg-white/[0.025] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.04]"
           >
             <div className="flex items-start justify-between">
-              <CreditCard
-                size={20}
-                className="text-[#f26a2e]"
-              />
+              <CreditCard size={20} className="text-[#f26a2e]" />
 
               <ArrowRight
                 size={17}
@@ -716,13 +682,9 @@ export default async function ClientDashboardPage() {
               />
             </div>
 
-            <p className="mt-5 text-lg font-medium">
-              Billing
-            </p>
+            <p className="mt-5 text-lg font-medium">Billing</p>
 
-            <p className="mt-1 text-sm text-white/40">
-              View invoices
-            </p>
+            <p className="mt-1 text-sm text-white/40">View invoices</p>
           </Link>
         </section>
 
@@ -730,9 +692,7 @@ export default async function ClientDashboardPage() {
 
         <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/[0.09] bg-white/[0.025] backdrop-blur-sm">
           <div className="border-b border-white/[0.08] px-6 py-5 sm:px-8">
-            <h2 className="font-medium">
-              Projects
-            </h2>
+            <h2 className="font-medium">Projects</h2>
 
             <p className="mt-1 text-xs text-white/35">
               Projects available to your organisation
@@ -805,14 +765,9 @@ export default async function ClientDashboardPage() {
             </div>
           ) : (
             <div className="px-6 py-10 sm:px-8">
-              <FolderKanban
-                size={22}
-                className="text-[#f26a2e]"
-              />
+              <FolderKanban size={22} className="text-[#f26a2e]" />
 
-              <h2 className="mt-5 text-lg font-medium">
-                No projects yet
-              </h2>
+              <h2 className="mt-5 text-lg font-medium">No projects yet</h2>
 
               <p className="mt-2 max-w-lg text-sm leading-6 text-white/40">
                 Projects assigned to your organisation will appear here.
@@ -828,7 +783,9 @@ export default async function ClientDashboardPage() {
 
           <div className="flex items-center gap-5">
             <span>Secure client environment</span>
+
             <span className="hidden h-1 w-1 rounded-full bg-white/20 sm:block" />
+
             <span>Perth, Australia</span>
           </div>
         </footer>
