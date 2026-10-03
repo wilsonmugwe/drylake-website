@@ -2,32 +2,34 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Check } from "lucide-react";
 import Container from "@/components/ui/Container";
 import CapabilityVisual from "@/components/visuals/CapabilityVisual";
 
 const solutions = [
   {
     number: "01",
-    title: "Custom Software",
+    title: "Software that fits the business",
+    label: "CUSTOM SOFTWARE",
     description:
-      "Purpose-built software for processes and problems that off-the-shelf tools do not solve properly.",
+      "When off-the-shelf software no longer fits the way your business works, we design and build systems around the actual workflow.",
     examples: [
-      "Web applications",
-      "Internal tools",
-      "Client portals",
-      "Mobile solutions",
+      "Internal business systems",
+      "Client & staff portals",
+      "Workflow platforms",
+      "Web & mobile applications",
     ],
     visual: "software" as const,
   },
   {
     number: "02",
-    title: "Business Automation",
+    title: "Less repetitive work",
+    label: "AUTOMATION",
     description:
-      "Reduce repetitive administration and connect workflows that currently depend on somebody remembering the next step.",
+      "We identify manual steps that consume time, create errors or depend on somebody remembering what happens next.",
     examples: [
       "Workflow automation",
-      "Notifications",
+      "Approvals & notifications",
       "Document processing",
       "AI-assisted workflows",
     ],
@@ -35,29 +37,17 @@ const solutions = [
   },
   {
     number: "03",
-    title: "Systems Integration",
+    title: "Systems that work together",
+    label: "INTEGRATION",
     description:
-      "Connect the software, platforms and data your organisation already depends on so information moves where it should.",
+      "We connect the software your business already depends on so information can move without constant copying and re-entry.",
     examples: [
-      "APIs",
-      "CRM integration",
-      "Payment systems",
+      "API integrations",
+      "CRM & finance systems",
+      "Payments",
       "Data synchronisation",
     ],
     visual: "integration" as const,
-  },
-  {
-    number: "04",
-    title: "Technical Setup",
-    description:
-      "Set up and connect the technical foundations a business needs to operate properly.",
-    examples: [
-      "Microsoft 365",
-      "Domains & email",
-      "Cloud setup",
-      "Platform migration",
-    ],
-    visual: "setup" as const,
   },
 ];
 
@@ -68,68 +58,91 @@ export default function Solutions() {
       className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-16 text-black sm:py-20 lg:py-28"
     >
       <Container className="relative z-10">
+        {/* Header */}
         <div className="grid gap-6 border-b border-black/10 pb-8 sm:pb-10 lg:grid-cols-[0.65fr_1.35fr] lg:items-end lg:gap-12">
-          <p className="section-label text-black/50">
-            01 / What We Do
-          </p>
+          <div>
+            <p className="section-label text-black/50">
+              02 / What We Do
+            </p>
+
+            <div className="mt-4 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
+              <span className="tech-label text-black/30">
+                PROBLEM → SYSTEM
+              </span>
+            </div>
+          </div>
 
           <div>
             <h2 className="max-w-4xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
-              Technology built around the problem.
+              Less workaround.
+              <br />
+              <span className="text-black/30">More workflow.</span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:mt-5 sm:text-base sm:leading-7">
-              Software, automation and technical systems designed around the
-              way your business actually needs to work.
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60 sm:mt-5 sm:text-base sm:leading-7">
+              We improve the way work moves through the business — whether that
+              means building something new, connecting what you already use or
+              automating the steps in between.
             </p>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2">
+        {/* Solutions */}
+        <div className="grid lg:grid-cols-3">
           {solutions.map((solution, index) => (
             <motion.article
               key={solution.title}
               initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.55, delay: index * 0.05 }}
-              className="group border-b border-black/10 py-7 lg:p-9 lg:odd:border-r"
+              transition={{
+                duration: 0.55,
+                delay: index * 0.06,
+              }}
+              className="
+                group border-b border-black/10 py-8
+                lg:border-b-0 lg:border-r lg:px-8 lg:py-10
+                lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0
+              "
             >
               <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-black/40">
+                  <span className="font-mono text-xs text-black/35">
                     {solution.number}
                   </span>
 
-                  <span className="tech-label flex items-center gap-2 text-black/30">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-                    SYSTEM
+                  <span className="tech-label text-black/30">
+                    {solution.label}
                   </span>
                 </div>
 
-                <div className="mt-5 sm:mt-7">
+                <div className="mt-6">
                   <CapabilityVisual type={solution.visual} />
                 </div>
 
-                <div className="mt-6 sm:mt-7">
-                  <h3 className="text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
+                <div className="mt-7 flex flex-1 flex-col">
+                  <h3 className="max-w-sm text-2xl font-semibold leading-tight tracking-[-0.045em] sm:text-3xl">
                     {solution.title}
                   </h3>
 
-                  <p className="mt-3 max-w-lg text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
+                  <p className="mt-4 max-w-lg text-sm leading-6 text-black/60 sm:text-[0.95rem]">
                     {solution.description}
                   </p>
 
-                  <div className="mt-5 grid grid-cols-2 border-t border-black/10">
-                    {solution.examples.map((example, exampleIndex) => (
+                  <div className="mt-6 border-t border-black/10">
+                    {solution.examples.map((example) => (
                       <div
                         key={example}
-                        className={`
-                          flex items-center gap-2 border-b border-black/10 py-3
-                          ${exampleIndex % 2 === 0 ? "pr-3" : "border-l pl-3"}
-                        `}
+                        className="flex items-center gap-3 border-b border-black/10 py-3"
                       >
-                        <span className="h-1 w-1 shrink-0 rounded-full bg-[#f26a2e]" />
+                        <Check
+                          size={13}
+                          strokeWidth={2}
+                          className="shrink-0 text-[#f26a2e]"
+                        />
+
                         <span className="text-xs text-black/55 sm:text-sm">
                           {example}
                         </span>
@@ -142,17 +155,32 @@ export default function Solutions() {
           ))}
         </div>
 
-        <Link
-          href="/solutions"
-          className="group mt-7 inline-flex items-center gap-2 border-b border-black pb-1 text-sm font-semibold sm:mt-9"
-        >
-          Explore what we do
+        {/* Philosophy */}
+        <div className="mt-10 grid gap-5 border-t border-black/10 pt-8 sm:mt-12 sm:pt-10 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="text-xl font-medium tracking-[-0.03em] sm:text-2xl">
+              Sometimes you shouldn&apos;t build new software.
+            </p>
 
-          <ArrowUpRight
-            size={16}
-            className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-          />
-        </Link>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55">
+              If an existing product already solves the problem properly, we
+              would rather tell you than build something your business
+              doesn&apos;t need.
+            </p>
+          </div>
+
+          <Link
+            href="/solutions"
+            className="group inline-flex w-fit items-center gap-2 border-b border-black pb-1 text-sm font-semibold"
+          >
+            Explore what we do
+
+            <ArrowUpRight
+              size={16}
+              className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+            />
+          </Link>
+        </div>
       </Container>
     </section>
   );
