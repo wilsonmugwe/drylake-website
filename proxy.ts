@@ -10,11 +10,14 @@ export default clerkMiddleware(
         userId: authState.userId,
         orgId: authState.orgId,
         sessionId: authState.sessionId,
+        jwtKeyConfigured: Boolean(process.env.CLERK_JWT_KEY),
       });
     }
   },
   {
     debug: true,
+
+    jwtKey: process.env.CLERK_JWT_KEY,
 
     contentSecurityPolicy: {
       directives: {
