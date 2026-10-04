@@ -9,6 +9,7 @@ import {
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isGstRegistered } from "@/lib/tax";
 
 export const metadata = {
   title: "Create Invoice | Drylake Admin",
@@ -211,12 +212,13 @@ export default async function NewInvoicePage({
               />
             </div>
 
+            {isGstRegistered() ? (
             <div>
               <label
                 htmlFor="tax"
                 className="text-sm font-medium"
               >
-                Tax / GST (AUD)
+                GST (AUD)
               </label>
 
               <input
@@ -232,6 +234,9 @@ export default async function NewInvoicePage({
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition focus:border-white/30 disabled:opacity-40"
               />
             </div>
+            ) : (
+              <input type="hidden" name="tax" value="0" />
+            )}
           </div>
 
           <div>

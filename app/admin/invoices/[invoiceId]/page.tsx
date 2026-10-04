@@ -16,6 +16,7 @@ import {
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
 
 export const metadata = {
   title: "Invoice | Drylake Admin",
@@ -663,7 +664,8 @@ export default async function AdminInvoicePage({
               </span>
             </div>
 
-            <div className="flex justify-between gap-6 text-sm">
+            {isGstRegistered() ? (
+<div className="flex justify-between gap-6 text-sm">
               <span className="text-white/40">
                 Tax / GST
               </span>
@@ -675,6 +677,9 @@ export default async function AdminInvoicePage({
                 )}
               </span>
             </div>
+) : (
+<p className="text-xs opacity-60">{NO_GST_NOTE}</p>
+)}
 
             <div className="border-t border-white/10 pt-4">
               <div className="flex justify-between gap-6">

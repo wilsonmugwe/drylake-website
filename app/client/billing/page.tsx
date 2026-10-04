@@ -32,7 +32,7 @@ function formatMoney(cents: number, currency: string) {
 
 function formatDate(date: string | null) {
   if (!date) {
-    return "—";
+    return "-";
   }
 
   return new Intl.DateTimeFormat("en-AU", {

@@ -11,6 +11,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProjectForm from "@/components/forms/ProjectForm";
 import Container from "@/components/ui/Container";
+import { RESPONSE_TIME } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact Drylake",
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
       "Talk to Drylake about software, automation, integrations or operational technology for your business.",
     url: "https://drylake.com.au/contact",
     type: "website",
+    images: ["/opengraph-image.png"],
   },
 };
 
@@ -34,7 +36,7 @@ const nextSteps = [
   {
     number: "01",
     title: "We read it",
-    text: "A founder reviews your enquiry and the problem you have described.",
+    text: `A founder reviews your enquiry and replies within ${RESPONSE_TIME}.`,
   },
   {
     number: "02",

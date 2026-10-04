@@ -85,7 +85,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "Drylake — Operational Software & Automation",
+        alt: "Drylake: operational software and automation for Australian businesses",
       },
     ],
   },
