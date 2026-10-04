@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import {
-  ArrowUpRight,
-  Bot,
-  Boxes,
-  Workflow,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 
@@ -17,176 +12,118 @@ const solutions = [
     label: "OPERATIONAL SOFTWARE",
     title: "Software that fits the business.",
     text: "Internal systems, portals and applications designed around the workflows your business actually depends on.",
-    examples: [
-      "Internal platforms",
-      "Client & staff portals",
-      "Workflow systems",
-      "Web & mobile applications",
-    ],
-    icon: Boxes,
+    examples:
+      "Internal platforms / Client & staff portals / Workflow systems / Web & mobile applications",
   },
   {
     number: "02",
-    label: "AUTOMATION & INTEGRATION",
-    title: "Less repetitive work.",
+    label: "AUTOMATION + INTEGRATION",
+    title: "Make the systems talk.",
     text: "Connect systems, remove duplicate handling and automate routine steps that slow teams down.",
-    examples: [
-      "Workflow automation",
-      "System integrations",
-      "Approvals & notifications",
-      "Data synchronisation",
-    ],
-    icon: Workflow,
+    examples:
+      "Workflow automation / System integrations / Approvals / Notifications / Data synchronisation",
   },
   {
     number: "03",
     label: "APPLIED AI",
     title: "AI where it earns its place.",
     text: "Use AI where it can improve a real workflow, reduce work or create genuinely useful functionality.",
-    examples: [
-      "Document processing",
-      "AI-assisted workflows",
-      "Internal tools",
-      "Decision support",
-    ],
-    icon: Bot,
+    examples:
+      "Document processing / AI-assisted workflows / Internal tools / Decision support",
   },
-];
-
-const contexts = [
-  "Construction & trades",
-  "Care & services",
-  "Professional services",
-  "Multi-location businesses",
 ];
 
 export default function Solutions() {
   return (
     <section
       id="solutions"
-      className="relative overflow-hidden bg-[#f2f0e9] py-10 text-black sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-[#f2f0e9] py-12 text-black sm:py-20 lg:py-24"
     >
-      <Container>
-        <div className="grid gap-4 border-b border-black/10 pb-6 sm:gap-6 sm:pb-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12 lg:pb-10">
-          <div>
-            <p className="section-label text-black/40">
-              02 / What We Do
-            </p>
+      <div
+        aria-hidden="true"
+        className="drylake-contours-light pointer-events-none absolute inset-0 opacity-55"
+      />
 
-            <div className="mt-2.5 flex items-center gap-2 sm:mt-4">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
-              <span className="tech-label text-black/30">
-                PROBLEM → SYSTEM
-              </span>
-            </div>
-          </div>
+      <Container className="relative z-10">
+        <div className="grid gap-5 border-b border-black/10 pb-8 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16 lg:pb-12">
+          <p className="section-label text-black/38">
+            02 / What We Do
+          </p>
 
           <div>
-            <h2 className="max-w-4xl text-[2.35rem] font-semibold leading-[0.93] tracking-[-0.055em] sm:text-[clamp(3rem,6vw,6rem)] sm:leading-[0.9] sm:tracking-[-0.065em]">
+            <h2 className="max-w-5xl text-[clamp(2.55rem,11vw,4rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[clamp(4rem,6.5vw,6.5rem)]">
               Less workaround.
-              <span className="text-black/25">
-                {" "}More workflow.
+              <br />
+
+              <span className="text-black/24">
+                More workflow.
               </span>
             </h2>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-black/55 sm:mt-5 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/52 sm:mt-6 sm:text-base sm:leading-7">
               We build and connect technology that helps growing Australian
               businesses operate more effectively.
             </p>
           </div>
         </div>
 
-        {/* Solutions */}
-        <div className="grid lg:grid-cols-3">
-          {solutions.map((solution, index) => {
-            const Icon = solution.icon;
+        <div>
+          {solutions.map((solution, index) => (
+            <motion.article
+              key={solution.number}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{
+                duration: 0.45,
+                delay: index * 0.04,
+              }}
+              className="
+                group
+                grid
+                border-b
+                border-black/10
+                py-7
+                sm:py-9
+                lg:grid-cols-[0.15fr_0.55fr_1fr]
+                lg:gap-12
+                lg:py-11
+              "
+            >
+              <div className="flex items-start justify-between lg:block">
+                <span className="font-mono text-xs text-[#f26a2e]">
+                  {solution.number}
+                </span>
 
-            return (
-              <motion.article
-                key={solution.title}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.05,
-                }}
-                className="
-                  group border-b border-black/10 py-5
-                  sm:py-8
-                  lg:min-h-[390px] lg:border-b-0 lg:border-r lg:px-7
-                  lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0
-                "
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[0.65rem] text-black/30 sm:text-xs">
-                    {solution.number}
-                  </span>
-
-                  <Icon
-                    size={18}
-                    strokeWidth={1.5}
-                    className="text-black/30 transition-colors group-hover:text-[#f26a2e]"
-                  />
-                </div>
-
-                <p className="tech-label mt-4 text-black/30 sm:mt-7">
+                <span className="tech-label text-black/25 lg:hidden">
                   {solution.label}
-                </p>
+                </span>
+              </div>
 
-                <h3 className="mt-1.5 max-w-sm text-xl font-semibold leading-tight tracking-[-0.04em] sm:mt-2 sm:text-2xl">
+              <div className="mt-4 lg:mt-0">
+                <span className="tech-label hidden text-black/28 lg:block">
+                  {solution.label}
+                </span>
+
+                <h3 className="mt-1 max-w-lg text-[1.9rem] font-semibold leading-[0.98] tracking-[-0.05em] sm:text-[2.5rem] lg:mt-4 lg:text-[3rem]">
                   {solution.title}
                 </h3>
+              </div>
 
-                <p className="mt-2.5 max-w-sm text-sm leading-5 text-black/50 sm:mt-3 sm:leading-6">
+              <div className="mt-4 lg:mt-0 lg:pt-7">
+                <p className="max-w-xl text-sm leading-6 text-black/52 sm:text-base sm:leading-7">
                   {solution.text}
                 </p>
 
-                <div className="mt-4 grid grid-cols-2 gap-x-4 border-t border-black/10 pt-3 sm:mt-6 sm:block sm:pt-4">
-                  {solution.examples.map((example, exampleIndex) => (
-                    <div
-                      key={example}
-                      className={`
-                        items-start gap-2 py-1
-                        ${exampleIndex > 1 ? "hidden sm:flex" : "flex"}
-                      `}
-                    >
-                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#f26a2e]" />
-
-                      <span className="text-xs leading-5 text-black/45 sm:text-sm">
-                        {example}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </motion.article>
-            );
-          })}
+                <p className="mt-4 max-w-xl font-mono text-[0.62rem] uppercase leading-5 tracking-[0.08em] text-black/28 sm:text-[0.68rem]">
+                  {solution.examples}
+                </p>
+              </div>
+            </motion.article>
+          ))}
         </div>
 
-        {/* Business contexts */}
-        <div className="border-b border-black/10 py-5 sm:py-6">
-          <p className="tech-label text-black/25">
-            BUILT FOR REAL OPERATIONS
-          </p>
-
-          <div className="mt-3 flex flex-wrap gap-x-2 gap-y-1.5 text-xs text-black/45 sm:text-sm">
-            {contexts.map((context, index) => (
-              <span key={context} className="flex items-center gap-2">
-                {index > 0 && (
-                  <span className="text-black/15">
-                    /
-                  </span>
-                )}
-
-                {context}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-end pt-5">
+        <div className="flex justify-end pt-6">
           <Link
             href="/solutions"
             className="group inline-flex items-center gap-2 text-sm font-semibold"
@@ -195,7 +132,7 @@ export default function Solutions() {
 
             <ArrowUpRight
               size={15}
-              className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             />
           </Link>
         </div>
