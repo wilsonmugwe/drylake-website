@@ -43,13 +43,31 @@ export default function Navbar() {
   return (
     <>
       {/* =====================================================
-          DESKTOP / MAIN NAVBAR
+          MAIN NAVBAR
       ===================================================== */}
 
-      <header className="absolute inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-black text-white">
+      <header
+        className="
+          absolute
+          inset-x-0
+          top-0
+          z-50
+          border-b
+          border-white/[0.07]
+          bg-black
+          text-white
+        "
+      >
         <Container>
           <nav
-            className="flex h-[92px] items-center justify-between sm:h-[100px] lg:h-[112px]"
+            className="
+              flex
+              h-[92px]
+              items-center
+              justify-between
+              sm:h-[100px]
+              lg:h-[112px]
+            "
             aria-label="Primary navigation"
           >
             {/* =================================================
@@ -59,11 +77,17 @@ export default function Navbar() {
             <Link
               href="/"
               aria-label="Drylake home"
-              className="relative z-50 flex shrink-0 items-center"
+              className="
+                relative
+                z-50
+                flex
+                shrink-0
+                items-center
+              "
             >
               <Image
                 src="/brand/drylake-logo-black.png"
-                alt="Drylake"
+                alt="Drylake Technologies"
                 width={1536}
                 height={1024}
                 priority
@@ -113,7 +137,7 @@ export default function Navbar() {
               ))}
 
               {/* ===============================================
-                  SIGNED OUT
+                  DESKTOP — SIGNED OUT
               =============================================== */}
 
               <Show when="signed-out">
@@ -137,6 +161,9 @@ export default function Navbar() {
                   <Link
                     href="/sign-up"
                     className="
+                      flex
+                      items-center
+                      gap-2
                       rounded-full
                       border
                       border-white/20
@@ -145,20 +172,23 @@ export default function Navbar() {
                       text-sm
                       font-medium
                       text-white
-                      transition-colors
+                      transition-all
                       hover:border-white/40
                       hover:bg-white/[0.06]
                     "
                   >
-                    Create Account
+                    <UserPlus size={15} />
+
+                    <span>Create Account</span>
                   </Link>
                 </div>
               </Show>
 
               {/* ===============================================
-                  SIGNED IN
+                  DESKTOP — SIGNED IN
 
                   /portal performs the server-side role check:
+
                   Platform admin -> /admin
                   Client user    -> /client
               =============================================== */}
@@ -186,7 +216,7 @@ export default function Navbar() {
                   >
                     <LayoutDashboard size={15} />
 
-                    Portal
+                    <span>Portal</span>
                   </Link>
 
                   <UserButton
@@ -200,13 +230,12 @@ export default function Navbar() {
               </Show>
 
               {/* ===============================================
-                  PRIMARY CTA
+                  DESKTOP — PRIMARY CTA
               =============================================== */}
 
               <Link
                 href="/contact"
                 className="
-                  button-light
                   group
                   flex
                   items-center
@@ -219,17 +248,36 @@ export default function Navbar() {
                   py-3
                   text-sm
                   font-semibold
-                  transition-transform
+                  !text-black
+                  transition-all
                   hover:-translate-y-0.5
+                  hover:bg-white/90
+                  hover:!text-black
                 "
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+                <span
+                  className="
+                    h-1.5
+                    w-1.5
+                    shrink-0
+                    rounded-full
+                    bg-[#f26a2e]
+                  "
+                />
 
-                <span>Start a Conversation</span>
+                <span className="!text-black">
+                  Start a Conversation
+                </span>
 
                 <ArrowUpRight
                   size={16}
-                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  strokeWidth={2}
+                  className="
+                    !text-black
+                    transition-transform
+                    group-hover:translate-x-0.5
+                    group-hover:-translate-y-0.5
+                  "
                 />
               </Link>
             </div>
@@ -259,10 +307,16 @@ export default function Navbar() {
                 border-white/30
                 bg-black
                 text-white
+                transition-colors
+                hover:border-white/50
                 lg:hidden
               "
             >
-              {open ? <X size={18} /> : <Menu size={18} />}
+              {open ? (
+                <X size={18} strokeWidth={2} />
+              ) : (
+                <Menu size={18} strokeWidth={2} />
+              )}
             </button>
           </nav>
         </Container>
@@ -300,9 +354,18 @@ export default function Navbar() {
               lg:hidden
             "
           >
-            <Container className="flex min-h-[100svh] flex-col justify-center pb-8 pt-[92px]">
+            <Container
+              className="
+                flex
+                min-h-[100svh]
+                flex-col
+                justify-center
+                pb-8
+                pt-[92px]
+              "
+            >
               {/* ===============================================
-                  PUBLIC LINKS
+                  MOBILE — PUBLIC LINKS
               =============================================== */}
 
               <div className="border-t border-white/10">
@@ -334,21 +397,31 @@ export default function Navbar() {
                         text-[1.45rem]
                         font-medium
                         tracking-[-0.035em]
-                        text-white
+                        !text-white
+                        transition-colors
+                        hover:!text-white
                         sm:py-3.5
                         sm:text-[1.7rem]
                       "
                     >
                       <span>{link.label}</span>
 
-                      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                      <span
+                        className="
+                          h-1.5
+                          w-1.5
+                          shrink-0
+                          rounded-full
+                          bg-white/25
+                        "
+                      />
                     </Link>
                   </motion.div>
                 ))}
               </div>
 
               {/* ===============================================
-                  AUTHENTICATION
+                  MOBILE — AUTHENTICATION
               =============================================== */}
 
               <div className="mt-5">
@@ -358,37 +431,52 @@ export default function Navbar() {
 
                 <Show when="signed-out">
                   <div className="grid grid-cols-2 gap-2.5">
+                    {/* SIGN IN */}
+
                     <Link
                       href="/sign-in"
                       onClick={closeMenu}
                       className="
                         flex
+                        min-h-[48px]
                         items-center
                         justify-center
                         gap-2
                         rounded-full
                         border
                         border-white/20
+                        bg-transparent
                         px-4
                         py-3
                         text-sm
                         font-semibold
-                        text-white
-                        transition-colors
+                        !text-white
+                        transition-all
                         hover:border-white/40
                         hover:bg-white/[0.05]
+                        hover:!text-white
                       "
                     >
-                      <LogIn size={16} />
+                      <LogIn
+                        size={16}
+                        strokeWidth={2}
+                        className="!text-white"
+                      />
 
-                      Sign In
+                      <span className="!text-white">
+                        Sign In
+                      </span>
                     </Link>
+
+                    {/* CREATE ACCOUNT */}
 
                     <Link
                       href="/sign-up"
                       onClick={closeMenu}
                       className="
+                        group
                         flex
+                        min-h-[48px]
                         items-center
                         justify-center
                         gap-2
@@ -400,14 +488,22 @@ export default function Navbar() {
                         py-3
                         text-sm
                         font-semibold
-                        text-black
-                        transition-transform
+                        !text-black
+                        transition-all
                         hover:-translate-y-0.5
+                        hover:bg-white/90
+                        hover:!text-black
                       "
                     >
-                      <UserPlus size={16} />
+                      <UserPlus
+                        size={16}
+                        strokeWidth={2}
+                        className="!text-black"
+                      />
 
-                      Create Account
+                      <span className="!text-black">
+                        Create Account
+                      </span>
                     </Link>
                   </div>
                 </Show>
@@ -415,7 +511,7 @@ export default function Navbar() {
                 {/* ---------------------------------------------
                     SIGNED IN
 
-                    Both desktop and mobile now use /portal.
+                    /portal handles admin/client routing.
                 --------------------------------------------- */}
 
                 <Show when="signed-in">
@@ -425,6 +521,7 @@ export default function Navbar() {
                       onClick={closeMenu}
                       className="
                         flex
+                        min-h-[48px]
                         flex-1
                         items-center
                         justify-center
@@ -436,18 +533,34 @@ export default function Navbar() {
                         py-3
                         text-sm
                         font-semibold
-                        text-white
+                        !text-white
                         transition-colors
                         hover:border-white/40
                         hover:bg-white/[0.05]
+                        hover:!text-white
                       "
                     >
-                      <LayoutDashboard size={16} />
+                      <LayoutDashboard
+                        size={16}
+                        strokeWidth={2}
+                        className="!text-white"
+                      />
 
-                      Portal
+                      <span className="!text-white">
+                        Portal
+                      </span>
                     </Link>
 
-                    <div className="flex h-11 w-11 items-center justify-center">
+                    <div
+                      className="
+                        flex
+                        h-11
+                        w-11
+                        shrink-0
+                        items-center
+                        justify-center
+                      "
+                    >
                       <UserButton
                         appearance={{
                           elements: {
@@ -461,16 +574,17 @@ export default function Navbar() {
               </div>
 
               {/* ===============================================
-                  MAIN CTA
+                  MOBILE — MAIN CTA
               =============================================== */}
 
               <Link
                 href="/contact"
                 onClick={closeMenu}
                 className="
-                  button-light
+                  group
                   mt-3
                   flex
+                  min-h-[52px]
                   items-center
                   justify-between
                   rounded-full
@@ -481,25 +595,71 @@ export default function Navbar() {
                   py-3
                   text-sm
                   font-semibold
+                  !text-black
+                  transition-all
+                  hover:-translate-y-0.5
+                  hover:bg-white/90
+                  hover:!text-black
                 "
               >
-                <span className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+                <span
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                    !text-black
+                  "
+                >
+                  <span
+                    className="
+                      h-1.5
+                      w-1.5
+                      shrink-0
+                      rounded-full
+                      bg-[#f26a2e]
+                    "
+                  />
 
-                  Start a Conversation
+                  <span className="!text-black">
+                    Start a Conversation
+                  </span>
                 </span>
 
-                <ArrowUpRight size={17} />
+                <ArrowUpRight
+                  size={17}
+                  strokeWidth={2}
+                  className="
+                    !text-black
+                    transition-transform
+                    group-hover:translate-x-0.5
+                    group-hover:-translate-y-0.5
+                  "
+                />
               </Link>
 
               {/* ===============================================
-                  LOCAL IDENTITY
+                  MOBILE — LOCAL IDENTITY
               =============================================== */}
 
               <div className="mt-5 flex items-center gap-2.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+                <span
+                  className="
+                    h-1.5
+                    w-1.5
+                    shrink-0
+                    rounded-full
+                    bg-[#f26a2e]
+                  "
+                />
 
-                <p className="text-[0.62rem] uppercase tracking-[0.16em] text-white/35">
+                <p
+                  className="
+                    text-[0.62rem]
+                    uppercase
+                    tracking-[0.16em]
+                    text-white/35
+                  "
+                >
                   Perth, Western Australia
                 </p>
               </div>
