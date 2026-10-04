@@ -6,78 +6,76 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
-  Check,
 } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 
-const inputs = [
-  "Email",
-  "Forms",
-  "Spreadsheets",
-  "Existing software",
-];
-
-const outputs = [
-  "CRM",
-  "Finance",
-  "Reporting",
-  "Automation",
+const nodes = [
+  { label: "CRM", position: "left-[2%] top-[18%]" },
+  { label: "FINANCE", position: "right-[1%] top-[16%]" },
+  { label: "FORMS", position: "left-[4%] bottom-[18%]" },
+  { label: "REPORTING", position: "right-[0%] bottom-[18%]" },
 ];
 
 export default function Hero() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="hero-large-grid relative overflow-hidden bg-black text-white lg:min-h-[100svh]">
-      {/* Background depth */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_42%,rgba(242,106,46,0.08),transparent_28%)]" />
-
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.012)_45%,transparent_65%)]" />
-
-      {/* Desktop architectural divider */}
+    <section
+      className="
+        relative
+        overflow-hidden
+        bg-black
+        text-white
+        lg:min-h-[100svh]
+      "
+    >
+      {/* Subtle grid */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 right-[42%] top-0 hidden w-px bg-white/[0.06] xl:block"
+        className="signal-grid-dark pointer-events-none absolute inset-0 opacity-35"
+      />
+
+      {/* Drylake contour */}
+      <div
+        aria-hidden="true"
+        className="drylake-contours pointer-events-none absolute inset-0 opacity-70"
       />
 
       <Container
         className="
-          relative z-10
-          flex flex-col
-          pb-7 pt-[104px]
-          sm:pb-12 sm:pt-[140px]
-          lg:min-h-[100svh] lg:justify-center lg:pb-16 lg:pt-[150px]
+          relative
+          z-10
+          flex
+          flex-col
+          pb-8
+          pt-[112px]
+          sm:pb-12
+          sm:pt-[138px]
+          lg:min-h-[100svh]
+          lg:justify-center
+          lg:pb-14
+          lg:pt-[140px]
         "
       >
-        <div className="grid items-center gap-8 sm:gap-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.72fr)] lg:gap-14 xl:gap-20">
-          {/* =====================================================
-              LEFT
-              ===================================================== */}
-          <div className="relative z-10">
+        <div className="grid items-center gap-9 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+          {/* Copy */}
+          <div>
             <motion.div
               initial={
                 reduceMotion
                   ? undefined
-                  : {
-                      opacity: 0,
-                      y: 8,
-                    }
+                  : { opacity: 0, y: 8 }
               }
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.45,
-              }}
-              className="section-label mb-3 flex items-center gap-2.5 text-white/45 sm:mb-7 sm:gap-3"
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="section-label flex items-center gap-3 text-white/40"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+              <span className="signal-dot h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-              <span>Perth, Western Australia</span>
+              <span>Perth / Western Australia</span>
 
-              <span className="hidden text-white/20 sm:inline">
+              <span className="hidden text-white/15 sm:inline">
                 /
               </span>
 
@@ -86,37 +84,28 @@ export default function Hero() {
               </span>
             </motion.div>
 
-            {/* Main headline */}
             <motion.h1
               initial={
                 reduceMotion
                   ? undefined
-                  : {
-                      opacity: 0,
-                      y: 26,
-                    }
+                  : { opacity: 0, y: 24 }
               }
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.75,
+                duration: 0.7,
                 delay: 0.08,
                 ease: [0.22, 1, 0.36, 1],
               }}
               className="
-                max-w-[900px]
-                text-[3.05rem]
+                mt-5
+                max-w-[920px]
+                text-[clamp(3.15rem,14vw,4.5rem)]
                 font-semibold
-                leading-[0.86]
-                tracking-[-0.07em]
-                text-white
-                min-[390px]:text-[3.25rem]
-                sm:text-[clamp(4.8rem,10vw,7.5rem)]
-                sm:leading-[0.84]
-                sm:tracking-[-0.075em]
-                lg:text-[clamp(5.3rem,7.6vw,8.2rem)]
+                leading-[0.87]
+                tracking-[-0.072em]
+                sm:mt-7
+                sm:text-[clamp(5rem,10vw,8rem)]
+                lg:text-[clamp(5.5rem,7.4vw,8.3rem)]
               "
             >
               Your business
@@ -124,67 +113,48 @@ export default function Hero() {
               shouldn&apos;t run
               <br />
 
-              <span className="text-white/38">
+              <span className="text-white/32">
                 on workarounds.
               </span>
             </motion.h1>
 
-            {/* Supporting copy */}
             <motion.div
               initial={
                 reduceMotion
                   ? undefined
-                  : {
-                      opacity: 0,
-                      y: 14,
-                    }
+                  : { opacity: 0, y: 12 }
               }
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.6,
-                delay: 0.24,
+                duration: 0.55,
+                delay: 0.22,
               }}
-              className="mt-4 sm:mt-8"
+              className="mt-5 sm:mt-8"
             >
-              <p className="max-w-[39rem] text-[0.9rem] leading-6 text-white/65 sm:text-lg sm:leading-7">
-                Drylake builds practical software and automation for
-                Australian businesses that have outgrown manual processes,
-                disconnected systems and everyday workarounds.
+              <p className="max-w-[38rem] text-[0.92rem] leading-6 text-white/58 sm:text-lg sm:leading-7">
+                Drylake builds practical software, automation and connected
+                systems for Australian businesses that have outgrown manual
+                processes.
               </p>
 
-              {/* Secondary copy hidden on small phones.
-                  The hero already communicates enough without it. */}
-              <p className="mt-3 hidden max-w-[36rem] text-sm leading-6 text-white/35 sm:block sm:text-[0.95rem]">
-                From repetitive admin and disconnected tools to software that
-                fits the way your business actually works.
-              </p>
-
-              {/* CTAs */}
-              <div className="mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:gap-3">
+              <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row">
                 <Link
                   href="/contact"
                   className="
                     button-light
                     group
                     flex
+                    min-h-[50px]
                     items-center
-                    justify-center
-                    gap-2
-                    rounded-full
-                    border
-                    border-white
+                    justify-between
+                    gap-4
                     bg-white
                     px-5
-                    py-3
                     text-sm
                     font-semibold
-                    transition-transform
-                    hover:-translate-y-0.5
-                    sm:px-7
-                    sm:py-4
+                    sm:w-fit
+                    sm:min-w-[220px]
+                    sm:px-6
                   "
                 >
                   <span>Start a conversation</span>
@@ -200,28 +170,27 @@ export default function Hero() {
                   className="
                     group
                     flex
+                    min-h-[50px]
                     items-center
-                    justify-center
-                    gap-2
-                    rounded-full
+                    justify-between
+                    gap-4
                     border
-                    border-white/25
-                    bg-transparent
+                    border-white/18
                     px-5
-                    py-3
                     text-sm
                     font-semibold
-                    text-white
+                    text-white/70
                     transition-colors
-                    hover:border-white/55
-                    sm:px-7
-                    sm:py-4
+                    hover:border-white/35
+                    hover:text-white
+                    sm:w-fit
+                    sm:min-w-[190px]
                   "
                 >
-                  <span>See how we work</span>
+                  <span>How we work</span>
 
                   <ArrowDown
-                    size={16}
+                    size={15}
                     className="transition-transform group-hover:translate-y-0.5"
                   />
                 </Link>
@@ -229,289 +198,189 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* =====================================================
-              DESKTOP SYSTEM VISUAL
-              ===================================================== */}
+          {/* Desktop system/orbit visual */}
           <motion.div
             initial={
               reduceMotion
                 ? undefined
-                : {
-                    opacity: 0,
-                    x: 24,
-                  }
+                : { opacity: 0, scale: 0.96 }
             }
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{
               duration: 0.8,
-              delay: 0.28,
-              ease: [0.22, 1, 0.36, 1],
+              delay: 0.25,
             }}
-            className="relative hidden lg:block"
+            className="relative hidden aspect-square max-h-[520px] lg:block"
           >
-            <div className="mb-4 flex items-center justify-between">
-              <span className="tech-label text-white/30">
-                Illustrative system
-              </span>
+            <div className="absolute inset-[7%] rounded-[50%] border border-white/[0.08] [transform:rotate(-12deg)_scaleY(.62)]" />
 
-              <span className="flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.14em] text-white/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-                Connected
-              </span>
-            </div>
+            <div className="absolute inset-[18%] rounded-[50%] border border-white/[0.07] [transform:rotate(17deg)_scaleY(.68)]" />
 
-            <div className="relative border border-white/[0.12] bg-black/55 p-5 backdrop-blur-sm xl:p-6">
-              {/* Corner markers */}
-              <div className="absolute left-0 top-0 h-4 w-px bg-white/35" />
-              <div className="absolute left-0 top-0 h-px w-4 bg-white/35" />
-              <div className="absolute bottom-0 right-0 h-4 w-px bg-white/35" />
-              <div className="absolute bottom-0 right-0 h-px w-4 bg-white/35" />
+            <div className="absolute inset-[29%] rounded-[50%] border border-white/[0.06] [transform:rotate(-24deg)_scaleY(.72)]" />
 
-              {/* Current state */}
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="tech-label text-white/30">
-                    Business today
-                  </span>
+            {/* Routing lines */}
+            <div className="absolute left-[12%] right-[50%] top-1/2 h-px bg-white/10" />
+            <div className="absolute left-1/2 right-[12%] top-1/2 h-px bg-white/10" />
+            <div className="absolute bottom-[12%] left-1/2 top-1/2 w-px bg-white/10" />
+            <div className="absolute bottom-1/2 left-1/2 top-[12%] w-px bg-white/10" />
 
-                  <span className="tech-label text-[#f26a2e]/70">
-                    Fragmented
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {inputs.map((item, index) => (
-                    <motion.div
-                      key={item}
-                      initial={
-                        reduceMotion
-                          ? undefined
-                          : {
-                              opacity: 0,
-                              y: 8,
-                            }
+            {/* Core */}
+            <div
+              className="
+                absolute
+                left-1/2
+                top-1/2
+                flex
+                h-[150px]
+                w-[150px]
+                -translate-x-1/2
+                -translate-y-1/2
+                flex-col
+                items-center
+                justify-center
+                border
+                border-[#f26a2e]/35
+                bg-black/80
+                backdrop-blur
+              "
+            >
+              <motion.span
+                animate={
+                  reduceMotion
+                    ? undefined
+                    : {
+                        boxShadow: [
+                          "0 0 0 0 rgba(242,106,46,0.15)",
+                          "0 0 0 10px rgba(242,106,46,0)",
+                          "0 0 0 0 rgba(242,106,46,0)",
+                        ],
                       }
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      transition={{
-                        delay: 0.42 + index * 0.06,
-                      }}
-                      className="border border-white/[0.1] bg-white/[0.025] px-3 py-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+                }
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                }}
+                className="h-2 w-2 rounded-full bg-[#f26a2e]"
+              />
 
-                        <span className="text-xs text-white/55">
-                          {item}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
+              <span className="mt-4 text-sm font-semibold tracking-[-0.02em]">
+                DRYLAKE
+              </span>
 
-              {/* Direction */}
-              <div className="relative flex h-16 items-center justify-center">
-                <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/[0.13]" />
-
-                <motion.div
-                  animate={
-                    reduceMotion
-                      ? undefined
-                      : {
-                          y: [-5, 5, -5],
-                        }
-                  }
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-black"
-                >
-                  <ArrowDown
-                    size={12}
-                    className="text-[#f26a2e]"
-                  />
-                </motion.div>
-              </div>
-
-              {/* Connected system */}
-              <div className="border border-[#f26a2e]/45 bg-[#f26a2e]/[0.055]">
-                <div className="flex items-center justify-between border-b border-[#f26a2e]/20 px-4 py-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="orange-glow h-2 w-2 rounded-full bg-[#f26a2e]" />
-
-                    <span className="text-sm font-semibold text-white">
-                      Operations System
-                    </span>
-                  </div>
-
-                  <span className="tech-label text-white/25">
-                    Drylake
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2">
-                  {outputs.map((item, index) => (
-                    <div
-                      key={item}
-                      className={`
-                        flex items-center gap-2.5 px-4 py-3
-                        ${
-                          index < 2
-                            ? "border-b border-white/[0.07]"
-                            : ""
-                        }
-                        ${
-                          index % 2 === 0
-                            ? "border-r border-white/[0.07]"
-                            : ""
-                        }
-                      `}
-                    >
-                      <Check
-                        size={12}
-                        strokeWidth={2}
-                        className="text-[#f26a2e]"
-                      />
-
-                      <span className="text-xs text-white/55">
-                        {item}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
-                <span className="tech-label text-white/25">
-                  One connected workflow
-                </span>
-
-                <ArrowRight
-                  size={14}
-                  className="text-white/30"
-                />
-              </div>
+              <span className="tech-label mt-1 text-white/25">
+                Connected system
+              </span>
             </div>
 
-            <p className="mt-3 max-w-sm text-[0.65rem] leading-5 text-white/25">
-              Conceptual example only. Every system is designed around the
-              business, workflow and existing technology.
-            </p>
+            {nodes.map((node, index) => (
+              <motion.div
+                key={node.label}
+                initial={
+                  reduceMotion
+                    ? undefined
+                    : { opacity: 0 }
+                }
+                animate={{ opacity: 1 }}
+                transition={{
+                  delay: 0.5 + index * 0.08,
+                }}
+                className={`absolute ${node.position}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
+
+                  <span className="tech-label text-white/32">
+                    {node.label}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Orbiting signal */}
+            <motion.div
+              animate={
+                reduceMotion
+                  ? undefined
+                  : {
+                      rotate: 360,
+                    }
+              }
+              transition={{
+                duration: 18,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              className="absolute inset-[7%]"
+            >
+              <span className="absolute left-1/2 top-0 h-2 w-2 rounded-full bg-[#f26a2e]" />
+            </motion.div>
+
+            <div className="absolute bottom-0 left-0 flex items-center gap-2">
+              <span className="tech-label text-white/20">
+                SYSTEM STATUS
+              </span>
+
+              <ArrowRight size={11} className="text-white/15" />
+
+              <span className="tech-label text-[#f26a2e]/70">
+                CONNECTED
+              </span>
+            </div>
           </motion.div>
         </div>
 
-        {/* =====================================================
-            COMPACT MOBILE SYSTEM VISUAL
-            ===================================================== */}
+        {/* Mobile connected-system visual */}
         <motion.div
           initial={
             reduceMotion
               ? undefined
-              : {
-                  opacity: 0,
-                  y: 10,
-                }
+              : { opacity: 0, y: 10 }
           }
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{
-            duration: 0.6,
-            delay: 0.35,
+            duration: 0.55,
+            delay: 0.32,
           }}
-          className="mt-6 border-y border-white/[0.09] py-3.5 sm:mt-10 sm:py-5 lg:hidden"
+          className="mt-7 border-y border-white/[0.09] py-4 lg:hidden"
         >
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <span className="tech-label block text-white/25">
-                Workarounds
+          <div className="flex items-center">
+            <div className="flex-1">
+              <span className="tech-label text-white/25">
+                INPUT
               </span>
 
-              <p className="mt-1 truncate text-xs text-white/45">
-                Email · Sheets · Forms
+              <p className="mt-1 text-xs text-white/45">
+                Email · Forms · Sheets
               </p>
             </div>
 
-            <ArrowRight
-              size={14}
-              className="shrink-0 text-[#f26a2e]"
-            />
+            <div className="mx-3 flex items-center">
+              <span className="h-px w-4 bg-white/15" />
 
-            <div className="min-w-0 flex-1 border-l border-[#f26a2e]/35 pl-3">
-              <span className="tech-label block text-[#f26a2e]/80">
-                Connected
+              <span className="signal-dot h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
+              <span className="h-px w-4 bg-[#f26a2e]/35" />
+            </div>
+
+            <div className="flex-1 text-right">
+              <span className="tech-label text-[#f26a2e]/75">
+                CONNECTED
               </span>
 
-              <p className="mt-1 truncate text-xs font-semibold text-white/70">
+              <p className="mt-1 text-xs font-medium text-white/65">
                 One workflow
               </p>
             </div>
           </div>
         </motion.div>
 
-        {/* =====================================================
-            TRUST STRIP
-            ===================================================== */}
-        <motion.div
-          initial={
-            reduceMotion
-              ? undefined
-              : {
-                  opacity: 0,
-                }
-          }
-          animate={{
-            opacity: 1,
-          }}
-          transition={{
-            duration: 0.6,
-            delay: 0.55,
-          }}
-          className="
-            mt-5
-            flex
-            flex-wrap
-            items-center
-            gap-x-3
-            gap-y-1.5
-            text-[0.57rem]
-            uppercase
-            tracking-[0.12em]
-            text-white/30
-            sm:mt-8
-            sm:gap-x-4
-            sm:gap-y-2
-            sm:border-t
-            sm:border-white/[0.08]
-            sm:pt-5
-            sm:text-[0.62rem]
-            sm:tracking-[0.14em]
-            lg:mt-12
-          "
-        >
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.56rem] uppercase tracking-[0.13em] text-white/25 sm:mt-8">
           <span>Australian company</span>
-          <span className="text-white/12">/</span>
+          <span>/</span>
           <span>Founder-led</span>
-          <span className="text-white/12">/</span>
+          <span>/</span>
           <span>Perth, WA</span>
-
-          <span className="hidden text-white/12 sm:inline">
-            /
-          </span>
-
-          <span className="hidden sm:inline">
-            ABN 70 702 662 557
-          </span>
-        </motion.div>
+        </div>
       </Container>
     </section>
   );
