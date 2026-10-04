@@ -9,11 +9,10 @@
   --foreground: #090909;
 
   --black: #090909;
-  --off-black: #0a0a0a;
-
+  --off-black: #0b0b0b;
   --white: #ffffff;
-  --mineral: #f2f0e9;
 
+  --mineral: #f2f0e9;
   --orange: #f26a2e;
 
   --muted-black: rgba(0, 0, 0, 0.55);
@@ -35,11 +34,14 @@ html {
 body {
   margin: 0;
   overflow-x: hidden;
-
   background: var(--background);
   color: var(--foreground);
 
-  font-family: var(--font-geist), Arial, Helvetica, sans-serif;
+  font-family:
+    var(--font-geist),
+    Arial,
+    Helvetica,
+    sans-serif;
 
   text-rendering: optimizeLegibility;
 
@@ -53,7 +55,7 @@ body {
 
 ::selection {
   background: var(--orange);
-  color: #090909;
+  color: var(--black);
 }
 
 a {
@@ -88,7 +90,7 @@ button:disabled {
 .section-label {
   font-family: var(--font-geist-mono), monospace;
 
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
 
   letter-spacing: 0.16em;
@@ -100,7 +102,8 @@ button:disabled {
 .tech-label {
   font-family: var(--font-geist-mono), monospace;
 
-  font-size: 0.62rem;
+  font-size: 0.6rem;
+  font-weight: 500;
 
   letter-spacing: 0.14em;
   line-height: 1.4;
@@ -110,8 +113,6 @@ button:disabled {
 
 /* =========================================================
    BUTTON CONTRAST
-
-   Buttons remain readable before hover.
    ========================================================= */
 
 .button-dark,
@@ -137,84 +138,35 @@ button:disabled {
 }
 
 /* =========================================================
-   STANDARD LIGHT GRID
+   DRYLAKE SIGNAL GRID
+
+   Used sparingly. The grid is no longer the main brand device.
    ========================================================= */
 
-.light-grid {
+.signal-grid-dark {
   background-image:
     linear-gradient(
-      rgba(0, 0, 0, 0.035) 1px,
+      rgba(255, 255, 255, 0.025) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.035) 1px,
+      rgba(255, 255, 255, 0.025) 1px,
       transparent 1px
     );
 
-  background-size: 72px 72px;
+  background-size: 96px 96px;
 }
 
-/* =========================================================
-   STANDARD DARK GRID
-   ========================================================= */
-
-.hero-grid {
+.signal-grid-light {
   background-image:
     linear-gradient(
-      rgba(255, 255, 255, 0.035) 1px,
+      rgba(0, 0, 0, 0.025) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px
-    );
-
-  background-size: 72px 72px;
-}
-
-/* =========================================================
-   LARGE DRYLAKE DARK GRID
-
-   Used on the opening hero and footer.
-
-   These intentionally use much larger boxes so the effect
-   feels architectural rather than like graph paper.
-   ========================================================= */
-
-.hero-large-grid {
-  background-color: #000000;
-
-  background-image:
-    linear-gradient(
-      rgba(255, 255, 255, 0.045) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.045) 1px,
-      transparent 1px
-    );
-
-  background-size: 160px 160px;
-}
-
-/* =========================================================
-   MOBILE DARK GRID
-   ========================================================= */
-
-.mobile-dark-grid {
-  background-color: #000000;
-
-  background-image:
-    linear-gradient(
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.035) 1px,
+      rgba(0, 0, 0, 0.025) 1px,
       transparent 1px
     );
 
@@ -222,200 +174,56 @@ button:disabled {
 }
 
 /* =========================================================
-   MICRO GRIDS
+   DRYLAKE CONTOURS
+
+   Abstract dry-lake / topographic geometry.
    ========================================================= */
 
-.micro-grid {
-  background-image:
-    linear-gradient(
-      rgba(0, 0, 0, 0.045) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.045) 1px,
-      transparent 1px
-    );
-
-  background-size: 28px 28px;
-}
-
-.micro-grid-dark {
-  background-image:
-    linear-gradient(
-      rgba(255, 255, 255, 0.055) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.055) 1px,
-      transparent 1px
-    );
-
-  background-size: 28px 28px;
-}
-
-/* =========================================================
-   MINERAL TEXTURE
-   ========================================================= */
-
-.mineral-texture::before {
-  content: "";
-
-  position: absolute;
-  inset: 0;
-
-  pointer-events: none;
-
+.drylake-contours {
   background-image:
     radial-gradient(
-      circle at 20% 20%,
-      rgba(0, 0, 0, 0.035) 0,
-      transparent 24%
-    ),
-    radial-gradient(
-      circle at 80% 60%,
-      rgba(0, 0, 0, 0.025) 0,
-      transparent 28%
-    ),
-    linear-gradient(
-      115deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.018) 48%,
-      transparent 50%
+      ellipse at 68% 45%,
+      transparent 0 28%,
+      rgba(255, 255, 255, 0.04) 28.3%,
+      transparent 28.7% 37%,
+      rgba(255, 255, 255, 0.032) 37.3%,
+      transparent 37.7% 47%,
+      rgba(255, 255, 255, 0.025) 47.3%,
+      transparent 47.7%
     );
-
-  opacity: 0.7;
 }
 
-.mineral-texture::after {
-  content: "";
-
-  position: absolute;
-  inset: 0;
-
-  pointer-events: none;
-
+.drylake-contours-light {
   background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 3px,
-      rgba(0, 0, 0, 0.012) 4px
-    );
-
-  opacity: 0.45;
-}
-
-/* =========================================================
-   TECHNICAL PANELS
-   ========================================================= */
-
-.tech-panel {
-  position: relative;
-
-  overflow: hidden;
-
-  border: 1px solid rgba(0, 0, 0, 0.1);
-
-  background:
-    linear-gradient(
-      rgba(255, 255, 255, 0.78),
-      rgba(255, 255, 255, 0.78)
-    ),
-    linear-gradient(
-      135deg,
-      rgba(0, 0, 0, 0.025),
-      transparent
+    radial-gradient(
+      ellipse at 72% 45%,
+      transparent 0 28%,
+      rgba(0, 0, 0, 0.035) 28.3%,
+      transparent 28.7% 37%,
+      rgba(0, 0, 0, 0.025) 37.3%,
+      transparent 37.7% 47%,
+      rgba(0, 0, 0, 0.02) 47.3%,
+      transparent 47.7%
     );
 }
 
-.tech-panel-dark {
-  position: relative;
-
-  overflow: hidden;
-
-  border: 1px solid rgba(255, 255, 255, 0.1);
-
-  background:
-    linear-gradient(
-      rgba(255, 255, 255, 0.025),
-      rgba(255, 255, 255, 0.025)
-    ),
-    #0a0a0a;
-}
-
 /* =========================================================
-   TECHNICAL CORNERS
-   ========================================================= */
-
-.tech-corner::before,
-.tech-corner::after {
-  content: "";
-
-  position: absolute;
-
-  width: 18px;
-  height: 18px;
-
-  pointer-events: none;
-}
-
-.tech-corner::before {
-  top: 10px;
-  left: 10px;
-
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
-  border-left: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.tech-corner::after {
-  right: 10px;
-  bottom: 10px;
-
-  border-right: 1px solid rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-/* =========================================================
-   SIGNAL EFFECTS
+   SIGNALS
    ========================================================= */
 
 .signal-dot {
   box-shadow:
-    0 0 0 5px rgba(242, 106, 46, 0.12);
+    0 0 0 5px rgba(242, 106, 46, 0.1),
+    0 0 24px rgba(242, 106, 46, 0.15);
 }
 
-.orange-glow {
-  box-shadow:
-    0 0 0 6px rgba(242, 106, 46, 0.08),
-    0 0 28px rgba(242, 106, 46, 0.18);
-}
-
-/* =========================================================
-   TOPOGRAPHIC LINES
-   ========================================================= */
-
-.topographic-lines {
-  background-image:
-    radial-gradient(
-      ellipse at 50% 50%,
-      transparent 30%,
-      rgba(0, 0, 0, 0.045) 30.4%,
-      transparent 31%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      transparent 43%,
-      rgba(0, 0, 0, 0.035) 43.4%,
-      transparent 44%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      transparent 57%,
-      rgba(0, 0, 0, 0.03) 57.4%,
-      transparent 58%
-    );
+.signal-line {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(242, 106, 46, 0.8),
+    transparent
+  );
 }
 
 /* =========================================================
@@ -435,7 +243,6 @@ textarea:-webkit-autofill,
 textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus {
   -webkit-text-fill-color: #090909;
-
   transition: background-color 9999s ease-out;
 }
 
@@ -463,7 +270,7 @@ select:focus-visible {
    ========================================================= */
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 9px;
 }
 
 ::-webkit-scrollbar-track {
@@ -471,8 +278,7 @@ select:focus-visible {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.22);
-
+  background: rgba(0, 0, 0, 0.2);
   border: 3px solid #ffffff;
   border-radius: 999px;
 }
@@ -482,29 +288,23 @@ select:focus-visible {
 }
 
 /* =========================================================
-   MOBILE COMPACTION
-
-   This is intentionally more aggressive than desktop.
+   MOBILE
    ========================================================= */
 
 @media (max-width: 640px) {
-  .light-grid,
-  .hero-grid {
-    background-size: 48px 48px;
-  }
-
-  .hero-large-grid {
-    background-size: 96px 96px;
-  }
-
   .section-label {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     letter-spacing: 0.13em;
   }
 
   .tech-label {
-    font-size: 0.55rem;
+    font-size: 0.54rem;
     letter-spacing: 0.12em;
+  }
+
+  .signal-grid-dark,
+  .signal-grid-light {
+    background-size: 64px 64px;
   }
 }
 
