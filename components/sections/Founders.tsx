@@ -11,7 +11,8 @@ const founders = [
     role: "Co-founder & CEO",
     focus:
       "Business leadership, strategy and making sure the solution addresses the problem the business actually needs solved.",
-    disciplines: "Strategy / Operations / Commercial",
+    credential: "Master of Project Management (IT), Edith Cowan University",
+    disciplines: "Strategy / Project Management / Commercial",
   },
   {
     number: "02",
@@ -96,6 +97,12 @@ export default function Founders() {
                   <p className="mt-4 max-w-lg text-sm leading-6 text-black/50 sm:text-base sm:leading-7">
                     {founder.focus}
                   </p>
+
+                  {founder.credential && (
+                    <p className="mt-3 max-w-lg text-sm leading-6 text-black/70">
+                      {founder.credential}
+                    </p>
+                  )}
 
                   <p className="tech-label mt-5 text-black/25">
                     {founder.disciplines}
