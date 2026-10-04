@@ -11,7 +11,7 @@ const founders = [
     role: "Co-founder & CEO",
     focus:
       "Business leadership, strategy and making sure the solution addresses the problem the business actually needs solved.",
-    credential: "Master of Project Management (IT), Edith Cowan University",
+    credential: "Master of Project Management, Edith Cowan University",
     disciplines: "Strategy / Project Management / Commercial",
   },
   {
