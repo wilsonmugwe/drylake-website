@@ -1,7 +1,13 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { Minus, Plus } from "lucide-react";
+import {
+  AnimatePresence,
+  motion,
+} from "motion/react";
+import {
+  Minus,
+  Plus,
+} from "lucide-react";
 import { useState } from "react";
 
 import Container from "@/components/ui/Container";
@@ -40,33 +46,27 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="relative overflow-hidden bg-white py-10 text-black sm:py-20 lg:py-24"
+      className="bg-white py-12 text-black sm:py-20 lg:py-24"
     >
       <Container>
-        <div className="grid gap-5 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
+        <div className="grid gap-6 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
           <div>
-            <p className="section-label text-black/40">
+            <p className="section-label text-black/38">
               05 / FAQ
             </p>
-
-            <div className="mt-2.5 flex items-center gap-2 sm:mt-4">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
-              <span className="tech-label text-black/30">
-                BEFORE WE TALK
-              </span>
-            </div>
           </div>
 
           <div>
-            <h2 className="max-w-3xl text-[2.35rem] font-semibold leading-[0.93] tracking-[-0.055em] sm:text-[clamp(3rem,5.5vw,5.5rem)] sm:leading-[0.9]">
+            <h2 className="max-w-4xl text-[clamp(2.5rem,11vw,4rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[clamp(3.8rem,5.5vw,5.5rem)]">
               A few things you
-              <span className="text-black/25">
-                {" "}might be wondering.
+              <br />
+
+              <span className="text-black/24">
+                might be wondering.
               </span>
             </h2>
 
-            <div className="mt-5 border-t border-black/10 sm:mt-8">
+            <div className="mt-7 border-t border-black/10 sm:mt-10">
               {faqs.map((faq, index) => {
                 const isOpen = active === index;
 
@@ -81,25 +81,23 @@ export default function FAQ() {
                         setActive(isOpen ? null : index)
                       }
                       aria-expanded={isOpen}
-                      className="flex w-full items-start justify-between gap-4 py-3.5 text-left sm:py-5"
+                      className="flex min-h-[60px] w-full items-center gap-3 py-3 text-left sm:min-h-[72px]"
                     >
-                      <div className="flex gap-3 sm:gap-4">
-                        <span
-                          className={`mt-1 font-mono text-[0.6rem] ${
-                            isOpen
-                              ? "text-[#f26a2e]"
-                              : "text-black/25"
-                          }`}
-                        >
-                          0{index + 1}
-                        </span>
+                      <span
+                        className={`w-7 shrink-0 font-mono text-[0.58rem] ${
+                          isOpen
+                            ? "text-[#f26a2e]"
+                            : "text-black/22"
+                        }`}
+                      >
+                        0{index + 1}
+                      </span>
 
-                        <h3 className="max-w-2xl text-sm font-semibold leading-5 tracking-[-0.02em] sm:text-lg sm:leading-6">
-                          {faq.question}
-                        </h3>
-                      </div>
+                      <h3 className="flex-1 text-sm font-semibold leading-5 tracking-[-0.02em] sm:text-lg">
+                        {faq.question}
+                      </h3>
 
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-black/10">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-black/10">
                         {isOpen ? (
                           <Minus size={13} />
                         ) : (
@@ -124,11 +122,11 @@ export default function FAQ() {
                             opacity: 0,
                           }}
                           transition={{
-                            duration: 0.22,
+                            duration: 0.2,
                           }}
                           className="overflow-hidden"
                         >
-                          <p className="max-w-2xl pb-5 pl-8 pr-8 text-sm leading-6 text-black/50 sm:pl-9 sm:text-base sm:leading-7">
+                          <p className="max-w-2xl pb-6 pl-10 pr-4 text-sm leading-6 text-black/48 sm:text-base sm:leading-7">
                             {faq.answer}
                           </p>
                         </motion.div>
