@@ -7,9 +7,7 @@ import {
   ArrowUpRight,
   LayoutDashboard,
   LogIn,
-  Menu,
   UserPlus,
-  X,
 } from "lucide-react";
 import { useState } from "react";
 import { Show, UserButton } from "@clerk/nextjs";
@@ -18,22 +16,79 @@ import Container from "@/components/ui/Container";
 
 const links = [
   {
+    number: "01",
     label: "What We Do",
     href: "/#solutions",
   },
   {
+    number: "02",
     label: "How We Work",
     href: "/#approach",
   },
   {
+    number: "03",
     label: "About",
     href: "/#about",
   },
   {
+    number: "04",
     label: "Contact",
     href: "/contact",
   },
 ];
+
+function DrylakeMenuIcon({
+  open,
+}: {
+  open: boolean;
+}) {
+  return (
+    <div className="relative h-5 w-6">
+      <span
+        className={`
+          absolute left-0 top-[3px] h-px bg-current
+          transition-all duration-300
+          ${
+            open
+              ? "top-[9px] w-6 rotate-45"
+              : "w-[18px]"
+          }
+        `}
+      />
+
+      <span
+        className={`
+          absolute right-0 top-[9px] h-px bg-current
+          transition-all duration-300
+          ${
+            open
+              ? "w-0 opacity-0"
+              : "w-6 opacity-100"
+          }
+        `}
+      />
+
+      <span
+        className={`
+          absolute bottom-[3px] left-0 h-px bg-current
+          transition-all duration-300
+          ${
+            open
+              ? "bottom-[10px] w-6 -rotate-45"
+              : "w-[14px]"
+          }
+        `}
+      />
+
+      {!open && (
+        <>
+          <span className="absolute right-[4px] top-[1px] h-1 w-1 rounded-full bg-[#f26a2e]" />
+          <span className="absolute bottom-[1px] left-[12px] h-1 w-1 rounded-full bg-white/45" />
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -41,632 +96,350 @@ export default function Navbar() {
   const closeMenu = () => setOpen(false);
 
   return (
-    <>
-      {/* =====================================================
-          MAIN NAVBAR
-      ===================================================== */}
-
-      <header
-        className="
-          absolute
-          inset-x-0
-          top-0
-          z-50
-          border-b
-          border-white/[0.07]
-          bg-black
-          text-white
-        "
-      >
-        <Container>
-          <nav
-            className="
-              flex
-              h-[92px]
-              items-center
-              justify-between
-              sm:h-[100px]
-              lg:h-[112px]
-            "
-            aria-label="Primary navigation"
+    <header
+      className="
+        absolute
+        inset-x-0
+        top-0
+        z-50
+        border-b
+        border-white/[0.08]
+        bg-black/95
+        text-white
+        backdrop-blur-md
+      "
+    >
+      <Container>
+        <nav
+          className="
+            relative
+            flex
+            h-[82px]
+            items-center
+            justify-between
+            sm:h-[92px]
+            lg:h-[104px]
+          "
+          aria-label="Primary navigation"
+        >
+          <Link
+            href="/"
+            aria-label="Drylake home"
+            onClick={closeMenu}
+            className="flex shrink-0 items-center"
           >
-            {/* =================================================
-                LOGO
-            ================================================= */}
+            <Image
+              src="/brand/drylake-logo-black.png"
+              alt="Drylake Technologies"
+              width={1536}
+              height={1024}
+              priority
+              className="
+                h-[70px]
+                w-[108px]
+                object-contain
+                sm:h-[78px]
+                sm:w-[122px]
+                lg:h-[90px]
+                lg:w-[140px]
+              "
+            />
+          </Link>
+
+          {/* Desktop */}
+          <div className="hidden items-center gap-6 lg:flex">
+            {links.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="
+                  text-sm
+                  font-medium
+                  text-white/55
+                  transition-colors
+                  hover:text-white
+                "
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            <Show when="signed-out">
+              <Link
+                href="/sign-in"
+                className="text-sm font-medium text-white/55 transition-colors hover:text-white"
+              >
+                Sign In
+              </Link>
+            </Show>
+
+            <Show when="signed-in">
+              <Link
+                href="/portal"
+                className="flex items-center gap-2 text-sm font-medium text-white/60 transition-colors hover:text-white"
+              >
+                <LayoutDashboard size={14} />
+                Portal
+              </Link>
+
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9",
+                  },
+                }}
+              />
+            </Show>
 
             <Link
-              href="/"
-              aria-label="Drylake home"
+              href="/contact"
               className="
-                relative
-                z-50
+                group
+                ml-1
                 flex
-                shrink-0
                 items-center
+                gap-3
+                border
+                border-white
+                bg-white
+                px-5
+                py-3
+                text-sm
+                font-semibold
+                !text-black
+                transition-transform
+                hover:-translate-y-0.5
               "
             >
-              <Image
-                src="/brand/drylake-logo-black.png"
-                alt="Drylake Technologies"
-                width={1536}
-                height={1024}
-                priority
-                className="
-                  h-[82px]
-                  w-[125px]
-                  object-contain
-                  object-center
-                  sm:h-[90px]
-                  sm:w-[140px]
-                  lg:h-[102px]
-                  lg:w-[155px]
-                  xl:h-[106px]
-                  xl:w-[165px]
-                "
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
+              <span>Start a Conversation</span>
+
+              <ArrowUpRight
+                size={15}
+                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               />
             </Link>
+          </div>
 
-            {/* =================================================
-                DESKTOP NAVIGATION
-            ================================================= */}
+          {/* Mobile */}
+          <button
+            type="button"
+            aria-label={open ? "Close navigation" : "Open navigation"}
+            aria-expanded={open}
+            aria-controls="mobile-navigation"
+            onClick={() => setOpen((value) => !value)}
+            className="
+              flex
+              h-11
+              w-11
+              items-center
+              justify-center
+              border
+              border-white/15
+              text-white
+              transition-colors
+              hover:border-white/35
+              lg:hidden
+            "
+          >
+            <DrylakeMenuIcon open={open} />
+          </button>
+        </nav>
 
-            <div className="hidden items-center gap-5 lg:flex xl:gap-7">
-              {links.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="
-                    relative
-                    text-sm
-                    font-medium
-                    text-white/70
-                    transition-colors
-                    after:absolute
-                    after:-bottom-2
-                    after:left-0
-                    after:h-px
-                    after:w-0
-                    after:bg-[#f26a2e]
-                    after:transition-all
-                    hover:text-white
-                    hover:after:w-full
-                  "
-                >
-                  {link.label}
-                </Link>
-              ))}
+        {/* Floating mobile panel */}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              id="mobile-navigation"
+              initial={{
+                opacity: 0,
+                y: -10,
+                scale: 0.985,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                y: -8,
+                scale: 0.985,
+              }}
+              transition={{
+                duration: 0.22,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="
+                absolute
+                left-4
+                right-4
+                top-[74px]
+                z-50
+                border
+                border-white/15
+                bg-[#0b0b0b]
+                shadow-2xl
+                sm:left-8
+                sm:right-8
+                sm:top-[84px]
+                lg:hidden
+              "
+            >
+              <div className="px-4 pt-3">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <span className="tech-label text-white/25">
+                    Navigation
+                  </span>
 
-              {/* ===============================================
-                  DESKTOP — SIGNED OUT
-              =============================================== */}
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-              <Show when="signed-out">
-                <div className="ml-1 flex items-center gap-2">
+                    <span className="tech-label text-white/25">
+                      Perth / WA
+                    </span>
+                  </div>
+                </div>
+
+                <nav aria-label="Mobile navigation">
+                  {links.map((link) => (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      onClick={closeMenu}
+                      className="
+                        group
+                        flex
+                        min-h-[52px]
+                        items-center
+                        border-b
+                        border-white/[0.08]
+                        py-2
+                      "
+                    >
+                      <span className="w-10 font-mono text-[0.58rem] text-white/20">
+                        {link.number}
+                      </span>
+
+                      <span className="flex-1 text-[1.05rem] font-medium tracking-[-0.025em] text-white/80">
+                        {link.label}
+                      </span>
+
+                      <ArrowUpRight
+                        size={14}
+                        className="text-white/20 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#f26a2e]"
+                      />
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 p-4">
+                <Show when="signed-out">
                   <Link
                     href="/sign-in"
+                    onClick={closeMenu}
                     className="
-                      rounded-full
-                      px-3
-                      py-2
+                      flex
+                      min-h-[46px]
+                      items-center
+                      justify-center
+                      gap-2
+                      border
+                      border-white/15
                       text-sm
                       font-medium
                       text-white/70
-                      transition-colors
-                      hover:text-white
                     "
                   >
+                    <LogIn size={14} />
                     Sign In
                   </Link>
 
                   <Link
                     href="/sign-up"
+                    onClick={closeMenu}
                     className="
                       flex
+                      min-h-[46px]
                       items-center
+                      justify-center
                       gap-2
-                      rounded-full
                       border
-                      border-white/20
-                      px-4
-                      py-2.5
+                      border-white/15
                       text-sm
                       font-medium
-                      text-white
-                      transition-all
-                      hover:border-white/40
-                      hover:bg-white/[0.06]
+                      text-white/70
                     "
                   >
-                    <UserPlus size={15} />
-
-                    <span>Create Account</span>
+                    <UserPlus size={14} />
+                    Create Account
                   </Link>
-                </div>
-              </Show>
-
-              {/* ===============================================
-                  DESKTOP — SIGNED IN
-
-                  /portal performs the server-side role check:
-
-                  Platform admin -> /admin
-                  Client user    -> /client
-              =============================================== */}
-
-              <Show when="signed-in">
-                <div className="ml-1 flex items-center gap-3">
-                  <Link
-                    href="/portal"
-                    className="
-                      flex
-                      items-center
-                      gap-2
-                      rounded-full
-                      border
-                      border-white/20
-                      px-4
-                      py-2.5
-                      text-sm
-                      font-medium
-                      text-white
-                      transition-colors
-                      hover:border-white/40
-                      hover:bg-white/[0.06]
-                    "
-                  >
-                    <LayoutDashboard size={15} />
-
-                    <span>Portal</span>
-                  </Link>
-
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "h-9 w-9",
-                      },
-                    }}
-                  />
-                </div>
-              </Show>
-
-              {/* ===============================================
-                  DESKTOP — PRIMARY CTA
-              =============================================== */}
-
-              <Link
-                href="/contact"
-                className="
-                  group
-                  flex
-                  items-center
-                  gap-2
-                  rounded-full
-                  border
-                  border-white
-                  bg-white
-                  px-5
-                  py-3
-                  text-sm
-                  font-semibold
-                  !text-black
-                  transition-all
-                  hover:-translate-y-0.5
-                  hover:bg-white/90
-                  hover:!text-black
-                "
-              >
-                <span
-                  className="
-                    h-1.5
-                    w-1.5
-                    shrink-0
-                    rounded-full
-                    bg-[#f26a2e]
-                  "
-                />
-
-                <span className="!text-black">
-                  Start a Conversation
-                </span>
-
-                <ArrowUpRight
-                  size={16}
-                  strokeWidth={2}
-                  className="
-                    !text-black
-                    transition-transform
-                    group-hover:translate-x-0.5
-                    group-hover:-translate-y-0.5
-                  "
-                />
-              </Link>
-            </div>
-
-            {/* =================================================
-                MOBILE MENU BUTTON
-            ================================================= */}
-
-            <button
-              type="button"
-              aria-label={
-                open ? "Close navigation" : "Open navigation"
-              }
-              aria-expanded={open}
-              aria-controls="mobile-navigation"
-              onClick={() => setOpen((value) => !value)}
-              className="
-                relative
-                z-50
-                flex
-                h-10
-                w-10
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-white/30
-                bg-black
-                text-white
-                transition-colors
-                hover:border-white/50
-                lg:hidden
-              "
-            >
-              {open ? (
-                <X size={18} strokeWidth={2} />
-              ) : (
-                <Menu size={18} strokeWidth={2} />
-              )}
-            </button>
-          </nav>
-        </Container>
-      </header>
-
-      {/* =====================================================
-          MOBILE NAVIGATION
-      ===================================================== */}
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="mobile-navigation"
-            initial={{
-              y: "-100%",
-            }}
-            animate={{
-              y: 0,
-            }}
-            exit={{
-              y: "-100%",
-            }}
-            transition={{
-              duration: 0.4,
-              ease: [0.76, 0, 0.24, 1],
-            }}
-            className="
-              mobile-dark-grid
-              fixed
-              inset-0
-              z-40
-              overflow-y-auto
-              bg-black
-              text-white
-              lg:hidden
-            "
-          >
-            <Container
-              className="
-                flex
-                min-h-[100svh]
-                flex-col
-                justify-center
-                pb-8
-                pt-[92px]
-              "
-            >
-              {/* ===============================================
-                  MOBILE — PUBLIC LINKS
-              =============================================== */}
-
-              <div className="border-t border-white/10">
-                {links.map((link, index) => (
-                  <motion.div
-                    key={link.label}
-                    initial={{
-                      opacity: 0,
-                      y: 10,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    transition={{
-                      delay: 0.08 + index * 0.045,
-                    }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={closeMenu}
-                      className="
-                        flex
-                        items-center
-                        justify-between
-                        border-b
-                        border-white/10
-                        py-3
-                        text-[1.45rem]
-                        font-medium
-                        tracking-[-0.035em]
-                        !text-white
-                        transition-colors
-                        hover:!text-white
-                        sm:py-3.5
-                        sm:text-[1.7rem]
-                      "
-                    >
-                      <span>{link.label}</span>
-
-                      <span
-                        className="
-                          h-1.5
-                          w-1.5
-                          shrink-0
-                          rounded-full
-                          bg-white/25
-                        "
-                      />
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* ===============================================
-                  MOBILE — AUTHENTICATION
-              =============================================== */}
-
-              <div className="mt-5">
-                {/* ---------------------------------------------
-                    SIGNED OUT
-                --------------------------------------------- */}
-
-                <Show when="signed-out">
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {/* SIGN IN */}
-
-                    <Link
-                      href="/sign-in"
-                      onClick={closeMenu}
-                      className="
-                        flex
-                        min-h-[48px]
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-full
-                        border
-                        border-white/20
-                        bg-transparent
-                        px-4
-                        py-3
-                        text-sm
-                        font-semibold
-                        !text-white
-                        transition-all
-                        hover:border-white/40
-                        hover:bg-white/[0.05]
-                        hover:!text-white
-                      "
-                    >
-                      <LogIn
-                        size={16}
-                        strokeWidth={2}
-                        className="!text-white"
-                      />
-
-                      <span className="!text-white">
-                        Sign In
-                      </span>
-                    </Link>
-
-                    {/* CREATE ACCOUNT */}
-
-                    <Link
-                      href="/sign-up"
-                      onClick={closeMenu}
-                      className="
-                        group
-                        flex
-                        min-h-[48px]
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-full
-                        border
-                        border-white
-                        bg-white
-                        px-4
-                        py-3
-                        text-sm
-                        font-semibold
-                        !text-black
-                        transition-all
-                        hover:-translate-y-0.5
-                        hover:bg-white/90
-                        hover:!text-black
-                      "
-                    >
-                      <UserPlus
-                        size={16}
-                        strokeWidth={2}
-                        className="!text-black"
-                      />
-
-                      <span className="!text-black">
-                        Create Account
-                      </span>
-                    </Link>
-                  </div>
                 </Show>
-
-                {/* ---------------------------------------------
-                    SIGNED IN
-
-                    /portal handles admin/client routing.
-                --------------------------------------------- */}
 
                 <Show when="signed-in">
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href="/portal"
-                      onClick={closeMenu}
-                      className="
-                        flex
-                        min-h-[48px]
-                        flex-1
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-full
-                        border
-                        border-white/20
-                        px-5
-                        py-3
-                        text-sm
-                        font-semibold
-                        !text-white
-                        transition-colors
-                        hover:border-white/40
-                        hover:bg-white/[0.05]
-                        hover:!text-white
-                      "
-                    >
-                      <LayoutDashboard
-                        size={16}
-                        strokeWidth={2}
-                        className="!text-white"
-                      />
+                  <Link
+                    href="/portal"
+                    onClick={closeMenu}
+                    className="
+                      col-span-1
+                      flex
+                      min-h-[46px]
+                      items-center
+                      justify-center
+                      gap-2
+                      border
+                      border-white/15
+                      text-sm
+                      font-medium
+                      text-white/70
+                    "
+                  >
+                    <LayoutDashboard size={14} />
+                    Portal
+                  </Link>
 
-                      <span className="!text-white">
-                        Portal
-                      </span>
-                    </Link>
-
-                    <div
-                      className="
-                        flex
-                        h-11
-                        w-11
-                        shrink-0
-                        items-center
-                        justify-center
-                      "
-                    >
-                      <UserButton
-                        appearance={{
-                          elements: {
-                            avatarBox: "h-10 w-10",
-                          },
-                        }}
-                      />
-                    </div>
+                  <div className="flex min-h-[46px] items-center justify-center border border-white/15">
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: "h-8 w-8",
+                        },
+                      }}
+                    />
                   </div>
                 </Show>
-              </div>
 
-              {/* ===============================================
-                  MOBILE — MAIN CTA
-              =============================================== */}
-
-              <Link
-                href="/contact"
-                onClick={closeMenu}
-                className="
-                  group
-                  mt-3
-                  flex
-                  min-h-[52px]
-                  items-center
-                  justify-between
-                  rounded-full
-                  border
-                  border-white
-                  bg-white
-                  px-5
-                  py-3
-                  text-sm
-                  font-semibold
-                  !text-black
-                  transition-all
-                  hover:-translate-y-0.5
-                  hover:bg-white/90
-                  hover:!text-black
-                "
-              >
-                <span
+                <Link
+                  href="/contact"
+                  onClick={closeMenu}
                   className="
+                    group
+                    col-span-2
                     flex
+                    min-h-[50px]
                     items-center
-                    gap-2
+                    justify-between
+                    bg-white
+                    px-4
+                    text-sm
+                    font-semibold
                     !text-black
                   "
                 >
-                  <span
-                    className="
-                      h-1.5
-                      w-1.5
-                      shrink-0
-                      rounded-full
-                      bg-[#f26a2e]
-                    "
-                  />
-
-                  <span className="!text-black">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
                     Start a Conversation
                   </span>
-                </span>
 
-                <ArrowUpRight
-                  size={17}
-                  strokeWidth={2}
-                  className="
-                    !text-black
-                    transition-transform
-                    group-hover:translate-x-0.5
-                    group-hover:-translate-y-0.5
-                  "
-                />
-              </Link>
-
-              {/* ===============================================
-                  MOBILE — LOCAL IDENTITY
-              =============================================== */}
-
-              <div className="mt-5 flex items-center gap-2.5">
-                <span
-                  className="
-                    h-1.5
-                    w-1.5
-                    shrink-0
-                    rounded-full
-                    bg-[#f26a2e]
-                  "
-                />
-
-                <p
-                  className="
-                    text-[0.62rem]
-                    uppercase
-                    tracking-[0.16em]
-                    text-white/35
-                  "
-                >
-                  Perth, Western Australia
-                </p>
+                  <ArrowUpRight size={16} />
+                </Link>
               </div>
-            </Container>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Container>
+    </header>
   );
 }
