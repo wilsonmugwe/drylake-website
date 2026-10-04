@@ -20,15 +20,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://drylake.com.au"),
 
-  /*
-   * Homepage title:
-   * - identifies Drylake
-   * - explains the core offer
-   * - establishes the Australian market
-   *
-   * Individual pages can still provide their own titles and
-   * Next.js will apply the "%s | Drylake" template.
-   */
   title: {
     default: "Drylake | Operational Software & Automation Australia",
     template: "%s | Drylake",
@@ -78,12 +69,6 @@ export const metadata: Metadata = {
     },
   },
 
-  /*
-   * Social sharing metadata.
-   *
-   * We will add a dedicated 1200 × 630 Open Graph image
-   * separately rather than pointing this at the normal logo.
-   */
   openGraph: {
     type: "website",
     locale: "en_AU",
@@ -94,6 +79,15 @@ export const metadata: Metadata = {
 
     description:
       "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
+
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Drylake — Operational Software & Automation",
+      },
+    ],
   },
 
   twitter: {
@@ -103,6 +97,8 @@ export const metadata: Metadata = {
 
     description:
       "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
+
+    images: ["/opengraph-image.png"],
   },
 
   category: "technology",
