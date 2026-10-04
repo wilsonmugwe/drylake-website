@@ -9,78 +9,92 @@ import Container from "@/components/ui/Container";
 
 export default function ContactCTA() {
   return (
-    <section className="hero-large-grid relative overflow-hidden bg-black py-10 text-white sm:py-20 lg:py-28">
+    <section className="relative overflow-hidden bg-black py-12 text-white sm:py-20 lg:py-24">
+      {/* Network geometry */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-20 -top-20 h-[220px] w-[220px] sm:-right-32 sm:-top-32 sm:h-[420px] sm:w-[420px] lg:-right-40 lg:-top-40 lg:h-[520px] lg:w-[520px]"
+        className="pointer-events-none absolute inset-0"
       >
-        <div className="absolute inset-0 rounded-full border border-white/[0.04]" />
-        <div className="absolute inset-[22%] rounded-full border border-white/[0.05]" />
-        <div className="absolute inset-[44%] rounded-full border border-white/[0.07]" />
+        <div className="absolute right-[12%] top-0 h-[38%] w-px bg-white/[0.05]" />
 
-        <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f26a2e]" />
+        <div className="absolute right-[12%] top-[38%] h-px w-[22%] bg-white/[0.05]" />
+
+        <div className="absolute right-[34%] top-[38%] h-[32%] w-px bg-white/[0.05]" />
+
+        <div className="absolute right-[34%] top-[70%] h-px w-[18%] bg-white/[0.05]" />
+
+        <span className="signal-dot absolute right-[11.8%] top-[37.6%] h-2 w-2 rounded-full bg-[#f26a2e]" />
+
+        <span className="absolute right-[33.8%] top-[69.6%] h-1.5 w-1.5 rounded-full bg-white/20" />
       </div>
 
       <Container className="relative z-10">
-        <p className="section-label flex items-center gap-2 text-white/40">
+        <p className="section-label flex items-center gap-2.5 text-white/35">
           <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
           Start a Conversation
         </p>
 
-        <div className="mt-4 grid gap-7 sm:mt-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-end lg:gap-16">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-end lg:gap-16">
           <div>
-            <h2 className="max-w-5xl text-[2.7rem] font-semibold leading-[0.88] tracking-[-0.06em] sm:text-[clamp(4rem,8vw,8rem)] sm:leading-[0.86] sm:tracking-[-0.07em]">
+            <h2 className="max-w-5xl text-[clamp(2.9rem,13vw,4.5rem)] font-semibold leading-[0.88] tracking-[-0.065em] sm:text-[clamp(4.5rem,8vw,8rem)]">
               Tell us what&apos;s
               <br />
 
-              <span className="text-white/30">
+              <span className="text-white/28">
                 slowing you down.
               </span>
             </h2>
 
-            <p className="mt-3 max-w-xl text-sm leading-5 text-white/50 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/48 sm:mt-6 sm:text-base sm:leading-7">
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>
 
             <Link
               href="/contact"
-              className="button-light group mt-6 flex w-full items-center justify-between rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold transition-transform hover:-translate-y-0.5 sm:mt-8 sm:w-fit sm:min-w-[230px] sm:px-6 sm:py-4"
+              className="
+                button-light
+                group
+                mt-6
+                flex
+                min-h-[52px]
+                w-full
+                items-center
+                justify-between
+                bg-white
+                px-5
+                text-sm
+                font-semibold
+                sm:mt-8
+                sm:w-fit
+                sm:min-w-[240px]
+              "
             >
               <span>Start a conversation</span>
 
               <ArrowUpRight
-                size={18}
-                className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+                size={17}
+                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               />
             </Link>
           </div>
 
-          {/* Direct contact */}
           <div className="border-t border-white/10 pt-5 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
             <p className="tech-label text-[#f26a2e]">
-              TALK TO A PERSON, NOT A SALES QUEUE.
+              TALK TO A PERSON, NOT A SALES QUEUE
             </p>
 
             <a
               href="tel:+61420565457"
-              className="group mt-4 flex items-center justify-between border-b border-white/10 pb-3"
+              className="group mt-4 flex items-center justify-between border-b border-white/10 py-3"
             >
               <div className="flex items-center gap-3">
-                <Phone
-                  size={15}
-                  className="text-white/30"
-                />
+                <Phone size={14} className="text-white/28" />
 
-                <div>
-                  <span className="block text-[0.6rem] uppercase tracking-[0.12em] text-white/25">
-                    Call
-                  </span>
-
-                  <span className="mt-0.5 block text-sm font-medium text-white/70">
-                    +61 420 565 457
-                  </span>
-                </div>
+                <span className="text-sm text-white/62">
+                  +61 420 565 457
+                </span>
               </div>
 
               <ArrowUpRight
@@ -94,20 +108,11 @@ export default function ContactCTA() {
               className="group flex items-center justify-between py-3"
             >
               <div className="flex items-center gap-3">
-                <Mail
-                  size={15}
-                  className="text-white/30"
-                />
+                <Mail size={14} className="text-white/28" />
 
-                <div>
-                  <span className="block text-[0.6rem] uppercase tracking-[0.12em] text-white/25">
-                    Email
-                  </span>
-
-                  <span className="mt-0.5 block text-sm font-medium text-white/70">
-                    hello@drylake.com.au
-                  </span>
-                </div>
+                <span className="text-sm text-white/62">
+                  hello@drylake.com.au
+                </span>
               </div>
 
               <ArrowUpRight
