@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Founders from "@/components/sections/Founders";
@@ -6,9 +7,21 @@ import ContactCTA from "@/components/sections/ContactCTA";
 import Container from "@/components/ui/Container";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Drylake",
   description:
-    "Drylake is a Perth-based technology company building practical software and technical systems.",
+    "Drylake is a Perth-based technology company building practical software, automation and technical systems for Australian businesses.",
+
+  alternates: {
+    canonical: "/about",
+  },
+
+  openGraph: {
+    title: "About Drylake",
+    description:
+      "A Perth technology company building practical software, automation and technical systems for Australian businesses.",
+    url: "https://drylake.com.au/about",
+    type: "website",
+  },
 };
 
 const values = [
