@@ -1,9 +1,29 @@
+import type { Metadata } from "next";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Solutions from "@/components/sections/Solutions";
 import SmallThings from "@/components/sections/SmallThings";
 import Approach from "@/components/sections/Approach";
 import ContactCTA from "@/components/sections/ContactCTA";
+
+export const metadata: Metadata = {
+  title: "Software, Automation & AI Solutions",
+  description:
+    "Drylake builds custom software, automation, AI and connected systems for Australian businesses, from small technical fixes to complete platforms.",
+
+  alternates: {
+    canonical: "/solutions",
+  },
+
+  openGraph: {
+    title: "Software, Automation & AI Solutions | Drylake",
+    description:
+      "Custom software, automation, AI and connected systems built around real business problems.",
+    url: "https://drylake.com.au/solutions",
+    type: "website",
+  },
+};
 
 export default function SolutionsPage() {
   return (
