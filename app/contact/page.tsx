@@ -16,6 +16,18 @@ export const metadata: Metadata = {
   title: "Contact Drylake",
   description:
     "Talk to Drylake about software, automation, integrations or operational technology. Call, email or tell us what is slowing your business down.",
+
+  alternates: {
+    canonical: "/contact",
+  },
+
+  openGraph: {
+    title: "Contact Drylake",
+    description:
+      "Talk to Drylake about software, automation, integrations or operational technology for your business.",
+    url: "https://drylake.com.au/contact",
+    type: "website",
+  },
 };
 
 const nextSteps = [
