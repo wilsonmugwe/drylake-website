@@ -1,3 +1,331 @@
+@import "tailwindcss";
+
+/* =========================================================
+   DRYLAKE DESIGN SYSTEM
+   ========================================================= */
+
+:root {
+  --background: #ffffff;
+  --foreground: #090909;
+
+  --black: #090909;
+  --off-black: #0b0b0b;
+  --white: #ffffff;
+
+  --mineral: #f2f0e9;
+  --orange: #f26a2e;
+
+  --muted-black: rgba(0, 0, 0, 0.55);
+  --muted-white: rgba(255, 255, 255, 0.55);
+
+  --border-dark: rgba(0, 0, 0, 0.1);
+  --border-light: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--background);
+  color: var(--foreground);
+
+  font-family:
+    var(--font-geist),
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--orange);
+  color: var(--black);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
+.section-label {
+  font-family: var(--font-geist-mono), monospace;
+
+  font-size: 0.68rem;
+  font-weight: 500;
+
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+
+  text-transform: uppercase;
+}
+
+.tech-label {
+  font-family: var(--font-geist-mono), monospace;
+
+  font-size: 0.6rem;
+  font-weight: 500;
+
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   BUTTON CONTRAST
+   ========================================================= */
+
+.button-dark,
+.button-dark:link,
+.button-dark:visited {
+  color: #ffffff !important;
+}
+
+.button-dark span,
+.button-dark svg {
+  color: #ffffff !important;
+}
+
+.button-light,
+.button-light:link,
+.button-light:visited {
+  color: #090909 !important;
+}
+
+.button-light span,
+.button-light svg {
+  color: #090909 !important;
+}
+
+/* =========================================================
+   DRYLAKE SIGNAL GRID
+
+   Used sparingly. The grid is no longer the main brand device.
+   ========================================================= */
+
+.signal-grid-dark {
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 96px 96px;
+}
+
+.signal-grid-light {
+  background-image:
+    linear-gradient(
+      rgba(0, 0, 0, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 96px 96px;
+}
+
+/* =========================================================
+   DRYLAKE CONTOURS
+
+   Abstract dry-lake / topographic geometry.
+   ========================================================= */
+
+.drylake-contours {
+  background-image:
+    radial-gradient(
+      ellipse at 68% 45%,
+      transparent 0 28%,
+      rgba(255, 255, 255, 0.04) 28.3%,
+      transparent 28.7% 37%,
+      rgba(255, 255, 255, 0.032) 37.3%,
+      transparent 37.7% 47%,
+      rgba(255, 255, 255, 0.025) 47.3%,
+      transparent 47.7%
+    );
+}
+
+.drylake-contours-light {
+  background-image:
+    radial-gradient(
+      ellipse at 72% 45%,
+      transparent 0 28%,
+      rgba(0, 0, 0, 0.035) 28.3%,
+      transparent 28.7% 37%,
+      rgba(0, 0, 0, 0.025) 37.3%,
+      transparent 37.7% 47%,
+      rgba(0, 0, 0, 0.02) 47.3%,
+      transparent 47.7%
+    );
+}
+
+/* =========================================================
+   SIGNALS
+   ========================================================= */
+
+.signal-dot {
+  box-shadow:
+    0 0 0 5px rgba(242, 106, 46, 0.1),
+    0 0 24px rgba(242, 106, 46, 0.15);
+}
+
+.signal-line {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(242, 106, 46, 0.8),
+    transparent
+  );
+}
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+input,
+textarea,
+select {
+  border-radius: 0;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: #090909;
+  transition: background-color 9999s ease-out;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 4px;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+  width: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.38);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.13em;
+  }
+
+  .tech-label {
+    font-size: 0.54rem;
+    letter-spacing: 0.12em;
+  }
+
+  .signal-grid-dark,
+  .signal-grid-light {
+    background-size: 64px 64px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 /* =========================================================
    DRYLAKE ADMIN SYSTEM
    Permanent light workspace / dark navigation system
