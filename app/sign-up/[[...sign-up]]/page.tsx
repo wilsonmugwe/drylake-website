@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Create Account | Drylake",
+  title: "Create Account",
   description: "Create your secure Drylake account.",
   robots: {
     index: false,

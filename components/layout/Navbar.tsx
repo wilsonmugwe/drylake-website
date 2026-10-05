@@ -9,7 +9,7 @@ import {
   LogIn,
   UserPlus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Show, UserButton } from "@clerk/nextjs";
 
 import Container from "@/components/ui/Container";
@@ -92,10 +92,49 @@ function DrylakeMenuIcon({
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   const closeMenu = () => setOpen(false);
 
+  /*
+   * Keyboard support for the mobile menu (WCAG 2.1.1 / 2.4.3): opening moves focus to the
+   * first menu link, Escape closes it and returns focus to the toggle. Subscribes to the
+   * keyboard (an external system), so it belongs in an effect.
+   */
+  useEffect(() => {
+    if (!open) return;
+
+    const frame = requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>("#mobile-navigation a, #mobile-navigation button")
+        ?.focus();
+    });
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
   return (
+    <>
+    {/* WCAG 2.4.1: lets keyboard users jump past the navigation. Hidden until focused. */}
+    <a
+      href="#main-content"
+      className="sr-only fixed left-4 top-4 z-[60] bg-white px-4 py-3 text-sm font-semibold text-black focus:not-sr-only"
+    >
+      Skip to content
+    </a>
+
     <header
       className="
         absolute
@@ -256,6 +295,7 @@ export default function Navbar() {
           ===================================================== */}
 
           <button
+            ref={toggleRef}
             type="button"
             aria-label={
               open
@@ -694,5 +734,9 @@ export default function Navbar() {
         </AnimatePresence>
       </Container>
     </header>
+
+    {/* Skip-link target: the content after the header on every public page. */}
+    <div id="main-content" tabIndex={-1} className="outline-none" />
+    </>
   );
 }

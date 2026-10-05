@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sign In | Drylake",
+  title: "Sign In",
   description: "Secure access to your Drylake workspace.",
   robots: {
     index: false,
