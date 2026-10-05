@@ -22,6 +22,21 @@ in the form and resets the single-use Turnstile token.
 Logs record the reason for a failure (Resend's error name and message, or which variable is
 missing) and Turnstile error codes. They never record the enquiry, the token or a secret.
 
+## Token replay (open investigation, 5 Oct 2026)
+
+On production, one Turnstile token was accepted by `/api/contact` three times in about two
+minutes (three emails were sent). Invalid, missing and Cloudflare-dummy tokens were correctly
+refused with 403, so the secret is a real one. Cloudflare documents every token as single-use
+(`timeout-or-duplicate` on replay), so its Siteverify answer for the replays needs checking.
+
+Mitigation in code: `lib/contact/consumed-tokens.ts` refuses a token this server instance has
+already presented (403, `duplicate-token`). It does not span instances.
+
+To find the cause (needs Vercel access): in the logs, every accepted token now prints
+`Turnstile: verified <fingerprint> age <N>s`. The same fingerprint appearing twice means
+Cloudflare accepted a replay; raise it with Cloudflare support and confirm in the Turnstile
+dashboard that the widget's secret has not been rotated or shared with another site.
+
 ## Required environment variables (Vercel, Production)
 
 `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `EMAIL_FROM` (an
