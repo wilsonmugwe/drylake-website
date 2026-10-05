@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -9,10 +9,14 @@ export const runtime = "nodejs";
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// =========================================================
+// CREATE STRIPE CHECKOUT SESSION
+// =========================================================
+
 export async function POST(request: Request) {
   try {
     // -------------------------------------------------------
-    // 1. Authenticate user and active Clerk organisation
+    // 1. Authenticate Clerk user
     // -------------------------------------------------------
 
     const { userId, orgId } = await auth();
@@ -32,15 +36,16 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 2. Read ONLY the invoice ID from the browser
+    // 2. Parse request body
     //
-    // The browser must never decide:
-    // - amount
+    // The browser is ONLY allowed to provide the invoice ID.
+    //
+    // The browser must never determine:
+    // - invoice amount
     // - currency
     // - invoice number
     // - payment status
-    //
-    // Those values come from Drylake's database.
+    // - organisation
     // -------------------------------------------------------
 
     let body: unknown;
@@ -69,6 +74,13 @@ export async function POST(request: Request) {
       );
     }
 
+    // -------------------------------------------------------
+    // 3. Validate invoice identifier
+    //
+    // Return the same general "unavailable" response that
+    // would be returned for an invoice the user cannot see.
+    // -------------------------------------------------------
+
     if (!UUID_REGEX.test(invoiceId)) {
       return NextResponse.json(
         { error: "Invoice unavailable" },
@@ -77,16 +89,18 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 3. Authenticated Supabase client
+    // 4. Create authenticated Supabase client
     //
     // This uses the current Clerk session.
-    // RLS remains the actual tenant security boundary.
+    //
+    // RLS therefore remains part of the tenant security
+    // boundary.
     // -------------------------------------------------------
 
     const supabase = createServerSupabaseClient();
 
     // -------------------------------------------------------
-    // 4. Resolve active Drylake organisation
+    // 5. Resolve active Drylake organisation
     // -------------------------------------------------------
 
     const {
@@ -94,7 +108,12 @@ export async function POST(request: Request) {
       error: organizationError,
     } = await supabase
       .from("organizations")
-      .select("id, clerk_org_id, name, status")
+      .select(`
+        id,
+        clerk_org_id,
+        name,
+        status
+      `)
       .eq("clerk_org_id", orgId)
       .eq("status", "ACTIVE")
       .maybeSingle();
@@ -122,18 +141,18 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 5. Retrieve invoice
+    // 6. Retrieve invoice
     //
     // Security is intentionally layered:
     //
     // 1. Clerk user authentication
     // 2. Active Clerk organisation
     // 3. Authenticated Supabase client
-    // 4. Supabase invoice RLS
-    // 5. Explicit organization_id query narrowing
+    // 4. Supabase RLS
+    // 5. Explicit organization_id constraint
     //
-    // Cross-tenant/hidden/DRAFT invoices therefore behave
-    // as unavailable.
+    // The client cannot pay another organisation's invoice
+    // simply by changing the invoice ID.
     // -------------------------------------------------------
 
     const {
@@ -180,7 +199,7 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 6. Prevent payment of invoices that are already PAID
+    // 7. Prevent already-paid invoices being paid again
     // -------------------------------------------------------
 
     if (invoice.status === "PAID") {
@@ -194,13 +213,13 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 7. Only OPEN / OVERDUE invoices are payable
+    // 8. Only OPEN / OVERDUE invoices are payable
     //
-    // This explicitly blocks:
+    // Explicitly prevents payment of:
     // - DRAFT
     // - VOID
     // - PAID
-    // - any future unsupported status
+    // - future unsupported statuses
     // -------------------------------------------------------
 
     if (
@@ -217,10 +236,14 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 8. Validate stored invoice total
+    // 9. Validate stored invoice amount
+    //
+    // Amount comes exclusively from Drylake's database.
     // -------------------------------------------------------
 
-    const totalCents = Number(invoice.total_cents);
+    const totalCents = Number(
+      invoice.total_cents
+    );
 
     if (
       !Number.isSafeInteger(totalCents) ||
@@ -237,12 +260,14 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 9. Validate stored currency
+    // 10. Validate stored currency
     // -------------------------------------------------------
 
     const currency =
       typeof invoice.currency === "string"
-        ? invoice.currency.trim().toLowerCase()
+        ? invoice.currency
+            .trim()
+            .toLowerCase()
         : "";
 
     if (!/^[a-z]{3}$/.test(currency)) {
@@ -257,92 +282,142 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------------
-    // 10. Determine Drylake application origin
-    // -------------------------------------------------------
-
-    const origin = new URL(request.url).origin;
-
-    // -------------------------------------------------------
-    // 11. Create Stripe Checkout Session
+    // 11. Determine Drylake application origin
     //
-    // SECURITY:
+    // This allows:
+    // - localhost
+    // - Vercel preview
+    // - production
+    //
+    // to redirect back to their own deployment.
+    // -------------------------------------------------------
+
+    const origin = new URL(
+      request.url
+    ).origin;
+
+    // -------------------------------------------------------
+    // 12. Initialise Stripe
+    //
+    // Stripe is intentionally initialised here instead of
+    // when the module is imported.
+    //
+    // This prevents a missing STRIPE_SECRET_KEY from
+    // crashing Next.js during build-time route discovery.
+    // -------------------------------------------------------
+
+    const stripe = getStripe();
+
+    // -------------------------------------------------------
+    // 13. Create Stripe Checkout Session
+    //
+    // IMPORTANT:
     //
     // totalCents and currency came from the authenticated,
-    // RLS-protected Drylake invoice.
+    // organisation-scoped Drylake invoice.
     //
     // They did NOT come from browser input.
     // -------------------------------------------------------
 
-    const session = await stripe.checkout.sessions.create(
-      {
-        mode: "payment",
+    const session =
+      await stripe.checkout.sessions.create(
+        {
+          mode: "payment",
 
-        line_items: [
-          {
-            price_data: {
-              currency,
+          line_items: [
+            {
+              price_data: {
+                currency,
 
-              product_data: {
-                name: `Drylake Invoice ${invoice.invoice_number}`,
-                description:
-                  `Payment for ${invoice.invoice_number}`,
+                product_data: {
+                  name:
+                    `Drylake Invoice ${invoice.invoice_number}`,
+
+                  description:
+                    `Payment for ${invoice.invoice_number}`,
+                },
+
+                unit_amount: totalCents,
               },
 
-              unit_amount: totalCents,
+              quantity: 1,
             },
+          ],
 
-            quantity: 1,
-          },
-        ],
+          // Useful reference in Stripe.
+          //
+          // This is NOT used as an authorization mechanism.
+          client_reference_id:
+            invoice.id,
 
-        // This provides another useful reference inside
-        // Stripe without using it as an authorization check.
-        client_reference_id: invoice.id,
+          // -------------------------------------------------
+          // Checkout Session metadata
+          //
+          // The webhook uses these identifiers to locate the
+          // Drylake invoice after Stripe confirms payment.
+          // -------------------------------------------------
 
-        metadata: {
-          drylake_invoice_id: invoice.id,
-          drylake_invoice_number:
-            invoice.invoice_number,
-          drylake_organization_id:
-            organization.id,
-        },
-
-        payment_intent_data: {
           metadata: {
-            drylake_invoice_id: invoice.id,
+            drylake_invoice_id:
+              invoice.id,
+
             drylake_invoice_number:
               invoice.invoice_number,
+
             drylake_organization_id:
               organization.id,
           },
+
+          // -------------------------------------------------
+          // PaymentIntent metadata
+          //
+          // Also attach Drylake identifiers directly to the
+          // resulting PaymentIntent for reconciliation.
+          // -------------------------------------------------
+
+          payment_intent_data: {
+            metadata: {
+              drylake_invoice_id:
+                invoice.id,
+
+              drylake_invoice_number:
+                invoice.invoice_number,
+
+              drylake_organization_id:
+                organization.id,
+            },
+          },
+
+          // -------------------------------------------------
+          // Return URLs
+          // -------------------------------------------------
+
+          success_url:
+            `${origin}/client/billing/${invoice.id}?payment=success`,
+
+          cancel_url:
+            `${origin}/client/billing/${invoice.id}?payment=cancelled`,
         },
 
-        success_url:
-          `${origin}/client/billing/${invoice.id}?payment=success`,
+        // ---------------------------------------------------
+        // Stripe idempotency
+        //
+        // Repeated requests for the same invoice should not
+        // immediately create multiple Checkout Sessions.
+        //
+        // After successful payment, the webhook changes the
+        // invoice to PAID and this route rejects subsequent
+        // payment attempts.
+        // ---------------------------------------------------
 
-        cancel_url:
-          `${origin}/client/billing/${invoice.id}?payment=cancelled`,
-      },
-
-      // -----------------------------------------------------
-      // Stripe idempotency key
-      //
-      // Rapid/retried identical requests for the same
-      // invoice will reuse the Stripe API operation instead
-      // of immediately creating multiple Checkout Sessions.
-      //
-      // Once the successful payment webhook changes the
-      // invoice to PAID, step 6 prevents future Checkout.
-      // -----------------------------------------------------
-
-      {
-        idempotencyKey:
-          `drylake-checkout-${invoice.id}`,
-      }
-    );
+        {
+          idempotencyKey:
+            `drylake-checkout-${invoice.id}`,
+        }
+      );
 
     // -------------------------------------------------------
-    // 12. Stripe must return a hosted Checkout URL
+    // 14. Verify Stripe returned a Checkout URL
     // -------------------------------------------------------
 
     if (!session.url) {
@@ -355,22 +430,35 @@ export async function POST(request: Request) {
       );
     }
 
+    // -------------------------------------------------------
+    // 15. Log successful Checkout creation
+    //
+    // Do NOT log payment credentials or secrets.
+    // -------------------------------------------------------
+
     console.log(
       `Stripe Checkout ready for ${invoice.invoice_number}`,
       {
-        invoiceId: invoice.id,
-        checkoutSessionId: session.id,
+        invoiceId:
+          invoice.id,
+
+        checkoutSessionId:
+          session.id,
       }
     );
 
     // -------------------------------------------------------
-    // 13. Return Stripe-hosted Checkout URL
+    // 16. Return Stripe-hosted Checkout URL
     // -------------------------------------------------------
 
     return NextResponse.json({
       url: session.url,
     });
   } catch (error) {
+    // -------------------------------------------------------
+    // Never return raw Stripe/database errors to the client.
+    // -------------------------------------------------------
+
     console.error(
       "Stripe Checkout creation failed:",
       error
@@ -378,7 +466,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Unable to start payment",
+        error:
+          "Unable to start payment",
       },
       {
         status: 500,
