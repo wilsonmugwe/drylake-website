@@ -9,7 +9,10 @@ export type ClientAccessVariant =
   | "no-organisation"
   | "access-pending"
   | "billing-unavailable"
-  | "invoice-unavailable";
+  | "invoice-unavailable"
+  | "client-inactive"
+  | "client-archived"
+  | "lookup-failed";
 
 type Copy = {
   code: string;
@@ -27,7 +30,7 @@ const COPY: Record<ClientAccessVariant, Copy> = {
   "no-organisation": {
     code: "Account active",
     title: "Your workspace is being set up.",
-    body: "You are signed in, but your account is not yet linked to a client organisation. Drylake connects you once your engagement starts. If you expected access already, email us and we will sort it out.",
+    body: "You are signed in, but your account does not have access to a client workspace yet. Drylake sends an invitation to your email when your workspace is ready: open the link in that email and sign in with the same address. If you expected access already, email us and we will sort it out.",
     showNav: false,
   },
   "access-pending": {
@@ -49,6 +52,24 @@ const COPY: Record<ClientAccessVariant, Copy> = {
     body: "This invoice is not available to your organisation. Check the link, or return to billing to see your invoices.",
     back: { href: "/client/billing", label: "Billing" },
     showNav: true,
+  },
+  "client-inactive": {
+    code: "Workspace paused",
+    title: "Your workspace is paused.",
+    body: "Drylake has paused this client workspace, so projects, documents and billing are not available right now. Nothing has been deleted. Email us to resume access.",
+    showNav: false,
+  },
+  "client-archived": {
+    code: "Workspace closed",
+    title: "This workspace has been closed.",
+    body: "Drylake has archived this client workspace, so it is no longer available in the portal. Email us if you need a copy of your records or believe this is a mistake.",
+    showNav: false,
+  },
+  "lookup-failed": {
+    code: "Temporarily unavailable",
+    title: "We could not open your workspace.",
+    body: "Something went wrong while checking your access. Please reload the page in a moment. If it keeps happening, email us.",
+    showNav: false,
   },
 };
 

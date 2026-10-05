@@ -9,11 +9,16 @@ import {
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminStatCard from "@/components/admin/AdminStatCard";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  // Page-level gate: the layout check alone does not stop this page's service-role
+  // queries from running on a direct RSC request (see lib/auth/guards.ts).
+  await requirePlatformAdmin("/admin");
+
   const supabase = createAdminSupabaseClient();
 
   const [clients, projects, invoices, documents] =

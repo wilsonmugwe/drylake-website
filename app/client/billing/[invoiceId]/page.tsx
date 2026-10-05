@@ -10,6 +10,7 @@ import {
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientInvoiceView from "@/components/client/ClientInvoiceView";
 
+import { displayStatus } from "@/lib/invoices/lifecycle";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import {
@@ -36,10 +37,19 @@ type PageProps = {
   params: Promise<{
     invoiceId: string;
   }>;
+  searchParams: Promise<{
+    payment?: string | string[];
+  }>;
 };
+
+/* Only the two values our own Checkout success/cancel URLs use are recognised. */
+function readPaymentReturn(value: string | string[] | undefined) {
+  return value === "success" || value === "cancelled" ? value : null;
+}
 
 export default async function ClientInvoicePage({
   params,
+  searchParams,
 }: PageProps) {
   // ---------------------------------------------------------
   // Authentication
@@ -240,7 +250,9 @@ export default async function ClientInvoicePage({
   // ClientInvoiceView decides whether to display Pay Invoice.
   //
   // The API independently enforces OPEN / OVERDUE, ownership,
-  // amount and currency.
+  // amount and currency. ?payment=success never implies PAID:
+  // the status shown always comes from the row above, which only
+  // the Stripe webhook moves to PAID.
   // ---------------------------------------------------------
 
   return (
@@ -257,6 +269,9 @@ export default async function ClientInvoicePage({
 
         status:
           invoice.status,
+
+        displayStatus:
+          displayStatus(invoice),
 
         currency:
           invoice.currency,
@@ -292,6 +307,9 @@ export default async function ClientInvoicePage({
       noGstNote={
         NO_GST_NOTE
       }
+      paymentReturn={readPaymentReturn(
+        (await searchParams).payment
+      )}
     />
   );
 }

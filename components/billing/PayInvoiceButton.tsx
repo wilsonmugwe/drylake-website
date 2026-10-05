@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   Loader2,
@@ -12,6 +13,13 @@ type PayInvoiceButtonProps = {
   amount: string;
 };
 
+/* Refusals that mean the invoice state moved on: re-render from the database. */
+const STATE_CHANGED_CODES = new Set([
+  "PAYMENT_PROCESSING",
+  "INVOICE_ALREADY_PAID",
+  "INVOICE_NOT_PAYABLE",
+]);
+
 type CheckoutResponse = {
   url?: string;
   error?: string;
@@ -22,17 +30,37 @@ export default function PayInvoiceButton({
   invoiceId,
   amount,
 }: PayInvoiceButtonProps) {
+  const router = useRouter();
+
   const [loading, setLoading] =
     useState(false);
+
+  // A ref, not just state: two clicks in the same frame both see loading === false.
+  const inFlight = useRef(false);
+
+  // Back button from Stripe can restore this page from the bfcache with the spinner still
+  // showing. Reset so the client can retry after a cancelled or abandoned checkout.
+  useEffect(() => {
+    function handlePageShow(event: PageTransitionEvent) {
+      if (event.persisted) {
+        inFlight.current = false;
+        setLoading(false);
+      }
+    }
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   const [error, setError] =
     useState<string | null>(null);
 
   async function handlePayment() {
-    if (loading) {
+    if (loading || inFlight.current) {
       return;
     }
 
+    inFlight.current = true;
     setLoading(true);
     setError(null);
 
@@ -69,6 +97,13 @@ export default function PayInvoiceButton({
       }
 
       if (!response.ok) {
+        if (
+          data.code &&
+          STATE_CHANGED_CODES.has(data.code)
+        ) {
+          router.refresh();
+        }
+
         throw new Error(
           data.error ||
             "Unable to start payment."
@@ -120,6 +155,7 @@ export default function PayInvoiceButton({
           : "Unable to start payment."
       );
 
+      inFlight.current = false;
       setLoading(false);
     }
   }

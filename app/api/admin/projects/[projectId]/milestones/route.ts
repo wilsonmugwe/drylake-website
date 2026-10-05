@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { isDocumentNavigation } from "@/lib/auth/request-kind";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -46,10 +47,16 @@ export async function POST(
   const { userId } = await auth();
 
   if (!userId) {
-    return NextResponse.redirect(
-      new URL("/sign-in?redirect_url=/admin", request.url),
-      303
-    );
+    // Native form post -> back to sign-in; fetch/script -> 401 JSON. Never data.
+    return isDocumentNavigation(request.headers)
+      ? NextResponse.redirect(
+          new URL("/sign-in?redirect_url=/admin", request.url),
+          303
+        )
+      : NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401, headers: { "Cache-Control": "no-store" } }
+        );
   }
 
   // ---------------------------------------------------------

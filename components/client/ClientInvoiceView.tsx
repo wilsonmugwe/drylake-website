@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 
+import PaymentReturnNotice from "@/components/billing/PaymentReturnNotice";
 import PayInvoiceButton from "@/components/billing/PayInvoiceButton";
 
 import ClientShell from "./ClientShell";
@@ -14,6 +15,8 @@ export type ClientInvoiceViewProps = {
     id: string;
     invoiceNumber: string;
     status: string;
+    /* Status as shown to the client: OPEN past its due date reads OVERDUE (lib/invoices). */
+    displayStatus: string;
     currency: string;
     subtotalCents: number;
     taxCents: number;
@@ -29,6 +32,8 @@ export type ClientInvoiceViewProps = {
    */
   showTaxLine: boolean;
   noGstNote: string;
+  /* Set when Stripe Checkout redirected back here (?payment=success|cancelled). */
+  paymentReturn: "success" | "cancelled" | null;
 };
 
 export default function ClientInvoiceView({
@@ -37,10 +42,13 @@ export default function ClientInvoiceView({
   project,
   showTaxLine,
   noGstNote,
+  paymentReturn,
 }: ClientInvoiceViewProps) {
   const total = formatMoney(invoice.totalCents, invoice.currency);
-  const payable = isPayableInvoice(invoice.status);
   const paid = invoice.status === "PAID";
+  // While a just-completed Checkout is being confirmed, do not offer a second payment.
+  const confirming = paymentReturn === "success" && !paid;
+  const payable = isPayableInvoice(invoice.status) && !confirming;
 
   return (
     <ClientShell organizationName={organizationName} section="billing">
@@ -57,8 +65,10 @@ export default function ClientInvoiceView({
       <PageHeader
         eyebrow={`Invoice / ${organizationName}`}
         title={invoice.invoiceNumber}
-        meta={<StatusPill status={invoice.status} />}
+        meta={<StatusPill status={invoice.displayStatus} />}
       />
+
+      {paymentReturn ? <PaymentReturnNotice outcome={paymentReturn} paid={paid} /> : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -68,7 +78,7 @@ export default function ClientInvoiceView({
               <Detail label="Due" value={formatDate(invoice.dueDate, "-")} />
               <Detail
                 label="Payment"
-                value={paid ? `Paid ${formatDate(invoice.paidAt, "")}`.trim() : humanizeStatus(invoice.status)}
+                value={paid ? `Paid ${formatDate(invoice.paidAt, "")}`.trim() : humanizeStatus(invoice.displayStatus)}
               />
             </dl>
           </Panel>
@@ -128,7 +138,7 @@ export default function ClientInvoiceView({
             className={`cp-panel p-5 sm:p-6 ${payable ? "border-t-2 border-t-[#f26a2e]" : ""}`}
           >
             <p id="amount-heading" className="tech-label text-white/50">
-              {paid ? "Amount paid" : payable ? "Amount due" : "Invoice total"}
+              {paid ? "Amount paid" : payable || confirming ? "Amount due" : "Invoice total"}
             </p>
             <p className="mt-3 break-words text-[2.4rem] font-semibold leading-none tracking-[-0.05em]">
               {total}

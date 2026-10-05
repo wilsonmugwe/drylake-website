@@ -21,6 +21,7 @@ import {
   inClause,
   orFilter,
 } from "@/lib/admin/search";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -54,6 +55,13 @@ export default async function ProjectsPage({
   const q = readFilterParam(params, "q");
   const status = readEnumParam(params, "status", PROJECT_STATUSES);
   const rawClient = readFilterParam(params, "client");
+
+  // Page-level gate: the layout check alone does not stop this page's service-role
+
+  // queries from running on a direct RSC request (see lib/auth/guards.ts).
+
+  await requirePlatformAdmin("/admin/projects");
+
 
   const supabase = createAdminSupabaseClient();
 

@@ -1,6 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { ClientAccessLookupError, getClientAccess } from "@/lib/auth/client-context";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
@@ -39,34 +39,33 @@ export async function GET(
   // 1. Clerk authentication
   // ---------------------------------------------------------
 
-  const { userId, orgId } = await auth();
+  // Workspace from Clerk organisation membership; INACTIVE / ARCHIVED clients and users
+  // with no active client workspace are refused before any document lookup.
+  let access: Awaited<ReturnType<typeof getClientAccess>>;
 
-  if (!userId) {
+  try {
+    access = await getClientAccess();
+  } catch (error) {
+    if (error instanceof ClientAccessLookupError) {
+      return errorResponse("Unable to access document", 500);
+    }
+
+    throw error;
+  }
+
+  if (!access.signedIn) {
     return errorResponse("Unauthorized", 401);
   }
 
-  if (!orgId) {
-    return errorResponse(
-      "No active organisation",
-      403
-    );
+  if (access.resolution.kind !== "ready") {
+    return errorResponse("No active client workspace", 403);
   }
 
   const { documentId } = await params;
 
   // A malformed ID can never match a row: 404 before the query, not a database error.
   if (!isUuid(documentId)) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: 404, headers: { "Cache-Control": "no-store" } }
-    );
-  }
-
-  if (!documentId) {
-    return errorResponse(
-      "Invalid document",
-      400
-    );
+    return errorResponse("Document not found", 404);
   }
 
   // ---------------------------------------------------------
@@ -86,7 +85,8 @@ export async function GET(
     await clientSupabase
       .from("organizations")
       .select("id, status")
-      .eq("clerk_org_id", orgId)
+      .eq("id", access.resolution.organization.id)
+      .eq("clerk_org_id", access.resolution.organization.clerk_org_id as string)
       .eq("status", "ACTIVE")
       .maybeSingle();
 

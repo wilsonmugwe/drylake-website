@@ -11,6 +11,8 @@ import {
   User,
 } from "lucide-react";
 
+import { readApiError } from "@/components/admin/read-api-error";
+
 type AdminBillingFormProps = {
   organizationId: string;
   billingContactName: string | null;
@@ -56,10 +58,9 @@ export default function AdminBillingForm({
       );
 
       if (!response.ok) {
-        const message = await response.text();
-
+        // The route answers { success: false, error }; never show the raw JSON body.
         throw new Error(
-          message || "Unable to save billing contact."
+          await readApiError(response, "Unable to save billing contact.")
         );
       }
 

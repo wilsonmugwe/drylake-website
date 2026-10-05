@@ -1,6 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Building2,
@@ -9,7 +8,7 @@ import {
 
 import AdminBillingForm from "@/components/admin/AdminBillingForm";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -36,23 +35,17 @@ export default async function BillingPage({
   // Authentication
   // ---------------------------------------------------------
 
-  const { userId } = await auth();
+  const { organizationId } = await params;
 
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
-  const platformAdmin = await isPlatformAdmin();
-
-  if (!platformAdmin) {
-    redirect("/client");
-  }
+  await requirePlatformAdmin(
+    isUuid(organizationId)
+      ? `/admin/clients/${organizationId}/billing`
+      : "/admin/clients"
+  );
 
   // ---------------------------------------------------------
   // Organisation
   // ---------------------------------------------------------
-
-  const { organizationId } = await params;
 
   if (!isUuid(organizationId)) {
     notFound();
