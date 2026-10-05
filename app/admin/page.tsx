@@ -6,6 +6,7 @@ import {
   FolderKanban,
   Receipt,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
@@ -22,10 +23,6 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const supabase = createAdminSupabaseClient();
-
-  // ==========================================================
-  // DASHBOARD COUNTS
-  // ==========================================================
 
   const [
     organizationsResult,
@@ -55,10 +52,6 @@ export default async function AdminPage() {
   const invoiceCount = invoicesResult.count ?? 0;
   const documentCount = documentsResult.count ?? 0;
 
-  // ==========================================================
-  // RECENT CLIENTS
-  // ==========================================================
-
   const { data: recentClients, error: recentClientsError } =
     await supabase
       .from("organizations")
@@ -73,16 +66,10 @@ export default async function AdminPage() {
     });
   }
 
-  // ==========================================================
-  // RECENT PROJECTS
-  // ==========================================================
-
   const { data: recentProjects, error: recentProjectsError } =
     await supabase
       .from("projects")
-      .select(
-        "id, organization_id, name, status, created_at"
-      )
+      .select("id, organization_id, name, status, created_at")
       .order("created_at", { ascending: false })
       .limit(5);
 
@@ -97,66 +84,80 @@ export default async function AdminPage() {
   const projects = recentProjects ?? [];
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505]">
+    <main className="relative min-h-screen overflow-hidden bg-[#080808]">
       {/* ======================================================
           BACKGROUND
       ====================================================== */}
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-[20%] top-[-10%] h-[700px] w-[700px] rounded-full bg-[#f26a2e]/[0.055] blur-[170px]" />
+        <div className="absolute -left-[20%] top-[-12%] h-[700px] w-[700px] rounded-full bg-[#f26a2e]/[0.09] blur-[180px]" />
 
-        <div className="absolute right-[-20%] top-[20%] h-[600px] w-[600px] rounded-full bg-[#f26a2e]/[0.018] blur-[180px]" />
+        <div className="absolute right-[-25%] top-[28%] h-[650px] w-[650px] rounded-full bg-[#f26a2e]/[0.035] blur-[190px]" />
+
+        <div className="absolute bottom-[-350px] left-[35%] h-[600px] w-[900px] rounded-full bg-white/[0.025] blur-[190px]" />
 
         <div
-          className="absolute inset-0 opacity-[0.018]"
+          className="absolute inset-0 opacity-[0.025]"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)
+              linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)
             `,
-            backgroundSize: "72px 72px",
+            backgroundSize: "64px 64px",
             maskImage:
-              "linear-gradient(to bottom, black, transparent 90%)",
+              "linear-gradient(to bottom, black, transparent 92%)",
             WebkitMaskImage:
-              "linear-gradient(to bottom, black, transparent 90%)",
+              "linear-gradient(to bottom, black, transparent 92%)",
           }}
         />
       </div>
 
       <div className="relative mx-auto max-w-[1500px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         {/* ====================================================
-            HEADER
+            HERO
         ==================================================== */}
 
-        <header className="flex flex-col gap-6 border-b border-white/[0.07] pb-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck
-                size={13}
-                className="text-[#f26a2e]"
-              />
+        <header className="relative overflow-hidden rounded-[1.8rem] border border-white/[0.09] bg-gradient-to-br from-[#151210] via-[#101010] to-[#0c0c0c] px-6 py-7 shadow-[0_25px_80px_rgba(0,0,0,0.28)] sm:px-8 sm:py-9">
+          <div className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-[#f26a2e]/[0.11] blur-[100px]" />
 
-              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-[#f26a2e]">
-                Drylake Administration
+          <div className="pointer-events-none absolute right-[12%] top-0 h-full w-px bg-gradient-to-b from-transparent via-[#f26a2e]/15 to-transparent" />
+
+          <div className="relative flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#f26a2e]/25 bg-[#f26a2e]/[0.08]">
+                  <ShieldCheck
+                    size={13}
+                    strokeWidth={1.8}
+                    className="text-[#f26a2e]"
+                  />
+                </div>
+
+                <p className="text-[0.6rem] font-semibold uppercase tracking-[0.21em] text-[#f26a2e]">
+                  Drylake Administration
+                </p>
+              </div>
+
+              <h1 className="mt-6 text-4xl font-medium tracking-[-0.055em] sm:text-5xl">
+                Dashboard
+              </h1>
+
+              <p className="mt-4 max-w-xl text-sm leading-6 text-white/55">
+                Operational overview of clients, projects,
+                documents and billing across the Drylake platform.
               </p>
             </div>
 
-            <h1 className="mt-4 text-3xl font-medium tracking-[-0.045em] sm:text-4xl">
-              Dashboard
-            </h1>
+            <div className="flex w-fit items-center gap-2.5 rounded-full border border-[#f26a2e]/25 bg-[#f26a2e]/[0.07] px-4 py-2.5 shadow-[0_0_30px_rgba(242,106,46,0.04)]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f26a2e] opacity-25" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#f26a2e]" />
+              </span>
 
-            <p className="mt-3 max-w-xl text-sm leading-6 text-white/35">
-              Operational overview of Drylake clients, projects,
-              documents and billing.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-3 py-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
-            <span className="text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-[#f26a2e]">
-              Platform operational
-            </span>
+              <span className="text-[0.56rem] font-semibold uppercase tracking-[0.15em] text-[#f58a59]">
+                Platform operational
+              </span>
+            </div>
           </div>
         </header>
 
@@ -164,31 +165,31 @@ export default async function AdminPage() {
             METRICS
         ==================================================== */}
 
-        <section className="mt-8">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="mt-5">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <MetricCard
               label="Clients"
               value={clientCount}
-              icon={<Building2 size={17} />}
+              icon={<Building2 size={18} />}
               href="/admin/clients"
             />
 
             <MetricCard
               label="Projects"
               value={projectCount}
-              icon={<FolderKanban size={17} />}
+              icon={<FolderKanban size={18} />}
             />
 
             <MetricCard
               label="Invoices"
               value={invoiceCount}
-              icon={<Receipt size={17} />}
+              icon={<Receipt size={18} />}
             />
 
             <MetricCard
               label="Documents"
               value={documentCount}
-              icon={<FileText size={17} />}
+              icon={<FileText size={18} />}
             />
           </div>
         </section>
@@ -197,24 +198,31 @@ export default async function AdminPage() {
             WORKSPACE
         ==================================================== */}
 
-        <section className="mt-8 grid gap-6 xl:grid-cols-2">
-          {/* Recent clients */}
+        <section className="mt-5 grid gap-5 xl:grid-cols-2">
+          {/* Clients */}
 
-          <div className="overflow-hidden rounded-[1.6rem] border border-white/[0.08] bg-[#0a0a0a]/80">
-            <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5">
+          <div className="overflow-hidden rounded-[1.7rem] border border-white/[0.09] bg-[#101010] shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+            <div className="flex items-center justify-between border-b border-white/[0.08] bg-white/[0.015] px-5 py-5 sm:px-6">
               <div>
-                <h2 className="text-sm font-medium">
-                  Recent clients
-                </h2>
+                <div className="flex items-center gap-2">
+                  <Building2
+                    size={14}
+                    className="text-[#f26a2e]"
+                  />
 
-                <p className="mt-1 text-xs text-white/25">
+                  <h2 className="text-sm font-medium text-white">
+                    Recent clients
+                  </h2>
+                </div>
+
+                <p className="mt-1.5 text-xs text-white/42">
                   Latest client organisations
                 </p>
               </div>
 
               <Link
                 href="/admin/clients"
-                className="group flex items-center gap-2 text-xs text-white/30 transition hover:text-white"
+                className="group flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-xs font-medium text-white/65 transition hover:border-[#f26a2e]/20 hover:text-white"
               >
                 View all
 
@@ -231,31 +239,40 @@ export default async function AdminPage() {
                   <Link
                     key={client.id}
                     href={`/admin/clients/${client.id}`}
-                    className="group flex items-center justify-between border-b border-white/[0.06] px-6 py-5 transition last:border-b-0 hover:bg-white/[0.02]"
+                    className="group relative flex items-center justify-between border-b border-white/[0.07] px-5 py-5 transition last:border-b-0 hover:bg-white/[0.025] sm:px-6"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                    <div className="absolute bottom-0 left-0 top-0 w-[2px] bg-[#f26a2e] opacity-0 transition group-hover:opacity-100" />
+
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.055]">
                         <Building2
-                          size={15}
+                          size={17}
+                          strokeWidth={1.7}
                           className="text-[#f26a2e]"
                         />
                       </div>
 
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
+                        <p className="truncate text-sm font-medium text-white sm:text-[0.95rem]">
                           {client.name}
                         </p>
 
-                        <p className="mt-1 text-[0.6rem] uppercase tracking-[0.12em] text-white/25">
-                          {client.status}
-                        </p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
+                          <p className="text-[0.58rem] font-medium uppercase tracking-[0.13em] text-white/40">
+                            {client.status}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <ArrowRight
-                      size={14}
-                      className="shrink-0 text-white/15 transition group-hover:translate-x-0.5 group-hover:text-white/50"
-                    />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.015]">
+                      <ArrowRight
+                        size={14}
+                        className="text-white/30 transition group-hover:translate-x-0.5 group-hover:text-[#f26a2e]"
+                      />
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -267,21 +284,28 @@ export default async function AdminPage() {
             )}
           </div>
 
-          {/* Recent projects */}
+          {/* Projects */}
 
-          <div className="overflow-hidden rounded-[1.6rem] border border-white/[0.08] bg-[#0a0a0a]/80">
-            <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5">
+          <div className="overflow-hidden rounded-[1.7rem] border border-white/[0.09] bg-[#101010] shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+            <div className="flex items-center justify-between border-b border-white/[0.08] bg-white/[0.015] px-5 py-5 sm:px-6">
               <div>
-                <h2 className="text-sm font-medium">
-                  Recent projects
-                </h2>
+                <div className="flex items-center gap-2">
+                  <FolderKanban
+                    size={14}
+                    className="text-[#f26a2e]"
+                  />
 
-                <p className="mt-1 text-xs text-white/25">
+                  <h2 className="text-sm font-medium text-white">
+                    Recent projects
+                  </h2>
+                </div>
+
+                <p className="mt-1.5 text-xs text-white/42">
                   Latest delivery work
                 </p>
               </div>
 
-              <span className="text-[0.52rem] uppercase tracking-[0.14em] text-white/15">
+              <span className="rounded-full border border-white/[0.07] bg-white/[0.02] px-2.5 py-1.5 text-[0.5rem] font-semibold uppercase tracking-[0.14em] text-white/30">
                 Workspace
               </span>
             </div>
@@ -292,31 +316,40 @@ export default async function AdminPage() {
                   <Link
                     key={project.id}
                     href={`/admin/projects/${project.id}`}
-                    className="group flex items-center justify-between border-b border-white/[0.06] px-6 py-5 transition last:border-b-0 hover:bg-white/[0.02]"
+                    className="group relative flex items-center justify-between border-b border-white/[0.07] px-5 py-5 transition last:border-b-0 hover:bg-white/[0.025] sm:px-6"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02]">
+                    <div className="absolute bottom-0 left-0 top-0 w-[2px] bg-[#f26a2e] opacity-0 transition group-hover:opacity-100" />
+
+                    <div className="flex min-w-0 items-center gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.055]">
                         <FolderKanban
-                          size={15}
+                          size={17}
+                          strokeWidth={1.7}
                           className="text-[#f26a2e]"
                         />
                       </div>
 
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
+                        <p className="truncate text-sm font-medium text-white sm:text-[0.95rem]">
                           {project.name}
                         </p>
 
-                        <p className="mt-1 text-[0.6rem] uppercase tracking-[0.12em] text-white/25">
-                          {project.status.replaceAll("_", " ")}
-                        </p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+
+                          <p className="text-[0.58rem] font-medium uppercase tracking-[0.13em] text-white/40">
+                            {project.status.replaceAll("_", " ")}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <ArrowRight
-                      size={14}
-                      className="shrink-0 text-white/15 transition group-hover:translate-x-0.5 group-hover:text-white/50"
-                    />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.015]">
+                      <ArrowRight
+                        size={14}
+                        className="text-white/30 transition group-hover:translate-x-0.5 group-hover:text-[#f26a2e]"
+                      />
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -330,34 +363,45 @@ export default async function AdminPage() {
         </section>
 
         {/* ====================================================
-            SYSTEM STATUS
+            PLATFORM STATUS
         ==================================================== */}
 
-        <section className="mt-6 rounded-[1.6rem] border border-white/[0.08] bg-white/[0.015] p-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium">
-                Drylake platform
-              </p>
+        <section className="relative mt-5 overflow-hidden rounded-[1.7rem] border border-white/[0.09] bg-gradient-to-r from-[#111111] to-[#0d0d0d] p-6 sm:p-7">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#f26a2e]/[0.07] blur-[80px]" />
 
-              <p className="mt-2 max-w-2xl text-xs leading-5 text-white/30">
-                Client management, project delivery and billing
-                infrastructure are connected to the Drylake
-                administration environment.
-              </p>
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#f26a2e]/20 bg-[#f26a2e]/[0.065]">
+                <Sparkles
+                  size={16}
+                  className="text-[#f26a2e]"
+                />
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-white">
+                  Drylake platform
+                </p>
+
+                <p className="mt-2 max-w-2xl text-xs leading-5 text-white/45">
+                  Client management, project delivery and billing
+                  infrastructure are connected to the Drylake
+                  administration environment.
+                </p>
+              </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#f26a2e]/18 bg-[#f26a2e]/[0.05] px-3 py-2">
               <div className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-              <span className="text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-[#f26a2e]">
+              <span className="text-[0.55rem] font-semibold uppercase tracking-[0.14em] text-[#f58a59]">
                 Connected
               </span>
             </div>
           </div>
         </section>
 
-        <footer className="mt-12 border-t border-white/[0.06] py-7 text-[0.62rem] text-white/15">
+        <footer className="mt-10 border-t border-white/[0.07] py-7 text-[0.62rem] text-white/30">
           © {new Date().getFullYear()} Drylake Pty Ltd · Internal
           administration environment
         </footer>
@@ -365,10 +409,6 @@ export default async function AdminPage() {
     </main>
   );
 }
-
-// ============================================================
-// METRIC CARD
-// ============================================================
 
 function MetricCard({
   label,
@@ -382,25 +422,25 @@ function MetricCard({
   href?: string;
 }) {
   const content = (
-    <div className="relative overflow-hidden rounded-[1.45rem] border border-white/[0.08] bg-white/[0.018] p-5 transition duration-300 group-hover:border-white/[0.14] group-hover:bg-white/[0.025]">
-      <div className="absolute right-[-50px] top-[-50px] h-[130px] w-[130px] rounded-full bg-[#f26a2e]/[0.03] blur-[50px]" />
+    <div className="relative min-h-[150px] overflow-hidden rounded-[1.45rem] border border-white/[0.09] bg-[#111111] p-4 shadow-[0_15px_40px_rgba(0,0,0,0.15)] transition duration-200 group-hover:border-[#f26a2e]/20 group-hover:bg-[#131313] sm:min-h-[175px] sm:p-5">
+      <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#f26a2e]/[0.06] blur-[45px]" />
 
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] text-[#f26a2e]">
+      <div className="relative flex h-full flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#f26a2e]/20 bg-[#f26a2e]/[0.07] text-[#f26a2e]">
             {icon}
           </div>
 
-          <span className="text-[0.5rem] uppercase tracking-[0.15em] text-white/20">
+          <span className="text-right text-[0.48rem] font-semibold uppercase tracking-[0.14em] text-white/35 sm:text-[0.52rem]">
             {label}
           </span>
         </div>
 
-        <p className="mt-7 text-3xl font-medium tracking-[-0.04em]">
+        <p className="mt-6 text-3xl font-medium tracking-[-0.045em] text-white sm:mt-8 sm:text-4xl">
           {value}
         </p>
 
-        <p className="mt-1 text-xs text-white/25">
+        <p className="mt-1 text-[0.68rem] text-white/38 sm:text-xs">
           Total {label.toLowerCase()}
         </p>
       </div>
@@ -418,10 +458,6 @@ function MetricCard({
   return <div className="group">{content}</div>;
 }
 
-// ============================================================
-// EMPTY STATE
-// ============================================================
-
 function EmptyState({
   title,
   description,
@@ -431,13 +467,15 @@ function EmptyState({
 }) {
   return (
     <div className="px-6 py-10">
-      <div className="h-2 w-2 rounded-full bg-[#f26a2e]" />
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#f26a2e]/20 bg-[#f26a2e]/[0.06]">
+        <div className="h-2 w-2 rounded-full bg-[#f26a2e]" />
+      </div>
 
-      <p className="mt-4 text-sm font-medium">
+      <p className="mt-4 text-sm font-medium text-white">
         {title}
       </p>
 
-      <p className="mt-2 text-xs text-white/30">
+      <p className="mt-2 text-xs text-white/42">
         {description}
       </p>
     </div>
