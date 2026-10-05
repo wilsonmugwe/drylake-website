@@ -71,7 +71,7 @@ export default function Footer() {
             <div className="mt-4 flex flex-col gap-1 text-xs text-white/28 sm:items-end">
               <a
                 href="mailto:hello@drylake.com.au"
-                className="transition-colors hover:text-white"
+                className="inline-flex min-h-[44px] items-center transition-colors hover:text-white"
               >
                 hello@drylake.com.au
               </a>
