@@ -3,16 +3,15 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Building2,
   ChevronRight,
   CircleDollarSign,
   FolderKanban,
   Mail,
   Plus,
   Receipt,
-  ShieldCheck,
 } from "lucide-react";
 
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
@@ -63,6 +62,36 @@ function formatDateTime(value: string | null) {
 function normaliseStatus(status: string) {
   return status.replaceAll("_", " ");
 }
+
+// Display-only tint for an invoice status chip. Unknown statuses fall back to neutral.
+function invoiceStatusClassName(status: string) {
+  switch (status) {
+    case "PAID":
+      return "bg-emerald-50 text-emerald-700";
+    case "OVERDUE":
+      return "bg-red-50 text-red-700";
+    case "ISSUED":
+    case "SENT":
+    case "OPEN":
+      return "bg-amber-50 text-amber-700";
+    default:
+      return "bg-neutral-100 text-neutral-600";
+  }
+}
+
+// Used on <Link>: the unlayered global `a { color: inherit }` beats Tailwind utilities,
+// so the white label needs the important modifier to survive.
+const primaryButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold !text-white transition hover:bg-neutral-800 disabled:opacity-50";
+
+const secondaryButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-950";
+
+const smallSecondaryButtonClassName =
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-950";
+
+const iconTileClassName =
+  "flex h-10 w-10 items-center justify-center rounded-xl bg-[#f26a2e]/10";
 
 export default async function AdminClientPage({
   params,
@@ -206,279 +235,190 @@ export default async function AdminClientPage({
 
   const billingConfigured = Boolean(organization.billing_email);
 
+  const active = organization.status === "ACTIVE";
+
   // ==========================================================
   // UI
   // ==========================================================
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-white">
-      {/* ======================================================
-          BACKGROUND
-      ====================================================== */}
-
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-[20%] top-[4%] h-[760px] w-[760px] rounded-full bg-[#f26a2e]/[0.055] blur-[180px]" />
-
-        <div className="absolute -right-[15%] top-[28%] h-[600px] w-[600px] rounded-full bg-[#f26a2e]/[0.018] blur-[180px]" />
-
-        <div className="absolute bottom-[-350px] left-1/2 h-[700px] w-[1100px] -translate-x-1/2 rounded-full bg-white/[0.018] blur-[180px]" />
-
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)
-            `,
-            backgroundSize: "72px 72px",
-            maskImage:
-              "linear-gradient(to bottom, black, transparent 92%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black, transparent 92%)",
-          }}
-        />
-
-        <div className="absolute left-[6%] top-[18%] h-[420px] w-px bg-gradient-to-b from-transparent via-[#f26a2e]/20 to-transparent" />
-
-        <div className="absolute left-1/2 top-0 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-5 sm:px-8 lg:px-12">
-        {/* ====================================================
-            HEADER
-        ==================================================== */}
-
-        <header className="flex items-center justify-between border-b border-white/[0.08] py-7">
-          <Link
-            href="/admin/clients"
-            className="group flex items-center gap-2.5 text-sm text-white/45 transition-colors hover:text-white"
-          >
-            <ArrowLeft
-              size={15}
-              className="transition-transform duration-200 group-hover:-translate-x-1"
-            />
-
-            <span>Clients</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05]">
-              <ShieldCheck
-                size={13}
-                strokeWidth={1.8}
-                className="text-[#f26a2e]"
-              />
-            </div>
-
-            <p className="hidden text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/35 sm:block">
-              Platform Admin
-            </p>
-          </div>
-        </header>
+    <main className="min-h-screen p-5 sm:p-8 lg:p-10">
+      <div className="mx-auto max-w-[1450px]">
+        <Link
+          href="/admin/clients"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition hover:text-neutral-950"
+        >
+          <ArrowLeft size={15} />
+          Clients
+        </Link>
 
         {/* ====================================================
-            CLIENT HERO
+            CLIENT HEADER
         ==================================================== */}
 
-        <section className="pb-12 pt-14 sm:pb-14 sm:pt-16">
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05] px-3.5 py-2">
-                <Building2
-                  size={13}
-                  strokeWidth={1.8}
-                  className="text-[#f26a2e]"
-                />
-
-                <span className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#f26a2e]">
-                  Client Organisation
-                </span>
-              </div>
-
-              <h1 className="mt-7 max-w-3xl truncate text-5xl font-medium tracking-[-0.055em] sm:text-6xl">
-                {organization.name}
-              </h1>
-
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-3 py-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-[#f26a2e]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-                  {organization.status}
-                </span>
-
-                <span className="max-w-[400px] truncate font-mono text-[0.68rem] text-white/25">
-                  {organization.clerk_org_id}
-                </span>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/25">
-                {organization.created_at && (
-                  <span>
-                    Client since {formatDateTime(organization.created_at)}
-                  </span>
-                )}
-
-                {organization.updated_at && (
-                  <>
-                    <span className="hidden h-1 w-1 rounded-full bg-white/20 sm:block" />
-
-                    <span>
-                      Updated {formatDateTime(organization.updated_at)}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-
-            <div className="flex flex-wrap gap-3">
+        <AdminPageHeader
+          eyebrow="Client Organisation"
+          title={organization.name}
+          action={
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href={`/admin/clients/${organization.id}/invoices/new`}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-xl border border-white/[0.1] bg-white/[0.02] px-5 py-3.5 text-sm font-medium text-white/70 transition duration-300 hover:border-white/[0.18] hover:bg-white/[0.04] hover:text-white"
+                className={secondaryButtonClassName}
               >
                 <Receipt size={15} />
-
                 Create Invoice
               </Link>
 
               <Link
                 href={`/admin/clients/${organization.id}/projects/new`}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-white px-5 py-3.5 text-sm font-semibold !text-black transition duration-300 hover:bg-neutral-200"
+                className={primaryButtonClassName}
               >
-                <Plus
-                  size={16}
-                  className="transition-transform duration-200 group-hover:rotate-90"
-                />
-
+                <Plus size={16} />
                 Create Project
               </Link>
             </div>
-          </div>
-        </section>
+          }
+        />
+
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-500">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${
+              active
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-neutral-100 text-neutral-600"
+            }`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                active ? "bg-emerald-500" : "bg-neutral-400"
+              }`}
+            />
+            {organization.status}
+          </span>
+
+          <span className="max-w-full truncate font-mono text-[11px] text-neutral-400 sm:max-w-[400px]">
+            {organization.clerk_org_id}
+          </span>
+
+          {organization.created_at && (
+            <span>
+              Client since {formatDateTime(organization.created_at)}
+            </span>
+          )}
+
+          {organization.updated_at && (
+            <span>
+              Updated {formatDateTime(organization.updated_at)}
+            </span>
+          )}
+        </div>
 
         {/* ====================================================
             OVERVIEW
         ==================================================== */}
 
-        <section>
-          <div className="mb-5 flex items-end justify-between">
-            <div>
-              <p className="text-sm font-medium">
-                Overview
-              </p>
+        <section className="mt-8">
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-neutral-950">
+              Overview
+            </h2>
 
-              <p className="mt-1 text-xs text-white/30">
-                Current client workspace status
-              </p>
-            </div>
-
-            <span className="hidden text-[0.58rem] uppercase tracking-[0.16em] text-white/20 sm:block">
-              Live workspace
-            </span>
+            <p className="mt-1 text-xs text-neutral-500">
+              Current client workspace status
+            </p>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             {/* Projects */}
 
-            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.018] p-6">
-              <div className="absolute right-[-60px] top-[-60px] h-[160px] w-[160px] rounded-full bg-[#f26a2e]/[0.035] blur-[60px]" />
+            <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex items-center justify-between">
+                <span className={iconTileClassName}>
+                  <FolderKanban
+                    size={16}
+                    className="text-[#f26a2e]"
+                  />
+                </span>
 
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02]">
-                    <FolderKanban
-                      size={16}
-                      strokeWidth={1.7}
-                      className="text-[#f26a2e]"
-                    />
-                  </div>
-
-                  <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
-                    Projects
-                  </span>
-                </div>
-
-                <p className="mt-7 text-3xl font-medium tracking-[-0.04em]">
-                  {projectCount}
-                </p>
-
-                <p className="mt-2 text-xs text-white/30">
-                  {projectCount === 1
-                    ? "Project in this workspace"
-                    : "Projects in this workspace"}
-                </p>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+                  Projects
+                </span>
               </div>
+
+              <p className="mt-6 text-3xl font-semibold tracking-[-0.04em] text-neutral-950">
+                {projectCount}
+              </p>
+
+              <p className="mt-2 text-xs text-neutral-500">
+                {projectCount === 1
+                  ? "Project in this workspace"
+                  : "Projects in this workspace"}
+              </p>
             </div>
 
             {/* Invoices */}
 
-            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.018] p-6">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-center justify-between">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02]">
+                <span className={iconTileClassName}>
                   <Receipt
                     size={16}
-                    strokeWidth={1.7}
                     className="text-[#f26a2e]"
                   />
-                </div>
+                </span>
 
-                <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
                   Billing
                 </span>
               </div>
 
-              <p className="mt-7 text-3xl font-medium tracking-[-0.04em]">
+              <p className="mt-6 text-3xl font-semibold tracking-[-0.04em] text-neutral-950">
                 {invoiceCount}
               </p>
 
-              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/30">
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
                 <span>
                   {visibleInvoiceCount} client visible
                 </span>
 
                 {outstandingInvoiceCount > 0 && (
-                  <>
-                    <span className="h-1 w-1 rounded-full bg-white/20" />
-
-                    <span className="text-[#f26a2e]/70">
-                      {outstandingInvoiceCount} open
-                    </span>
-                  </>
+                  <span className="rounded-full bg-orange-50 px-2 py-0.5 font-semibold text-[#c2541f]">
+                    {outstandingInvoiceCount} open
+                  </span>
                 )}
               </div>
             </div>
 
             {/* Billing contact */}
 
-            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-white/[0.018] p-6">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-center justify-between">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02]">
+                <span className={iconTileClassName}>
                   <Mail
                     size={16}
-                    strokeWidth={1.7}
                     className="text-[#f26a2e]"
                   />
-                </div>
+                </span>
 
                 <span
                   className={
                     billingConfigured
-                      ? "rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-2 py-1 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-[#f26a2e]"
-                      : "rounded-full border border-white/[0.07] px-2 py-1 text-[0.5rem] font-medium uppercase tracking-[0.12em] text-white/25"
+                      ? "rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-700"
+                      : "rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-700"
                   }
                 >
                   {billingConfigured ? "Configured" : "Not set"}
                 </span>
               </div>
 
-              <p className="mt-7 truncate text-sm font-medium">
+              <p className="mt-6 truncate text-sm font-semibold text-neutral-950">
                 {organization.billing_contact_name ||
                   (billingConfigured
                     ? "Billing contact"
                     : "No billing contact")}
               </p>
 
-              <p className="mt-2 truncate text-xs text-white/30">
+              <p className="mt-2 truncate text-xs text-neutral-500">
                 {organization.billing_email ||
                   "Add a billing contact before issuing invoices"}
               </p>
@@ -490,36 +430,36 @@ export default async function AdminClientPage({
             PROJECTS
         ==================================================== */}
 
-        <section className="mt-10 overflow-hidden rounded-[1.75rem] border border-white/[0.08] bg-[#0a0a0a]/75 shadow-[0_30px_90px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-          <div className="flex flex-col gap-4 border-b border-white/[0.07] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+        <section className="mt-8 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-neutral-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
-              <h2 className="text-sm font-medium">
+              <h2 className="text-base font-semibold text-neutral-950">
                 Projects
               </h2>
 
-              <p className="mt-1 text-xs text-white/30">
+              <p className="mt-1 text-sm text-neutral-500">
                 Delivery work for {organization.name}
               </p>
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-[0.58rem] uppercase tracking-[0.15em] text-white/25">
+              <span className="text-xs text-neutral-400">
                 {projectCount} {projectCount === 1 ? "project" : "projects"}
               </span>
 
               <Link
                 href={`/admin/clients/${organization.id}/projects/new`}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-xs text-white/50 transition hover:border-white/[0.15] hover:text-white"
+                className={smallSecondaryButtonClassName}
               >
-                <Plus size={13} />
+                <Plus size={14} />
                 New
               </Link>
             </div>
           </div>
 
           {projectsError ? (
-            <div className="px-6 py-9 sm:px-7">
-              <p className="text-sm text-red-400">
+            <div className="p-5 sm:p-6">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 Unable to load projects.
               </p>
             </div>
@@ -532,33 +472,30 @@ export default async function AdminClientPage({
                   <Link
                     key={project.id}
                     href={`/admin/projects/${project.id}`}
-                    className="group relative block border-b border-white/[0.07] px-6 py-6 transition duration-300 last:border-b-0 hover:bg-white/[0.025] sm:px-7"
+                    className="group block border-b border-neutral-100 px-5 py-4 transition last:border-b-0 hover:bg-neutral-50 sm:px-6"
                   >
-                    <div className="absolute bottom-0 left-0 top-0 w-px bg-[#f26a2e] opacity-0 transition-opacity group-hover:opacity-100" />
-
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex min-w-0 items-center gap-4">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02] transition group-hover:border-[#f26a2e]/20 group-hover:bg-[#f26a2e]/[0.04]">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
                           <FolderKanban
-                            size={16}
-                            strokeWidth={1.7}
+                            size={17}
                             className="text-[#f26a2e]"
                           />
-                        </div>
+                        </span>
 
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium transition-colors group-hover:text-[#f26a2e] sm:text-base">
+                          <p className="truncate text-sm font-semibold text-neutral-950">
                             {project.name}
                           </p>
 
-                          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[0.65rem] text-white/25">
-                            <span className="uppercase tracking-[0.12em]">
-                              {normaliseStatus(project.status)}
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500">
+                            <span className="capitalize">
+                              {normaliseStatus(project.status).toLowerCase()}
                             </span>
 
                             {project.target_end_date && (
                               <>
-                                <span className="h-1 w-1 rounded-full bg-white/15" />
+                                <span aria-hidden="true">·</span>
 
                                 <span>
                                   Target {formatDate(project.target_end_date)}
@@ -570,18 +507,18 @@ export default async function AdminClientPage({
                       </div>
 
                       <div className="flex shrink-0 items-center gap-4">
-                        <div className="min-w-[130px]">
-                          <div className="flex items-center justify-between gap-4 text-[0.62rem] text-white/30">
+                        <div className="w-full min-w-[130px] sm:w-36">
+                          <div className="flex items-center justify-between gap-4 text-xs text-neutral-500">
                             <span>Progress</span>
 
-                            <span>
+                            <span className="font-medium text-neutral-700">
                               {progress !== null
                                 ? `${progress}%`
                                 : "Auto"}
                             </span>
                           </div>
 
-                          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-100">
                             {progress !== null ? (
                               <div
                                 className="h-full rounded-full bg-[#f26a2e]"
@@ -593,17 +530,15 @@ export default async function AdminClientPage({
                                 }}
                               />
                             ) : (
-                              <div className="h-full w-1/3 rounded-full bg-white/15" />
+                              <div className="h-full w-1/3 rounded-full bg-neutral-300" />
                             )}
                           </div>
                         </div>
 
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.06] transition group-hover:border-white/[0.12] group-hover:bg-white/[0.03]">
-                          <ChevronRight
-                            size={14}
-                            className="text-white/25 transition-transform group-hover:translate-x-0.5 group-hover:text-white/60"
-                          />
-                        </div>
+                        <ChevronRight
+                          size={16}
+                          className="shrink-0 text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-neutral-500"
+                        />
                       </div>
                     </div>
                   </Link>
@@ -611,28 +546,23 @@ export default async function AdminClientPage({
               })}
             </div>
           ) : (
-            <div className="px-6 py-10 sm:px-7">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05]">
-                <FolderKanban
-                  size={17}
-                  className="text-[#f26a2e]"
-                />
-              </div>
+            <div className="p-8 text-center sm:p-10">
+              <FolderKanban className="mx-auto text-[#f26a2e]" />
 
-              <h3 className="mt-5 text-lg font-medium">
+              <h3 className="mt-4 font-semibold text-neutral-950">
                 No projects yet
               </h3>
 
-              <p className="mt-2 max-w-lg text-sm leading-6 text-white/35">
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-neutral-500">
                 Create the first project for this client to begin tracking
                 milestones, progress, updates and documents.
               </p>
 
               <Link
                 href={`/admin/clients/${organization.id}/projects/new`}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-sm text-white/60 transition hover:border-white/[0.16] hover:text-white"
+                className={`mt-6 ${secondaryButtonClassName}`}
               >
-                <Plus size={14} />
+                <Plus size={15} />
                 Create Project
               </Link>
             </div>
@@ -646,38 +576,37 @@ export default async function AdminClientPage({
         <section className="mt-6 grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
           {/* Billing contact */}
 
-          <div className="rounded-[1.75rem] border border-white/[0.08] bg-white/[0.018] p-6 sm:p-7">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02]">
+              <span className={iconTileClassName}>
                 <Mail
                   size={17}
-                  strokeWidth={1.7}
                   className="text-[#f26a2e]"
                 />
-              </div>
+              </span>
 
-              <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
                 Billing contact
               </span>
             </div>
 
             {organization.billing_email ? (
-              <div className="mt-7">
-                <p className="text-base font-medium">
+              <div className="mt-6">
+                <p className="text-base font-semibold text-neutral-950">
                   {organization.billing_contact_name || "Billing contact"}
                 </p>
 
-                <p className="mt-2 break-all text-sm text-white/35">
+                <p className="mt-2 break-all text-sm text-neutral-600">
                   {organization.billing_email}
                 </p>
               </div>
             ) : (
-              <div className="mt-7">
-                <p className="text-base font-medium">
+              <div className="mt-6">
+                <p className="text-base font-semibold text-neutral-950">
                   No billing contact
                 </p>
 
-                <p className="mt-2 text-sm leading-6 text-white/35">
+                <p className="mt-2 text-sm leading-6 text-neutral-500">
                   Add a billing contact before issuing client invoices.
                 </p>
               </div>
@@ -685,58 +614,57 @@ export default async function AdminClientPage({
 
             <Link
               href={`/admin/clients/${organization.id}/billing`}
-              className="mt-7 inline-flex items-center gap-2 rounded-lg border border-white/[0.08] px-3.5 py-2.5 text-xs text-white/50 transition hover:border-white/[0.15] hover:text-white"
+              className={`mt-6 ${smallSecondaryButtonClassName}`}
             >
               {organization.billing_email ? "Edit contact" : "Add contact"}
 
-              <ChevronRight size={13} />
+              <ChevronRight size={14} />
             </Link>
           </div>
 
           {/* Invoice summary */}
 
-          <div className="rounded-[1.75rem] border border-white/[0.08] bg-white/[0.018] p-6 sm:p-7">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02]">
+              <span className={iconTileClassName}>
                 <CircleDollarSign
                   size={17}
-                  strokeWidth={1.7}
                   className="text-[#f26a2e]"
                 />
-              </div>
+              </span>
 
-              <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
                 Invoice overview
               </span>
             </div>
 
-            <div className="mt-7 grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-2xl font-medium tracking-[-0.03em]">
+            <div className="mt-6 grid grid-cols-3 gap-3 sm:gap-4">
+              <div className="rounded-xl bg-neutral-50 p-3 sm:p-4">
+                <p className="text-2xl font-semibold tracking-[-0.03em] text-neutral-950">
                   {invoiceCount}
                 </p>
 
-                <p className="mt-1 text-[0.65rem] text-white/30">
+                <p className="mt-1 text-xs text-neutral-500">
                   Total
                 </p>
               </div>
 
-              <div>
-                <p className="text-2xl font-medium tracking-[-0.03em]">
+              <div className="rounded-xl bg-neutral-50 p-3 sm:p-4">
+                <p className="text-2xl font-semibold tracking-[-0.03em] text-neutral-950">
                   {visibleInvoiceCount}
                 </p>
 
-                <p className="mt-1 text-[0.65rem] text-white/30">
+                <p className="mt-1 text-xs text-neutral-500">
                   Client visible
                 </p>
               </div>
 
-              <div>
-                <p className="text-2xl font-medium tracking-[-0.03em]">
+              <div className="rounded-xl bg-neutral-50 p-3 sm:p-4">
+                <p className="text-2xl font-semibold tracking-[-0.03em] text-neutral-950">
                   {outstandingInvoiceCount}
                 </p>
 
-                <p className="mt-1 text-[0.65rem] text-white/30">
+                <p className="mt-1 text-xs text-neutral-500">
                   Open
                 </p>
               </div>
@@ -744,9 +672,9 @@ export default async function AdminClientPage({
 
             <Link
               href={`/admin/clients/${organization.id}/invoices/new`}
-              className="mt-7 inline-flex items-center gap-2 rounded-lg border border-white/[0.08] px-3.5 py-2.5 text-xs text-white/50 transition hover:border-white/[0.15] hover:text-white"
+              className={`mt-6 ${smallSecondaryButtonClassName}`}
             >
-              <Plus size={13} />
+              <Plus size={14} />
               Create invoice
             </Link>
           </div>
@@ -756,30 +684,30 @@ export default async function AdminClientPage({
             INVOICES
         ==================================================== */}
 
-        <section className="mt-6 overflow-hidden rounded-[1.75rem] border border-white/[0.08] bg-[#0a0a0a]/75 shadow-[0_30px_90px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-          <div className="flex flex-col gap-4 border-b border-white/[0.07] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+        <section className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-neutral-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
-              <h2 className="text-sm font-medium">
+              <h2 className="text-base font-semibold text-neutral-950">
                 Recent invoices
               </h2>
 
-              <p className="mt-1 text-xs text-white/30">
+              <p className="mt-1 text-sm text-neutral-500">
                 Billing activity for {organization.name}
               </p>
             </div>
 
             <Link
               href={`/admin/clients/${organization.id}/invoices/new`}
-              className="inline-flex w-fit items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-xs text-white/50 transition hover:border-white/[0.15] hover:text-white"
+              className={`w-fit ${smallSecondaryButtonClassName}`}
             >
-              <Plus size={13} />
+              <Plus size={14} />
               New invoice
             </Link>
           </div>
 
           {invoicesError ? (
-            <div className="px-6 py-9 sm:px-7">
-              <p className="text-sm text-red-400">
+            <div className="p-5 sm:p-6">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 Unable to load invoices.
               </p>
             </div>
@@ -794,33 +722,30 @@ export default async function AdminClientPage({
                   <Link
                     key={invoice.id}
                     href={`/admin/invoices/${invoice.id}`}
-                    className="group relative flex flex-col gap-5 border-b border-white/[0.07] px-6 py-5 transition duration-300 last:border-b-0 hover:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between sm:px-7"
+                    className="group flex flex-col gap-4 border-b border-neutral-100 px-5 py-4 transition last:border-b-0 hover:bg-neutral-50 sm:flex-row sm:items-center sm:justify-between sm:px-6"
                   >
-                    <div className="absolute bottom-0 left-0 top-0 w-px bg-[#f26a2e] opacity-0 transition-opacity group-hover:opacity-100" />
-
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02] transition group-hover:border-[#f26a2e]/20 group-hover:bg-[#f26a2e]/[0.04]">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
                         <Receipt
-                          size={16}
-                          strokeWidth={1.7}
+                          size={17}
                           className="text-[#f26a2e]"
                         />
-                      </div>
+                      </span>
 
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium transition-colors group-hover:text-[#f26a2e]">
+                        <p className="truncate text-sm font-semibold text-neutral-950">
                           {invoice.invoice_number}
                         </p>
 
-                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.65rem] text-white/25">
-                          <span>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500">
+                          <span className="font-medium text-neutral-700">
                             {formatMoney(
                               invoice.total_cents,
                               invoice.currency
                             )}
                           </span>
 
-                          <span className="h-1 w-1 rounded-full bg-white/15" />
+                          <span aria-hidden="true">·</span>
 
                           <span>
                             {invoice.due_date
@@ -828,9 +753,9 @@ export default async function AdminClientPage({
                               : "No due date"}
                           </span>
 
-                          <span className="hidden h-1 w-1 rounded-full bg-white/15 sm:block" />
+                          <span aria-hidden="true">·</span>
 
-                          <span>
+                          <span className="truncate">
                             {linkedProject
                               ? linkedProject.name
                               : "No project"}
@@ -843,8 +768,8 @@ export default async function AdminClientPage({
                       <span
                         className={
                           invoice.visible_to_client
-                            ? "rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-2.5 py-1 text-[0.52rem] font-semibold uppercase tracking-[0.12em] text-[#f26a2e]"
-                            : "rounded-full border border-white/[0.07] px-2.5 py-1 text-[0.52rem] font-medium uppercase tracking-[0.12em] text-white/25"
+                            ? "rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#c2541f]"
+                            : "rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-600"
                         }
                       >
                         {invoice.visible_to_client
@@ -852,43 +777,40 @@ export default async function AdminClientPage({
                           : "Internal"}
                       </span>
 
-                      <span className="rounded-full border border-white/[0.07] bg-white/[0.015] px-2.5 py-1 text-[0.52rem] font-medium uppercase tracking-[0.12em] text-white/35">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${invoiceStatusClassName(
+                          invoice.status
+                        )}`}
+                      >
                         {normaliseStatus(invoice.status)}
                       </span>
 
-                      <div className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.06] transition group-hover:border-white/[0.12] group-hover:bg-white/[0.03]">
-                        <ChevronRight
-                          size={14}
-                          className="text-white/25 transition-transform group-hover:translate-x-0.5 group-hover:text-white/60"
-                        />
-                      </div>
+                      <ChevronRight
+                        size={16}
+                        className="ml-1 hidden text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-neutral-500 sm:block"
+                      />
                     </div>
                   </Link>
                 );
               })}
             </div>
           ) : (
-            <div className="px-6 py-10 sm:px-7">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05]">
-                <Receipt
-                  size={17}
-                  className="text-[#f26a2e]"
-                />
-              </div>
+            <div className="p-8 text-center sm:p-10">
+              <Receipt className="mx-auto text-[#f26a2e]" />
 
-              <h3 className="mt-5 text-lg font-medium">
+              <h3 className="mt-4 font-semibold text-neutral-950">
                 No invoices yet
               </h3>
 
-              <p className="mt-2 max-w-lg text-sm leading-6 text-white/35">
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-neutral-500">
                 Create the first invoice for this client when billing is ready.
               </p>
 
               <Link
                 href={`/admin/clients/${organization.id}/invoices/new`}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-sm text-white/60 transition hover:border-white/[0.16] hover:text-white"
+                className={`mt-6 ${secondaryButtonClassName}`}
               >
-                <Plus size={14} />
+                <Plus size={15} />
                 Create Invoice
               </Link>
             </div>
@@ -899,13 +821,11 @@ export default async function AdminClientPage({
             FOOTER
         ==================================================== */}
 
-        <footer className="mt-auto flex flex-col gap-3 border-t border-white/[0.07] py-7 pt-12 text-[0.65rem] text-white/20 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="mt-10 flex flex-col gap-2 border-t border-neutral-200 pt-6 text-xs text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Drylake Pty Ltd</span>
 
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <span>{organization.name}</span>
-
-            <span className="hidden h-1 w-1 rounded-full bg-white/20 sm:block" />
 
             <span>Restricted administration</span>
           </div>

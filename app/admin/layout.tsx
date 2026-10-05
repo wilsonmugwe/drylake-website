@@ -34,7 +34,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f4f1] text-[#171716]">
+    <div className="drylake-admin min-h-screen bg-[#f4f4f1] text-[#171716]">
       <AdminMobileNav />
 
       <div className="flex min-h-screen">

@@ -6,11 +6,11 @@ import {
 import Link from "next/link";
 import {
   ArrowLeft,
-  FileText,
   Hash,
-  ShieldCheck,
 } from "lucide-react";
 
+import AdminDateInput from "@/components/admin/AdminDateInput";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isGstRegistered } from "@/lib/tax";
@@ -34,6 +34,9 @@ type NewInvoicePageProps = {
     error?: string;
   }>;
 };
+
+const inputClassName =
+  "min-h-11 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100";
 
 export default async function NewInvoicePage({
   params,
@@ -138,270 +141,234 @@ export default async function NewInvoicePage({
     isGstRegistered();
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
-      <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 lg:px-12">
-        {/* Header */}
-
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <Link
-            href={`/admin/clients/${organization.id}`}
-            className="flex items-center gap-2 text-sm text-white/60 transition hover:text-white"
-          >
-            <ArrowLeft size={16} />
-
-            {organization.name}
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <ShieldCheck
-              size={14}
-              className="text-[#f26a2e]"
-            />
-
-            <span className="text-xs uppercase tracking-[0.18em] text-white/35">
-              Platform Admin
-            </span>
-          </div>
-        </header>
-
-        {/* Page heading */}
-
-        <section className="py-12">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
-            <FileText
-              size={20}
-              className="text-[#f26a2e]"
-            />
-          </div>
-
-          <p className="mt-8 text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
-            {organization.name}
-          </p>
-
-          <h1 className="mt-3 text-4xl font-medium tracking-[-0.04em]">
-            Create Invoice
-          </h1>
-
-          <p className="mt-3 max-w-xl text-sm leading-6 text-white/40">
-            Create a draft invoice for this
-            client. The invoice number is
-            assigned automatically by Drylake.
-          </p>
-        </section>
-
-        {/* Error */}
-
-        {error ? (
-          <div
-            role="alert"
-            className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5"
-          >
-            <p className="text-sm font-medium text-red-300">
-              Invoice could not be created
-            </p>
-
-            <p className="mt-1 text-sm leading-6 text-red-300/70">
-              {error}
-            </p>
-          </div>
-        ) : null}
-
-        {/* Inactive organisation */}
-
-        {disabled ? (
-          <div className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5 text-sm text-red-300">
-            Invoices cannot be created for an
-            inactive organisation.
-          </div>
-        ) : null}
-
-        {/* Form */}
-
-        <form
-          action={`/api/admin/clients/${organization.id}/invoices`}
-          method="POST"
-          className="space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 sm:p-8"
+    <main className="min-h-screen p-5 sm:p-8 lg:p-10">
+      <div className="mx-auto max-w-5xl">
+        <Link
+          href={`/admin/clients/${organization.id}`}
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition hover:text-neutral-950"
         >
-          {/* Automatic invoice number */}
+          <ArrowLeft size={15} />
+          {organization.name}
+        </Link>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <Hash
-                size={15}
-                className="text-[#f26a2e]"
-              />
+        <AdminPageHeader
+          eyebrow={organization.name}
+          title="Create Invoice"
+          description="Create a draft invoice for this client. The invoice number is assigned automatically by Drylake."
+        />
 
-              <span className="text-sm font-medium">
-                Invoice number
-              </span>
+        <div className="mt-7 space-y-6">
+          {/* Error */}
+
+          {error ? (
+            <div
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3"
+            >
+              <p className="text-sm font-semibold text-red-800">
+                Invoice could not be created
+              </p>
+
+              <p className="mt-1 text-sm leading-6 text-red-700">
+                {error}
+              </p>
             </div>
+          ) : null}
 
-            <div className="mt-2 rounded-xl border border-white/10 bg-black/60 px-4 py-3">
-              <p className="text-sm text-white/55">
-                Automatically assigned when
-                the invoice is created
+          {/* Inactive organisation */}
+
+          {disabled ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              Invoices cannot be created for an
+              inactive organisation.
+            </div>
+          ) : null}
+
+          {/* Form */}
+
+          <form
+            action={`/api/admin/clients/${organization.id}/invoices`}
+            method="POST"
+            className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8"
+          >
+            {/* Automatic invoice number */}
+
+            <div>
+              <div className="flex items-center gap-2">
+                <Hash
+                  size={15}
+                  className="text-[#f26a2e]"
+                />
+
+                <span className="text-sm font-semibold text-neutral-900">
+                  Invoice number
+                </span>
+              </div>
+
+              <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+                <p className="text-sm text-neutral-600">
+                  Automatically assigned when
+                  the invoice is created
+                </p>
+              </div>
+
+              <p className="mt-2 text-xs leading-5 text-neutral-500">
+                Drylake uses sequential invoice
+                numbers such as DL-2026-009.
               </p>
             </div>
 
-            <p className="mt-2 text-xs leading-5 text-white/30">
-              Drylake uses sequential invoice
-              numbers such as DL-2026-009.
-            </p>
-          </div>
+            {/* Project */}
 
-          {/* Project */}
-
-          <div>
-            <label
-              htmlFor="projectId"
-              className="text-sm font-medium"
-            >
-              Project
-            </label>
-
-            <select
-              id="projectId"
-              name="projectId"
-              disabled={disabled}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition focus:border-white/30 disabled:opacity-40"
-            >
-              <option value="">
-                No specific project
-              </option>
-
-              {(projects ?? []).map(
-                (project) => (
-                  <option
-                    key={project.id}
-                    value={project.id}
-                  >
-                    {project.name}
-                  </option>
-                )
-              )}
-            </select>
-          </div>
-
-          {/* Amounts */}
-
-          <div
-            className={
-              gstRegistered
-                ? "grid gap-6 sm:grid-cols-2"
-                : ""
-            }
-          >
             <div>
               <label
-                htmlFor="subtotal"
-                className="text-sm font-medium"
+                htmlFor="projectId"
+                className="block text-sm font-semibold text-neutral-900"
               >
-                Subtotal (AUD)
+                Project
               </label>
 
-              <input
-                id="subtotal"
-                name="subtotal"
-                type="number"
-                required
-                min="0.01"
-                max="9999999.99"
-                step="0.01"
-                inputMode="decimal"
-                placeholder="1000.00"
+              <select
+                id="projectId"
+                name="projectId"
                 disabled={disabled}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/30 disabled:opacity-40"
-              />
+                className={`mt-3 ${inputClassName}`}
+              >
+                <option value="">
+                  No specific project
+                </option>
+
+                {(projects ?? []).map(
+                  (project) => (
+                    <option
+                      key={project.id}
+                      value={project.id}
+                    >
+                      {project.name}
+                    </option>
+                  )
+                )}
+              </select>
             </div>
 
-            {gstRegistered ? (
+            {/* Amounts */}
+
+            <div
+              className={
+                gstRegistered
+                  ? "grid gap-6 sm:grid-cols-2"
+                  : ""
+              }
+            >
               <div>
                 <label
-                  htmlFor="tax"
-                  className="text-sm font-medium"
+                  htmlFor="subtotal"
+                  className="block text-sm font-semibold text-neutral-900"
                 >
-                  GST (AUD)
+                  Subtotal (AUD)
                 </label>
 
                 <input
-                  id="tax"
-                  name="tax"
+                  id="subtotal"
+                  name="subtotal"
                   type="number"
                   required
-                  min="0"
+                  min="0.01"
                   max="9999999.99"
                   step="0.01"
                   inputMode="decimal"
-                  defaultValue="0.00"
+                  placeholder="1000.00"
                   disabled={disabled}
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition focus:border-white/30 disabled:opacity-40"
+                  className={`mt-3 ${inputClassName}`}
                 />
               </div>
-            ) : (
-              <input
-                type="hidden"
-                name="tax"
-                value="0"
-              />
-            )}
-          </div>
 
-          {/* Due date */}
+              {gstRegistered ? (
+                <div>
+                  <label
+                    htmlFor="tax"
+                    className="block text-sm font-semibold text-neutral-900"
+                  >
+                    GST (AUD)
+                  </label>
 
-          <div>
-            <label
-              htmlFor="dueDate"
-              className="text-sm font-medium"
-            >
-              Due date
-            </label>
+                  <input
+                    id="tax"
+                    name="tax"
+                    type="number"
+                    required
+                    min="0"
+                    max="9999999.99"
+                    step="0.01"
+                    inputMode="decimal"
+                    defaultValue="0.00"
+                    disabled={disabled}
+                    className={`mt-3 ${inputClassName}`}
+                  />
+                </div>
+              ) : (
+                <input
+                  type="hidden"
+                  name="tax"
+                  value="0"
+                />
+              )}
+            </div>
 
-            <input
+            {/* Due date */}
+
+            <AdminDateInput
               id="dueDate"
               name="dueDate"
-              type="date"
+              label="Due date"
               disabled={disabled}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition focus:border-white/30 disabled:opacity-40"
-            />
-          </div>
-
-          {/* Client visibility */}
-
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 p-4">
-            <input
-              type="checkbox"
-              name="visibleToClient"
-              value="true"
-              defaultChecked
-              disabled={disabled}
-              className="mt-1"
             />
 
-            <span>
-              <span className="block text-sm font-medium">
-                Visible to client
+            {/* Client visibility */}
+
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-neutral-200 p-4 transition hover:bg-neutral-50">
+              <input
+                type="checkbox"
+                name="visibleToClient"
+                value="true"
+                defaultChecked
+                disabled={disabled}
+                className="mt-1 h-4 w-4 accent-[#f26a2e]"
+              />
+
+              <span>
+                <span className="block text-sm font-semibold text-neutral-900">
+                  Visible to client
+                </span>
+
+                <span className="mt-1 block text-xs leading-5 text-neutral-500">
+                  Allow members of this
+                  organisation to view the
+                  invoice after it is issued.
+                </span>
               </span>
+            </label>
 
-              <span className="mt-1 block text-xs leading-5 text-white/35">
-                Allow members of this
-                organisation to view the
-                invoice after it is issued.
-              </span>
-            </span>
-          </label>
+            {/* Submit */}
 
-          {/* Submit */}
+            <div className="flex flex-col-reverse gap-3 border-t border-neutral-200 pt-6 sm:flex-row sm:justify-end">
+              <Link
+                href={`/admin/clients/${organization.id}`}
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-200 bg-white px-5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
+              >
+                Cancel
+              </Link>
 
-          <div className="flex justify-end border-t border-white/10 pt-6">
-            <button
-              type="submit"
-              disabled={disabled}
-              className="rounded-xl bg-white px-6 py-3 text-sm font-semibold !text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Create Draft Invoice
-            </button>
-          </div>
-        </form>
+              <button
+                type="submit"
+                disabled={disabled}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Create Draft Invoice
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </main>
   );

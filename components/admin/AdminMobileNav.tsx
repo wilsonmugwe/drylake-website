@@ -57,10 +57,10 @@ export default function AdminMobileNav() {
 
   return (
     <>
-      <div className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-neutral-200 bg-white/95 px-4 backdrop-blur lg:hidden">
+      <div className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-[#10100f] px-4 text-white lg:hidden">
         <Link
           href="/admin"
-          className="flex items-center gap-2 font-semibold text-neutral-950"
+          className="flex min-h-11 items-center gap-2 font-semibold text-white"
         >
           <ShieldCheck size={18} className="text-[#f26a2e]" />
           Drylake Admin
@@ -70,7 +70,7 @@ export default function AdminMobileNav() {
           type="button"
           aria-label="Open admin navigation"
           onClick={() => setOpen(true)}
-          className="rounded-xl border border-neutral-200 p-2.5 text-neutral-700"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 text-white/80 transition hover:bg-white/10 hover:text-white"
         >
           <Menu size={18} />
         </button>

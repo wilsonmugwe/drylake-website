@@ -1,20 +1,35 @@
 "use client";
 
-import {
-  FormEvent,
-  useState,
-} from "react";
-import {
-  CalendarDays,
-  Loader2,
-} from "lucide-react";
+import { FormEvent, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-type AdminProjectFormProps = {
-  organizationId: string;
-  organizationStatus: string;
-};
+import AdminClientPicker, {
+  type PickerClient,
+} from "@/components/admin/AdminClientPicker";
+import AdminDateInput from "@/components/admin/AdminDateInput";
+
+/*
+ * Create Project form, used from two places:
+ *   - a client workspace: `organizationId` is fixed (client preselected), and
+ *   - the global /admin/projects/new page: `clients` is passed and the admin searches
+ *     for the client first.
+ * Both post the same FormData (name, status, startDate, targetEndDate) to the existing
+ * per-client endpoint /api/admin/clients/[organizationId]/projects, so the API contract
+ * and its server-side validation are unchanged.
+ */
+type AdminProjectFormProps =
+  | {
+      mode: "client";
+      organizationId: string;
+      organizationStatus: string;
+    }
+  | {
+      mode: "global";
+      clients: PickerClient[];
+      initialClientId?: string | null;
+    };
 
 type ApiResponse = {
   success?: boolean;
@@ -22,57 +37,58 @@ type ApiResponse = {
   error?: string;
 };
 
-export default function AdminProjectForm({
-  organizationId,
-  organizationStatus,
-}: AdminProjectFormProps) {
+const INPUT_CLASS =
+  "mt-3 min-h-11 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400";
+
+export default function AdminProjectForm(props: AdminProjectFormProps) {
   const router = useRouter();
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [clientError, setClientError] = useState(false);
+  const [startDate, setStartDate] = useState("");
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [pickedClientId, setPickedClientId] = useState<string | null>(
+    props.mode === "global" ? props.initialClientId ?? null : null
+  );
 
-  const disabled =
-    organizationStatus !== "ACTIVE";
+  const organizationId =
+    props.mode === "client" ? props.organizationId : pickedClientId;
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  const inactive =
+    props.mode === "client" && props.organizationStatus !== "ACTIVE";
+
+  const noClients = props.mode === "global" && props.clients.length === 0;
+
+  const locked = inactive || noClients;
+
+  const cancelHref =
+    props.mode === "client"
+      ? `/admin/clients/${props.organizationId}`
+      : "/admin/projects";
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (submitting || disabled) {
+    if (submitting || locked) {
       return;
     }
 
     setError(null);
 
-    const form =
-      event.currentTarget;
+    if (!organizationId) {
+      setClientError(true);
+      setError("Choose the client this project belongs to.");
+      return;
+    }
 
-    const formData =
-      new FormData(form);
+    const formData = new FormData(event.currentTarget);
 
-    const startDate =
-      String(
-        formData.get("startDate") ?? ""
-      ).trim();
+    const start = String(formData.get("startDate") ?? "").trim();
+    const end = String(formData.get("targetEndDate") ?? "").trim();
 
-    const targetEndDate =
-      String(
-        formData.get("targetEndDate") ?? ""
-      ).trim();
-
-    if (
-      startDate &&
-      targetEndDate &&
-      targetEndDate < startDate
-    ) {
-      setError(
-        "Target end date cannot be before the start date."
-      );
-
+    if (start && end && end < start) {
+      setError("Target completion date cannot be before the start date.");
       return;
     }
 
@@ -91,23 +107,20 @@ export default function AdminProjectForm({
       let result: ApiResponse;
 
       try {
-        result =
-          (await response.json()) as ApiResponse;
+        result = (await response.json()) as ApiResponse;
       } catch {
-        throw new Error(
-          "The server returned an unexpected response."
-        );
+        throw new Error("The server returned an unexpected response.");
       }
 
       if (!response.ok) {
-        throw new Error(
-          result.error ||
-            "Unable to create project."
-        );
+        throw new Error(result.error || "Unable to create project.");
       }
 
+      // Global flow lands on the new project; the client flow returns to the client.
       router.push(
-        `/admin/clients/${organizationId}`
+        props.mode === "global" && result.projectId
+          ? `/admin/projects/${result.projectId}`
+          : `/admin/clients/${organizationId}`
       );
 
       router.refresh();
@@ -125,12 +138,21 @@ export default function AdminProjectForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-8 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8"
+      className="space-y-7 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8"
     >
-      {disabled ? (
+      {inactive ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
-          Projects cannot be created while this
-          client is inactive.
+          Projects cannot be created while this client is inactive.
+        </div>
+      ) : null}
+
+      {noClients ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+          There are no clients yet.{" "}
+          <Link href="/admin/clients/new" className="font-semibold underline">
+            Create a client
+          </Link>{" "}
+          first, then add their project.
         </div>
       ) : null}
 
@@ -143,10 +165,22 @@ export default function AdminProjectForm({
             Project could not be created
           </p>
 
-          <p className="mt-1 text-sm leading-6 text-red-700">
-            {error}
-          </p>
+          <p className="mt-1 text-sm leading-6 text-red-700">{error}</p>
         </div>
+      ) : null}
+
+      {props.mode === "global" ? (
+        <AdminClientPicker
+          clients={props.clients}
+          value={pickedClientId}
+          invalid={clientError}
+          disabled={submitting || noClients}
+          onChange={(clientId) => {
+            setPickedClientId(clientId);
+            setClientError(false);
+            setError(null);
+          }}
+        />
       ) : null}
 
       <div>
@@ -158,8 +192,7 @@ export default function AdminProjectForm({
         </label>
 
         <p className="mt-1 text-sm text-neutral-500">
-          A clear internal and client-facing name
-          for the project.
+          A clear internal and client-facing name for the project.
         </p>
 
         <input
@@ -171,10 +204,8 @@ export default function AdminProjectForm({
           maxLength={120}
           autoComplete="off"
           placeholder="Website Redesign"
-          disabled={
-            disabled || submitting
-          }
-          className="mt-4 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400"
+          disabled={locked || submitting}
+          className={INPUT_CLASS}
         />
       </div>
 
@@ -194,100 +225,48 @@ export default function AdminProjectForm({
           id="status"
           name="status"
           defaultValue="PLANNING"
-          disabled={
-            disabled || submitting
-          }
-          className="mt-4 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100"
+          disabled={locked || submitting}
+          className={INPUT_CLASS}
         >
-          <option value="PLANNING">
-            Planning
-          </option>
-
-          <option value="ACTIVE">
-            Active
-          </option>
-
-          <option value="ON_HOLD">
-            On hold
-          </option>
+          <option value="PLANNING">Planning</option>
+          <option value="ACTIVE">Active</option>
+          <option value="ON_HOLD">On hold</option>
         </select>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label
-            htmlFor="startDate"
-            className="flex items-center gap-2 text-sm font-semibold text-neutral-900"
-          >
-            <CalendarDays
-              size={15}
-              className="text-neutral-400"
-            />
+        <AdminDateInput
+          id="startDate"
+          name="startDate"
+          label="Start date"
+          disabled={locked || submitting}
+          onChange={setStartDate}
+        />
 
-            Start date
-          </label>
-
-          <p className="mt-1 text-sm text-neutral-500">
-            Optional.
-          </p>
-
-          <input
-            id="startDate"
-            name="startDate"
-            type="date"
-            disabled={
-              disabled || submitting
-            }
-            className="mt-4 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="targetEndDate"
-            className="flex items-center gap-2 text-sm font-semibold text-neutral-900"
-          >
-            <CalendarDays
-              size={15}
-              className="text-neutral-400"
-            />
-
-            Target end date
-          </label>
-
-          <p className="mt-1 text-sm text-neutral-500">
-            Optional.
-          </p>
-
-          <input
-            id="targetEndDate"
-            name="targetEndDate"
-            type="date"
-            disabled={
-              disabled || submitting
-            }
-            className="mt-4 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100"
-          />
-        </div>
+        <AdminDateInput
+          id="targetEndDate"
+          name="targetEndDate"
+          label="Target completion date"
+          min={startDate || undefined}
+          disabled={locked || submitting}
+        />
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-5">
+      <div className="rounded-xl border border-neutral-200 bg-[#f4f4f1] p-5">
         <p className="text-sm font-semibold text-neutral-900">
           Project progress
         </p>
 
         <p className="mt-2 text-sm leading-6 text-neutral-500">
-          Progress starts in automatic mode. Once
-          milestones are added, Drylake calculates
-          project progress from milestone completion.
-          An administrator can override the calculated
-          value later if required.
+          Progress starts in automatic mode. Once milestones are added, Drylake
+          calculates project progress from milestone completion. An
+          administrator can override the calculated value later if required.
         </p>
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-neutral-200 pt-7 sm:flex-row sm:justify-end">
         <Link
-          href={`/admin/clients/${organizationId}`}
+          href={cancelHref}
           className="inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-950"
         >
           Cancel
@@ -295,18 +274,12 @@ export default function AdminProjectForm({
 
         <button
           type="submit"
-          disabled={
-            disabled || submitting
-          }
+          disabled={locked || submitting}
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? (
             <>
-              <Loader2
-                size={16}
-                className="animate-spin"
-              />
-
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
               Creating project...
             </>
           ) : (

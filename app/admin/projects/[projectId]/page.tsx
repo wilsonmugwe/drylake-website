@@ -9,10 +9,10 @@ import {
   Clock3,
   FileText,
   Plus,
-  ShieldCheck,
   Upload,
 } from "lucide-react";
 
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
@@ -300,99 +300,78 @@ export default async function AdminProjectPage({
       ? "Manual override"
       : "Automatic";
 
+  const secondaryButtonClassName =
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50";
+
+  const visibilityChipClassName = (visible: boolean) =>
+    `inline-flex w-fit shrink-0 items-center rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.1em] ${
+      visible
+        ? "bg-orange-50 text-[#c2541f]"
+        : "bg-neutral-100 text-neutral-600"
+    }`;
+
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
-      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-12">
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <Link
-            href={`/admin/clients/${organization.id}`}
-            className="flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
-          >
-            <ArrowLeft size={16} />
-            {organization.name}
-          </Link>
+    <main className="min-h-screen p-5 sm:p-8 lg:p-10">
+      <div className="mx-auto max-w-[1450px]">
+        <Link
+          href={`/admin/clients/${organization.id}`}
+          className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-neutral-500 transition hover:text-neutral-950"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          {organization.name}
+        </Link>
 
-          <div className="flex items-center gap-2">
-            <ShieldCheck
-              size={14}
-              className="text-[#f26a2e]"
-            />
+        <AdminPageHeader
+          eyebrow={organization.name}
+          title={project.name}
+          description={`Status: ${project.status.replaceAll("_", " ").toLowerCase()} · ${progressMode} progress`}
+          action={
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                href={`/admin/projects/${project.id}/updates/new`}
+                className={secondaryButtonClassName}
+              >
+                <Plus size={16} aria-hidden="true" />
+                Add Update
+              </Link>
 
-            <p className="text-xs uppercase tracking-[0.18em] text-white/35">
-              Platform Admin
-            </p>
-          </div>
-        </header>
+              <Link
+                href={`/admin/projects/${project.id}/documents/new`}
+                className={secondaryButtonClassName}
+              >
+                <Upload size={16} aria-hidden="true" />
+                Upload Document
+              </Link>
 
-        {/* Project heading */}
-        <section className="flex flex-col gap-8 py-14 sm:flex-row sm:items-end sm:justify-between sm:py-16">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
-              {organization.name}
-            </p>
-
-            <h1 className="mt-4 text-4xl font-medium tracking-[-0.04em] sm:text-5xl">
-              {project.name}
-            </h1>
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <span className="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-white/50">
-                {project.status.replaceAll("_", " ")}
-              </span>
-
-              <span className="text-xs text-white/30">
-                {progressMode} progress
-              </span>
+              <Link
+                href={`/admin/projects/${project.id}/milestones/new`}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800"
+              >
+                <Plus size={16} aria-hidden="true" />
+                Add Milestone
+              </Link>
             </div>
-          </div>
-
-          {/* Admin actions */}
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/admin/projects/${project.id}/updates/new`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"
-            >
-              <Plus size={16} />
-              Add Update
-            </Link>
-
-            <Link
-              href={`/admin/projects/${project.id}/documents/new`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"
-            >
-              <Upload size={16} />
-              Upload Document
-            </Link>
-
-            <Link
-              href={`/admin/projects/${project.id}/milestones/new`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition-colors hover:bg-white/90"
-            >
-              <Plus size={16} />
-              Add Milestone
-            </Link>
-          </div>
-        </section>
+          }
+        />
 
         {/* Overview */}
-        <section className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
-            <p className="text-xs uppercase tracking-[0.16em] text-white/35">
+        <section className="mt-7 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
               Progress
             </p>
 
             <div className="mt-5 flex items-end gap-2">
-              <p className="text-4xl font-medium">
+              <p className="text-4xl font-semibold tracking-[-0.03em] text-neutral-950">
                 {displayedProgress}%
               </p>
 
-              <p className="pb-1 text-xs text-white/35">
+              <p className="pb-1 text-xs text-neutral-500">
                 {progressMode}
               </p>
             </div>
 
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-neutral-100">
               <div
                 className="h-full rounded-full bg-[#f26a2e] transition-all"
                 style={{
@@ -405,58 +384,60 @@ export default async function AdminProjectPage({
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <CalendarDays
               size={19}
               className="text-[#f26a2e]"
+              aria-hidden="true"
             />
 
-            <p className="mt-5 text-xs uppercase tracking-[0.16em] text-white/35">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
               Start Date
             </p>
 
-            <p className="mt-2 text-lg font-medium">
+            <p className="mt-2 text-lg font-semibold text-neutral-950">
               {formatDate(project.start_date)}
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <Clock3
               size={19}
               className="text-[#f26a2e]"
+              aria-hidden="true"
             />
 
-            <p className="mt-5 text-xs uppercase tracking-[0.16em] text-white/35">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
               Target Completion
             </p>
 
-            <p className="mt-2 text-lg font-medium">
+            <p className="mt-2 text-lg font-semibold text-neutral-950">
               {formatDate(project.target_end_date)}
             </p>
           </div>
         </section>
 
         {/* Milestones */}
-        <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+        <section className="mt-8 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-neutral-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
-              <h2 className="font-medium">
+              <h2 className="font-semibold text-neutral-950">
                 Milestones
               </h2>
 
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-neutral-500">
                 Project delivery checkpoints
               </p>
             </div>
 
-            <span className="text-xs uppercase tracking-[0.15em] text-white/30">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500">
               {completedMilestones}/{milestoneList.length} completed
             </span>
           </div>
 
           {milestonesError ? (
-            <div className="px-6 py-8 sm:px-8">
-              <p className="text-sm text-red-400">
+            <div className="p-5 sm:p-6">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 Unable to load milestones.
               </p>
             </div>
@@ -469,33 +450,35 @@ export default async function AdminProjectPage({
                 return (
                   <div
                     key={milestone.id}
-                    className="flex flex-col gap-5 border-b border-white/10 px-6 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-8"
+                    className="flex flex-col gap-4 border-b border-neutral-100 px-5 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-6"
                   >
-                    <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex min-w-0 items-start gap-4 sm:items-center">
                       {completed ? (
                         <CheckCircle2
                           size={19}
-                          className="shrink-0 text-[#f26a2e]"
+                          className="mt-0.5 shrink-0 text-[#f26a2e] sm:mt-0"
+                          aria-hidden="true"
                         />
                       ) : (
                         <Circle
                           size={19}
-                          className="shrink-0 text-white/25"
+                          className="mt-0.5 shrink-0 text-neutral-300 sm:mt-0"
+                          aria-hidden="true"
                         />
                       )}
 
                       <div className="min-w-0">
-                        <p className="font-medium">
+                        <p className="break-words font-semibold text-neutral-950">
                           {milestone.title}
                         </p>
 
                         {milestone.description ? (
-                          <p className="mt-1 max-w-2xl text-xs leading-5 text-white/40">
+                          <p className="mt-1 max-w-2xl text-xs leading-5 text-neutral-600">
                             {milestone.description}
                           </p>
                         ) : null}
 
-                        <p className="mt-1 text-xs text-white/30">
+                        <p className="mt-1 text-xs text-neutral-500">
                           {milestone.due_date
                             ? `Due ${formatDate(
                                 milestone.due_date
@@ -508,13 +491,13 @@ export default async function AdminProjectPage({
                     <form
                       action={`/api/admin/milestones/${milestone.id}/status`}
                       method="POST"
-                      className="flex shrink-0 items-center gap-2"
+                      className="flex w-full shrink-0 items-center gap-2 sm:w-auto"
                     >
                       <select
                         name="status"
                         defaultValue={milestone.status}
                         aria-label={`Status for ${milestone.title}`}
-                        className="rounded-xl border border-white/10 bg-black px-3 py-2 text-xs uppercase tracking-[0.08em] text-white/60 outline-none transition focus:border-white/30"
+                        className="min-h-11 min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 sm:flex-none"
                       >
                         <option value="NOT_STARTED">
                           Not started
@@ -531,7 +514,7 @@ export default async function AdminProjectPage({
 
                       <button
                         type="submit"
-                        className="rounded-xl border border-white/10 px-3 py-2 text-xs font-medium text-white/60 transition hover:border-white/20 hover:text-white"
+                        className="inline-flex min-h-11 items-center justify-center rounded-xl bg-neutral-950 px-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50"
                       >
                         Save
                       </button>
@@ -541,17 +524,18 @@ export default async function AdminProjectPage({
               })}
             </div>
           ) : (
-            <div className="px-6 py-10 sm:px-8">
+            <div className="px-5 py-10 sm:px-6">
               <Circle
                 size={22}
                 className="text-[#f26a2e]"
+                aria-hidden="true"
               />
 
-              <h3 className="mt-5 text-lg font-medium">
+              <h3 className="mt-5 text-lg font-semibold text-neutral-950">
                 No milestones yet
               </h3>
 
-              <p className="mt-2 max-w-lg text-sm leading-6 text-white/40">
+              <p className="mt-2 max-w-lg text-sm leading-6 text-neutral-600">
                 Add milestones to break the project into measurable
                 delivery checkpoints. Project progress will be
                 calculated automatically as milestones are completed.
@@ -559,9 +543,9 @@ export default async function AdminProjectPage({
 
               <Link
                 href={`/admin/projects/${project.id}/milestones/new`}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/70 transition hover:border-white/20 hover:text-white"
+                className={`mt-6 ${secondaryButtonClassName}`}
               >
-                <Plus size={15} />
+                <Plus size={15} aria-hidden="true" />
                 Add first milestone
               </Link>
             </div>
@@ -569,30 +553,30 @@ export default async function AdminProjectPage({
         </section>
 
         {/* Project Updates */}
-        <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+        <section className="mt-8 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-neutral-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
-              <h2 className="font-medium">
+              <h2 className="font-semibold text-neutral-950">
                 Project Updates
               </h2>
 
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-neutral-500">
                 Updates published or prepared for this project
               </p>
             </div>
 
             <Link
               href={`/admin/projects/${project.id}/updates/new`}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-xs font-medium text-white/60 transition hover:border-white/20 hover:text-white"
+              className={`w-fit ${secondaryButtonClassName}`}
             >
-              <Plus size={14} />
+              <Plus size={14} aria-hidden="true" />
               Add Update
             </Link>
           </div>
 
           {updatesError ? (
-            <div className="px-6 py-8 sm:px-8">
-              <p className="text-sm text-red-400">
+            <div className="p-5 sm:p-6">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 Unable to load project updates.
               </p>
             </div>
@@ -601,33 +585,31 @@ export default async function AdminProjectPage({
               {updateList.map((update) => (
                 <article
                   key={update.id}
-                  className="border-b border-white/10 px-6 py-6 last:border-b-0 sm:px-8"
+                  className="border-b border-neutral-100 px-5 py-6 last:border-b-0 sm:px-6"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h3 className="font-medium">
+                    <div className="min-w-0">
+                      <h3 className="break-words font-semibold text-neutral-950">
                         {update.title}
                       </h3>
 
-                      <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-white/45">
+                      <p className="mt-3 max-w-3xl whitespace-pre-wrap break-words text-sm leading-6 text-neutral-700">
                         {update.body}
                       </p>
                     </div>
 
                     <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
                       <span
-                        className={`rounded-full border px-2.5 py-1 text-[0.65rem] uppercase tracking-[0.1em] ${
-                          update.visible_to_client
-                            ? "border-[#f26a2e]/30 text-[#f26a2e]"
-                            : "border-white/10 text-white/35"
-                        }`}
+                        className={visibilityChipClassName(
+                          Boolean(update.visible_to_client)
+                        )}
                       >
                         {update.visible_to_client
                           ? "Visible to client"
                           : "Internal"}
                       </span>
 
-                      <span className="text-xs text-white/25">
+                      <span className="text-xs text-neutral-500">
                         {formatDateTime(
                           update.published_at ??
                             update.created_at
@@ -639,20 +621,20 @@ export default async function AdminProjectPage({
               ))}
             </div>
           ) : (
-            <div className="px-6 py-10 sm:px-8">
-              <h3 className="text-lg font-medium">
+            <div className="px-5 py-10 sm:px-6">
+              <h3 className="text-lg font-semibold text-neutral-950">
                 No project updates yet
               </h3>
 
-              <p className="mt-2 text-sm text-white/40">
+              <p className="mt-2 text-sm text-neutral-600">
                 Publish an update when there is progress to share.
               </p>
 
               <Link
                 href={`/admin/projects/${project.id}/updates/new`}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/70 transition hover:border-white/20 hover:text-white"
+                className={`mt-6 ${secondaryButtonClassName}`}
               >
-                <Plus size={15} />
+                <Plus size={15} aria-hidden="true" />
                 Add first update
               </Link>
             </div>
@@ -660,30 +642,30 @@ export default async function AdminProjectPage({
         </section>
 
         {/* Documents */}
-        <section className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
-          <div className="flex flex-col gap-4 border-b border-white/10 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <section className="mt-8 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-neutral-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
-              <h2 className="font-medium">
+              <h2 className="font-semibold text-neutral-950">
                 Documents
               </h2>
 
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-neutral-500">
                 Files managed by Drylake for this project
               </p>
             </div>
 
             <Link
               href={`/admin/projects/${project.id}/documents/new`}
-              className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-xs font-medium text-white/60 transition hover:border-white/20 hover:text-white"
+              className={`w-fit ${secondaryButtonClassName}`}
             >
-              <Upload size={14} />
+              <Upload size={14} aria-hidden="true" />
               Upload Document
             </Link>
           </div>
 
           {documentsError ? (
-            <div className="px-6 py-8 sm:px-8">
-              <p className="text-sm text-red-400">
+            <div className="p-5 sm:p-6">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 Unable to load documents.
               </p>
             </div>
@@ -692,22 +674,23 @@ export default async function AdminProjectPage({
               {documentList.map((document) => (
                 <div
                   key={document.id}
-                  className="flex flex-col gap-5 border-b border-white/10 px-6 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-8"
+                  className="flex flex-col gap-4 border-b border-neutral-100 px-5 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-6"
                 >
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
                       <FileText
                         size={18}
                         className="text-[#f26a2e]"
+                        aria-hidden="true"
                       />
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate font-medium">
+                      <p className="truncate font-semibold text-neutral-950">
                         {document.name}
                       </p>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/30">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
                         <span>
                           {formatFileType(document.mime_type)}
                         </span>
@@ -725,11 +708,9 @@ export default async function AdminProjectPage({
                   </div>
 
                   <span
-                    className={`w-fit shrink-0 rounded-full border px-2.5 py-1 text-[0.65rem] uppercase tracking-[0.1em] ${
-                      document.visible_to_client
-                        ? "border-[#f26a2e]/30 text-[#f26a2e]"
-                        : "border-white/10 text-white/35"
-                    }`}
+                    className={visibilityChipClassName(
+                      Boolean(document.visible_to_client)
+                    )}
                   >
                     {document.visible_to_client
                       ? "Visible to client"
@@ -739,26 +720,27 @@ export default async function AdminProjectPage({
               ))}
             </div>
           ) : (
-            <div className="px-6 py-10 sm:px-8">
+            <div className="px-5 py-10 sm:px-6">
               <FileText
                 size={22}
                 className="text-[#f26a2e]"
+                aria-hidden="true"
               />
 
-              <h3 className="mt-5 text-lg font-medium">
+              <h3 className="mt-5 text-lg font-semibold text-neutral-950">
                 No documents yet
               </h3>
 
-              <p className="mt-2 max-w-lg text-sm leading-6 text-white/40">
+              <p className="mt-2 max-w-lg text-sm leading-6 text-neutral-600">
                 Upload project documents and choose whether each file
                 should be visible to the client.
               </p>
 
               <Link
                 href={`/admin/projects/${project.id}/documents/new`}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/70 transition hover:border-white/20 hover:text-white"
+                className={`mt-6 ${secondaryButtonClassName}`}
               >
-                <Upload size={15} />
+                <Upload size={15} aria-hidden="true" />
                 Upload first document
               </Link>
             </div>

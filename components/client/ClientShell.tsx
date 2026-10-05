@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { LifeBuoy } from "lucide-react";
 
 import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
 
 import { ClientAccountButton, ClientNav, type ClientSection } from "./ClientNav";
+import MessageDrylake from "./MessageDrylake";
 
 type ClientShellProps = {
   children: ReactNode;
@@ -83,13 +83,7 @@ export default function ClientShell({
                 </span>
               ) : null}
 
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="inline-flex min-h-[44px] items-center gap-2 px-2 text-sm font-medium text-white/65 transition-colors hover:text-white"
-              >
-                <LifeBuoy aria-hidden="true" size={16} />
-                <span>Support</span>
-              </a>
+              <MessageDrylake variant="header" organizationName={organizationName} />
 
               <ClientAccountButton />
             </div>
