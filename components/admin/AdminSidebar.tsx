@@ -2,112 +2,53 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 import {
-  Bell,
   Building2,
   CreditCard,
   FileText,
   FolderKanban,
   Globe2,
   LayoutDashboard,
-  MessageSquareText,
+  LogOut,
   Receipt,
-  Settings,
   ShieldCheck,
-  UserRoundSearch,
 } from "lucide-react";
 
-type NavigationItem = {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{
-    size?: number;
-    strokeWidth?: number;
-    className?: string;
-  }>;
-  disabled?: boolean;
-};
-
-type NavigationGroup = {
-  label?: string;
-  items: NavigationItem[];
-};
-
-const navigation: NavigationGroup[] = [
+const navigation = [
   {
-    items: [
-      {
-        label: "Dashboard",
-        href: "/admin",
-        icon: LayoutDashboard,
-      },
-    ],
+    label: "Dashboard",
+    href: "/admin",
+    icon: LayoutDashboard,
   },
   {
-    label: "Workspace",
-    items: [
-      {
-        label: "Conversations",
-        href: "/admin/conversations",
-        icon: MessageSquareText,
-        disabled: true,
-      },
-      {
-        label: "Clients",
-        href: "/admin/clients",
-        icon: Building2,
-      },
-      {
-        label: "Projects",
-        href: "/admin/projects",
-        icon: FolderKanban,
-        disabled: true,
-      },
-      {
-        label: "Documents",
-        href: "/admin/documents",
-        icon: FileText,
-        disabled: true,
-      },
-    ],
+    label: "Clients",
+    href: "/admin/clients",
+    icon: Building2,
   },
   {
-    label: "Finance",
-    items: [
-      {
-        label: "Invoices",
-        href: "/admin/invoices",
-        icon: Receipt,
-        disabled: true,
-      },
-      {
-        label: "Payments",
-        href: "/admin/payments",
-        icon: CreditCard,
-        disabled: true,
-      },
-    ],
+    label: "Projects",
+    href: "/admin/projects",
+    icon: FolderKanban,
   },
   {
-    label: "Activity",
-    items: [
-      {
-        label: "Enquiries",
-        href: "/admin/enquiries",
-        icon: UserRoundSearch,
-        disabled: true,
-      },
-      {
-        label: "Notifications",
-        href: "/admin/notifications",
-        icon: Bell,
-        disabled: true,
-      },
-    ],
+    label: "Documents",
+    href: "/admin/documents",
+    icon: FileText,
+  },
+  {
+    label: "Invoices",
+    href: "/admin/invoices",
+    icon: Receipt,
+  },
+  {
+    label: "Payments",
+    href: "/admin/payments",
+    icon: CreditCard,
   },
 ];
 
-function isRouteActive(pathname: string, href: string) {
+function isActive(pathname: string, href: string) {
   if (href === "/admin") {
     return pathname === "/admin";
   }
@@ -117,138 +58,100 @@ function isRouteActive(pathname: string, href: string) {
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const { signOut } = useClerk();
 
   return (
-    <aside className="hidden h-screen w-[272px] shrink-0 border-r border-white/[0.08] bg-[#0b0b0a] text-white lg:sticky lg:top-0 lg:flex lg:flex-col">
-      <div className="relative overflow-hidden border-b border-white/[0.08] px-6 py-7">
-        <div className="pointer-events-none absolute -left-12 -top-20 h-52 w-52 rounded-full bg-[#f26a2e]/10 blur-[80px]" />
-
-        <Link href="/admin" className="relative flex items-center gap-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f26a2e]/25 bg-[#f26a2e]/[0.08]">
-            <ShieldCheck
-              size={18}
-              strokeWidth={1.8}
-              className="text-[#f26a2e]"
-            />
+    <aside className="hidden h-screen w-[268px] shrink-0 flex-col border-r border-white/10 bg-[#10100f] text-white lg:sticky lg:top-0 lg:flex">
+      <div className="border-b border-white/10 px-5 py-6">
+        <Link href="/admin" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f26a2e]/10 ring-1 ring-[#f26a2e]/25">
+            <ShieldCheck size={18} className="text-[#f26a2e]" />
           </div>
 
           <div>
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em]">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em]">
               Drylake
             </p>
 
-            <p className="mt-1 text-[0.52rem] uppercase tracking-[0.18em] text-white/38">
+            <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
               Administration
             </p>
           </div>
         </Link>
       </div>
 
-      <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
-        <div className="space-y-7">
-          {navigation.map((group, groupIndex) => (
-            <div key={group.label ?? groupIndex}>
-              {group.label && (
-                <p className="mb-2.5 px-3 text-[0.52rem] font-semibold uppercase tracking-[0.21em] text-white/30">
-                  {group.label}
-                </p>
-              )}
+      <nav className="flex-1 overflow-y-auto px-3 py-5">
+        <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25">
+          Workspace
+        </p>
 
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const active = isRouteActive(pathname, item.href);
+        <div className="space-y-1">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const selected = isActive(pathname, item.href);
 
-                  if (item.disabled) {
-                    return (
-                      <div
-                        key={item.href}
-                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/28"
-                      >
-                        <div className="flex h-8 w-8 items-center justify-center">
-                          <Icon
-                            size={16}
-                            strokeWidth={1.7}
-                            className="text-white/25"
-                          />
-                        </div>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+                  selected
+                    ? "bg-white/10 text-white"
+                    : "text-white/55 hover:bg-white/[0.06] hover:text-white"
+                }`}
+              >
+                <span
+                  className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                    selected
+                      ? "bg-[#f26a2e]/12"
+                      : "bg-white/[0.03]"
+                  }`}
+                >
+                  <Icon
+                    size={16}
+                    className={
+                      selected
+                        ? "text-[#f26a2e]"
+                        : "text-white/40 group-hover:text-white/70"
+                    }
+                  />
+                </span>
 
-                        <span>{item.label}</span>
+                {item.label}
 
-                        <span className="ml-auto text-[0.45rem] uppercase tracking-[0.11em] text-white/18">
-                          Soon
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      prefetch
-                      className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                        active
-                          ? "bg-white/[0.075] text-white"
-                          : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-                      }`}
-                    >
-                      {active && (
-                        <span className="absolute bottom-3 left-0 top-3 w-[2px] rounded-r-full bg-[#f26a2e]" />
-                      )}
-
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                          active
-                            ? "bg-[#f26a2e]/10"
-                            : "bg-white/[0.02]"
-                        }`}
-                      >
-                        <Icon
-                          size={16}
-                          strokeWidth={1.8}
-                          className={
-                            active
-                              ? "text-[#f26a2e]"
-                              : "text-white/40 group-hover:text-white/70"
-                          }
-                        />
-                      </div>
-
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+                {selected ? (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+                ) : null}
+              </Link>
+            );
+          })}
         </div>
       </nav>
 
-      <div className="shrink-0 border-t border-white/[0.08] p-4">
-        <div className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/28">
-          <Settings size={16} />
-          <span>Settings</span>
-          <span className="ml-auto text-[0.45rem] uppercase tracking-[0.11em] text-white/18">
-            Soon
-          </span>
-        </div>
-
+      <div className="border-t border-white/10 p-3">
         <Link
           href="/"
-          className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/55 transition hover:bg-white/[0.04] hover:text-white"
+          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/55 transition hover:bg-white/[0.06] hover:text-white"
         >
           <Globe2 size={16} className="text-[#f26a2e]" />
-          <span>Drylake website</span>
-          <span className="ml-auto text-white/30">↗</span>
+
+          Drylake website
+
+          <span className="ml-auto text-white/25">↗</span>
         </Link>
 
-        <div className="mt-4 flex items-center gap-2.5 border-t border-white/[0.07] px-3 pt-4">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+        <button
+          type="button"
+          onClick={() => signOut({ redirectUrl: "/" })}
+          className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/55 transition hover:bg-white/[0.06] hover:text-white"
+        >
+          <LogOut size={16} />
+          Sign out
+        </button>
 
-          <span className="text-[0.52rem] uppercase tracking-[0.15em] text-white/28">
-            Secure admin session
-          </span>
+        <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] px-3 pt-4 text-[10px] uppercase tracking-[0.14em] text-white/25">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Secure admin session
         </div>
       </div>
     </aside>

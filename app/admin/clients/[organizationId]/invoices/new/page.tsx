@@ -1,16 +1,19 @@
 import { auth } from "@clerk/nextjs/server";
-import { notFound, redirect } from "next/navigation";
+import {
+  notFound,
+  redirect,
+} from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
   FileText,
+  Hash,
   ShieldCheck,
 } from "lucide-react";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isGstRegistered } from "@/lib/tax";
-import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
   title: "Create Invoice | Drylake Admin",
@@ -26,79 +29,126 @@ type NewInvoicePageProps = {
   params: Promise<{
     organizationId: string;
   }>;
+
+  searchParams: Promise<{
+    error?: string;
+  }>;
 };
 
 export default async function NewInvoicePage({
   params,
+  searchParams,
 }: NewInvoicePageProps) {
+  // ---------------------------------------------------------
+  // Authentication
+  // ---------------------------------------------------------
+
   const { userId } = await auth();
 
   if (!userId) {
-    redirect("/sign-in?redirect_url=/admin");
+    redirect(
+      "/sign-in?redirect_url=/admin"
+    );
   }
 
-  const platformAdmin = await isPlatformAdmin();
+  const platformAdmin =
+    await isPlatformAdmin();
 
   if (!platformAdmin) {
     redirect("/client");
   }
 
-  const { organizationId } = await params;
+  const { organizationId } =
+    await params;
 
-  // A malformed ID can never match a row: 404 before the query, not a database error.
-  if (!isUuid(organizationId)) {
-    notFound();
-  }
+  const { error } =
+    await searchParams;
 
-  const supabase = createAdminSupabaseClient();
+  const supabase =
+    createAdminSupabaseClient();
 
-  const { data: organization, error: organizationError } =
-    await supabase
-      .from("organizations")
-      .select("id, name, status")
-      .eq("id", organizationId)
-      .maybeSingle();
+  // ---------------------------------------------------------
+  // Organisation
+  // ---------------------------------------------------------
+
+  const {
+    data: organization,
+    error: organizationError,
+  } = await supabase
+    .from("organizations")
+    .select("id, name, status")
+    .eq("id", organizationId)
+    .maybeSingle();
 
   if (organizationError) {
-    console.error("Invoice organisation lookup failed:", {
-      code: organizationError.code,
-      message: organizationError.message,
-    });
+    console.error(
+      "Invoice organisation lookup failed:",
+      {
+        code: organizationError.code,
+        message: organizationError.message,
+      }
+    );
 
-    throw new Error("Unable to load organisation.");
+    throw new Error(
+      "Unable to load organisation."
+    );
   }
 
   if (!organization) {
     notFound();
   }
 
-  const { data: projects, error: projectsError } =
-    await supabase
-      .from("projects")
-      .select("id, name, status")
-      .eq("organization_id", organization.id)
-      .order("created_at", { ascending: false });
+  // ---------------------------------------------------------
+  // Projects
+  // ---------------------------------------------------------
+
+  const {
+    data: projects,
+    error: projectsError,
+  } = await supabase
+    .from("projects")
+    .select("id, name, status")
+    .eq(
+      "organization_id",
+      organization.id
+    )
+    .order(
+      "created_at",
+      { ascending: false }
+    );
 
   if (projectsError) {
-    console.error("Invoice project lookup failed:", {
-      code: projectsError.code,
-      message: projectsError.message,
-    });
+    console.error(
+      "Invoice project lookup failed:",
+      {
+        code: projectsError.code,
+        message: projectsError.message,
+      }
+    );
 
-    throw new Error("Unable to load projects.");
+    throw new Error(
+      "Unable to load projects."
+    );
   }
 
-  const disabled = organization.status !== "ACTIVE";
+  const disabled =
+    organization.status !== "ACTIVE";
+
+  const gstRegistered =
+    isGstRegistered();
 
   return (
     <main className="min-h-screen bg-[#080808] text-white">
       <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 lg:px-12">
+        {/* Header */}
+
         <header className="flex items-center justify-between border-b border-white/10 pb-6">
           <Link
             href={`/admin/clients/${organization.id}`}
             className="flex items-center gap-2 text-sm text-white/60 transition hover:text-white"
           >
             <ArrowLeft size={16} />
+
             {organization.name}
           </Link>
 
@@ -113,6 +163,8 @@ export default async function NewInvoicePage({
             </span>
           </div>
         </header>
+
+        {/* Page heading */}
 
         <section className="py-12">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
@@ -131,40 +183,73 @@ export default async function NewInvoicePage({
           </h1>
 
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/40">
-            Create an invoice for this client. Stripe payment
-            collection will be connected separately.
+            Create a draft invoice for this
+            client. The invoice number is
+            assigned automatically by Drylake.
           </p>
         </section>
 
-        {disabled ? (
-          <div className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5 text-sm text-red-300">
-            Invoices cannot be created for an inactive organisation.
+        {/* Error */}
+
+        {error ? (
+          <div
+            role="alert"
+            className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5"
+          >
+            <p className="text-sm font-medium text-red-300">
+              Invoice could not be created
+            </p>
+
+            <p className="mt-1 text-sm leading-6 text-red-300/70">
+              {error}
+            </p>
           </div>
         ) : null}
+
+        {/* Inactive organisation */}
+
+        {disabled ? (
+          <div className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5 text-sm text-red-300">
+            Invoices cannot be created for an
+            inactive organisation.
+          </div>
+        ) : null}
+
+        {/* Form */}
 
         <form
           action={`/api/admin/clients/${organization.id}/invoices`}
           method="POST"
           className="space-y-6 rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 sm:p-8"
         >
-          <div>
-            <label
-              htmlFor="invoiceNumber"
-              className="text-sm font-medium"
-            >
-              Invoice number
-            </label>
+          {/* Automatic invoice number */}
 
-            <input
-              id="invoiceNumber"
-              name="invoiceNumber"
-              required
-              maxLength={60}
-              placeholder="DL-2026-001"
-              disabled={disabled}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/30 disabled:opacity-40"
-            />
+          <div>
+            <div className="flex items-center gap-2">
+              <Hash
+                size={15}
+                className="text-[#f26a2e]"
+              />
+
+              <span className="text-sm font-medium">
+                Invoice number
+              </span>
+            </div>
+
+            <div className="mt-2 rounded-xl border border-white/10 bg-black/60 px-4 py-3">
+              <p className="text-sm text-white/55">
+                Automatically assigned when
+                the invoice is created
+              </p>
+            </div>
+
+            <p className="mt-2 text-xs leading-5 text-white/30">
+              Drylake uses sequential invoice
+              numbers such as DL-2026-009.
+            </p>
           </div>
+
+          {/* Project */}
 
           <div>
             <label
@@ -184,18 +269,28 @@ export default async function NewInvoicePage({
                 No specific project
               </option>
 
-              {(projects ?? []).map((project) => (
-                <option
-                  key={project.id}
-                  value={project.id}
-                >
-                  {project.name}
-                </option>
-              ))}
+              {(projects ?? []).map(
+                (project) => (
+                  <option
+                    key={project.id}
+                    value={project.id}
+                  >
+                    {project.name}
+                  </option>
+                )
+              )}
             </select>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
+          {/* Amounts */}
+
+          <div
+            className={
+              gstRegistered
+                ? "grid gap-6 sm:grid-cols-2"
+                : ""
+            }
+          >
             <div>
               <label
                 htmlFor="subtotal"
@@ -212,38 +307,46 @@ export default async function NewInvoicePage({
                 min="0.01"
                 max="9999999.99"
                 step="0.01"
+                inputMode="decimal"
                 placeholder="1000.00"
                 disabled={disabled}
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/30 disabled:opacity-40"
               />
             </div>
 
-            {isGstRegistered() ? (
-            <div>
-              <label
-                htmlFor="tax"
-                className="text-sm font-medium"
-              >
-                GST (AUD)
-              </label>
+            {gstRegistered ? (
+              <div>
+                <label
+                  htmlFor="tax"
+                  className="text-sm font-medium"
+                >
+                  GST (AUD)
+                </label>
 
-              <input
-                id="tax"
-                name="tax"
-                type="number"
-                required
-                min="0"
-                max="9999999.99"
-                step="0.01"
-                defaultValue="0.00"
-                disabled={disabled}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition focus:border-white/30 disabled:opacity-40"
-              />
-            </div>
+                <input
+                  id="tax"
+                  name="tax"
+                  type="number"
+                  required
+                  min="0"
+                  max="9999999.99"
+                  step="0.01"
+                  inputMode="decimal"
+                  defaultValue="0.00"
+                  disabled={disabled}
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white outline-none transition focus:border-white/30 disabled:opacity-40"
+                />
+              </div>
             ) : (
-              <input type="hidden" name="tax" value="0" />
+              <input
+                type="hidden"
+                name="tax"
+                value="0"
+              />
             )}
           </div>
+
+          {/* Due date */}
 
           <div>
             <label
@@ -262,6 +365,8 @@ export default async function NewInvoicePage({
             />
           </div>
 
+          {/* Client visibility */}
+
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 p-4">
             <input
               type="checkbox"
@@ -278,10 +383,14 @@ export default async function NewInvoicePage({
               </span>
 
               <span className="mt-1 block text-xs leading-5 text-white/35">
-                Allow members of this organisation to view the invoice.
+                Allow members of this
+                organisation to view the
+                invoice after it is issued.
               </span>
             </span>
           </label>
+
+          {/* Submit */}
 
           <div className="flex justify-end border-t border-white/10 pt-6">
             <button
@@ -289,7 +398,7 @@ export default async function NewInvoicePage({
               disabled={disabled}
               className="rounded-xl bg-white px-6 py-3 text-sm font-semibold !text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Create Invoice
+              Create Draft Invoice
             </button>
           </div>
         </form>

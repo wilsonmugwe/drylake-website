@@ -34,15 +34,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="admin-shell">
+    <div className="min-h-screen bg-[#f4f4f1] text-[#171716]">
       <AdminMobileNav />
 
       <div className="flex min-h-screen">
         <AdminSidebar />
 
-        <div className="min-w-0 flex-1">
-          {children}
-        </div>
+        <div className="min-w-0 flex-1">{children}</div>
       </div>
     </div>
   );
