@@ -22,6 +22,7 @@ export const metadata: Metadata = {
       "Custom software, automation, AI and connected systems built around real business problems.",
     url: "https://drylake.com.au/solutions",
     type: "website",
+    images: ["/opengraph-image.png"],
   },
 };
 

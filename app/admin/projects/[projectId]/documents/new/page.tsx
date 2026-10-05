@@ -203,7 +203,7 @@ export default async function NewDocumentPage({
                 type="text"
                 maxLength={160}
                 autoComplete="off"
-                placeholder="Optional — defaults to the file name"
+                placeholder="Optional, defaults to the file name"
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/30"
               />
             </div>

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { deliverContactEnquiry } from "@/lib/email/contact-enquiry";
+
 interface ContactRequest {
   name?: unknown;
   email?: unknown;
@@ -192,11 +194,15 @@ export async function POST(request: Request) {
       receivedAt: new Date().toISOString(),
     };
 
-    /*
-     * Microsoft 365 delivery will replace this placeholder.
-     * Do not log enquiry because it contains personal information.
-     */
-    void enquiry;
+    // Fail loudly: a visitor must never see "received" for an enquiry that was not delivered.
+    try {
+      await deliverContactEnquiry(enquiry);
+    } catch {
+      return jsonError(
+        "We couldn't send your enquiry. Please email hello@drylake.com.au directly.",
+        502
+      );
+    }
 
     return NextResponse.json(
       { success: true },

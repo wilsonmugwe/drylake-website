@@ -7,6 +7,7 @@ import {
   getEmailFromAddress,
   getResendClient,
 } from "@/lib/email/resend";
+import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
 
 type RouteContext = {
   params: Promise<{
@@ -612,7 +613,7 @@ export async function POST(
                       </td>
                     </tr>
 
-                    <tr>
+                    ${isGstRegistered() ? `<tr>
                       <td
                         style="
                           padding:10px 0;
@@ -631,7 +632,7 @@ export async function POST(
                       >
                         ${formattedTax}
                       </td>
-                    </tr>
+                    </tr>` : ""}
 
                     <tr>
                       <td
@@ -727,7 +728,7 @@ export async function POST(
             ? `Project: ${projectName}`
             : null,
           `Subtotal: ${formattedSubtotal}`,
-          `Tax: ${formattedTax}`,
+          isGstRegistered() ? `GST: ${formattedTax}` : NO_GST_NOTE,
           `Total: ${formattedTotal}`,
           `Due date: ${formattedDueDate}`,
           "",

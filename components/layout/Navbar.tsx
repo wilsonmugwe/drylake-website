@@ -134,7 +134,7 @@ export default function Navbar() {
           >
             <Image
               src="/brand/drylake-logo-black.png"
-              alt="Drylake Technologies"
+              alt="Drylake"
               width={1536}
               height={1024}
               priority
@@ -600,7 +600,7 @@ export default function Navbar() {
                 >
                   <div>
                     <span className="tech-label block text-white/20">
-                      Drylake Technologies
+                      Drylake Pty Ltd
                     </span>
 
                     <span

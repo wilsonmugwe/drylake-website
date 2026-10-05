@@ -65,7 +65,7 @@ export default async function NewClientPage() {
             </label>
 
             <p className="mt-1 text-sm text-white/50">
-              Use the client's official business or organisation name.
+              Use the client&apos;s official business or organisation name.
             </p>
 
             <input

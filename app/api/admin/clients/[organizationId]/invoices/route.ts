@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isGstRegistered } from "@/lib/tax";
 
 const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/;
 
@@ -126,7 +127,8 @@ export async function POST(
   }
 
   const subtotalCents = parseMoneyToCents(rawSubtotal);
-  const taxCents = parseMoneyToCents(rawTax);
+  // Unregistered for GST: tax is always zero, whatever the form sent.
+  const taxCents = isGstRegistered() ? parseMoneyToCents(rawTax) : 0;
 
   if (
     subtotalCents === null ||

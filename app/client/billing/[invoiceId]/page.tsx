@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
 
 export const metadata = {
   title: "Invoice | Drylake Client Portal",
@@ -39,7 +40,7 @@ function formatMoney(cents: number, currency: string) {
 
 function formatDate(date: string | null) {
   if (!date) {
-    return "—";
+    return "-";
   }
 
   return new Intl.DateTimeFormat("en-AU", {
@@ -432,7 +433,8 @@ export default async function ClientInvoicePage({
               </span>
             </div>
 
-            <div className="flex items-center justify-between border-b border-white/10 py-5">
+            {isGstRegistered() ? (
+<div className="flex items-center justify-between border-b border-white/10 py-5">
               <span className="text-sm text-white/45">
                 Tax
               </span>
@@ -441,6 +443,9 @@ export default async function ClientInvoicePage({
                 {formatMoney(tax, invoice.currency)}
               </span>
             </div>
+) : (
+<p className="text-xs opacity-60">{NO_GST_NOTE}</p>
+)}
 
             <div className="flex items-center justify-between py-6">
               <span className="font-medium">

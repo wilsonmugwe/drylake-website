@@ -21,6 +21,7 @@ export const metadata: Metadata = {
       "A Perth technology company building practical software, automation and technical systems for Australian businesses.",
     url: "https://drylake.com.au/about",
     type: "website",
+    images: ["/opengraph-image.png"],
   },
 };
 
