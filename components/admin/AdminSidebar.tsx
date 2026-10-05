@@ -119,48 +119,42 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden h-screen w-[280px] shrink-0 border-r border-white/[0.08] bg-[#0a0a0a] lg:sticky lg:top-0 lg:flex lg:flex-col">
-      {/* Brand */}
-
+    <aside className="hidden h-screen w-[272px] shrink-0 border-r border-white/[0.08] bg-[#0b0b0a] text-white lg:sticky lg:top-0 lg:flex lg:flex-col">
       <div className="relative overflow-hidden border-b border-white/[0.08] px-6 py-7">
-        <div className="pointer-events-none absolute -left-10 -top-16 h-44 w-44 rounded-full bg-[#f26a2e]/[0.07] blur-[70px]" />
+        <div className="pointer-events-none absolute -left-12 -top-20 h-52 w-52 rounded-full bg-[#f26a2e]/10 blur-[80px]" />
 
-        <Link href="/admin" className="group relative block">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f26a2e]/30 bg-[#f26a2e]/[0.08]">
-              <ShieldCheck
-                size={18}
-                strokeWidth={1.8}
-                className="text-[#f26a2e]"
-              />
-            </div>
+        <Link href="/admin" className="relative flex items-center gap-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f26a2e]/25 bg-[#f26a2e]/[0.08]">
+            <ShieldCheck
+              size={18}
+              strokeWidth={1.8}
+              className="text-[#f26a2e]"
+            />
+          </div>
 
-            <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-white">
-                Drylake
-              </p>
+          <div>
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em]">
+              Drylake
+            </p>
 
-              <p className="mt-1 text-[0.55rem] font-medium uppercase tracking-[0.18em] text-white/40">
-                Administration
-              </p>
-            </div>
+            <p className="mt-1 text-[0.52rem] uppercase tracking-[0.18em] text-white/38">
+              Administration
+            </p>
           </div>
         </Link>
       </div>
 
-      {/* Navigation */}
-
-      <nav className="flex-1 overflow-y-auto px-4 py-6">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
         <div className="space-y-7">
           {navigation.map((group, groupIndex) => (
             <div key={group.label ?? groupIndex}>
               {group.label && (
-                <p className="mb-2.5 px-3 text-[0.53rem] font-semibold uppercase tracking-[0.21em] text-white/35">
+                <p className="mb-2.5 px-3 text-[0.52rem] font-semibold uppercase tracking-[0.21em] text-white/30">
                   {group.label}
                 </p>
               )}
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const active = isRouteActive(pathname, item.href);
@@ -169,19 +163,19 @@ export default function AdminSidebar() {
                     return (
                       <div
                         key={item.href}
-                        className="flex cursor-default items-center justify-between rounded-xl px-3 py-3 text-sm text-white/28"
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/28"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center">
                           <Icon
                             size={16}
                             strokeWidth={1.7}
-                            className="text-white/22"
+                            className="text-white/25"
                           />
-
-                          <span>{item.label}</span>
                         </div>
 
-                        <span className="rounded-full border border-white/[0.06] px-2 py-1 text-[0.45rem] font-semibold uppercase tracking-[0.12em] text-white/22">
+                        <span>{item.label}</span>
+
+                        <span className="ml-auto text-[0.45rem] uppercase tracking-[0.11em] text-white/18">
                           Soon
                         </span>
                       </div>
@@ -192,14 +186,15 @@ export default function AdminSidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`group relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-3 text-sm font-medium transition duration-150 ${
+                      prefetch
+                      className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
                         active
-                          ? "border-[#f26a2e]/18 bg-[#f26a2e]/[0.075] text-white"
-                          : "border-transparent text-white/62 hover:border-white/[0.07] hover:bg-white/[0.035] hover:text-white"
+                          ? "bg-white/[0.075] text-white"
+                          : "text-white/55 hover:bg-white/[0.04] hover:text-white"
                       }`}
                     >
                       {active && (
-                        <div className="absolute bottom-2.5 left-0 top-2.5 w-[2px] rounded-r-full bg-[#f26a2e]" />
+                        <span className="absolute bottom-3 left-0 top-3 w-[2px] rounded-r-full bg-[#f26a2e]" />
                       )}
 
                       <div
@@ -215,7 +210,7 @@ export default function AdminSidebar() {
                           className={
                             active
                               ? "text-[#f26a2e]"
-                              : "text-white/42 transition-colors group-hover:text-white/70"
+                              : "text-white/40 group-hover:text-white/70"
                           }
                         />
                       </div>
@@ -230,51 +225,30 @@ export default function AdminSidebar() {
         </div>
       </nav>
 
-      {/* Bottom */}
-
-      <div className="border-t border-white/[0.08] bg-black/20 p-4">
-        <div className="flex cursor-default items-center justify-between rounded-xl px-3 py-3 text-sm text-white/28">
-          <div className="flex items-center gap-3">
-            <Settings
-              size={16}
-              strokeWidth={1.7}
-              className="text-white/22"
-            />
-
-            <span>Settings</span>
-          </div>
-
-          <span className="rounded-full border border-white/[0.06] px-2 py-1 text-[0.45rem] font-semibold uppercase tracking-[0.12em] text-white/22">
+      <div className="shrink-0 border-t border-white/[0.08] p-4">
+        <div className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/28">
+          <Settings size={16} />
+          <span>Settings</span>
+          <span className="ml-auto text-[0.45rem] uppercase tracking-[0.11em] text-white/18">
             Soon
           </span>
         </div>
 
         <Link
           href="/"
-          className="group mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/55 transition hover:bg-white/[0.035] hover:text-white"
+          className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/55 transition hover:bg-white/[0.04] hover:text-white"
         >
-          <Globe2
-            size={16}
-            strokeWidth={1.7}
-            className="text-[#f26a2e]"
-          />
-
+          <Globe2 size={16} className="text-[#f26a2e]" />
           <span>Drylake website</span>
-
           <span className="ml-auto text-white/30">↗</span>
         </Link>
 
-        <div className="mt-4 rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-3.5 py-3.5">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f26a2e] opacity-20" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#f26a2e]" />
-            </span>
+        <div className="mt-4 flex items-center gap-2.5 border-t border-white/[0.07] px-3 pt-4">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-            <span className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-white/45">
-              Secure admin session
-            </span>
-          </div>
+          <span className="text-[0.52rem] uppercase tracking-[0.15em] text-white/28">
+            Secure admin session
+          </span>
         </div>
       </div>
     </aside>
