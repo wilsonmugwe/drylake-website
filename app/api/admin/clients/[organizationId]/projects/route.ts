@@ -1,17 +1,32 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import {
+  auth,
+} from "@clerk/nextjs/server";
 
-import { isPlatformAdmin } from "@/lib/auth/platform-admin";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { isUuid } from "@/lib/validation/uuid";
+import {
+  NextResponse,
+} from "next/server";
 
-const ALLOWED_STATUSES = new Set([
-  "PLANNING",
-  "ACTIVE",
-  "ON_HOLD",
-]);
+import {
+  isPlatformAdmin,
+} from "@/lib/auth/platform-admin";
 
-const MAX_PROJECT_NAME_LENGTH = 120;
+import {
+  createAdminSupabaseClient,
+} from "@/lib/supabase/admin";
+
+import {
+  isUuid,
+} from "@/lib/validation/uuid";
+
+const ALLOWED_STATUSES =
+  new Set([
+    "PLANNING",
+    "ACTIVE",
+    "ON_HOLD",
+  ]);
+
+const MAX_PROJECT_NAME_LENGTH =
+  120;
 
 type RouteContext = {
   params: Promise<{
@@ -19,8 +34,48 @@ type RouteContext = {
   }>;
 };
 
-function isValidDate(value: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+function jsonResponse(
+  body: Record<string, unknown>,
+  status = 200
+) {
+  return NextResponse.json(
+    body,
+    {
+      status,
+
+      headers: {
+        "Cache-Control":
+          "no-store",
+      },
+    }
+  );
+}
+
+function isValidDate(
+  value: string
+) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      value
+    )
+  ) {
+    return false;
+  }
+
+  const date =
+    new Date(
+      `${value}T00:00:00Z`
+    );
+
+  return (
+    !Number.isNaN(
+      date.getTime()
+    ) &&
+    date
+      .toISOString()
+      .slice(0, 10) ===
+      value
+  );
 }
 
 export async function POST(
@@ -28,203 +83,291 @@ export async function POST(
   context: RouteContext
 ) {
   // ---------------------------------------------------------
-  // 1. Authentication
+  // Authentication
   // ---------------------------------------------------------
 
-  const { userId } = await auth();
+  const { userId } =
+    await auth();
 
   if (!userId) {
-    return NextResponse.redirect(
-      new URL("/sign-in?redirect_url=/admin/clients", request.url),
-      303
+    return jsonResponse(
+      {
+        error:
+          "Your session has expired. Please sign in again.",
+      },
+      401
     );
   }
 
   // ---------------------------------------------------------
-  // 2. Platform-admin authorization
+  // Platform admin
   // ---------------------------------------------------------
 
-  const platformAdmin = await isPlatformAdmin();
+  const platformAdmin =
+    await isPlatformAdmin();
 
   if (!platformAdmin) {
-    return NextResponse.json(
-      { error: "Forbidden" },
-      { status: 403 }
+    return jsonResponse(
+      {
+        error:
+          "You do not have permission to create projects.",
+      },
+      403
     );
   }
 
-  const { organizationId } = await context.params;
+  const {
+    organizationId,
+  } = await context.params;
 
-  // A malformed ID can never match a row: 404 before the query, not a database error.
-  if (!isUuid(organizationId)) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: 404, headers: { "Cache-Control": "no-store" } }
+  if (
+    !isUuid(organizationId)
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Client organisation not found.",
+      },
+      404
     );
   }
 
   // ---------------------------------------------------------
-  // 3. Read form data
+  // Form
   // ---------------------------------------------------------
 
   let formData: FormData;
 
   try {
-    formData = await request.formData();
+    formData =
+      await request.formData();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid form submission." },
-      { status: 400 }
+    return jsonResponse(
+      {
+        error:
+          "Invalid form submission.",
+      },
+      400
     );
   }
 
-  const rawName = formData.get("name");
-  const rawStatus = formData.get("status");
-  const rawStartDate = formData.get("startDate");
-  const rawTargetEndDate = formData.get("targetEndDate");
+  const rawName =
+    formData.get("name");
+
+  const rawStatus =
+    formData.get("status");
+
+  const rawStartDate =
+    formData.get("startDate");
+
+  const rawTargetEndDate =
+    formData.get(
+      "targetEndDate"
+    );
 
   // ---------------------------------------------------------
-  // 4. Validate project name
+  // Name
   // ---------------------------------------------------------
 
-  if (typeof rawName !== "string") {
-    return NextResponse.json(
-      { error: "Project name is required." },
-      { status: 400 }
+  if (
+    typeof rawName !==
+    "string"
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Project name is required.",
+      },
+      400
     );
   }
 
-  const name = rawName.replace(/\s+/g, " ").trim();
+  const name =
+    rawName
+      .replace(/\s+/g, " ")
+      .trim();
 
   if (
     name.length < 2 ||
-    name.length > MAX_PROJECT_NAME_LENGTH
+    name.length >
+      MAX_PROJECT_NAME_LENGTH
   ) {
-    return NextResponse.json(
+    return jsonResponse(
       {
         error:
           "Project name must be between 2 and 120 characters.",
       },
-      { status: 400 }
+      400
     );
   }
 
-  if (/[\u0000-\u001F\u007F]/.test(name)) {
-    return NextResponse.json(
-      { error: "Project name contains invalid characters." },
-      { status: 400 }
+  if (
+    /[\u0000-\u001F\u007F]/.test(
+      name
+    )
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Project name contains invalid characters.",
+      },
+      400
     );
   }
 
   // ---------------------------------------------------------
-  // 5. Validate status
+  // Status
   // ---------------------------------------------------------
 
   if (
-    typeof rawStatus !== "string" ||
-    !ALLOWED_STATUSES.has(rawStatus)
+    typeof rawStatus !==
+      "string" ||
+    !ALLOWED_STATUSES.has(
+      rawStatus
+    )
   ) {
-    return NextResponse.json(
-      { error: "Invalid project status." },
-      { status: 400 }
+    return jsonResponse(
+      {
+        error:
+          "Invalid project status.",
+      },
+      400
     );
   }
 
   // ---------------------------------------------------------
-  // 6. Validate dates
+  // Dates
   // ---------------------------------------------------------
 
   const startDate =
-    typeof rawStartDate === "string" &&
-    rawStartDate.trim() !== ""
+    typeof rawStartDate ===
+      "string" &&
+    rawStartDate.trim()
       ? rawStartDate.trim()
       : null;
 
   const targetEndDate =
-    typeof rawTargetEndDate === "string" &&
-    rawTargetEndDate.trim() !== ""
+    typeof rawTargetEndDate ===
+      "string" &&
+    rawTargetEndDate.trim()
       ? rawTargetEndDate.trim()
       : null;
 
-  if (startDate && !isValidDate(startDate)) {
-    return NextResponse.json(
-      { error: "Invalid start date." },
-      { status: 400 }
+  if (
+    startDate &&
+    !isValidDate(startDate)
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Enter a valid start date.",
+      },
+      400
     );
   }
 
-  if (targetEndDate && !isValidDate(targetEndDate)) {
-    return NextResponse.json(
-      { error: "Invalid target end date." },
-      { status: 400 }
+  if (
+    targetEndDate &&
+    !isValidDate(
+      targetEndDate
+    )
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Enter a valid target end date.",
+      },
+      400
     );
   }
 
   if (
     startDate &&
     targetEndDate &&
-    targetEndDate < startDate
+    targetEndDate <
+      startDate
   ) {
-    return NextResponse.json(
+    return jsonResponse(
       {
         error:
           "Target end date cannot be before the start date.",
       },
-      { status: 400 }
+      400
     );
   }
 
-  const supabase = createAdminSupabaseClient();
+  const supabase =
+    createAdminSupabaseClient();
 
   // ---------------------------------------------------------
-  // 7. Verify organisation exists
-  //
-  // Never trust organizationId simply because it came from
-  // our own form URL.
+  // Organisation
   // ---------------------------------------------------------
 
   const {
     data: organization,
-    error: organizationError,
+    error:
+      organizationError,
   } = await supabase
     .from("organizations")
-    .select("id, name, status")
-    .eq("id", organizationId)
+    .select(
+      `
+        id,
+        name,
+        status
+      `
+    )
+    .eq(
+      "id",
+      organizationId
+    )
     .maybeSingle();
 
   if (organizationError) {
-    console.error("Project organisation lookup failed:", {
-      code: organizationError.code,
-      message: organizationError.message,
-    });
+    console.error(
+      "Project organisation lookup failed:",
+      {
+        code:
+          organizationError.code,
 
-    return NextResponse.json(
-      { error: "Unable to verify client organisation." },
-      { status: 500 }
+        message:
+          organizationError.message,
+      }
+    );
+
+    return jsonResponse(
+      {
+        error:
+          "Unable to verify client organisation.",
+      },
+      500
     );
   }
 
   if (!organization) {
-    return NextResponse.json(
-      { error: "Client organisation not found." },
-      { status: 404 }
+    return jsonResponse(
+      {
+        error:
+          "Client organisation not found.",
+      },
+      404
     );
   }
 
-  if (organization.status !== "ACTIVE") {
-    return NextResponse.json(
+  if (
+    organization.status !==
+    "ACTIVE"
+  ) {
+    return jsonResponse(
       {
         error:
           "Projects cannot be created for an inactive organisation.",
       },
-      { status: 409 }
+      409
     );
   }
 
   // ---------------------------------------------------------
-  // 8. Create project
-  //
-  // progress_override deliberately stays NULL.
+  // Create project
   // ---------------------------------------------------------
 
   const {
@@ -233,65 +376,115 @@ export async function POST(
   } = await supabase
     .from("projects")
     .insert({
-      organization_id: organization.id,
+      organization_id:
+        organization.id,
+
       name,
-      status: rawStatus,
-      start_date: startDate,
-      target_end_date: targetEndDate,
-      progress_override: null,
+
+      status:
+        rawStatus,
+
+      start_date:
+        startDate,
+
+      target_end_date:
+        targetEndDate,
+
+      progress_override:
+        null,
     })
     .select(
-      "id, organization_id, name, status, start_date, target_end_date"
+      `
+        id,
+        organization_id,
+        name,
+        status,
+        start_date,
+        target_end_date
+      `
     )
     .single();
 
-  if (projectError || !project) {
-    console.error("Admin project creation failed:", {
-      code: projectError?.code,
-      message: projectError?.message,
-    });
+  if (
+    projectError ||
+    !project
+  ) {
+    console.error(
+      "Admin project creation failed:",
+      {
+        code:
+          projectError?.code,
 
-    return NextResponse.json(
-      { error: "Unable to create project." },
-      { status: 500 }
+        message:
+          projectError?.message,
+      }
+    );
+
+    return jsonResponse(
+      {
+        error:
+          "Unable to create project. Please try again.",
+      },
+      500
     );
   }
 
   // ---------------------------------------------------------
-  // 9. Audit event
+  // Audit
   // ---------------------------------------------------------
 
-  const { error: auditError } = await supabase
+  const {
+    error: auditError,
+  } = await supabase
     .from("audit_logs")
     .insert({
-      actor_clerk_user_id: userId,
-      action: "PROJECT_CREATED",
-      entity_type: "project",
-      entity_id: project.id,
+      actor_clerk_user_id:
+        userId,
+
+      action:
+        "PROJECT_CREATED",
+
+      entity_type:
+        "project",
+
+      entity_id:
+        project.id,
+
       metadata: {
-        organization_id: organization.id,
-        organization_name: organization.name,
-        project_name: project.name,
-        project_status: project.status,
+        organization_id:
+          organization.id,
+
+        organization_name:
+          organization.name,
+
+        project_name:
+          project.name,
+
+        project_status:
+          project.status,
       },
     });
 
   if (auditError) {
-    console.error("Project creation audit log failed:", {
-      code: auditError.code,
-      message: auditError.message,
-    });
+    console.error(
+      "Project creation audit log failed:",
+      {
+        code:
+          auditError.code,
+
+        message:
+          auditError.message,
+      }
+    );
   }
 
-  // ---------------------------------------------------------
-  // 10. Redirect back to client
-  // ---------------------------------------------------------
+  return jsonResponse({
+    success: true,
 
-  return NextResponse.redirect(
-    new URL(
-      `/admin/clients/${organization.id}`,
-      request.url
-    ),
-    303
-  );
+    projectId:
+      project.id,
+
+    organizationId:
+      organization.id,
+  });
 }

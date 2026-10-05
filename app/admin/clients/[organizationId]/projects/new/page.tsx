@@ -1,12 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  CalendarDays,
-  FolderKanban,
-  ShieldCheck,
-} from "lucide-react";
+import { FolderKanban } from "lucide-react";
+
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminProjectForm from "@/components/admin/AdminProjectForm";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
@@ -42,7 +39,7 @@ export default async function NewProjectPage({
   }
 
   // ---------------------------------------------------------
-  // Platform-admin authorization
+  // Platform admin authorization
   // ---------------------------------------------------------
 
   const platformAdmin = await isPlatformAdmin();
@@ -51,30 +48,40 @@ export default async function NewProjectPage({
     redirect("/client");
   }
 
+  // ---------------------------------------------------------
+  // Route parameters
+  // ---------------------------------------------------------
+
   const { organizationId } = await params;
 
-  // A malformed ID can never match a row: 404 before the query, not a database error.
   if (!isUuid(organizationId)) {
     notFound();
   }
 
   // ---------------------------------------------------------
-  // Load organisation
+  // Load client organisation
   // ---------------------------------------------------------
 
   const supabase = createAdminSupabaseClient();
 
   const { data: organization, error } = await supabase
     .from("organizations")
-    .select("id, name, status")
+    .select(`
+      id,
+      name,
+      status
+    `)
     .eq("id", organizationId)
     .maybeSingle();
 
   if (error) {
-    console.error("Create project organisation lookup failed:", {
-      code: error.code,
-      message: error.message,
-    });
+    console.error(
+      "Create project organisation lookup failed:",
+      {
+        code: error.code,
+        message: error.message,
+      }
+    );
 
     throw new Error("Unable to load client organisation.");
   }
@@ -83,193 +90,86 @@ export default async function NewProjectPage({
     notFound();
   }
 
+  // ---------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------
+
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
-      <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8 lg:px-12">
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <Link
-            href={`/admin/clients/${organization.id}`}
-            className="flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
-          >
-            <ArrowLeft size={16} />
-            {organization.name}
-          </Link>
+    <main className="min-h-full bg-[#f4f4f1] text-neutral-950">
+      <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+        {/* ---------------------------------------------------
+            Page header
+        ---------------------------------------------------- */}
 
-          <div className="flex items-center gap-2">
-            <ShieldCheck
-              size={14}
-              className="text-[#f26a2e]"
-            />
+        <AdminPageHeader
+          eyebrow={organization.name}
+          title="Create Project"
+          description="Create and configure a new client project."
+        />
 
-            <p className="text-xs uppercase tracking-[0.18em] text-white/35">
-              Platform Admin
-            </p>
-          </div>
-        </header>
+        {/* ---------------------------------------------------
+            Workspace
+        ---------------------------------------------------- */}
 
-        {/* Heading */}
-        <section className="py-14 sm:py-16">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.025]">
-            <FolderKanban
-              size={19}
-              className="text-[#f26a2e]"
-            />
-          </div>
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+          {/* Main form */}
 
-          <p className="mt-7 text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
-            {organization.name}
-          </p>
+          <AdminProjectForm
+            organizationId={organization.id}
+            organizationStatus={organization.status}
+          />
 
-          <h1 className="mt-4 text-4xl font-medium tracking-[-0.04em] sm:text-5xl">
-            Create Project
-          </h1>
+          {/* Sidebar information */}
 
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-white/50">
-            Create a project for this client. Progress will initially be
-            calculated automatically from project milestones.
-          </p>
-        </section>
+          <aside className="space-y-4">
+            {/* Project workspace information */}
 
-        {/* Form */}
-        <form
-          action={`/api/admin/clients/${organization.id}/projects`}
-          method="POST"
-          className="space-y-8 rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 sm:p-8"
-        >
-          {/* Project name */}
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-white"
-            >
-              Project name
-            </label>
-
-            <p className="mt-1 text-sm text-white/40">
-              A clear internal and client-facing name for the project.
-            </p>
-
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              minLength={2}
-              maxLength={120}
-              autoComplete="off"
-              placeholder="Website Redesign"
-              className="mt-4 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-white/30"
-            />
-          </div>
-
-          {/* Status */}
-          <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-white"
-            >
-              Initial status
-            </label>
-
-            <p className="mt-1 text-sm text-white/40">
-              You can change the project status later.
-            </p>
-
-            <select
-              id="status"
-              name="status"
-              defaultValue="PLANNING"
-              className="mt-4 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none transition focus:border-white/30"
-            >
-              <option value="PLANNING">Planning</option>
-              <option value="ACTIVE">Active</option>
-              <option value="ON_HOLD">On hold</option>
-            </select>
-          </div>
-
-          {/* Dates */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="startDate"
-                className="flex items-center gap-2 text-sm font-medium text-white"
-              >
-                <CalendarDays
-                  size={15}
-                  className="text-white/40"
+            <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
+                <FolderKanban
+                  size={18}
+                  className="text-[#f26a2e]"
                 />
-                Start date
-              </label>
+              </div>
 
-              <p className="mt-1 text-sm text-white/40">
-                Optional.
+              <p className="mt-5 text-sm font-semibold text-neutral-950">
+                Project workspace
               </p>
 
-              <input
-                id="startDate"
-                name="startDate"
-                type="date"
-                className="mt-4 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none transition focus:border-white/30"
-              />
+              <p className="mt-2 text-sm leading-6 text-neutral-500">
+                After creation, you can add milestones,
+                client updates and project documents from
+                the project workspace.
+              </p>
             </div>
 
-            <div>
-              <label
-                htmlFor="targetEndDate"
-                className="flex items-center gap-2 text-sm font-medium text-white"
-              >
-                <CalendarDays
-                  size={15}
-                  className="text-white/40"
-                />
-                Target end date
-              </label>
+            {/* Client information */}
 
-              <p className="mt-1 text-sm text-white/40">
-                Optional.
+            <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+                Client
               </p>
 
-              <input
-                id="targetEndDate"
-                name="targetEndDate"
-                type="date"
-                className="mt-4 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none transition focus:border-white/30"
-              />
+              <p className="mt-2 text-sm font-semibold text-neutral-950">
+                {organization.name}
+              </p>
+
+              <div className="mt-4 flex items-center gap-2">
+                <span
+                  className={
+                    organization.status === "ACTIVE"
+                      ? "h-2 w-2 rounded-full bg-emerald-500"
+                      : "h-2 w-2 rounded-full bg-amber-500"
+                  }
+                />
+
+                <span className="text-sm text-neutral-600">
+                  {organization.status}
+                </span>
+              </div>
             </div>
-          </div>
-
-          {/* Progress explanation */}
-          <div className="rounded-xl border border-white/10 bg-black/40 p-5">
-            <p className="text-sm font-medium text-white">
-              Project progress
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-white/40">
-              Progress starts in automatic mode. Once milestones are
-              added, Drylake will calculate project progress from
-              milestone completion. An administrator can override the
-              calculated value later if required.
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-7 sm:flex-row sm:justify-end">
-            <Link
-              href={`/admin/clients/${organization.id}`}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium text-white/60 transition hover:text-white"
-            >
-              Cancel
-            </Link>
-
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition hover:bg-white/90"
-            >
-              Create Project
-            </button>
-          </div>
-        </form>
+          </aside>
+        </div>
       </div>
     </main>
   );
