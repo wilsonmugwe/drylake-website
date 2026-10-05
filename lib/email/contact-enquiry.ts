@@ -78,6 +78,9 @@ export async function deliverContactEnquiry(enquiry: ContactEnquiry) {
   });
 
   if (error) {
-    throw new Error(`Enquiry delivery failed: ${error.name}`);
+    // Resend's name + message describe OUR configuration (e.g. "validation_error: The
+    // drylake.com.au domain is not verified"), never the enquirer's details, so they are
+    // safe to log and are what an operator needs to fix delivery.
+    throw new Error(`Enquiry delivery failed: ${error.name}: ${error.message}`);
   }
 }

@@ -163,7 +163,16 @@ export async function POST(request: Request) {
     // Fail loudly: a visitor must never see "received" for an enquiry that was not delivered.
     try {
       await deliverContactEnquiry(enquiry);
-    } catch {
+    } catch (error) {
+      // Log the cause, never the enquiry: the message comes from config checks
+      // ("Missing CONTACT_TO_EMAIL", "Missing EMAIL_FROM", "Missing RESEND_API_KEY") or
+      // from Resend's error, and contains no personal information. Without this line a
+      // misconfigured mailer is invisible in the Vercel logs.
+      console.error(
+        "Contact enquiry delivery failed:",
+        error instanceof Error ? error.message : "unknown error"
+      );
+
       return jsonError(
         `We couldn't send your enquiry. Please email ${CONTACT_EMAIL} directly.`,
         502
