@@ -8,6 +8,12 @@ type PayInvoiceButtonProps = {
   amount: string;
 };
 
+type CheckoutResponse = {
+  url?: string;
+  error?: string;
+  code?: string;
+};
+
 export default function PayInvoiceButton({
   invoiceId,
   amount,
@@ -24,20 +30,25 @@ export default function PayInvoiceButton({
     setError(null);
 
     try {
-      const response = await fetch(
-        "/api/stripe/checkout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            invoiceId,
-          }),
-        }
-      );
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          invoiceId,
+        }),
+      });
 
-      const data = await response.json();
+      let data: CheckoutResponse;
+
+      try {
+        data = (await response.json()) as CheckoutResponse;
+      } catch {
+        throw new Error(
+          "Unable to read the payment response. Please try again."
+        );
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -45,15 +56,37 @@ export default function PayInvoiceButton({
         );
       }
 
-      if (!data.url) {
+      if (
+        !data.url ||
+        typeof data.url !== "string"
+      ) {
         throw new Error(
           "Checkout URL was not returned"
         );
       }
 
-      window.location.href = data.url;
+      let checkoutUrl: URL;
+
+      try {
+        checkoutUrl = new URL(data.url);
+      } catch {
+        throw new Error(
+          "Invalid checkout URL returned"
+        );
+      }
+
+      if (checkoutUrl.protocol !== "https:") {
+        throw new Error(
+          "Invalid checkout URL returned"
+        );
+      }
+
+      window.location.assign(checkoutUrl.toString());
     } catch (paymentError) {
-      console.error(paymentError);
+      console.error(
+        "Unable to start Stripe Checkout:",
+        paymentError
+      );
 
       setError(
         paymentError instanceof Error
@@ -71,11 +104,13 @@ export default function PayInvoiceButton({
         type="button"
         onClick={handlePayment}
         disabled={loading}
+        aria-busy={loading}
         className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#f26a2e] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (
           <>
             <Loader2
+              aria-hidden="true"
               size={16}
               className="animate-spin"
             />
@@ -84,16 +119,22 @@ export default function PayInvoiceButton({
         ) : (
           <>
             Pay {amount}
-            <ArrowUpRight size={16} />
+            <ArrowUpRight
+              aria-hidden="true"
+              size={16}
+            />
           </>
         )}
       </button>
 
-      {error && (
-        <p className="mt-3 text-xs text-red-400">
+      {error ? (
+        <p
+          role="alert"
+          className="mt-3 text-xs text-red-400"
+        >
           {error}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }
