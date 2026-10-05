@@ -21,21 +21,11 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ==========================================================
-  // AUTHENTICATION
-  // Protect the entire /admin route tree.
-  // ==========================================================
-
   const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in?redirect_url=/admin");
   }
-
-  // ==========================================================
-  // AUTHORIZATION
-  // A Clerk account alone does not grant admin access.
-  // ==========================================================
 
   const platformAdmin = await isPlatformAdmin();
 
@@ -44,7 +34,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-[#080808] text-white">
       <AdminMobileNav />
 
       <div className="flex min-h-screen">
