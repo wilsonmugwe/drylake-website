@@ -194,6 +194,9 @@ export default async function ClientInvoicePage({
         created_at
       `)
       .eq("id", invoiceId)
+      // Explicit org filter on top of RLS: a policy regression must not expose
+      // another organisation's invoice by ID.
+      .eq("organization_id", organization.id)
       .maybeSingle();
 
   if (invoiceError) {

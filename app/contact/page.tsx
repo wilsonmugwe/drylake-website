@@ -7,30 +7,22 @@ import {
   Phone,
 } from "lucide-react";
 
+import { pageMetadata } from "@/lib/seo";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProjectForm from "@/components/forms/ProjectForm";
 import Container from "@/components/ui/Container";
 import { RESPONSE_TIME } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Contact Drylake",
+export const metadata: Metadata = pageMetadata({
+  title: "Contact Drylake | Software & Automation Enquiries",
   description:
     "Talk to Drylake about software, automation, integrations or operational technology. Call, email or tell us what is slowing your business down.",
-
-  alternates: {
-    canonical: "/contact",
-  },
-
-  openGraph: {
-    title: "Contact Drylake",
-    description:
-      "Talk to Drylake about software, automation, integrations or operational technology for your business.",
-    url: "https://drylake.com.au/contact",
-    type: "website",
-    images: ["/opengraph-image.png"],
-  },
-};
+  path: "/contact",
+  shareDescription:
+    "Talk to Drylake about software, automation, integrations or operational technology for your business.",
+});
 
 const nextSteps = [
   {

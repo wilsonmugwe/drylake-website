@@ -230,6 +230,8 @@ export default function SignInPage() {
               {/* Clerk authentication */}
               <div className="w-full">
                 <SignIn
+                  // No return URL given: /portal routes admins to /admin and clients to /client.
+                  fallbackRedirectUrl="/portal"
                   appearance={{
                     elements: {
                       rootBox:

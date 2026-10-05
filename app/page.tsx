@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -9,10 +11,22 @@ import Founders from "@/components/sections/Founders";
 import Approach from "@/components/sections/Approach";
 import FAQ from "@/components/sections/FAQ";
 import ContactCTA from "@/components/sections/ContactCTA";
+import FaqSchema from "@/components/seo/FaqSchema";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Drylake | Operational Software & Automation Australia",
+  description:
+    "Drylake builds operational software, automation and connected systems for Australian businesses held back by manual processes and disconnected tools.",
+  path: "/",
+  shareDescription:
+    "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
+});
 
 export default function Home() {
   return (
     <main className="overflow-hidden">
+      <FaqSchema />
       <Navbar />
 
       <Hero />

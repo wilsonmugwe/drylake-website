@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const metadata = {
@@ -22,6 +23,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  // Own guard, not just the layout: this page reads with the service-role client.
+  await requirePlatformAdmin("/admin");
+
   const supabase = createAdminSupabaseClient();
 
   const [

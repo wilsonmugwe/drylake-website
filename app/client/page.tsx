@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+
+import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -39,6 +41,13 @@ export default async function ClientDashboardPage() {
   // An authenticated account alone never grants access
   // to client/project data.
   // ---------------------------------------------------------
+
+  // Intentional routing rule: a Drylake admin with no active client organisation belongs
+  // in the admin workspace, not on the client "no organisation" screen. An admin who is
+  // also a member of a client org (active org set) still sees that org's client view.
+  if (!orgId && (await isPlatformAdmin())) {
+    redirect("/admin");
+  }
 
   if (!orgId) {
     return (

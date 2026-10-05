@@ -227,6 +227,8 @@ export default function SignUpPage() {
               {/* Clerk */}
               <div className="w-full">
                 <SignUp
+                  // No return URL given: /portal routes admins to /admin and clients to /client.
+                  fallbackRedirectUrl="/portal"
                   appearance={{
                     elements: {
                       rootBox:

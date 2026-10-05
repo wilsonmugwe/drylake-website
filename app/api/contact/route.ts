@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
 import { deliverContactEnquiry } from "@/lib/email/contact-enquiry";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 interface ContactRequest {
   name?: unknown;
@@ -10,11 +12,6 @@ interface ContactRequest {
   budget?: unknown;
   message?: unknown;
   turnstileToken?: unknown;
-}
-
-interface TurnstileResponse {
-  success: boolean;
-  "error-codes"?: string[];
 }
 
 const MAX_REQUEST_BYTES = 10_000;
@@ -53,41 +50,6 @@ function jsonError(message: string, status: number) {
       },
     }
   );
-}
-
-async function verifyTurnstile(token: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-
-  if (!secret) {
-    console.error("TURNSTILE_SECRET_KEY is not configured.");
-    return false;
-  }
-
-  try {
-    const formData = new FormData();
-
-    formData.append("secret", secret);
-    formData.append("response", token);
-
-    const response = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        body: formData,
-        cache: "no-store",
-      }
-    );
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const result = (await response.json()) as TurnstileResponse;
-
-    return result.success === true;
-  } catch {
-    return false;
-  }
 }
 
 export async function POST(request: Request) {
@@ -132,22 +94,6 @@ export async function POST(request: Request) {
     const message = getString(body.message);
     const turnstileToken = getString(body.turnstileToken);
 
-    /*
-     * Verify the anti-bot token before processing the enquiry.
-     */
-    if (!turnstileToken) {
-      return jsonError("Security verification is required.", 403);
-    }
-
-    const turnstileValid = await verifyTurnstile(turnstileToken);
-
-    if (!turnstileValid) {
-      return jsonError(
-        "Security verification failed. Please try again.",
-        403
-      );
-    }
-
     if (!name || !email || !message) {
       return jsonError(
         "Name, email and project details are required.",
@@ -184,6 +130,26 @@ export async function POST(request: Request) {
       return jsonError("Invalid characters detected.", 400);
     }
 
+    /*
+     * Server-side Turnstile verification, after the cheap field checks and before any
+     * processing. Missing, invalid, expired, reused or foreign-host tokens are rejected.
+     */
+    const verdict = await verifyTurnstile(turnstileToken, clientIp(request));
+
+    if (!verdict.ok) {
+      if (verdict.reason === "misconfigured" || verdict.reason === "unreachable") {
+        return jsonError(
+          `Security verification is temporarily unavailable. Please try again shortly, or email ${CONTACT_EMAIL} directly.`,
+          503
+        );
+      }
+
+      return jsonError(
+        "Security verification failed. Please complete the check again and resend.",
+        403
+      );
+    }
+
     const enquiry = {
       name,
       email,
@@ -199,7 +165,7 @@ export async function POST(request: Request) {
       await deliverContactEnquiry(enquiry);
     } catch {
       return jsonError(
-        "We couldn't send your enquiry. Please email hello@drylake.com.au directly.",
+        `We couldn't send your enquiry. Please email ${CONTACT_EMAIL} directly.`,
         502
       );
     }
