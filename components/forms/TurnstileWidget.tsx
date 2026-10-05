@@ -7,6 +7,8 @@ import {
   useRef,
 } from "react";
 
+import { CONTACT_ACTION } from "@/lib/contact/turnstile-action";
+
 interface TurnstileApi {
   render: (
     container: HTMLElement,
@@ -127,7 +129,7 @@ const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
             sitekey: siteKey,
             theme: "light",
             size: "flexible",
-            action: "contact",
+            action: CONTACT_ACTION,
             callback: (token: string) => callbacks.current.onToken(token),
             "expired-callback": () => callbacks.current.onTokenCleared(),
             "timeout-callback": () => callbacks.current.onTokenCleared(),
