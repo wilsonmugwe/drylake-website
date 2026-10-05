@@ -1,5 +1,7 @@
 import "server-only";
 
+import { CONTACT_ACTION } from "./turnstile-action.ts";
+
 const SITEVERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -23,8 +25,9 @@ export type TurnstileVerdict =
        * unreachable:   Cloudflare could not be asked (transient, 503)
        * rejected:      the token is missing, invalid, expired or already used (403)
        * wrong-host:    a valid token minted for a site that is not ours (403)
+       * wrong-action:  a valid token minted by a different widget action (403)
        */
-      reason: "misconfigured" | "unreachable" | "rejected" | "wrong-host";
+      reason: "misconfigured" | "unreachable" | "rejected" | "wrong-host" | "wrong-action";
       errorCodes?: string[];
     };
 
@@ -56,7 +59,7 @@ export function clientIp(request: Request): string | null {
  * its own; only this call decides whether a submission is accepted.
  *
  * Contract: { ok: true } only when Cloudflare confirms success for a token minted on one of
- * our hostnames. Never throws.
+ * our hostnames by the contact action. Fails closed on any error or timeout. Never throws.
  */
 export async function verifyTurnstile(
   token: string,
@@ -89,18 +92,28 @@ export async function verifyTurnstile(
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
-    if (!response.ok) {
+    // Cloudflare answers an unrecognised secret with HTTP 400 plus a JSON error code, so
+    // read the body before deciding: a bad secret is our misconfiguration, not an outage.
+    const parsed = (await response.json().catch(() => null)) as SiteverifyResponse | null;
+
+    if (!response.ok && !parsed?.["error-codes"]?.length) {
       console.error("Turnstile: siteverify HTTP", response.status);
       return { ok: false, reason: "unreachable" };
     }
 
-    result = (await response.json()) as SiteverifyResponse;
+    if (!parsed) {
+      console.error("Turnstile: siteverify returned a non-JSON body");
+      return { ok: false, reason: "unreachable" };
+    }
+
+    result = parsed;
   } catch (error) {
     console.error("Turnstile: siteverify request failed:", (error as Error).name);
     return { ok: false, reason: "unreachable" };
   }
 
-  if (!result.success) {
+  // Strict check: anything other than a literal `true` (missing field, malformed body) fails.
+  if (result.success !== true) {
     const errorCodes = result["error-codes"] ?? [];
 
     // invalid-input-secret means OUR configuration is wrong, not the visitor's token.
@@ -109,15 +122,28 @@ export async function verifyTurnstile(
       return { ok: false, reason: "misconfigured", errorCodes };
     }
 
+    // Error codes only (e.g. timeout-or-duplicate): no token, secret or visitor data.
+    console.warn("Turnstile: token rejected:", errorCodes);
     return { ok: false, reason: "rejected", errorCodes };
   }
 
-  const isTestSecret = TEST_SECRET_PATTERN.test(secret);
+  // Cloudflare's test secrets answer with hostname "example.com" and no action, so the
+  // binding checks below only apply to a real secret.
+  if (TEST_SECRET_PATTERN.test(secret)) {
+    return { ok: true };
+  }
+
   const hostname = (result.hostname ?? "").toLowerCase();
 
-  if (!isTestSecret && !allowedHostnames().includes(hostname)) {
+  if (!allowedHostnames().includes(hostname)) {
     console.error("Turnstile: token minted for unexpected hostname:", hostname);
     return { ok: false, reason: "wrong-host" };
+  }
+
+  // A token is bound to the widget action that minted it; only the contact form's counts.
+  if (result.action !== CONTACT_ACTION) {
+    console.error("Turnstile: token minted for unexpected action:", result.action ?? "(none)");
+    return { ok: false, reason: "wrong-action" };
   }
 
   return { ok: true };

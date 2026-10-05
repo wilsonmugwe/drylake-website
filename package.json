@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --conditions=react-server --test tests/*.test.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.7",
