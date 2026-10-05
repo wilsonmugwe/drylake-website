@@ -2,15 +2,26 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Building2,
   ChevronRight,
   Plus,
+  SearchX,
   ShieldCheck,
   Users,
 } from "lucide-react";
 
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminStatCard from "@/components/admin/AdminStatCard";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import {
+  type AdminSearchParams,
+  ilikePattern,
+  readEnumParam,
+  readFilterParam,
+  toOptions,
+} from "@/lib/admin/filters";
+import { ADMIN_LIST_LIMIT } from "@/lib/admin/search";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const metadata = {
@@ -23,7 +34,22 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminClientsPage() {
+type ClientsPageProps = {
+  searchParams: Promise<AdminSearchParams>;
+};
+
+type OrganizationRow = {
+  id: string;
+  clerk_org_id: string;
+  name: string;
+  status: string;
+  billing_contact_name: string | null;
+  billing_email: string | null;
+};
+
+export default async function AdminClientsPage({
+  searchParams,
+}: ClientsPageProps) {
   // ---------------------------------------------------------
   // Authentication
   // ---------------------------------------------------------
@@ -44,16 +70,75 @@ export default async function AdminClientsPage() {
     redirect("/client");
   }
 
+  const supabase = createAdminSupabaseClient();
+
+  // ---------------------------------------------------------
+  // Status overview (unfiltered)
+  //
+  // Organisation status has no enum defined in this repo, so the
+  // filter options are the statuses actually present. The same
+  // rows give the summary counts, independent of the filters.
+  // ---------------------------------------------------------
+
+  const { data: statusRows, error: statusError } = await supabase
+    .from("organizations")
+    .select("status");
+
+  const allStatuses: Array<{ status: string }> = statusRows ?? [];
+  const totalCount = allStatuses.length;
+  const activeCount = allStatuses.filter(
+    (row) => row.status === "ACTIVE"
+  ).length;
+  const knownStatuses = [
+    ...new Set(
+      allStatuses
+        .map((row) => row.status)
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.toUpperCase())
+    ),
+  ].sort();
+
+  // ---------------------------------------------------------
+  // Filters
+  // ---------------------------------------------------------
+
+  const params = await searchParams;
+  const q = readFilterParam(params, "q");
+  const status = readEnumParam(params, "status", knownStatuses);
+  const hasFilters = Boolean(q || status);
+
   // ---------------------------------------------------------
   // Load organisations
   // ---------------------------------------------------------
 
-  const supabase = createAdminSupabaseClient();
-
-  const { data: organizations, error } = await supabase
+  let query = supabase
     .from("organizations")
-    .select("id, clerk_org_id, name, status, created_at")
-    .order("created_at", { ascending: false });
+    .select(
+      "id, clerk_org_id, name, status, billing_contact_name, billing_email, created_at",
+      { count: "exact" }
+    )
+    .order("created_at", { ascending: false })
+    .limit(ADMIN_LIST_LIMIT);
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  if (q) {
+    const pattern = ilikePattern(q);
+
+    query = query.or(
+      [
+        `name.ilike.${pattern}`,
+        `billing_contact_name.ilike.${pattern}`,
+        `billing_email.ilike.${pattern}`,
+      ].join(",")
+    );
+  }
+
+  const { data: organizations, error: listError, count } = await query;
+
+  const error = listError ?? statusError;
 
   if (error) {
     console.error("Admin client list failed:", {
@@ -62,370 +147,226 @@ export default async function AdminClientsPage() {
     });
   }
 
-  const organizationList = organizations ?? [];
-  const activeCount = organizationList.filter(
-    (organization) => organization.status === "ACTIVE"
-  ).length;
+  const organizationList: OrganizationRow[] = organizations ?? [];
+  const totalMatches = count ?? organizationList.length;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] text-white">
-      {/* =====================================================
-          BACKGROUND
-      ===================================================== */}
-
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-[18%] top-[4%] h-[700px] w-[700px] rounded-full bg-[#f26a2e]/[0.055] blur-[170px]" />
-
-        <div className="absolute -right-[15%] top-[25%] h-[600px] w-[600px] rounded-full bg-[#f26a2e]/[0.02] blur-[170px]" />
-
-        <div className="absolute bottom-[-350px] left-1/2 h-[600px] w-[1000px] -translate-x-1/2 rounded-full bg-white/[0.02] blur-[160px]" />
-
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)
-            `,
-            backgroundSize: "72px 72px",
-            maskImage:
-              "linear-gradient(to bottom, black, transparent 92%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black, transparent 92%)",
-          }}
-        />
-
-        <div className="absolute left-[6%] top-[20%] h-[340px] w-px bg-gradient-to-b from-transparent via-[#f26a2e]/20 to-transparent" />
-
-        <div className="absolute left-1/2 top-0 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-
-      {/* =====================================================
-          PAGE
-      ===================================================== */}
-
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-5 sm:px-8 lg:px-12">
-        {/* ===================================================
-            HEADER
-        =================================================== */}
-
-        <header className="flex items-center justify-between border-b border-white/[0.08] py-7">
-          <Link
-            href="/admin"
-            className="group flex items-center gap-2.5 text-sm text-white/45 transition-colors hover:text-white"
-          >
-            <ArrowLeft
-              size={15}
-              className="transition-transform duration-200 group-hover:-translate-x-1"
-            />
-
-            <span>Admin</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05]">
-              <ShieldCheck
-                size={13}
-                strokeWidth={1.8}
-                className="text-[#f26a2e]"
-              />
-            </div>
-
-            <p className="hidden text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/35 sm:block">
-              Platform Admin
-            </p>
-          </div>
-        </header>
-
-        {/* ===================================================
-            HERO
-        =================================================== */}
-
-        <section className="pb-12 pt-14 sm:pb-14 sm:pt-16">
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05] px-3.5 py-2">
-                <Building2
-                  size={13}
-                  strokeWidth={1.8}
-                  className="text-[#f26a2e]"
-                />
-
-                <span className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#f26a2e]">
-                  Client Management
-                </span>
-              </div>
-
-              <h1 className="mt-7 text-5xl font-medium tracking-[-0.055em] sm:text-6xl">
-                Clients
-              </h1>
-
-              <p className="mt-5 max-w-xl text-[0.95rem] leading-7 text-white/45">
-                Manage the organisations connected to the Drylake client
-                platform, their access and operational workspaces.
-              </p>
-            </div>
-
+    <main className="min-h-screen p-5 sm:p-8 lg:p-10">
+      <div className="mx-auto max-w-[1450px]">
+        <AdminPageHeader
+          eyebrow="Client management"
+          title="Clients"
+          description="Manage the organisations connected to the Drylake client platform, their access and operational workspaces."
+          action={
             <Link
               href="/admin/clients/new"
-              className="group inline-flex w-fit items-center justify-center gap-2.5 rounded-xl bg-white px-5 py-3.5 text-sm font-semibold !text-black transition duration-300 hover:bg-neutral-200"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800"
             >
-              <Plus
-                size={16}
-                className="transition-transform duration-200 group-hover:rotate-90"
-              />
-
+              <Plus size={16} aria-hidden="true" />
               Create Client
             </Link>
-          </div>
-        </section>
+          }
+        />
 
-        {/* ===================================================
-            SUMMARY
-        =================================================== */}
+        {/* Summary */}
 
         {!error && (
-          <section className="mb-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[1.4rem] border border-white/[0.08] bg-white/[0.018] px-5 py-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <Building2
-                  size={17}
-                  strokeWidth={1.7}
-                  className="text-[#f26a2e]"
-                />
+          <section className="mt-7 grid gap-4 sm:grid-cols-3">
+            <AdminStatCard
+              label="Total"
+              value={totalCount}
+              detail="Client organisations"
+              icon={<Building2 size={17} />}
+            />
 
-                <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
-                  Total
-                </span>
-              </div>
+            <AdminStatCard
+              label="Active"
+              value={activeCount}
+              detail="Active organisations"
+              icon={<ShieldCheck size={17} />}
+            />
 
-              <p className="mt-5 text-2xl font-medium tracking-[-0.03em]">
-                {organizationList.length}
-              </p>
-
-              <p className="mt-1 text-xs text-white/30">
-                Client organisations
-              </p>
-            </div>
-
-            <div className="rounded-[1.4rem] border border-white/[0.08] bg-white/[0.018] px-5 py-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <ShieldCheck
-                  size={17}
-                  strokeWidth={1.7}
-                  className="text-[#f26a2e]"
-                />
-
-                <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
-                  Active
-                </span>
-              </div>
-
-              <p className="mt-5 text-2xl font-medium tracking-[-0.03em]">
-                {activeCount}
-              </p>
-
-              <p className="mt-1 text-xs text-white/30">
-                Active organisations
-              </p>
-            </div>
-
-            <div className="rounded-[1.4rem] border border-white/[0.08] bg-white/[0.018] px-5 py-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <Users
-                  size={17}
-                  strokeWidth={1.7}
-                  className="text-[#f26a2e]"
-                />
-
-                <span className="text-[0.55rem] uppercase tracking-[0.15em] text-white/20">
-                  Access
-                </span>
-              </div>
-
-              <p className="mt-5 text-sm font-medium">
-                Clerk
-              </p>
-
-              <p className="mt-1 text-xs text-white/30">
-                Organisation identity provider
-              </p>
-            </div>
+            <AdminStatCard
+              label="Access"
+              value="Clerk"
+              detail="Organisation identity provider"
+              icon={<Users size={17} />}
+            />
           </section>
         )}
 
-        {/* ===================================================
-            ERROR
-        =================================================== */}
+        <div className="mt-6">
+          <AdminFilterBar
+            searchPlaceholder="Search by company, contact name or email"
+            searchLabel="Search clients"
+            selects={[
+              {
+                param: "status",
+                label: "Status",
+                options: toOptions(knownStatuses),
+                allLabel: "All statuses",
+              },
+            ]}
+            resultCount={error ? undefined : totalMatches}
+            resultNoun={totalMatches === 1 ? "client" : "clients"}
+          />
+        </div>
 
         {error ? (
-          <section className="rounded-[1.75rem] border border-red-500/15 bg-red-500/[0.035] p-7 sm:p-8">
+          <section className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-6 sm:p-7">
             <Building2
-              size={21}
-              strokeWidth={1.7}
-              className="text-red-400"
+              size={20}
+              strokeWidth={1.8}
+              className="text-red-600"
             />
 
-            <h2 className="mt-5 text-xl font-medium">
+            <h2 className="mt-4 text-lg font-semibold text-neutral-950">
               Unable to load clients
             </h2>
 
-            <p className="mt-3 max-w-lg text-sm leading-6 text-white/40">
+            <p className="mt-2 max-w-lg text-sm leading-6 text-neutral-600">
               The administration database connection could not retrieve
               organisations.
             </p>
           </section>
         ) : organizationList.length > 0 ? (
-          /* =================================================
-              ORGANISATIONS
-          ================================================= */
-
-          <section className="overflow-hidden rounded-[1.75rem] border border-white/[0.08] bg-[#0a0a0a]/75 shadow-[0_30px_90px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-            {/* Header */}
-
-            <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5 sm:px-7">
-              <div>
-                <p className="text-sm font-medium">
+          <section className="mt-5 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between gap-4 border-b border-neutral-100 px-5 py-4">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-neutral-950">
                   Client organisations
                 </p>
 
-                <p className="mt-1 text-xs text-white/30">
+                <p className="mt-1 text-xs text-neutral-500">
                   Select an organisation to manage its workspace
                 </p>
               </div>
 
-              <span className="rounded-full border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 text-[0.58rem] font-medium uppercase tracking-[0.14em] text-white/30">
-                {organizationList.length}{" "}
-                {organizationList.length === 1
-                  ? "organisation"
-                  : "organisations"}
+              <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-600">
+                {totalMatches}{" "}
+                {totalMatches === 1 ? "organisation" : "organisations"}
               </span>
             </div>
 
-            {/* Rows */}
-
             <div>
-              {organizationList.map((organization, index) => {
+              {organizationList.map((organization) => {
                 const isActive = organization.status === "ACTIVE";
+                const contact = [
+                  organization.billing_contact_name,
+                  organization.billing_email,
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
 
                 return (
                   <Link
                     key={organization.id}
                     href={`/admin/clients/${organization.id}`}
-                    className="group relative flex items-center justify-between gap-5 border-b border-white/[0.07] px-6 py-5 transition duration-300 last:border-b-0 hover:bg-white/[0.025] sm:px-7"
+                    className="group flex items-center justify-between gap-4 border-b border-neutral-100 px-5 py-4 transition last:border-0 hover:bg-neutral-50"
                   >
-                    {/* Hover accent */}
-
-                    <div className="absolute bottom-0 left-0 top-0 w-px bg-[#f26a2e] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02] transition duration-300 group-hover:border-[#f26a2e]/20 group-hover:bg-[#f26a2e]/[0.04]">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
                         <Building2
                           size={17}
-                          strokeWidth={1.7}
                           className="text-[#f26a2e]"
                         />
 
                         {isActive && (
-                          <div className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-[#0a0a0a]">
-                            <div className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-                          </div>
+                          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#f26a2e]" />
                         )}
-                      </div>
+                      </span>
 
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2.5">
-                          <p className="truncate text-sm font-medium text-white transition-colors group-hover:text-[#f26a2e] sm:text-base">
-                            {organization.name}
+                        <p className="truncate text-sm font-semibold text-neutral-950 transition-colors group-hover:text-[#f26a2e]">
+                          {organization.name}
+                        </p>
+
+                        {contact ? (
+                          <p className="mt-1 truncate text-xs text-neutral-500">
+                            {contact}
                           </p>
+                        ) : null}
 
-                          <span className="hidden text-[0.55rem] text-white/15 sm:inline">
-                            #{String(index + 1).padStart(2, "0")}
-                          </span>
-                        </div>
-
-                        <p className="mt-1.5 max-w-[260px] truncate font-mono text-[0.68rem] text-white/25 sm:max-w-md">
+                        <p className="mt-1 truncate font-mono text-[10px] text-neutral-400">
                           {organization.clerk_org_id}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-4">
+                    <div className="flex shrink-0 items-center gap-3">
                       <span
                         className={
                           isActive
-                            ? "rounded-full border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-2.5 py-1 text-[0.55rem] font-semibold uppercase tracking-[0.13em] text-[#f26a2e]"
-                            : "rounded-full border border-white/[0.07] px-2.5 py-1 text-[0.55rem] font-medium uppercase tracking-[0.13em] text-white/30"
+                            ? "rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-orange-700"
+                            : "rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-600"
                         }
                       >
                         {organization.status}
                       </span>
 
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.06] transition duration-300 group-hover:border-white/[0.12] group-hover:bg-white/[0.03]">
-                        <ChevronRight
-                          size={14}
-                          className="text-white/25 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-white/60"
-                        />
-                      </div>
+                      <ChevronRight
+                        size={15}
+                        className="hidden text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-neutral-500 sm:block"
+                      />
                     </div>
                   </Link>
                 );
               })}
             </div>
+
+            {totalMatches > organizationList.length ? (
+              <p className="border-t border-neutral-100 px-5 py-3 text-xs text-neutral-500">
+                Showing the newest {organizationList.length} of{" "}
+                {totalMatches}. Narrow the search to find older clients.
+              </p>
+            ) : null}
+          </section>
+        ) : hasFilters ? (
+          <section className="mt-5 rounded-2xl border border-neutral-200 bg-white p-10 text-center shadow-sm">
+            <SearchX className="mx-auto text-[#f26a2e]" />
+
+            <h2 className="mt-4 font-semibold text-neutral-950">
+              No clients match your filters
+            </h2>
+
+            <p className="mt-2 text-sm text-neutral-500">
+              Try a different search term or{" "}
+              <Link
+                href="/admin/clients"
+                className="font-semibold text-neutral-950 underline underline-offset-4"
+              >
+                clear the filters
+              </Link>
+              .
+            </p>
           </section>
         ) : (
-          /* =================================================
-              EMPTY
-          ================================================= */
+          <section className="mt-5 rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm sm:p-10">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f26a2e]/10">
+              <Building2
+                size={19}
+                className="text-[#f26a2e]"
+              />
+            </span>
 
-          <section className="relative overflow-hidden rounded-[1.75rem] border border-white/[0.08] bg-white/[0.018] p-8 sm:p-10">
-            <div className="pointer-events-none absolute right-[-100px] top-[-100px] h-[300px] w-[300px] rounded-full bg-[#f26a2e]/[0.04] blur-[100px]" />
+            <h2 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-neutral-950">
+              No client organisations
+            </h2>
 
-            <div className="relative">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.05]">
-                <Building2
-                  size={19}
-                  strokeWidth={1.7}
-                  className="text-[#f26a2e]"
-                />
-              </div>
+            <p className="mt-2 max-w-lg text-sm leading-6 text-neutral-500">
+              Client organisations created for the Drylake platform will
+              appear here.
+            </p>
 
-              <h2 className="mt-6 text-2xl font-medium tracking-[-0.03em]">
-                No client organisations
-              </h2>
-
-              <p className="mt-3 max-w-lg text-sm leading-6 text-white/40">
-                Client organisations created for the Drylake platform will
-                appear here.
-              </p>
-
-              <Link
-                href="/admin/clients/new"
-                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition hover:bg-neutral-200"
-              >
-                <Plus size={15} />
-
-                Create your first client
-              </Link>
-            </div>
+            <Link
+              href="/admin/clients/new"
+              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800"
+            >
+              <Plus size={15} aria-hidden="true" />
+              Create your first client
+            </Link>
           </section>
         )}
-
-        {/* ===================================================
-            FOOTER
-        =================================================== */}
-
-        <footer className="mt-auto flex flex-col gap-3 border-t border-white/[0.07] py-7 pt-12 text-[0.65rem] text-white/20 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Drylake Pty Ltd</span>
-
-          <div className="flex items-center gap-5">
-            <span>Client administration</span>
-
-            <span className="hidden h-1 w-1 rounded-full bg-white/20 sm:block" />
-
-            <span>Restricted access</span>
-          </div>
-        </footer>
       </div>
     </main>
   );

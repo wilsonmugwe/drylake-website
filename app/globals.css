@@ -61,9 +61,21 @@ body {
   color: var(--black);
 }
 
-a {
+/*
+ * Unlayered, so on the public site it beats Tailwind utilities (pages there rely on
+ * that, often with !important overrides). Admin is excluded and gets the same reset
+ * inside @layer base below, so text-* utilities on admin links work as written.
+ */
+a:not(:where(.drylake-admin a)) {
   color: inherit;
   text-decoration: none;
+}
+
+@layer base {
+  .drylake-admin a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 button,
@@ -335,11 +347,11 @@ select:focus-visible {
    ========================================================= */
 
 :root {
-  --admin-canvas: #f3f1eb;
-  --admin-canvas-deep: #ebe8e0;
-  --admin-surface: #faf9f6;
+  --admin-canvas: #f4f4f1;
+  --admin-canvas-deep: #ebebe6;
+  --admin-surface: #ffffff;
   --admin-surface-strong: #ffffff;
-  --admin-surface-muted: #eeece5;
+  --admin-surface-muted: #efefea;
 
   --admin-ink: #11110f;
   --admin-ink-soft: rgba(17, 17, 15, 0.62);
@@ -363,33 +375,8 @@ select:focus-visible {
 .admin-page {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 8% 5%,
-      rgba(242, 106, 46, 0.07),
-      transparent 25rem
-    ),
-    radial-gradient(
-      circle at 90% 20%,
-      rgba(255, 255, 255, 0.9),
-      transparent 30rem
-    ),
-    var(--admin-canvas);
+  background: var(--admin-canvas);
   color: var(--admin-ink);
-}
-
-.admin-page::before {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  content: "";
-  opacity: 0.035;
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.7) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.7) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
 .admin-container {
@@ -402,7 +389,7 @@ select:focus-visible {
 }
 
 .admin-surface {
-  background: rgba(250, 249, 246, 0.88);
+  background: var(--admin-surface);
   border: 1px solid var(--admin-border);
   box-shadow:
     0 1px 1px rgba(0, 0, 0, 0.02),
@@ -567,6 +554,15 @@ select:focus-visible {
     transparent
   );
   animation: admin-shimmer 1.3s infinite;
+}
+
+.admin-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-date-input::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 @keyframes admin-shimmer {

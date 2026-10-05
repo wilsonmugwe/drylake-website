@@ -1,12 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Flag,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
+import AdminDateInput from "@/components/admin/AdminDateInput";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
@@ -26,6 +24,9 @@ type NewMilestonePageProps = {
     projectId: string;
   }>;
 };
+
+const inputClassName =
+  "mt-3 min-h-11 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100";
 
 export default async function NewMilestonePage({
   params,
@@ -109,55 +110,27 @@ export default async function NewMilestonePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
-      <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 lg:px-12">
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <Link
-            href={`/admin/projects/${project.id}`}
-            className="inline-flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
-          >
-            <ArrowLeft size={16} />
-            Back to project
-          </Link>
+    <main className="min-h-screen p-5 sm:p-8 lg:p-10">
+      <div className="mx-auto max-w-3xl">
+        <Link
+          href={`/admin/projects/${project.id}`}
+          className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-neutral-500 transition hover:text-neutral-950"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          Back to project
+        </Link>
 
-          <div className="flex items-center gap-2">
-            <ShieldCheck
-              size={14}
-              className="text-[#f26a2e]"
-            />
-
-            <span className="text-xs uppercase tracking-[0.16em] text-white/35">
-              Platform Admin
-            </span>
-          </div>
-        </header>
-
-        {/* Heading */}
-        <section className="py-12 sm:py-16">
-          <Flag
-            size={24}
-            className="text-[#f26a2e]"
-          />
-
-          <p className="mt-7 text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
-            {organization.name}
-          </p>
-
-          <h1 className="mt-4 text-4xl font-medium tracking-[-0.04em] sm:text-5xl">
-            Add Milestone
-          </h1>
-
-          <p className="mt-4 text-sm leading-6 text-white/45">
-            Add a delivery checkpoint to {project.name}.
-          </p>
-        </section>
+        <AdminPageHeader
+          eyebrow={organization.name}
+          title="Add Milestone"
+          description={`Add a delivery checkpoint to ${project.name}.`}
+        />
 
         {/* Form */}
-        <section className="rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 sm:p-8">
+        <section className="mt-7 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
           {organization.status !== "ACTIVE" ? (
-            <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3">
-              <p className="text-sm text-amber-200">
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm leading-6 text-amber-800">
                 This client organisation is not active. New milestones
                 cannot be created until the organisation is active.
               </p>
@@ -173,7 +146,7 @@ export default async function NewMilestonePage({
             <div>
               <label
                 htmlFor="title"
-                className="text-sm font-medium text-white/80"
+                className="block text-sm font-semibold text-neutral-900"
               >
                 Milestone title
               </label>
@@ -187,7 +160,7 @@ export default async function NewMilestonePage({
                 maxLength={120}
                 autoComplete="off"
                 placeholder="e.g. Discovery & Requirements"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-white/30"
+                className={inputClassName}
               />
             </div>
 
@@ -195,7 +168,7 @@ export default async function NewMilestonePage({
             <div>
               <label
                 htmlFor="status"
-                className="text-sm font-medium text-white/80"
+                className="block text-sm font-semibold text-neutral-900"
               >
                 Status
               </label>
@@ -204,7 +177,7 @@ export default async function NewMilestonePage({
                 id="status"
                 name="status"
                 defaultValue="NOT_STARTED"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 text-sm text-white/70 outline-none transition focus:border-white/30"
+                className={inputClassName}
               >
                 <option value="NOT_STARTED">
                   Not started
@@ -220,32 +193,18 @@ export default async function NewMilestonePage({
               </select>
             </div>
 
-            {/* Due date */}
-            <div>
-              <label
-                htmlFor="dueDate"
-                className="text-sm font-medium text-white/80"
-              >
-                Due date
-              </label>
-
-              <input
-                id="dueDate"
-                name="dueDate"
-                type="date"
-                className="mt-2 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-white/30"
-              />
-
-              <p className="mt-2 text-xs text-white/30">
-                Optional.
-              </p>
-            </div>
+            {/* Due date (optional, submitted as YYYY-MM-DD under "dueDate") */}
+            <AdminDateInput
+              id="dueDate"
+              name="dueDate"
+              label="Due date"
+            />
 
             {/* Actions */}
-            <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-7 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-3 border-t border-neutral-200 pt-7 sm:flex-row sm:justify-end">
               <Link
                 href={`/admin/projects/${project.id}`}
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/60 transition hover:border-white/20 hover:text-white"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-200 bg-white px-5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
               >
                 Cancel
               </Link>
@@ -253,7 +212,7 @@ export default async function NewMilestonePage({
               <button
                 type="submit"
                 disabled={organization.status !== "ACTIVE"}
-                className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold !text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Create Milestone
               </button>

@@ -115,6 +115,7 @@ export default async function NewProjectPage({
           {/* Main form */}
 
           <AdminProjectForm
+            mode="client"
             organizationId={organization.id}
             organizationStatus={organization.status}
           />
