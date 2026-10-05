@@ -41,43 +41,93 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function noStoreHeaders() {
+  return {
+    "Cache-Control": "no-store",
+  };
+}
+
 export async function POST(
   request: Request,
   context: RouteContext
 ) {
+  // ---------------------------------------------------------
+  // Authentication
+  // ---------------------------------------------------------
+
   const { userId } = await auth();
 
   if (!userId) {
-    return new NextResponse("Unauthorized", {
-      status: 401,
-      headers: {
-        "Cache-Control": "no-store",
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Unauthorized",
       },
-    });
+      {
+        status: 401,
+        headers: noStoreHeaders(),
+      }
+    );
   }
+
+  // ---------------------------------------------------------
+  // Platform admin authorization
+  // ---------------------------------------------------------
 
   const platformAdmin = await isPlatformAdmin();
 
   if (!platformAdmin) {
-    return new NextResponse("Forbidden", {
-      status: 403,
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    });
-  }
-
-  const { organizationId } = await context.params;
-
-  // A malformed ID can never match a row: 404 before the query, not a database error.
-  if (!isUuid(organizationId)) {
     return NextResponse.json(
-      { error: "Not found" },
-      { status: 404, headers: { "Cache-Control": "no-store" } }
+      {
+        success: false,
+        error: "Forbidden",
+      },
+      {
+        status: 403,
+        headers: noStoreHeaders(),
+      }
     );
   }
 
-  const formData = await request.formData();
+  // ---------------------------------------------------------
+  // Organisation ID validation
+  // ---------------------------------------------------------
+
+  const { organizationId } = await context.params;
+
+  if (!isUuid(organizationId)) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Client organisation not found.",
+      },
+      {
+        status: 404,
+        headers: noStoreHeaders(),
+      }
+    );
+  }
+
+  // ---------------------------------------------------------
+  // Parse request
+  // ---------------------------------------------------------
+
+  let formData: FormData;
+
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Invalid billing contact request.",
+      },
+      {
+        status: 400,
+        headers: noStoreHeaders(),
+      }
+    );
+  }
 
   const billingContactName = normalizeText(
     formData.get("billingContactName")
@@ -87,29 +137,39 @@ export async function POST(
     formData.get("billingEmail")
   );
 
+  // ---------------------------------------------------------
+  // Validate billing contact name
+  // ---------------------------------------------------------
+
   if (
     billingContactName.length > 100 ||
     CONTROL_CHARACTERS.test(billingContactName)
   ) {
-    return new NextResponse(
-      "Invalid billing contact name.",
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Invalid billing contact name.",
+      },
       {
         status: 400,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        headers: noStoreHeaders(),
       }
     );
   }
 
+  // ---------------------------------------------------------
+  // Validate billing email
+  // ---------------------------------------------------------
+
   if (!isValidEmail(billingEmail)) {
-    return new NextResponse(
-      "Invalid billing email address.",
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Invalid billing email address.",
+      },
       {
         status: 400,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        headers: noStoreHeaders(),
       }
     );
   }
@@ -117,77 +177,130 @@ export async function POST(
   const supabase = createAdminSupabaseClient();
 
   // ---------------------------------------------------------
-  // Verify organisation server-side.
+  // Verify organisation
   // ---------------------------------------------------------
 
-  const { data: organization, error: organizationError } =
-    await supabase
-      .from("organizations")
-      .select(
-        `
-          id,
-          name,
-          status,
-          billing_contact_name,
-          billing_email
-        `
-      )
-      .eq("id", organizationId)
-      .maybeSingle();
+  const {
+    data: organization,
+    error: organizationError,
+  } = await supabase
+    .from("organizations")
+    .select(
+      `
+        id,
+        name,
+        status,
+        billing_contact_name,
+        billing_email
+      `
+    )
+    .eq("id", organizationId)
+    .maybeSingle();
 
   if (organizationError) {
-    console.error("Billing organisation lookup failed:", {
-      code: organizationError.code,
-      message: organizationError.message,
-    });
+    console.error(
+      "Billing organisation lookup failed:",
+      {
+        code: organizationError.code,
+        message: organizationError.message,
+      }
+    );
 
-    return new NextResponse(
-      "Unable to update billing contact.",
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Unable to update billing contact.",
+      },
       {
         status: 500,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        headers: noStoreHeaders(),
       }
     );
   }
 
   if (!organization) {
-    return new NextResponse(
-      "Client organisation not found.",
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Client organisation not found.",
+      },
       {
         status: 404,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        headers: noStoreHeaders(),
       }
     );
   }
+
+  // ---------------------------------------------------------
+  // Prevent changes to inactive clients
+  // ---------------------------------------------------------
 
   if (organization.status !== "ACTIVE") {
-    return new NextResponse(
-      "Billing details cannot be changed for an inactive client.",
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "Billing details cannot be changed for an inactive client.",
+      },
       {
         status: 409,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        headers: noStoreHeaders(),
       }
     );
   }
 
   // ---------------------------------------------------------
-  // Update billing contact.
+  // Detect whether anything actually changed
   // ---------------------------------------------------------
 
-  const { error: updateError } = await supabase
+  const existingContactName =
+    organization.billing_contact_name?.trim() ?? "";
+
+  const existingBillingEmail =
+    organization.billing_email?.trim().toLowerCase() ?? "";
+
+  const hasChanged =
+    existingContactName !== billingContactName ||
+    existingBillingEmail !== billingEmail;
+
+  if (!hasChanged) {
+    return NextResponse.json(
+      {
+        success: true,
+        changed: false,
+        organizationId: organization.id,
+        message: "Billing contact is already up to date.",
+      },
+      {
+        status: 200,
+        headers: noStoreHeaders(),
+      }
+    );
+  }
+
+  // ---------------------------------------------------------
+  // Update billing contact
+  // ---------------------------------------------------------
+
+  const {
+    data: updatedOrganization,
+    error: updateError,
+  } = await supabase
     .from("organizations")
     .update({
       billing_contact_name:
         billingContactName || null,
       billing_email: billingEmail,
     })
-    .eq("id", organization.id);
+    .eq("id", organization.id)
+    .select(
+      `
+        id,
+        billing_contact_name,
+        billing_email
+      `
+    )
+    .maybeSingle();
 
   if (updateError) {
     console.error("Billing contact update failed:", {
@@ -195,22 +308,46 @@ export async function POST(
       message: updateError.message,
     });
 
-    return new NextResponse(
-      "Unable to update billing contact.",
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Unable to update billing contact.",
+      },
       {
         status: 500,
-        headers: {
-          "Cache-Control": "no-store",
-        },
+        headers: noStoreHeaders(),
+      }
+    );
+  }
+
+  if (!updatedOrganization) {
+    console.error(
+      "Billing contact update returned no organisation:",
+      {
+        organizationId: organization.id,
+      }
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Unable to update billing contact.",
+      },
+      {
+        status: 500,
+        headers: noStoreHeaders(),
       }
     );
   }
 
   // ---------------------------------------------------------
-  // Audit the change.
+  // Audit
   //
-  // We deliberately do NOT put the email address or contact
-  // name into audit metadata.
+  // Billing contact name/email are deliberately excluded from
+  // metadata so personal information is not copied into the
+  // audit log.
+  //
+  // Audit failure does not undo the successful billing update.
   // ---------------------------------------------------------
 
   const { error: auditError } = await supabase
@@ -232,11 +369,24 @@ export async function POST(
     });
   }
 
-  return NextResponse.redirect(
-    new URL(
-      `/admin/clients/${organization.id}`,
-      request.url
-    ),
-    303
+  // ---------------------------------------------------------
+  // Return JSON
+  //
+  // AdminBillingForm handles the client-side navigation.
+  // This avoids fetch() following a server redirect and
+  // downloading the destination page unnecessarily.
+  // ---------------------------------------------------------
+
+  return NextResponse.json(
+    {
+      success: true,
+      changed: true,
+      organizationId: organization.id,
+      message: "Billing contact saved.",
+    },
+    {
+      status: 200,
+      headers: noStoreHeaders(),
+    }
   );
 }

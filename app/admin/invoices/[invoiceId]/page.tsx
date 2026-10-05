@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+
 import {
   ArrowLeft,
   CalendarDays,
@@ -10,10 +11,10 @@ import {
   FileText,
   Mail,
   Receipt,
-  RefreshCw,
   ShieldCheck,
 } from "lucide-react";
 
+import AdminInvoiceAction from "@/components/admin/AdminInvoiceAction";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
@@ -35,7 +36,10 @@ type InvoicePageProps = {
   }>;
 };
 
-function formatMoney(cents: number, currency: string) {
+function formatMoney(
+  cents: number,
+  currency: string
+) {
   return new Intl.NumberFormat("en-AU", {
     style: "currency",
     currency,
@@ -43,7 +47,9 @@ function formatMoney(cents: number, currency: string) {
 }
 
 function formatDate(value: string | null) {
-  if (!value) return "Not set";
+  if (!value) {
+    return "Not set";
+  }
 
   return new Intl.DateTimeFormat("en-AU", {
     day: "numeric",
@@ -53,7 +59,9 @@ function formatDate(value: string | null) {
 }
 
 function formatDateTime(value: string | null) {
-  if (!value) return "Not recorded";
+  if (!value) {
+    return "Not recorded";
+  }
 
   return new Intl.DateTimeFormat("en-AU", {
     day: "numeric",
@@ -83,22 +91,43 @@ function notificationLabel(type: string) {
   }
 }
 
-function statusClasses(status: string) {
+function notificationStatusClasses(
+  status: string
+) {
   switch (status) {
     case "DELIVERED":
-      return "border-emerald-500/30 bg-emerald-500/[0.06] text-emerald-300";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
 
     case "SENT":
-      return "border-blue-500/30 bg-blue-500/[0.06] text-blue-300";
+      return "border-blue-200 bg-blue-50 text-blue-700";
 
     case "FAILED":
-      return "border-red-500/30 bg-red-500/[0.06] text-red-300";
+      return "border-red-200 bg-red-50 text-red-700";
 
     case "PENDING":
-      return "border-amber-500/30 bg-amber-500/[0.06] text-amber-300";
+      return "border-amber-200 bg-amber-50 text-amber-700";
 
     default:
-      return "border-white/10 bg-white/[0.03] text-white/45";
+      return "border-neutral-200 bg-neutral-50 text-neutral-600";
+  }
+}
+
+function invoiceStatusClasses(status: string) {
+  switch (status) {
+    case "PAID":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+    case "OPEN":
+      return "border-blue-200 bg-blue-50 text-blue-700";
+
+    case "OVERDUE":
+      return "border-red-200 bg-red-50 text-red-700";
+
+    case "DRAFT":
+      return "border-neutral-200 bg-neutral-100 text-neutral-600";
+
+    default:
+      return "border-neutral-200 bg-neutral-50 text-neutral-600";
   }
 }
 
@@ -111,7 +140,7 @@ function NotificationIcon({
     return (
       <CircleAlert
         size={17}
-        className="text-red-400"
+        className="text-red-600"
       />
     );
   }
@@ -120,7 +149,7 @@ function NotificationIcon({
     return (
       <CheckCircle2
         size={17}
-        className="text-emerald-400"
+        className="text-emerald-600"
       />
     );
   }
@@ -129,7 +158,7 @@ function NotificationIcon({
     return (
       <Mail
         size={17}
-        className="text-blue-400"
+        className="text-blue-600"
       />
     );
   }
@@ -137,7 +166,7 @@ function NotificationIcon({
   return (
     <Clock3
       size={17}
-      className="text-amber-400"
+      className="text-amber-600"
     />
   );
 }
@@ -155,19 +184,18 @@ export default async function AdminInvoicePage({
     redirect("/sign-in?redirect_url=/admin");
   }
 
-  // ---------------------------------------------------------
-  // Platform-admin authorization
-  // ---------------------------------------------------------
-
   const platformAdmin = await isPlatformAdmin();
 
   if (!platformAdmin) {
     redirect("/client");
   }
 
+  // ---------------------------------------------------------
+  // Invoice ID
+  // ---------------------------------------------------------
+
   const { invoiceId } = await params;
 
-  // A malformed ID can never match a row: 404 before the query, not a database error.
   if (!isUuid(invoiceId)) {
     notFound();
   }
@@ -178,30 +206,32 @@ export default async function AdminInvoicePage({
   // Invoice
   // ---------------------------------------------------------
 
-  const { data: invoice, error: invoiceError } =
-    await supabase
-      .from("invoices")
-      .select(
-        `
-          id,
-          organization_id,
-          project_id,
-          invoice_number,
-          stripe_invoice_id,
-          status,
-          currency,
-          subtotal_cents,
-          tax_cents,
-          total_cents,
-          due_date,
-          paid_at,
-          visible_to_client,
-          created_at,
-          updated_at
-        `
-      )
-      .eq("id", invoiceId)
-      .maybeSingle();
+  const {
+    data: invoice,
+    error: invoiceError,
+  } = await supabase
+    .from("invoices")
+    .select(
+      `
+        id,
+        organization_id,
+        project_id,
+        invoice_number,
+        stripe_invoice_id,
+        status,
+        currency,
+        subtotal_cents,
+        tax_cents,
+        total_cents,
+        due_date,
+        paid_at,
+        visible_to_client,
+        created_at,
+        updated_at
+      `
+    )
+    .eq("id", invoiceId)
+    .maybeSingle();
 
   if (invoiceError) {
     console.error("Admin invoice lookup failed:", {
@@ -217,7 +247,7 @@ export default async function AdminInvoicePage({
   }
 
   // ---------------------------------------------------------
-  // Organisation + billing contact
+  // Organisation
   // ---------------------------------------------------------
 
   const {
@@ -265,7 +295,10 @@ export default async function AdminInvoicePage({
   } | null = null;
 
   if (invoice.project_id) {
-    const { data, error } = await supabase
+    const {
+      data,
+      error,
+    } = await supabase
       .from("projects")
       .select("id, name")
       .eq("id", invoice.project_id)
@@ -293,7 +326,7 @@ export default async function AdminInvoicePage({
   }
 
   // ---------------------------------------------------------
-  // Email / notification history
+  // Notification history
   // ---------------------------------------------------------
 
   const {
@@ -317,7 +350,10 @@ export default async function AdminInvoicePage({
       `
     )
     .eq("invoice_id", invoice.id)
-    .eq("organization_id", organization.id)
+    .eq(
+      "organization_id",
+      organization.id
+    )
     .order("created_at", {
       ascending: false,
     });
@@ -343,7 +379,7 @@ export default async function AdminInvoicePage({
     ) ?? null;
 
   // ---------------------------------------------------------
-  // Actions
+  // Action eligibility
   // ---------------------------------------------------------
 
   const hasBillingEmail =
@@ -367,53 +403,59 @@ export default async function AdminInvoicePage({
     organization.status === "ACTIVE" &&
     hasBillingEmail;
 
+  const isPaid = invoice.status === "PAID";
+
+  // ---------------------------------------------------------
+  // Page
+  // ---------------------------------------------------------
+
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
-      <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8 lg:px-12">
+    <main className="min-h-screen">
+      <div className="mx-auto max-w-[1100px] p-5 sm:p-8 lg:p-10">
+        {/* Back navigation */}
+
+        <Link
+          href={`/admin/clients/${organization.id}`}
+          className="mb-7 inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition hover:text-neutral-950"
+        >
+          <ArrowLeft size={15} />
+          {organization.name}
+        </Link>
+
         {/* Header */}
-        <header className="flex items-center justify-between border-b border-white/10 pb-6">
-          <Link
-            href={`/admin/clients/${organization.id}`}
-            className="flex items-center gap-2 text-sm text-white/60 transition hover:text-white"
-          >
-            <ArrowLeft size={16} />
-            {organization.name}
-          </Link>
 
-          <div className="flex items-center gap-2">
-            <ShieldCheck
-              size={14}
-              className="text-[#f26a2e]"
-            />
-
-            <span className="text-xs uppercase tracking-[0.18em] text-white/35">
-              Platform Admin
-            </span>
-          </div>
-        </header>
-
-        {/* Invoice heading */}
-        <section className="flex flex-col gap-6 py-12 sm:flex-row sm:items-end sm:justify-between">
+        <section className="flex flex-col gap-6 border-b border-neutral-200 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#f26a2e]">
-              Invoice
-            </p>
+            <div className="flex items-center gap-2">
+              <ShieldCheck
+                size={14}
+                className="text-[#f26a2e]"
+              />
 
-            <h1 className="mt-3 text-4xl font-medium tracking-[-0.04em] sm:text-5xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f26a2e]">
+                Invoice
+              </p>
+            </div>
+
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-neutral-950 sm:text-4xl">
               {invoice.invoice_number}
             </h1>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-white/55">
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span
+                className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${invoiceStatusClasses(
+                  invoice.status
+                )}`}
+              >
                 {invoice.status}
               </span>
 
               <span
-                className={`rounded-full border px-3 py-1 text-[0.65rem] uppercase tracking-[0.12em] ${
+                className={
                   invoice.visible_to_client
-                    ? "border-[#f26a2e]/30 text-[#f26a2e]"
-                    : "border-white/10 text-white/35"
-                }`}
+                    ? "inline-flex rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#d9541f]"
+                    : "inline-flex rounded-full border border-neutral-200 bg-neutral-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500"
+                }
               >
                 {invoice.visible_to_client
                   ? "Client visible"
@@ -422,66 +464,81 @@ export default async function AdminInvoicePage({
 
               {latestInvoiceEmail ? (
                 <span
-                  className={`rounded-full border px-3 py-1 text-[0.65rem] uppercase tracking-[0.12em] ${statusClasses(
+                  className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${notificationStatusClasses(
                     latestInvoiceEmail.delivery_status
                   )}`}
                 >
                   Email{" "}
-                  {latestInvoiceEmail.delivery_status}
+                  {
+                    latestInvoiceEmail.delivery_status
+                  }
                 </span>
               ) : null}
             </div>
           </div>
 
-          {/* Invoice actions */}
+          {/* Actions */}
+
           <div className="flex flex-wrap gap-3">
             {invoice.status === "DRAFT" ? (
-              <form
-                action={`/api/admin/invoices/${invoice.id}/issue`}
-                method="POST"
-              >
-                <button
-                  type="submit"
-                  disabled={!canIssue}
-                  className="rounded-xl bg-white px-6 py-3 text-sm font-semibold !text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  Issue Invoice
-                </button>
-              </form>
+              <AdminInvoiceAction
+                invoiceId={invoice.id}
+                action="issue"
+                disabled={!canIssue}
+              />
             ) : null}
 
             {canResend ? (
-              <form
-                action={`/api/admin/invoices/${invoice.id}/resend`}
-                method="POST"
-              >
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/70 transition hover:border-white/20 hover:text-white"
-                >
-                  <RefreshCw size={15} />
-                  Resend Invoice Email
-                </button>
-              </form>
+              <AdminInvoiceAction
+                invoiceId={invoice.id}
+                action="resend"
+              />
             ) : null}
           </div>
         </section>
 
-        {/* Missing billing contact warning */}
+        {/* Paid state */}
+
+        {isPaid ? (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+            <CheckCircle2
+              size={19}
+              className="mt-0.5 shrink-0 text-emerald-600"
+            />
+
+            <div>
+              <p className="text-sm font-semibold text-emerald-900">
+                Payment received
+              </p>
+
+              <p className="mt-1 text-sm text-emerald-700">
+                This invoice was paid
+                {invoice.paid_at
+                  ? ` on ${formatDateTime(
+                      invoice.paid_at
+                    )}.`
+                  : "."}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Missing billing contact */}
+
         {!hasBillingEmail ? (
-          <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5">
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
             <div className="flex items-start gap-3">
               <CircleAlert
                 size={18}
-                className="mt-0.5 shrink-0 text-red-400"
+                className="mt-0.5 shrink-0 text-red-600"
               />
 
               <div>
-                <p className="text-sm font-medium text-red-200">
+                <p className="text-sm font-semibold text-red-900">
                   Billing email required
                 </p>
 
-                <p className="mt-1 text-sm leading-6 text-red-200/60">
+                <p className="mt-1 text-sm leading-6 text-red-700">
                   Add a billing email before
                   issuing or resending this
                   invoice.
@@ -489,7 +546,7 @@ export default async function AdminInvoicePage({
 
                 <Link
                   href={`/admin/clients/${organization.id}/billing`}
-                  className="mt-3 inline-flex text-sm font-medium text-red-200 underline underline-offset-4"
+                  className="mt-3 inline-flex text-sm font-semibold text-red-800 underline underline-offset-4"
                 >
                   Configure billing contact
                 </Link>
@@ -498,38 +555,40 @@ export default async function AdminInvoicePage({
           </div>
         ) : null}
 
-        {/* Internal draft warning */}
+        {/* Internal warning */}
+
         {!invoice.visible_to_client &&
         invoice.status === "DRAFT" ? (
-          <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/[0.05] p-5 text-sm leading-6 text-amber-200">
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800">
             This invoice cannot be issued while
-            it is internal.
+            it is marked as internal.
           </div>
         ) : null}
 
-        {/* Latest email failure */}
+        {/* Email failure */}
+
         {latestInvoiceEmail?.delivery_status ===
         "FAILED" ? (
-          <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5">
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5">
             <div className="flex items-start gap-3">
               <CircleAlert
                 size={18}
-                className="mt-0.5 shrink-0 text-red-400"
+                className="mt-0.5 shrink-0 text-red-600"
               />
 
               <div>
-                <p className="text-sm font-medium text-red-200">
+                <p className="text-sm font-semibold text-red-900">
                   Invoice email delivery failed
                 </p>
 
-                <p className="mt-1 text-sm leading-6 text-red-200/60">
+                <p className="mt-1 text-sm leading-6 text-red-700">
                   The invoice remains{" "}
                   {invoice.status}. Correct the
                   billing email if necessary and
                   use Resend Invoice Email.
                 </p>
 
-                <p className="mt-2 text-xs text-red-200/40">
+                <p className="mt-2 text-xs text-red-600">
                   Previous recipient:{" "}
                   {
                     latestInvoiceEmail.recipient_email
@@ -541,74 +600,76 @@ export default async function AdminInvoicePage({
         ) : null}
 
         {/* Overview */}
-        <section className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
+
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
             <Receipt
-              size={19}
+              size={18}
               className="text-[#f26a2e]"
             />
 
-            <p className="mt-5 text-xs uppercase tracking-[0.16em] text-white/35">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
               Client
             </p>
 
-            <p className="mt-2 text-lg font-medium">
+            <p className="mt-2 font-semibold text-neutral-950">
               {organization.name}
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
             <FileText
-              size={19}
+              size={18}
               className="text-[#f26a2e]"
             />
 
-            <p className="mt-5 text-xs uppercase tracking-[0.16em] text-white/35">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
               Project
             </p>
 
-            <p className="mt-2 text-lg font-medium">
+            <p className="mt-2 font-semibold text-neutral-950">
               {project?.name ??
                 "No specific project"}
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
             <CalendarDays
-              size={19}
+              size={18}
               className="text-[#f26a2e]"
             />
 
-            <p className="mt-5 text-xs uppercase tracking-[0.16em] text-white/35">
-              Due Date
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+              Due date
             </p>
 
-            <p className="mt-2 text-lg font-medium">
+            <p className="mt-2 font-semibold text-neutral-950">
               {formatDate(invoice.due_date)}
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.025] p-6">
-            <p className="text-xs uppercase tracking-[0.16em] text-white/35">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
               Total
             </p>
 
-            <p className="mt-5 text-3xl font-medium">
+            <p className="mt-5 text-2xl font-semibold tracking-tight text-neutral-950">
               {formatMoney(
                 invoice.total_cents,
                 invoice.currency
               )}
             </p>
 
-            <p className="mt-1 text-xs text-white/35">
+            <p className="mt-1 text-xs text-neutral-400">
               {invoice.currency}
             </p>
           </div>
         </section>
 
         {/* Billing recipient */}
-        <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.025] p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+
+        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Mail
@@ -616,24 +677,24 @@ export default async function AdminInvoicePage({
                   className="text-[#f26a2e]"
                 />
 
-                <h2 className="font-medium">
+                <h2 className="font-semibold text-neutral-950">
                   Billing Recipient
                 </h2>
               </div>
 
               {hasBillingEmail ? (
                 <div className="mt-4">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium text-neutral-900">
                     {organization.billing_contact_name ||
                       "Billing contact"}
                   </p>
 
-                  <p className="mt-1 text-sm text-white/40">
+                  <p className="mt-1 text-sm text-neutral-500">
                     {organization.billing_email}
                   </p>
                 </div>
               ) : (
-                <p className="mt-4 text-sm text-white/40">
+                <p className="mt-4 text-sm text-neutral-500">
                   No billing email configured.
                 </p>
               )}
@@ -641,7 +702,7 @@ export default async function AdminInvoicePage({
 
             <Link
               href={`/admin/clients/${organization.id}/billing`}
-              className="inline-flex w-fit rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/60 transition hover:border-white/20 hover:text-white"
+              className="inline-flex min-h-10 w-fit items-center rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-950"
             >
               Edit Billing Contact
             </Link>
@@ -649,20 +710,26 @@ export default async function AdminInvoicePage({
         </section>
 
         {/* Invoice summary */}
-        <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
-          <div className="border-b border-white/10 px-6 py-5 sm:px-8">
-            <h2 className="font-medium">
+
+        <section className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="border-b border-neutral-200 px-6 py-5">
+            <h2 className="font-semibold text-neutral-950">
               Invoice Summary
             </h2>
+
+            <p className="mt-1 text-xs text-neutral-500">
+              Financial breakdown for this
+              invoice.
+            </p>
           </div>
 
-          <div className="space-y-4 px-6 py-6 sm:px-8">
+          <div className="space-y-4 px-6 py-6">
             <div className="flex justify-between gap-6 text-sm">
-              <span className="text-white/40">
+              <span className="text-neutral-500">
                 Subtotal
               </span>
 
-              <span>
+              <span className="font-medium text-neutral-900">
                 {formatMoney(
                   invoice.subtotal_cents,
                   invoice.currency
@@ -671,29 +738,31 @@ export default async function AdminInvoicePage({
             </div>
 
             {isGstRegistered() ? (
-<div className="flex justify-between gap-6 text-sm">
-              <span className="text-white/40">
-                Tax / GST
-              </span>
+              <div className="flex justify-between gap-6 text-sm">
+                <span className="text-neutral-500">
+                  GST
+                </span>
 
-              <span>
-                {formatMoney(
-                  invoice.tax_cents,
-                  invoice.currency
-                )}
-              </span>
-            </div>
-) : (
-<p className="text-xs opacity-60">{NO_GST_NOTE}</p>
-)}
+                <span className="font-medium text-neutral-900">
+                  {formatMoney(
+                    invoice.tax_cents,
+                    invoice.currency
+                  )}
+                </span>
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-500">
+                {NO_GST_NOTE}
+              </p>
+            )}
 
-            <div className="border-t border-white/10 pt-4">
-              <div className="flex justify-between gap-6">
-                <span className="font-medium">
+            <div className="border-t border-neutral-200 pt-4">
+              <div className="flex items-center justify-between gap-6">
+                <span className="font-semibold text-neutral-950">
                   Total
                 </span>
 
-                <span className="text-xl font-medium">
+                <span className="text-xl font-semibold text-neutral-950">
                   {formatMoney(
                     invoice.total_cents,
                     invoice.currency
@@ -705,20 +774,21 @@ export default async function AdminInvoicePage({
         </section>
 
         {/* Email history */}
-        <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.025]">
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5 sm:px-8">
+
+        <section className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-5">
             <div>
-              <h2 className="font-medium">
+              <h2 className="font-semibold text-neutral-950">
                 Email History
               </h2>
 
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-neutral-500">
                 Invoice, reminder and receipt
                 notifications.
               </p>
             </div>
 
-            <span className="text-xs uppercase tracking-[0.15em] text-white/30">
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">
               {notificationList.length}{" "}
               {notificationList.length === 1
                 ? "event"
@@ -727,8 +797,8 @@ export default async function AdminInvoicePage({
           </div>
 
           {notificationsError ? (
-            <div className="px-6 py-8 sm:px-8">
-              <p className="text-sm text-red-400">
+            <div className="px-6 py-8">
+              <p className="text-sm text-red-600">
                 Unable to load email history.
               </p>
             </div>
@@ -738,11 +808,11 @@ export default async function AdminInvoicePage({
                 (notification) => (
                   <div
                     key={notification.id}
-                    className="border-b border-white/10 px-6 py-5 last:border-b-0 sm:px-8"
+                    className="border-b border-neutral-200 px-6 py-5 last:border-b-0"
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex min-w-0 gap-3">
-                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.025]">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50">
                           <NotificationIcon
                             status={
                               notification.delivery_status
@@ -751,20 +821,20 @@ export default async function AdminInvoicePage({
                         </div>
 
                         <div className="min-w-0">
-                          <p className="text-sm font-medium">
+                          <p className="text-sm font-semibold text-neutral-900">
                             {notificationLabel(
                               notification.notification_type
                             )}
                           </p>
 
-                          <p className="mt-1 break-all text-xs text-white/40">
+                          <p className="mt-1 break-all text-xs text-neutral-500">
                             {
                               notification.recipient_email
                             }
                           </p>
 
                           {notification.recipient_name ? (
-                            <p className="mt-1 text-xs text-white/25">
+                            <p className="mt-1 text-xs text-neutral-400">
                               {
                                 notification.recipient_name
                               }
@@ -772,7 +842,7 @@ export default async function AdminInvoicePage({
                           ) : null}
 
                           {notification.error_message ? (
-                            <p className="mt-3 text-xs leading-5 text-red-300/70">
+                            <p className="mt-3 text-xs leading-5 text-red-600">
                               {
                                 notification.error_message
                               }
@@ -780,7 +850,7 @@ export default async function AdminInvoicePage({
                           ) : null}
 
                           {notification.provider_message_id ? (
-                            <p className="mt-3 break-all text-[0.7rem] text-white/20">
+                            <p className="mt-3 break-all text-[11px] text-neutral-400">
                               Provider ID:{" "}
                               {
                                 notification.provider_message_id
@@ -792,7 +862,7 @@ export default async function AdminInvoicePage({
 
                       <div className="shrink-0 sm:text-right">
                         <span
-                          className={`inline-flex rounded-full border px-2.5 py-1 text-[0.65rem] uppercase tracking-[0.1em] ${statusClasses(
+                          className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${notificationStatusClasses(
                             notification.delivery_status
                           )}`}
                         >
@@ -801,7 +871,7 @@ export default async function AdminInvoicePage({
                           }
                         </span>
 
-                        <p className="mt-2 text-xs text-white/30">
+                        <p className="mt-2 text-xs text-neutral-400">
                           {notification.sent_at
                             ? formatDateTime(
                                 notification.sent_at
@@ -812,7 +882,7 @@ export default async function AdminInvoicePage({
                         </p>
 
                         {notification.delivered_at ? (
-                          <p className="mt-1 text-[0.7rem] text-emerald-300/50">
+                          <p className="mt-1 text-[11px] text-emerald-600">
                             Delivered{" "}
                             {formatDateTime(
                               notification.delivered_at
@@ -826,17 +896,17 @@ export default async function AdminInvoicePage({
               )}
             </div>
           ) : (
-            <div className="px-6 py-10 sm:px-8">
+            <div className="px-6 py-10">
               <Mail
                 size={21}
                 className="text-[#f26a2e]"
               />
 
-              <h3 className="mt-4 text-sm font-medium">
+              <h3 className="mt-4 text-sm font-semibold text-neutral-900">
                 No email activity
               </h3>
 
-              <p className="mt-2 text-sm text-white/40">
+              <p className="mt-2 text-sm text-neutral-500">
                 Email events for this invoice
                 will appear here.
               </p>

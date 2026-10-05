@@ -7,7 +7,10 @@ import {
   getEmailFromAddress,
   getResendClient,
 } from "@/lib/email/resend";
-import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
+import {
+  isGstRegistered,
+  NO_GST_NOTE,
+} from "@/lib/tax";
 import { isUuid } from "@/lib/validation/uuid";
 
 type RouteContext = {
@@ -70,61 +73,74 @@ export async function POST(
   const { userId } = await auth();
 
   if (!userId) {
-    return noStoreResponse("Unauthorized", 401);
-  }
-
-  // ---------------------------------------------------------
-  // Platform-admin authorization
-  // ---------------------------------------------------------
-
-  const platformAdmin = await isPlatformAdmin();
-
-  if (!platformAdmin) {
-    return noStoreResponse("Forbidden", 403);
-  }
-
-  const { invoiceId } = await context.params;
-
-  // A malformed ID can never match a row: 404 before the query, not a database error.
-  if (!isUuid(invoiceId)) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: 404, headers: { "Cache-Control": "no-store" } }
+    return noStoreResponse(
+      "Unauthorized",
+      401
     );
   }
 
-  const supabase = createAdminSupabaseClient();
+  const platformAdmin =
+    await isPlatformAdmin();
+
+  if (!platformAdmin) {
+    return noStoreResponse(
+      "Forbidden",
+      403
+    );
+  }
+
+  // ---------------------------------------------------------
+  // Invoice ID
+  // ---------------------------------------------------------
+
+  const { invoiceId } =
+    await context.params;
+
+  if (!isUuid(invoiceId)) {
+    return noStoreResponse(
+      "Invoice not found.",
+      404
+    );
+  }
+
+  const supabase =
+    createAdminSupabaseClient();
 
   // ---------------------------------------------------------
   // Load invoice
   // ---------------------------------------------------------
 
-  const { data: invoice, error: invoiceError } =
-    await supabase
-      .from("invoices")
-      .select(
-        `
-          id,
-          organization_id,
-          project_id,
-          invoice_number,
-          status,
-          currency,
-          subtotal_cents,
-          tax_cents,
-          total_cents,
-          due_date,
-          visible_to_client
-        `
-      )
-      .eq("id", invoiceId)
-      .maybeSingle();
+  const {
+    data: invoice,
+    error: invoiceError,
+  } = await supabase
+    .from("invoices")
+    .select(
+      `
+        id,
+        organization_id,
+        project_id,
+        invoice_number,
+        status,
+        currency,
+        subtotal_cents,
+        tax_cents,
+        total_cents,
+        due_date,
+        visible_to_client
+      `
+    )
+    .eq("id", invoiceId)
+    .maybeSingle();
 
   if (invoiceError) {
-    console.error("Issue invoice lookup failed:", {
-      code: invoiceError.code,
-      message: invoiceError.message,
-    });
+    console.error(
+      "Issue invoice lookup failed:",
+      {
+        code: invoiceError.code,
+        message: invoiceError.message,
+      }
+    );
 
     return noStoreResponse(
       "Unable to issue invoice.",
@@ -140,9 +156,9 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Validate invoice lifecycle
+  // Lifecycle validation
   //
-  // This endpoint permits one transition only:
+  // Only:
   //
   // DRAFT -> OPEN
   // ---------------------------------------------------------
@@ -162,7 +178,9 @@ export async function POST(
   }
 
   if (
-    !Number.isSafeInteger(invoice.total_cents) ||
+    !Number.isSafeInteger(
+      invoice.total_cents
+    ) ||
     invoice.total_cents <= 0
   ) {
     return noStoreResponse(
@@ -172,7 +190,7 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Load organisation and billing recipient
+  // Organisation
   // ---------------------------------------------------------
 
   const {
@@ -189,7 +207,10 @@ export async function POST(
         billing_email
       `
     )
-    .eq("id", invoice.organization_id)
+    .eq(
+      "id",
+      invoice.organization_id
+    )
     .maybeSingle();
 
   if (organizationError) {
@@ -197,7 +218,8 @@ export async function POST(
       "Issue invoice organisation lookup failed:",
       {
         code: organizationError.code,
-        message: organizationError.message,
+        message:
+          organizationError.message,
       }
     );
 
@@ -214,15 +236,23 @@ export async function POST(
     );
   }
 
-  if (organization.status !== "ACTIVE") {
+  if (
+    organization.status !== "ACTIVE"
+  ) {
     return noStoreResponse(
       "Invoices cannot be issued for an inactive organisation.",
       409
     );
   }
 
+  // ---------------------------------------------------------
+  // Billing recipient
+  // ---------------------------------------------------------
+
   const billingEmail =
-    organization.billing_email?.trim().toLowerCase();
+    organization.billing_email
+      ?.trim()
+      .toLowerCase();
 
   if (!billingEmail) {
     return noStoreResponse(
@@ -244,13 +274,11 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Optional linked project
-  //
-  // Explicit organisation constraint prevents accidentally
-  // using a project belonging to another tenant.
+  // Optional project
   // ---------------------------------------------------------
 
-  let projectName: string | null = null;
+  let projectName: string | null =
+    null;
 
   if (invoice.project_id) {
     const {
@@ -259,7 +287,10 @@ export async function POST(
     } = await supabase
       .from("projects")
       .select("id, name")
-      .eq("id", invoice.project_id)
+      .eq(
+        "id",
+        invoice.project_id
+      )
       .eq(
         "organization_id",
         invoice.organization_id
@@ -271,7 +302,8 @@ export async function POST(
         "Issue invoice project lookup failed:",
         {
           code: projectError.code,
-          message: projectError.message,
+          message:
+            projectError.message,
         }
       );
 
@@ -292,9 +324,10 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Atomic invoice transition
+  // Atomic lifecycle transition
   //
-  // Update only if the invoice is STILL DRAFT.
+  // The status condition prevents two concurrent issue
+  // requests from both succeeding.
   // ---------------------------------------------------------
 
   const {
@@ -311,10 +344,13 @@ export async function POST(
     .maybeSingle();
 
   if (updateError) {
-    console.error("Issue invoice update failed:", {
-      code: updateError.code,
-      message: updateError.message,
-    });
+    console.error(
+      "Issue invoice update failed:",
+      {
+        code: updateError.code,
+        message: updateError.message,
+      }
+    );
 
     return noStoreResponse(
       "Unable to issue invoice.",
@@ -330,26 +366,28 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Audit invoice lifecycle transition
+  // Audit lifecycle transition
   // ---------------------------------------------------------
 
-  const { error: auditError } = await supabase
-    .from("audit_logs")
-    .insert({
-      actor_clerk_user_id: userId,
-      action: "INVOICE_ISSUED",
-      entity_type: "invoice",
-      entity_id: invoice.id,
-      metadata: {
-        organization_id:
-          invoice.organization_id,
-        invoice_number:
-          invoice.invoice_number,
-        previous_status: "DRAFT",
-        new_status: "OPEN",
-        total_cents: invoice.total_cents,
-      },
-    });
+  const { error: auditError } =
+    await supabase
+      .from("audit_logs")
+      .insert({
+        actor_clerk_user_id: userId,
+        action: "INVOICE_ISSUED",
+        entity_type: "invoice",
+        entity_id: invoice.id,
+        metadata: {
+          organization_id:
+            invoice.organization_id,
+          invoice_number:
+            invoice.invoice_number,
+          previous_status: "DRAFT",
+          new_status: "OPEN",
+          total_cents:
+            invoice.total_cents,
+        },
+      });
 
   if (auditError) {
     console.error(
@@ -362,9 +400,10 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Create notification record BEFORE sending
+  // Notification record
   //
-  // This gives us a durable record even if Resend fails.
+  // Create before sending so email failures remain visible
+  // in invoice history.
   // ---------------------------------------------------------
 
   const {
@@ -388,17 +427,24 @@ export async function POST(
     .select("id")
     .single();
 
-  if (notificationError || !notification) {
+  if (
+    notificationError ||
+    !notification
+  ) {
     console.error(
       "Invoice notification creation failed:",
       {
-        code: notificationError?.code,
-        message: notificationError?.message,
+        code:
+          notificationError?.code,
+        message:
+          notificationError?.message,
       }
     );
 
-    // The invoice is already legitimately OPEN.
-    // Do not roll it back to DRAFT.
+    // Invoice has legitimately transitioned to OPEN.
+    // Do not roll it back merely because notification
+    // persistence failed.
+
     return NextResponse.redirect(
       new URL(
         `/admin/invoices/${invoice.id}`,
@@ -409,39 +455,42 @@ export async function POST(
   }
 
   // ---------------------------------------------------------
-  // Prepare invoice email
+  // Email values
   // ---------------------------------------------------------
 
-  const formattedTotal = formatMoney(
-    invoice.total_cents,
-    invoice.currency
-  );
+  const formattedTotal =
+    formatMoney(
+      invoice.total_cents,
+      invoice.currency
+    );
 
-  const formattedSubtotal = formatMoney(
-    invoice.subtotal_cents,
-    invoice.currency
-  );
+  const formattedSubtotal =
+    formatMoney(
+      invoice.subtotal_cents,
+      invoice.currency
+    );
 
-  const formattedTax = formatMoney(
-    invoice.tax_cents,
-    invoice.currency
-  );
+  const formattedTax =
+    formatMoney(
+      invoice.tax_cents,
+      invoice.currency
+    );
 
-  const formattedDueDate = formatDate(
-    invoice.due_date
-  );
+  const formattedDueDate =
+    formatDate(invoice.due_date);
 
-  const safeOrganizationName = escapeHtml(
-    organization.name
-  );
+  const safeOrganizationName =
+    escapeHtml(organization.name);
 
-  const safeInvoiceNumber = escapeHtml(
-    invoice.invoice_number
-  );
+  const safeInvoiceNumber =
+    escapeHtml(
+      invoice.invoice_number
+    );
 
-  const safeProjectName = projectName
-    ? escapeHtml(projectName)
-    : null;
+  const safeProjectName =
+    projectName
+      ? escapeHtml(projectName)
+      : null;
 
   const safeContactName =
     organization.billing_contact_name
@@ -451,312 +500,340 @@ export async function POST(
       : null;
 
   // ---------------------------------------------------------
-  // Send transactional invoice email
+  // Transactional email
   // ---------------------------------------------------------
 
   try {
-    const resend = getResendClient();
-    const from = getEmailFromAddress();
+    const resend =
+      getResendClient();
 
-    const { data, error } =
-      await resend.emails.send({
-        from,
-        to: [billingEmail],
+    const from =
+      getEmailFromAddress();
 
-        subject: `Invoice ${invoice.invoice_number} from Drylake`,
+    const {
+      data,
+      error,
+    } = await resend.emails.send({
+      from,
 
-        html: `
-          <!doctype html>
-          <html>
-            <body
+      to: [billingEmail],
+
+      subject:
+        `Invoice ${invoice.invoice_number} from Drylake`,
+
+      html: `
+        <!doctype html>
+
+        <html>
+          <body
+            style="
+              margin:0;
+              padding:40px 20px;
+              background:#f4f4f1;
+              font-family:Arial,Helvetica,sans-serif;
+              color:#171717;
+            "
+          >
+            <div
               style="
-                margin:0;
-                padding:40px 20px;
-                background:#080808;
-                font-family:Arial,Helvetica,sans-serif;
-                color:#ffffff;
+                max-width:620px;
+                margin:0 auto;
+                border:1px solid #e5e5e5;
+                border-radius:20px;
+                background:#ffffff;
+                overflow:hidden;
               "
             >
               <div
                 style="
-                  max-width:620px;
-                  margin:0 auto;
-                  border:1px solid #262626;
-                  border-radius:20px;
-                  background:#101010;
-                  overflow:hidden;
+                  padding:32px;
+                  border-bottom:1px solid #e5e5e5;
                 "
               >
                 <div
                   style="
-                    padding:32px;
-                    border-bottom:1px solid #262626;
+                    font-size:12px;
+                    letter-spacing:2px;
+                    text-transform:uppercase;
+                    color:#f26a2e;
+                    font-weight:600;
                   "
                 >
-                  <div
-                    style="
-                      font-size:12px;
-                      letter-spacing:2px;
-                      text-transform:uppercase;
-                      color:#f26a2e;
-                    "
-                  >
-                    Drylake
-                  </div>
-
-                  <h1
-                    style="
-                      margin:20px 0 8px;
-                      font-size:28px;
-                      font-weight:500;
-                    "
-                  >
-                    Invoice ${safeInvoiceNumber}
-                  </h1>
-
-                  <p
-                    style="
-                      margin:0;
-                      color:#a3a3a3;
-                      font-size:14px;
-                      line-height:1.7;
-                    "
-                  >
-                    ${
-                      safeContactName
-                        ? `Hi ${safeContactName},`
-                        : "Hello,"
-                    }
-                  </p>
-
-                  <p
-                    style="
-                      margin:10px 0 0;
-                      color:#a3a3a3;
-                      font-size:14px;
-                      line-height:1.7;
-                    "
-                  >
-                    A new invoice has been issued
-                    to ${safeOrganizationName}.
-                  </p>
+                  Drylake
                 </div>
 
-                <div style="padding:32px;">
-                  <table
-                    role="presentation"
-                    width="100%"
-                    cellspacing="0"
-                    cellpadding="0"
-                    style="
-                      border-collapse:collapse;
-                      font-size:14px;
-                    "
-                  >
-                    <tr>
-                      <td
-                        style="
-                          padding:10px 0;
-                          color:#737373;
-                        "
-                      >
-                        Invoice
-                      </td>
+                <h1
+                  style="
+                    margin:20px 0 8px;
+                    font-size:28px;
+                    font-weight:600;
+                    color:#171717;
+                  "
+                >
+                  Invoice ${safeInvoiceNumber}
+                </h1>
 
-                      <td
-                        align="right"
-                        style="
-                          padding:10px 0;
-                          color:#ffffff;
-                        "
-                      >
-                        ${safeInvoiceNumber}
-                      </td>
-                    </tr>
+                <p
+                  style="
+                    margin:0;
+                    color:#737373;
+                    font-size:14px;
+                    line-height:1.7;
+                  "
+                >
+                  ${
+                    safeContactName
+                      ? `Hi ${safeContactName},`
+                      : "Hello,"
+                  }
+                </p>
 
-                    ${
-                      safeProjectName
-                        ? `
-                          <tr>
-                            <td
-                              style="
-                                padding:10px 0;
-                                color:#737373;
-                              "
-                            >
-                              Project
-                            </td>
+                <p
+                  style="
+                    margin:10px 0 0;
+                    color:#737373;
+                    font-size:14px;
+                    line-height:1.7;
+                  "
+                >
+                  A new invoice has been issued to
+                  ${safeOrganizationName}.
+                </p>
+              </div>
 
-                            <td
-                              align="right"
-                              style="
-                                padding:10px 0;
-                                color:#ffffff;
-                              "
-                            >
-                              ${safeProjectName}
-                            </td>
-                          </tr>
-                        `
-                        : ""
-                    }
+              <div style="padding:32px;">
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    border-collapse:collapse;
+                    font-size:14px;
+                  "
+                >
+                  <tr>
+                    <td
+                      style="
+                        padding:10px 0;
+                        color:#737373;
+                      "
+                    >
+                      Invoice
+                    </td>
 
-                    <tr>
-                      <td
-                        style="
-                          padding:10px 0;
-                          color:#737373;
-                        "
-                      >
-                        Subtotal
-                      </td>
+                    <td
+                      align="right"
+                      style="
+                        padding:10px 0;
+                        color:#171717;
+                      "
+                    >
+                      ${safeInvoiceNumber}
+                    </td>
+                  </tr>
 
-                      <td
-                        align="right"
-                        style="
-                          padding:10px 0;
-                          color:#ffffff;
-                        "
-                      >
-                        ${formattedSubtotal}
-                      </td>
-                    </tr>
+                  ${
+                    safeProjectName
+                      ? `
+                        <tr>
+                          <td
+                            style="
+                              padding:10px 0;
+                              color:#737373;
+                            "
+                          >
+                            Project
+                          </td>
 
-                    ${isGstRegistered() ? `<tr>
-                      <td
-                        style="
-                          padding:10px 0;
-                          color:#737373;
-                        "
-                      >
-                        Tax
-                      </td>
+                          <td
+                            align="right"
+                            style="
+                              padding:10px 0;
+                              color:#171717;
+                            "
+                          >
+                            ${safeProjectName}
+                          </td>
+                        </tr>
+                      `
+                      : ""
+                  }
 
-                      <td
-                        align="right"
-                        style="
-                          padding:10px 0;
-                          color:#ffffff;
-                        "
-                      >
-                        ${formattedTax}
-                      </td>
-                    </tr>` : ""}
+                  <tr>
+                    <td
+                      style="
+                        padding:10px 0;
+                        color:#737373;
+                      "
+                    >
+                      Subtotal
+                    </td>
 
-                    <tr>
-                      <td
-                        style="
-                          padding:10px 0;
-                          color:#737373;
-                        "
-                      >
-                        Due date
-                      </td>
+                    <td
+                      align="right"
+                      style="
+                        padding:10px 0;
+                        color:#171717;
+                      "
+                    >
+                      ${formattedSubtotal}
+                    </td>
+                  </tr>
 
-                      <td
-                        align="right"
-                        style="
-                          padding:10px 0;
-                          color:#ffffff;
-                        "
-                      >
-                        ${formattedDueDate}
-                      </td>
-                    </tr>
+                  ${
+                    isGstRegistered()
+                      ? `
+                        <tr>
+                          <td
+                            style="
+                              padding:10px 0;
+                              color:#737373;
+                            "
+                          >
+                            GST
+                          </td>
 
-                    <tr>
-                      <td
-                        style="
-                          padding:18px 0 0;
-                          border-top:1px solid #262626;
-                          color:#ffffff;
-                          font-weight:600;
-                        "
-                      >
-                        Total
-                      </td>
+                          <td
+                            align="right"
+                            style="
+                              padding:10px 0;
+                              color:#171717;
+                            "
+                          >
+                            ${formattedTax}
+                          </td>
+                        </tr>
+                      `
+                      : ""
+                  }
 
-                      <td
-                        align="right"
-                        style="
-                          padding:18px 0 0;
-                          border-top:1px solid #262626;
-                          color:#f26a2e;
-                          font-size:20px;
-                          font-weight:600;
-                        "
-                      >
-                        ${formattedTotal}
-                      </td>
-                    </tr>
-                  </table>
+                  <tr>
+                    <td
+                      style="
+                        padding:10px 0;
+                        color:#737373;
+                      "
+                    >
+                      Due date
+                    </td>
 
-                  <p
-                    style="
-                      margin:28px 0 0;
-                      color:#737373;
-                      font-size:12px;
-                      line-height:1.6;
-                    "
-                  >
-                    Online payment will be available
-                    through the secure Drylake client
-                    portal once payment processing is
-                    enabled.
-                  </p>
-                </div>
+                    <td
+                      align="right"
+                      style="
+                        padding:10px 0;
+                        color:#171717;
+                      "
+                    >
+                      ${formattedDueDate}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      style="
+                        padding:18px 0 0;
+                        border-top:1px solid #e5e5e5;
+                        color:#171717;
+                        font-weight:600;
+                      "
+                    >
+                      Total
+                    </td>
+
+                    <td
+                      align="right"
+                      style="
+                        padding:18px 0 0;
+                        border-top:1px solid #e5e5e5;
+                        color:#f26a2e;
+                        font-size:20px;
+                        font-weight:600;
+                      "
+                    >
+                      ${formattedTotal}
+                    </td>
+                  </tr>
+                </table>
 
                 <div
                   style="
-                    padding:20px 32px;
-                    border-top:1px solid #262626;
-                    color:#737373;
-                    font-size:12px;
+                    margin:28px 0 0;
+                    padding:18px;
+                    border-radius:12px;
+                    background:#fafafa;
+                    border:1px solid #eeeeee;
                   "
                 >
-                  Drylake Pty Ltd · ABN 70 702 662 557
+                  <p
+                    style="
+                      margin:0;
+                      color:#525252;
+                      font-size:13px;
+                      line-height:1.7;
+                    "
+                  >
+                    Your invoice is available through
+                    the secure Drylake client portal,
+                    where you can review the invoice
+                    and complete payment online.
+                  </p>
                 </div>
               </div>
-            </body>
-          </html>
-        `,
 
-        text: [
-          "Drylake",
-          "",
-          `Invoice ${invoice.invoice_number}`,
-          "",
-          organization.billing_contact_name
-            ? `Hi ${organization.billing_contact_name},`
-            : "Hello,",
-          "",
-          `A new invoice has been issued to ${organization.name}.`,
-          "",
-          `Invoice: ${invoice.invoice_number}`,
-          projectName
-            ? `Project: ${projectName}`
-            : null,
-          `Subtotal: ${formattedSubtotal}`,
-          isGstRegistered() ? `GST: ${formattedTax}` : NO_GST_NOTE,
-          `Total: ${formattedTotal}`,
-          `Due date: ${formattedDueDate}`,
-          "",
-          "Online payment will be available through the secure Drylake client portal once payment processing is enabled.",
-          "",
-          "Drylake Pty Ltd",
-          "ABN 70 702 662 557",
-        ]
-          .filter(
-            (
-              line
-            ): line is string =>
-              line !== null
-          )
-          .join("\n"),
-      });
+              <div
+                style="
+                  padding:20px 32px;
+                  border-top:1px solid #e5e5e5;
+                  color:#737373;
+                  font-size:12px;
+                "
+              >
+                Drylake Pty Ltd · ABN 70 702 662 557
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+
+      text: [
+        "Drylake",
+        "",
+        `Invoice ${invoice.invoice_number}`,
+        "",
+        organization.billing_contact_name
+          ? `Hi ${organization.billing_contact_name},`
+          : "Hello,",
+        "",
+        `A new invoice has been issued to ${organization.name}.`,
+        "",
+        `Invoice: ${invoice.invoice_number}`,
+        projectName
+          ? `Project: ${projectName}`
+          : null,
+        `Subtotal: ${formattedSubtotal}`,
+        isGstRegistered()
+          ? `GST: ${formattedTax}`
+          : NO_GST_NOTE,
+        `Total: ${formattedTotal}`,
+        `Due date: ${formattedDueDate}`,
+        "",
+        "Your invoice is available through the secure Drylake client portal, where you can review the invoice and complete payment online.",
+        "",
+        "Drylake Pty Ltd",
+        "ABN 70 702 662 557",
+      ]
+        .filter(
+          (
+            line
+          ): line is string =>
+            line !== null
+        )
+        .join("\n"),
+    });
 
     // -------------------------------------------------------
-    // Provider rejected message
+    // Provider rejected email
     // -------------------------------------------------------
 
     if (error) {
@@ -769,13 +846,18 @@ export async function POST(
       );
 
       await supabase
-        .from("invoice_notifications")
+        .from(
+          "invoice_notifications"
+        )
         .update({
           delivery_status: "FAILED",
           error_message:
             "Email provider rejected the message.",
         })
-        .eq("id", notification.id);
+        .eq(
+          "id",
+          notification.id
+        );
 
       return NextResponse.redirect(
         new URL(
@@ -787,23 +869,30 @@ export async function POST(
     }
 
     // -------------------------------------------------------
-    // Provider accepted message
+    // Provider accepted email
     // -------------------------------------------------------
 
     const {
-      error: notificationUpdateError,
+      error:
+        notificationUpdateError,
     } = await supabase
       .from("invoice_notifications")
       .update({
         delivery_status: "SENT",
         provider_message_id:
           data?.id ?? null,
-        sent_at: new Date().toISOString(),
+        sent_at:
+          new Date().toISOString(),
         error_message: null,
       })
-      .eq("id", notification.id);
+      .eq(
+        "id",
+        notification.id
+      );
 
-    if (notificationUpdateError) {
+    if (
+      notificationUpdateError
+    ) {
       console.error(
         "Invoice notification status update failed:",
         {
@@ -824,8 +913,10 @@ export async function POST(
     } = await supabase
       .from("audit_logs")
       .insert({
-        actor_clerk_user_id: userId,
-        action: "INVOICE_EMAIL_SENT",
+        actor_clerk_user_id:
+          userId,
+        action:
+          "INVOICE_EMAIL_SENT",
         entity_type: "invoice",
         entity_id: invoice.id,
         metadata: {
@@ -842,8 +933,10 @@ export async function POST(
       console.error(
         "Invoice email audit failed:",
         {
-          code: emailAuditError.code,
-          message: emailAuditError.message,
+          code:
+            emailAuditError.code,
+          message:
+            emailAuditError.message,
         }
       );
     }
@@ -856,7 +949,8 @@ export async function POST(
     );
 
     const {
-      error: failedUpdateError,
+      error:
+        failedUpdateError,
     } = await supabase
       .from("invoice_notifications")
       .update({
@@ -864,14 +958,19 @@ export async function POST(
         error_message:
           "Transactional email delivery failed.",
       })
-      .eq("id", notification.id);
+      .eq(
+        "id",
+        notification.id
+      );
 
     if (failedUpdateError) {
       console.error(
         "Failed notification status update failed:",
         {
-          code: failedUpdateError.code,
-          message: failedUpdateError.message,
+          code:
+            failedUpdateError.code,
+          message:
+            failedUpdateError.message,
         }
       );
     }

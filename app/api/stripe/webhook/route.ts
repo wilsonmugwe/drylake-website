@@ -6,231 +6,264 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
-// =========================================================
-// STRIPE WEBHOOK
-// =========================================================
+export async function POST(
+  request: Request
+) {
+  // ---------------------------------------------------------
+  // Webhook configuration
+  // ---------------------------------------------------------
 
-export async function POST(request: Request) {
-  // -------------------------------------------------------
-  // 1. Verify webhook configuration
-  // -------------------------------------------------------
-
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret =
+    process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.error("Missing STRIPE_WEBHOOK_SECRET");
+    console.error(
+      "Missing STRIPE_WEBHOOK_SECRET"
+    );
 
     return NextResponse.json(
-      { error: "Webhook is not configured" },
-      { status: 500 }
+      {
+        error:
+          "Webhook is not configured",
+      },
+      {
+        status: 500,
+      }
     );
   }
 
-  // -------------------------------------------------------
-  // 2. Retrieve Stripe signature
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Stripe signature
+  // ---------------------------------------------------------
 
-  const signature = request.headers.get("stripe-signature");
+  const signature =
+    request.headers.get(
+      "stripe-signature"
+    );
 
   if (!signature) {
     return NextResponse.json(
-      { error: "Missing Stripe signature" },
-      { status: 400 }
+      {
+        error:
+          "Missing Stripe signature",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  // -------------------------------------------------------
-  // 3. Read untouched raw request body
+  // ---------------------------------------------------------
+  // IMPORTANT:
   //
-  // Stripe webhook signature verification MUST use the raw
-  // request body. Do not call request.json() here.
-  // -------------------------------------------------------
+  // Stripe signature verification requires the raw body.
+  // Do NOT call request.json() before constructEvent().
+  // ---------------------------------------------------------
 
-  const body = await request.text();
-
-  // -------------------------------------------------------
-  // 4. Verify Stripe webhook signature
-  // -------------------------------------------------------
+  const body =
+    await request.text();
 
   let event: Stripe.Event;
 
   try {
-    const stripe = getStripe();
+    const stripe =
+      getStripe();
 
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      webhookSecret
-    );
+    event =
+      stripe.webhooks.constructEvent(
+        body,
+        signature,
+        webhookSecret
+      );
   } catch (error) {
     console.error(
       "Stripe webhook signature verification failed:",
-      error
+      error instanceof Error
+        ? error.message
+        : error
     );
 
     return NextResponse.json(
-      { error: "Invalid webhook signature" },
-      { status: 400 }
+      {
+        error:
+          "Invalid webhook signature",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
-  // -------------------------------------------------------
-  // 5. Process supported Stripe events
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Process supported events
+  // ---------------------------------------------------------
 
   try {
     switch (event.type) {
-      // ---------------------------------------------------
-      // Checkout completed
-      //
-      // For immediate payment methods such as cards,
-      // payment_status will normally be "paid".
-      //
-      // For delayed payment methods, Checkout can complete
-      // before the money has actually succeeded.
-      // ---------------------------------------------------
-
       case "checkout.session.completed": {
-        const session = event.data.object;
+        const session =
+          event.data.object;
 
-        if (session.payment_status !== "paid") {
+        // Checkout completion alone is not proof that funds
+        // succeeded for every payment method.
+
+        if (
+          session.payment_status !==
+          "paid"
+        ) {
           console.log(
             "Checkout completed but payment is not yet paid:",
             {
-              sessionId: session.id,
-              paymentStatus: session.payment_status,
+              eventId:
+                event.id,
+
+              sessionId:
+                session.id,
+
+              paymentStatus:
+                session.payment_status,
             }
           );
 
           break;
         }
 
-        await markInvoicePaid(session);
+        await markInvoicePaid(
+          session,
+          event.id
+        );
 
         break;
       }
-
-      // ---------------------------------------------------
-      // Delayed/asynchronous payment succeeded
-      // ---------------------------------------------------
 
       case "checkout.session.async_payment_succeeded": {
-        const session = event.data.object;
+        const session =
+          event.data.object;
 
-        await markInvoicePaid(session);
+        await markInvoicePaid(
+          session,
+          event.id
+        );
 
         break;
       }
 
-      // ---------------------------------------------------
-      // Delayed/asynchronous payment failed
-      //
-      // Leave the Drylake invoice OPEN/OVERDUE so the
-      // client can attempt payment again.
-      // ---------------------------------------------------
-
       case "checkout.session.async_payment_failed": {
-        const session = event.data.object;
+        const session =
+          event.data.object;
 
         console.warn(
           "Stripe asynchronous payment failed:",
           {
-            sessionId: session.id,
+            eventId:
+              event.id,
+
+            sessionId:
+              session.id,
           }
         );
 
+        // Invoice remains OPEN/OVERDUE.
+        // The client can attempt payment again.
+
         break;
       }
-
-      // ---------------------------------------------------
-      // Ignore unrelated Stripe events
-      // ---------------------------------------------------
 
       default: {
         console.log(
-          `Ignoring unsupported Stripe event: ${event.type}`
+          `Ignoring unsupported Stripe event: ${event.type}`,
+          {
+            eventId:
+              event.id,
+          }
         );
-
-        break;
       }
     }
 
-    // Stripe expects a 2xx response once the event has been
-    // successfully processed.
     return NextResponse.json({
       received: true,
     });
   } catch (error) {
     console.error(
       "Stripe webhook processing failed:",
-      error
+      error instanceof Error
+        ? error.message
+        : error
     );
 
-    // Returning a non-2xx response tells Stripe that
-    // processing failed and allows Stripe to retry.
+    // Non-2xx causes Stripe to retry the event.
+
     return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
+      {
+        error:
+          "Webhook processing failed",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
 
-// =========================================================
-// MARK DRYLAKE INVOICE AS PAID
-// =========================================================
-
 async function markInvoicePaid(
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
+  stripeEventId: string
 ) {
-  // -------------------------------------------------------
-  // 1. Retrieve Drylake identifiers from Stripe metadata
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Drylake identifiers
+  // ---------------------------------------------------------
 
   const invoiceId =
-    session.metadata?.drylake_invoice_id;
+    session.metadata
+      ?.drylake_invoice_id;
 
   const organizationId =
-    session.metadata?.drylake_organization_id;
+    session.metadata
+      ?.drylake_organization_id;
 
-  if (!invoiceId || !organizationId) {
+  if (
+    !invoiceId ||
+    !organizationId
+  ) {
     throw new Error(
       `Stripe session ${session.id} is missing Drylake metadata`
     );
   }
 
-  // -------------------------------------------------------
-  // 2. Verify Checkout mode
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Checkout verification
+  // ---------------------------------------------------------
 
-  if (session.mode !== "payment") {
+  if (
+    session.mode !== "payment"
+  ) {
     throw new Error(
       `Unexpected Stripe Checkout mode for ${session.id}: ${session.mode}`
     );
   }
 
-  // -------------------------------------------------------
-  // 3. Verify payment state
-  //
-  // Never mark an invoice as paid merely because Checkout
-  // completed.
-  // -------------------------------------------------------
-
-  if (session.payment_status !== "paid") {
+  if (
+    session.payment_status !==
+    "paid"
+  ) {
     throw new Error(
       `Stripe session ${session.id} has not been paid`
     );
   }
 
-  // -------------------------------------------------------
-  // 4. Extract Stripe transaction identifiers
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Stripe transaction identifiers
+  // ---------------------------------------------------------
 
-  const checkoutSessionId = session.id;
+  const checkoutSessionId =
+    session.id;
 
   const paymentIntentId =
-    typeof session.payment_intent === "string"
+    typeof session.payment_intent ===
+    "string"
       ? session.payment_intent
-      : session.payment_intent?.id ?? null;
+      : session.payment_intent
+          ?.id ?? null;
 
   if (!paymentIntentId) {
     console.warn(
@@ -238,41 +271,42 @@ async function markInvoicePaid(
     );
   }
 
-  // -------------------------------------------------------
-  // 5. Create trusted server-side Supabase client
-  //
-  // Stripe webhooks have no Clerk session.
-  //
-  // The service-role client can bypass normal RLS, so every
-  // invoice query MUST be explicitly constrained.
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Trusted server-side database client
+  // ---------------------------------------------------------
 
-  const supabase = createAdminSupabaseClient();
+  const supabase =
+    createAdminSupabaseClient();
 
-  // -------------------------------------------------------
-  // 6. Retrieve invoice
+  // ---------------------------------------------------------
+  // Load exact Drylake invoice
   //
-  // Match BOTH invoice ID and organisation ID.
-  // -------------------------------------------------------
+  // Match BOTH invoice and organisation.
+  // ---------------------------------------------------------
 
   const {
     data: invoice,
     error: invoiceError,
   } = await supabase
     .from("invoices")
-    .select(`
-      id,
-      organization_id,
-      invoice_number,
-      status,
-      currency,
-      total_cents,
-      paid_at,
-      stripe_checkout_session_id,
-      stripe_payment_intent_id
-    `)
+    .select(
+      `
+        id,
+        organization_id,
+        invoice_number,
+        status,
+        currency,
+        total_cents,
+        paid_at,
+        stripe_checkout_session_id,
+        stripe_payment_intent_id
+      `
+    )
     .eq("id", invoiceId)
-    .eq("organization_id", organizationId)
+    .eq(
+      "organization_id",
+      organizationId
+    )
     .maybeSingle();
 
   if (invoiceError) {
@@ -287,16 +321,17 @@ async function markInvoicePaid(
     );
   }
 
-  // -------------------------------------------------------
-  // 7. Verify stored invoice amount
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Verify stored amount
+  // ---------------------------------------------------------
 
-  const expectedAmount = Number(
-    invoice.total_cents
-  );
+  const expectedAmount =
+    Number(invoice.total_cents);
 
   if (
-    !Number.isSafeInteger(expectedAmount) ||
+    !Number.isSafeInteger(
+      expectedAmount
+    ) ||
     expectedAmount <= 0
   ) {
     throw new Error(
@@ -304,18 +339,20 @@ async function markInvoicePaid(
     );
   }
 
-  // -------------------------------------------------------
-  // 8. Verify Stripe amount
+  // ---------------------------------------------------------
+  // Verify Stripe amount
   //
-  // Metadata identifies the invoice but must NOT be trusted
-  // as proof that the correct amount was paid.
-  // -------------------------------------------------------
+  // Metadata identifies the invoice but is NOT proof that
+  // the correct amount was paid.
+  // ---------------------------------------------------------
 
-  const stripeAmount = session.amount_total;
+  const stripeAmount =
+    session.amount_total;
 
   if (
     stripeAmount === null ||
-    stripeAmount !== expectedAmount
+    stripeAmount !==
+      expectedAmount
   ) {
     throw new Error(
       `Payment amount mismatch for invoice ${invoice.invoice_number}. ` +
@@ -323,12 +360,13 @@ async function markInvoicePaid(
     );
   }
 
-  // -------------------------------------------------------
-  // 9. Verify currency
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Verify currency
+  // ---------------------------------------------------------
 
   if (
-    typeof invoice.currency !== "string" ||
+    typeof invoice.currency !==
+      "string" ||
     !invoice.currency
   ) {
     throw new Error(
@@ -344,7 +382,8 @@ async function markInvoicePaid(
 
   if (
     !stripeCurrency ||
-    stripeCurrency !== expectedCurrency
+    stripeCurrency !==
+      expectedCurrency
   ) {
     throw new Error(
       `Payment currency mismatch for invoice ${invoice.invoice_number}. ` +
@@ -352,32 +391,40 @@ async function markInvoicePaid(
     );
   }
 
-  // -------------------------------------------------------
-  // 10. Idempotency
+  // ---------------------------------------------------------
+  // Idempotency
   //
-  // Stripe may deliver the same event more than once.
-  //
-  // Never rewrite paid_at for an already-paid invoice.
-  // We may, however, repair missing Stripe identifiers.
-  // -------------------------------------------------------
+  // Stripe may send the same event more than once.
+  // Never rewrite paid_at on an already-paid invoice.
+  // ---------------------------------------------------------
 
-  if (invoice.status === "PAID") {
+  if (
+    invoice.status === "PAID"
+  ) {
     console.log(
-      `Invoice ${invoice.invoice_number} is already PAID`
+      `Invoice ${invoice.invoice_number} is already PAID`,
+      {
+        stripeEventId,
+      }
     );
 
-    const checkoutSessionNeedsRepair =
-      invoice.stripe_checkout_session_id !==
+    // Repair missing/different Stripe identifiers without
+    // modifying paid_at.
+
+    const sessionNeedsRepair =
+      invoice
+        .stripe_checkout_session_id !==
       checkoutSessionId;
 
-    const paymentIntentNeedsRepair =
+    const intentNeedsRepair =
       paymentIntentId !== null &&
-      invoice.stripe_payment_intent_id !==
+      invoice
+        .stripe_payment_intent_id !==
         paymentIntentId;
 
     if (
-      checkoutSessionNeedsRepair ||
-      paymentIntentNeedsRepair
+      sessionNeedsRepair ||
+      intentNeedsRepair
     ) {
       const repairPayload = {
         stripe_checkout_session_id:
@@ -391,34 +438,31 @@ async function markInvoicePaid(
           : {}),
       };
 
-      const { error: repairError } =
-        await supabase
-          .from("invoices")
-          .update(repairPayload)
-          .eq("id", invoice.id)
-          .eq(
-            "organization_id",
-            organizationId
-          )
-          .eq("status", "PAID");
+      const {
+        error: repairError,
+      } = await supabase
+        .from("invoices")
+        .update(repairPayload)
+        .eq("id", invoice.id)
+        .eq(
+          "organization_id",
+          organizationId
+        )
+        .eq("status", "PAID");
 
       if (repairError) {
         throw new Error(
           `Unable to repair Stripe identifiers: ${repairError.message}`
         );
       }
-
-      console.log(
-        `Stripe identifiers repaired for invoice ${invoice.invoice_number}`
-      );
     }
 
     return;
   }
 
-  // -------------------------------------------------------
-  // 11. Verify invoice is payable
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Invoice must still be payable
+  // ---------------------------------------------------------
 
   if (
     invoice.status !== "OPEN" &&
@@ -429,11 +473,12 @@ async function markInvoicePaid(
     );
   }
 
-  // -------------------------------------------------------
-  // 12. Mark invoice PAID
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Mark PAID
+  // ---------------------------------------------------------
 
-  const paidAt = new Date().toISOString();
+  const paidAt =
+    new Date().toISOString();
 
   const updatePayload = {
     status: "PAID",
@@ -450,18 +495,6 @@ async function markInvoicePaid(
       : {}),
   };
 
-  // -------------------------------------------------------
-  // 13. Conditional update
-  //
-  // Include:
-  // - invoice ID
-  // - organisation ID
-  // - previously observed status
-  //
-  // This reduces the chance that a concurrent state change
-  // is accidentally overwritten.
-  // -------------------------------------------------------
-
   const {
     data: updatedInvoice,
     error: updateError,
@@ -473,15 +506,20 @@ async function markInvoicePaid(
       "organization_id",
       organizationId
     )
-    .eq("status", invoice.status)
-    .select(`
-      id,
-      invoice_number,
-      status,
-      paid_at,
-      stripe_checkout_session_id,
-      stripe_payment_intent_id
-    `)
+    .eq(
+      "status",
+      invoice.status
+    )
+    .select(
+      `
+        id,
+        invoice_number,
+        status,
+        paid_at,
+        stripe_checkout_session_id,
+        stripe_payment_intent_id
+      `
+    )
     .maybeSingle();
 
   if (updateError) {
@@ -490,21 +528,124 @@ async function markInvoicePaid(
     );
   }
 
-  // Another process may have changed the invoice between
-  // our SELECT and UPDATE.
   if (!updatedInvoice) {
+    // A concurrent webhook/process may have completed first.
+    //
+    // Re-read before treating this as an actual failure.
+
+    const {
+      data: currentInvoice,
+      error: currentError,
+    } = await supabase
+      .from("invoices")
+      .select(
+        `
+          id,
+          status,
+          stripe_checkout_session_id,
+          stripe_payment_intent_id
+        `
+      )
+      .eq("id", invoice.id)
+      .eq(
+        "organization_id",
+        organizationId
+      )
+      .maybeSingle();
+
+    if (currentError) {
+      throw new Error(
+        `Unable to verify concurrent payment update: ${currentError.message}`
+      );
+    }
+
+    if (
+      currentInvoice?.status ===
+      "PAID"
+    ) {
+      console.log(
+        `Invoice ${invoice.invoice_number} was marked PAID concurrently`,
+        {
+          stripeEventId,
+        }
+      );
+
+      return;
+    }
+
     throw new Error(
       `Invoice ${invoice.invoice_number} changed before payment could be recorded`
     );
   }
 
-  // -------------------------------------------------------
-  // 14. Success
-  // -------------------------------------------------------
+  // ---------------------------------------------------------
+  // Audit successful payment
+  //
+  // Do not fail payment reconciliation merely because the
+  // secondary audit insert fails.
+  // ---------------------------------------------------------
+
+  const {
+    error: auditError,
+  } = await supabase
+    .from("audit_logs")
+    .insert({
+      actor_clerk_user_id:
+        null,
+
+      action:
+        "INVOICE_PAYMENT_RECEIVED",
+
+      entity_type:
+        "invoice",
+
+      entity_id:
+        invoice.id,
+
+      metadata: {
+        organization_id:
+          organizationId,
+
+        invoice_number:
+          invoice.invoice_number,
+
+        stripe_event_id:
+          stripeEventId,
+
+        stripe_checkout_session_id:
+          checkoutSessionId,
+
+        stripe_payment_intent_id:
+          paymentIntentId,
+
+        total_cents:
+          expectedAmount,
+
+        currency:
+          expectedCurrency,
+      },
+    });
+
+  if (auditError) {
+    console.error(
+      "Stripe payment audit failed:",
+      {
+        code:
+          auditError.code,
+
+        message:
+          auditError.message,
+
+        invoiceId:
+          invoice.id,
+      }
+    );
+  }
 
   console.log(
     `Invoice ${invoice.invoice_number} marked PAID`,
     {
+      stripeEventId,
       checkoutSessionId,
       paymentIntentId,
       paidAt,
