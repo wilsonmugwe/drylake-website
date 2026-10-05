@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
+import { SHARE_IMAGE, SITE_NAME } from "@/lib/seo";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -52,9 +53,8 @@ export const metadata: Metadata = {
   creator: "Drylake Pty Ltd",
   publisher: "Drylake Pty Ltd",
 
-  alternates: {
-    canonical: "/",
-  },
+  // No site-wide canonical: every public page declares its own via pageMetadata(), and a
+  // root canonical of "/" made pages without one (the 404, auth screens) claim the homepage.
 
   robots: {
     index: true,
@@ -69,36 +69,18 @@ export const metadata: Metadata = {
     },
   },
 
+  // Defaults only (no url/title): a page that does not set its own share tags must not
+  // claim to be the homepage. Public pages set the full set via pageMetadata().
   openGraph: {
     type: "website",
     locale: "en_AU",
-    url: "https://drylake.com.au",
-    siteName: "Drylake",
-
-    title: "Drylake | Operational Software & Automation Australia",
-
-    description:
-      "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
-
-    images: [
-      {
-        url: "/opengraph-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Drylake: operational software and automation for Australian businesses",
-      },
-    ],
+    siteName: SITE_NAME,
+    images: [SHARE_IMAGE],
   },
 
   twitter: {
     card: "summary_large_image",
-
-    title: "Drylake | Operational Software & Automation Australia",
-
-    description:
-      "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
-
-    images: ["/opengraph-image.png"],
+    images: [SHARE_IMAGE.url],
   },
 
   category: "technology",

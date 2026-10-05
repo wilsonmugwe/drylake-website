@@ -3,14 +3,14 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Privacy Policy | Drylake",
   description:
-    "Privacy information for Drylake Pty Ltd and the Drylake website.",
-  alternates: {
-    canonical: "/privacy",
-  },
-};
+    "How Drylake Pty Ltd collects, uses, stores and protects personal information provided through the Drylake website and services.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

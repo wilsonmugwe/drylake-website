@@ -4,3 +4,6 @@
  * Only promise what the founders will actually meet.
  */
 export const RESPONSE_TIME = "1 business day";
+
+/* Public enquiry address, used in error copy so a visitor always has a fallback route. */
+export const CONTACT_EMAIL = "hello@drylake.com.au";

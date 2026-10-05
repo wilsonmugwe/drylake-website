@@ -1,0 +1,124 @@
+import "server-only";
+
+const SITEVERIFY_URL =
+  "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+const TIMEOUT_MS = 8_000;
+
+const DEFAULT_ALLOWED_HOSTNAMES = ["drylake.com.au", "www.drylake.com.au"];
+
+/*
+ * Cloudflare's published test secrets (always-pass / always-fail / token-spent). Their
+ * responses report hostname "example.com", so the hostname check cannot apply to them.
+ * They can only ever be configured deliberately, for local or CI testing.
+ */
+const TEST_SECRET_PATTERN = /^[123]x0{20,}AA$/;
+
+export type TurnstileVerdict =
+  | { ok: true }
+  | {
+      ok: false;
+      /**
+       * misconfigured: our secret is missing (our fault, 503)
+       * unreachable:   Cloudflare could not be asked (transient, 503)
+       * rejected:      the token is missing, invalid, expired or already used (403)
+       * wrong-host:    a valid token minted for a site that is not ours (403)
+       */
+      reason: "misconfigured" | "unreachable" | "rejected" | "wrong-host";
+      errorCodes?: string[];
+    };
+
+interface SiteverifyResponse {
+  success: boolean;
+  hostname?: string;
+  action?: string;
+  "error-codes"?: string[];
+}
+
+function allowedHostnames(): string[] {
+  const extra = (process.env.TURNSTILE_ALLOWED_HOSTNAMES ?? "")
+    .split(",")
+    .map((host) => host.trim().toLowerCase())
+    .filter(Boolean);
+
+  return [...DEFAULT_ALLOWED_HOSTNAMES, ...extra];
+}
+
+/** First hop of x-forwarded-for (set by Vercel), passed to Cloudflare as a risk signal. */
+export function clientIp(request: Request): string | null {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded?.split(",")[0]?.trim();
+  return ip || request.headers.get("x-real-ip");
+}
+
+/*
+ * Server-side Turnstile verification. The browser widget showing a tick proves nothing on
+ * its own; only this call decides whether a submission is accepted.
+ *
+ * Contract: { ok: true } only when Cloudflare confirms success for a token minted on one of
+ * our hostnames. Never throws.
+ */
+export async function verifyTurnstile(
+  token: string,
+  remoteIp: string | null
+): Promise<TurnstileVerdict> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+
+  if (!secret) {
+    console.error("Turnstile: TURNSTILE_SECRET_KEY is not configured.");
+    return { ok: false, reason: "misconfigured" };
+  }
+
+  if (!token) {
+    return { ok: false, reason: "rejected", errorCodes: ["missing-input-response"] };
+  }
+
+  const body = new URLSearchParams({ secret, response: token });
+
+  if (remoteIp) {
+    body.set("remoteip", remoteIp);
+  }
+
+  let result: SiteverifyResponse;
+
+  try {
+    const response = await fetch(SITEVERIFY_URL, {
+      method: "POST",
+      body,
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+
+    if (!response.ok) {
+      console.error("Turnstile: siteverify HTTP", response.status);
+      return { ok: false, reason: "unreachable" };
+    }
+
+    result = (await response.json()) as SiteverifyResponse;
+  } catch (error) {
+    console.error("Turnstile: siteverify request failed:", (error as Error).name);
+    return { ok: false, reason: "unreachable" };
+  }
+
+  if (!result.success) {
+    const errorCodes = result["error-codes"] ?? [];
+
+    // invalid-input-secret means OUR configuration is wrong, not the visitor's token.
+    if (errorCodes.includes("invalid-input-secret") || errorCodes.includes("missing-input-secret")) {
+      console.error("Turnstile: secret rejected by Cloudflare:", errorCodes);
+      return { ok: false, reason: "misconfigured", errorCodes };
+    }
+
+    return { ok: false, reason: "rejected", errorCodes };
+  }
+
+  const isTestSecret = TEST_SECRET_PATTERN.test(secret);
+  const hostname = (result.hostname ?? "").toLowerCase();
+
+  if (!isTestSecret && !allowedHostnames().includes(hostname)) {
+    console.error("Turnstile: token minted for unexpected hostname:", hostname);
+    return { ok: false, reason: "wrong-host" };
+  }
+
+  return { ok: true };
+}
