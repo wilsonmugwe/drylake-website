@@ -119,28 +119,28 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden h-screen w-[270px] shrink-0 border-r border-white/[0.07] bg-[#070707] lg:sticky lg:top-0 lg:flex lg:flex-col">
-      {/* =====================================================
-          BRAND
-      ===================================================== */}
+    <aside className="hidden h-screen w-[280px] shrink-0 border-r border-white/[0.08] bg-[#0a0a0a] lg:sticky lg:top-0 lg:flex lg:flex-col">
+      {/* Brand */}
 
-      <div className="border-b border-white/[0.07] px-6 py-7">
-        <Link href="/admin" className="group block">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#f26a2e]/20 bg-[#f26a2e]/[0.06]">
+      <div className="relative overflow-hidden border-b border-white/[0.08] px-6 py-7">
+        <div className="pointer-events-none absolute -left-10 -top-16 h-44 w-44 rounded-full bg-[#f26a2e]/[0.07] blur-[70px]" />
+
+        <Link href="/admin" className="group relative block">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f26a2e]/30 bg-[#f26a2e]/[0.08]">
               <ShieldCheck
-                size={17}
-                strokeWidth={1.7}
+                size={18}
+                strokeWidth={1.8}
                 className="text-[#f26a2e]"
               />
             </div>
 
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-white">
                 Drylake
               </p>
 
-              <p className="mt-1 text-[0.55rem] font-medium uppercase tracking-[0.18em] text-white/25">
+              <p className="mt-1 text-[0.55rem] font-medium uppercase tracking-[0.18em] text-white/40">
                 Administration
               </p>
             </div>
@@ -148,21 +148,19 @@ export default function AdminSidebar() {
         </Link>
       </div>
 
-      {/* =====================================================
-          NAVIGATION
-      ===================================================== */}
+      {/* Navigation */}
 
       <nav className="flex-1 overflow-y-auto px-4 py-6">
         <div className="space-y-7">
           {navigation.map((group, groupIndex) => (
             <div key={group.label ?? groupIndex}>
               {group.label && (
-                <p className="mb-2 px-3 text-[0.52rem] font-semibold uppercase tracking-[0.2em] text-white/20">
+                <p className="mb-2.5 px-3 text-[0.53rem] font-semibold uppercase tracking-[0.21em] text-white/35">
                   {group.label}
                 </p>
               )}
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const active = isRouteActive(pathname, item.href);
@@ -171,15 +169,19 @@ export default function AdminSidebar() {
                     return (
                       <div
                         key={item.href}
-                        className="flex cursor-default items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white/20"
+                        className="flex cursor-default items-center justify-between rounded-xl px-3 py-3 text-sm text-white/28"
                       >
                         <div className="flex items-center gap-3">
-                          <Icon size={16} strokeWidth={1.7} />
+                          <Icon
+                            size={16}
+                            strokeWidth={1.7}
+                            className="text-white/22"
+                          />
 
                           <span>{item.label}</span>
                         </div>
 
-                        <span className="text-[0.46rem] font-semibold uppercase tracking-[0.12em] text-white/15">
+                        <span className="rounded-full border border-white/[0.06] px-2 py-1 text-[0.45rem] font-semibold uppercase tracking-[0.12em] text-white/22">
                           Soon
                         </span>
                       </div>
@@ -190,25 +192,33 @@ export default function AdminSidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm transition duration-200 ${
+                      className={`group relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-3 text-sm font-medium transition duration-150 ${
                         active
-                          ? "bg-white/[0.055] text-white"
-                          : "text-white/40 hover:bg-white/[0.025] hover:text-white/75"
+                          ? "border-[#f26a2e]/18 bg-[#f26a2e]/[0.075] text-white"
+                          : "border-transparent text-white/62 hover:border-white/[0.07] hover:bg-white/[0.035] hover:text-white"
                       }`}
                     >
                       {active && (
-                        <div className="absolute bottom-2 left-0 top-2 w-[2px] rounded-full bg-[#f26a2e]" />
+                        <div className="absolute bottom-2.5 left-0 top-2.5 w-[2px] rounded-r-full bg-[#f26a2e]" />
                       )}
 
-                      <Icon
-                        size={16}
-                        strokeWidth={1.7}
-                        className={
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                           active
-                            ? "text-[#f26a2e]"
-                            : "text-white/30 transition-colors group-hover:text-white/60"
-                        }
-                      />
+                            ? "bg-[#f26a2e]/10"
+                            : "bg-white/[0.02]"
+                        }`}
+                      >
+                        <Icon
+                          size={16}
+                          strokeWidth={1.8}
+                          className={
+                            active
+                              ? "text-[#f26a2e]"
+                              : "text-white/42 transition-colors group-hover:text-white/70"
+                          }
+                        />
+                      </div>
 
                       <span>{item.label}</span>
                     </Link>
@@ -220,49 +230,49 @@ export default function AdminSidebar() {
         </div>
       </nav>
 
-      {/* =====================================================
-          BOTTOM
-      ===================================================== */}
+      {/* Bottom */}
 
-      <div className="border-t border-white/[0.07] p-4">
-        <div className="space-y-1">
-          <div className="flex cursor-default items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white/20">
-            <div className="flex items-center gap-3">
-              <Settings size={16} strokeWidth={1.7} />
-
-              <span>Settings</span>
-            </div>
-
-            <span className="text-[0.46rem] font-semibold uppercase tracking-[0.12em] text-white/15">
-              Soon
-            </span>
-          </div>
-
-          <Link
-            href="/"
-            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/35 transition hover:bg-white/[0.025] hover:text-white/70"
-          >
-            <Globe2
+      <div className="border-t border-white/[0.08] bg-black/20 p-4">
+        <div className="flex cursor-default items-center justify-between rounded-xl px-3 py-3 text-sm text-white/28">
+          <div className="flex items-center gap-3">
+            <Settings
               size={16}
               strokeWidth={1.7}
-              className="text-white/25 transition group-hover:text-[#f26a2e]"
+              className="text-white/22"
             />
 
-            <span>Drylake website</span>
+            <span>Settings</span>
+          </div>
 
-            <span className="ml-auto text-white/20">↗</span>
-          </Link>
+          <span className="rounded-full border border-white/[0.06] px-2 py-1 text-[0.45rem] font-semibold uppercase tracking-[0.12em] text-white/22">
+            Soon
+          </span>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/[0.06] bg-white/[0.015] px-3 py-3">
-          <div className="flex items-center gap-2">
+        <Link
+          href="/"
+          className="group mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/55 transition hover:bg-white/[0.035] hover:text-white"
+        >
+          <Globe2
+            size={16}
+            strokeWidth={1.7}
+            className="text-[#f26a2e]"
+          />
+
+          <span>Drylake website</span>
+
+          <span className="ml-auto text-white/30">↗</span>
+        </Link>
+
+        <div className="mt-4 rounded-xl border border-[#f26a2e]/15 bg-[#f26a2e]/[0.04] px-3.5 py-3.5">
+          <div className="flex items-center gap-2.5">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-[#f26a2e] opacity-20" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f26a2e] opacity-20" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#f26a2e]" />
             </span>
 
-            <span className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-white/30">
-              Admin session
+            <span className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-white/45">
+              Secure admin session
             </span>
           </div>
         </div>
