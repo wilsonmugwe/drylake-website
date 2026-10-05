@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
+
+import SkipLink from "@/components/layout/SkipLink";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -18,12 +20,18 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
   return (
-    <main className="min-h-[100svh] bg-black text-white">
+    <>
+    <SkipLink />
+
+    <div className="min-h-[100svh] bg-black text-white">
+      {/* One <h1> per page: Clerk renders it as the card title ("Sign in to ..."). */}
       <div className="grid min-h-[100svh] lg:grid-cols-[0.9fr_1.1fr]">
         {/* =====================================================
             DRYLAKE BRAND PANEL
         ====================================================== */}
-        <section className="relative hidden overflow-hidden border-r border-white/[0.08] lg:flex lg:flex-col">
+        <aside
+          aria-label="Drylake client access"
+          className="relative hidden overflow-hidden border-r border-white/[0.08] lg:flex lg:flex-col">
           {/* Background grid */}
           <div
             aria-hidden="true"
@@ -68,7 +76,7 @@ export default function SignInPage() {
               </span>
             </Link>
 
-            <span className="flex items-center gap-2 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/25">
+            <span className="flex items-center gap-2 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/55">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
               Perth / WA
             </span>
@@ -82,21 +90,21 @@ export default function SignInPage() {
               <div className="flex items-center gap-3">
                 <span className="h-px w-8 bg-[#f26a2e]" />
 
-                <span className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-white/35">
+                <span className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-white/55">
                   Client Access
                 </span>
               </div>
 
-              <h1 className="mt-7 text-[clamp(4.5rem,6.5vw,7.5rem)] font-semibold leading-[0.84] tracking-[-0.075em]">
+              <p className="mt-7 text-[clamp(4.5rem,6.5vw,7.5rem)] font-semibold leading-[0.84] tracking-[-0.075em]">
                 Welcome
                 <br />
 
-                <span className="text-white/28">
+                <span className="text-white/45">
                   back.
                 </span>
-              </h1>
+              </p>
 
-              <p className="mt-7 max-w-md text-[0.95rem] leading-7 text-white/42">
+              <p className="mt-7 max-w-md text-[0.95rem] leading-7 text-white/55">
                 Secure access to the systems, projects and
                 workflows Drylake builds around your business.
               </p>
@@ -104,31 +112,31 @@ export default function SignInPage() {
               {/* System detail */}
               <div className="mt-12 max-w-md border-t border-white/[0.08]">
                 <div className="grid grid-cols-[auto_1fr] gap-x-4 border-b border-white/[0.08] py-4">
-                  <span className="font-mono text-[0.62rem] text-white/20">
+                  <span className="font-mono text-[0.62rem] text-white/55">
                     01
                   </span>
 
-                  <span className="text-xs uppercase tracking-[0.12em] text-white/35">
+                  <span className="text-xs uppercase tracking-[0.12em] text-white/55">
                     Secure authentication
                   </span>
                 </div>
 
                 <div className="grid grid-cols-[auto_1fr] gap-x-4 border-b border-white/[0.08] py-4">
-                  <span className="font-mono text-[0.62rem] text-white/20">
+                  <span className="font-mono text-[0.62rem] text-white/55">
                     02
                   </span>
 
-                  <span className="text-xs uppercase tracking-[0.12em] text-white/35">
+                  <span className="text-xs uppercase tracking-[0.12em] text-white/55">
                     Protected workspace
                   </span>
                 </div>
 
                 <div className="grid grid-cols-[auto_1fr] gap-x-4 py-4">
-                  <span className="font-mono text-[0.62rem] text-white/20">
+                  <span className="font-mono text-[0.62rem] text-white/55">
                     03
                   </span>
 
-                  <span className="text-xs uppercase tracking-[0.12em] text-white/35">
+                  <span className="text-xs uppercase tracking-[0.12em] text-white/55">
                     Direct Drylake access
                   </span>
                 </div>
@@ -141,21 +149,25 @@ export default function SignInPage() {
           -------------------------------------------------- */}
           <div className="relative z-10 px-10 pb-9 xl:px-14">
             <div className="flex items-center justify-between border-t border-white/[0.08] pt-5">
-              <span className="text-[0.58rem] uppercase tracking-[0.15em] text-white/20">
+              <span className="text-[0.58rem] uppercase tracking-[0.15em] text-white/55">
                 Drylake Pty Ltd
               </span>
 
-              <span className="text-[0.58rem] uppercase tracking-[0.15em] text-white/20">
+              <span className="text-[0.58rem] uppercase tracking-[0.15em] text-white/55">
                 Technology / Software / AI
               </span>
             </div>
           </div>
-        </section>
+        </aside>
 
         {/* =====================================================
             AUTHENTICATION PANEL
         ====================================================== */}
-        <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#f2f0e9] text-black">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#f2f0e9] text-black outline-none"
+        >
           {/* Light grid */}
           <div
             aria-hidden="true"
@@ -182,7 +194,7 @@ export default function SignInPage() {
               </span>
             </Link>
 
-            <span className="flex items-center gap-2 text-[0.58rem] font-medium uppercase tracking-[0.14em] text-black/30">
+            <span className="flex items-center gap-2 text-[0.58rem] font-medium uppercase tracking-[0.14em] text-black/60">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
               Secure
             </span>
@@ -198,17 +210,17 @@ export default function SignInPage() {
                 <div className="flex items-center gap-2.5">
                   <span className="h-px w-6 bg-[#f26a2e]" />
 
-                  <span className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-black/35">
+                  <span className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-black/60">
                     Client Access
                   </span>
                 </div>
 
-                <h1 className="mt-4 text-[3rem] font-semibold leading-[0.9] tracking-[-0.065em] sm:text-[3.6rem]">
+                <p className="mt-4 text-[3rem] font-semibold leading-[0.9] tracking-[-0.065em] sm:text-[3.6rem]">
                   Welcome
-                  <span className="text-black/30"> back.</span>
-                </h1>
+                  <span className="text-black/45"> back.</span>
+                </p>
 
-                <p className="mt-4 max-w-sm text-sm leading-6 text-black/45">
+                <p className="mt-4 max-w-sm text-sm leading-6 text-black/60">
                   Sign in to continue to your Drylake workspace.
                 </p>
               </div>
@@ -216,12 +228,12 @@ export default function SignInPage() {
               {/* Desktop form label */}
               <div className="mb-5 hidden items-center justify-between lg:flex">
                 <div>
-                  <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-black/35">
+                  <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-black/60">
                     Sign In
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.12em] text-black/30">
+                <div className="flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.12em] text-black/60">
                   <LockKeyhole size={12} />
                   Protected access
                 </div>
@@ -269,7 +281,7 @@ export default function SignInPage() {
                   Footer detail
               -------------------------------------------------- */}
               <div className="mt-5 flex items-center justify-between border-t border-black/10 pt-4">
-                <span className="flex items-center gap-2 text-[0.58rem] font-medium uppercase tracking-[0.13em] text-black/25">
+                <span className="flex items-center gap-2 text-[0.58rem] font-medium uppercase tracking-[0.13em] text-black/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
                   Secure access
                 </span>
@@ -288,8 +300,9 @@ export default function SignInPage() {
               </div>
             </div>
           </div>
-        </section>
+        </main>
       </div>
-    </main>
+    </div>
+    </>
   );
 }

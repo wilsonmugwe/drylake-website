@@ -439,3 +439,8 @@ Tomorrow Starts Here.
 ⸻
 
 © Drylake Pty Ltd. All rights reserved.
+⸻
+
+Operations
+
+* Contact form delivery path, response contract, required environment variables and the production rate limit (a Vercel Firewall rule, not code): docs/operations/contact-form.md

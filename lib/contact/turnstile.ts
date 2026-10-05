@@ -1,5 +1,6 @@
 import "server-only";
 
+import { claimToken, tokenFingerprint } from "./consumed-tokens.ts";
 import { CONTACT_ACTION } from "./turnstile-action.ts";
 
 const SITEVERIFY_URL =
@@ -35,6 +36,7 @@ interface SiteverifyResponse {
   success: boolean;
   hostname?: string;
   action?: string;
+  challenge_ts?: string;
   "error-codes"?: string[];
 }
 
@@ -74,6 +76,13 @@ export async function verifyTurnstile(
 
   if (!token) {
     return { ok: false, reason: "rejected", errorCodes: ["missing-input-response"] };
+  }
+
+  // Single use, enforced here as well as by Cloudflare (see consumed-tokens.ts). Cloudflare's
+  // test keys issue the same dummy token every time, so local/CI testing is exempt.
+  if (!TEST_SECRET_PATTERN.test(secret) && !claimToken(token)) {
+    console.warn("Turnstile: token replay refused:", tokenFingerprint(token).slice(0, 12));
+    return { ok: false, reason: "rejected", errorCodes: ["duplicate-token"] };
   }
 
   const body = new URLSearchParams({ secret, response: token });
@@ -145,6 +154,15 @@ export async function verifyTurnstile(
     console.error("Turnstile: token minted for unexpected action:", result.action ?? "(none)");
     return { ok: false, reason: "wrong-action" };
   }
+
+  // Diagnostic, no personal data: a short token fingerprint and the token's age let a replay
+  // that Cloudflare accepted be spotted in the logs (same fingerprint, growing age).
+  const issuedAt = Date.parse(result.challenge_ts ?? "");
+  console.info(
+    "Turnstile: verified",
+    tokenFingerprint(token).slice(0, 12),
+    Number.isFinite(issuedAt) ? `age ${Math.round((Date.now() - issuedAt) / 1000)}s` : "age unknown"
+  );
 
   return { ok: true };
 }

@@ -37,7 +37,7 @@ export default function ErrorPage({
         </button>
 
         {error.digest && (
-          <span className="font-mono text-xs text-white/40">
+          <span className="font-mono text-xs text-white/55">
             Reference: {error.digest}
           </span>
         )}

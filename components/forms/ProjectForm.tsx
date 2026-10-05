@@ -120,7 +120,7 @@ export default function ProjectForm() {
           <Check size={20} />
         </div>
 
-        <p className="section-label mt-7 text-black/35">
+        <p className="section-label mt-7 text-black/60">
           Enquiry received
         </p>
 
@@ -128,7 +128,7 @@ export default function ProjectForm() {
           Thanks for reaching out.
         </h2>
 
-        <p className="mt-4 max-w-lg leading-7 text-black/50">
+        <p className="mt-4 max-w-lg leading-7 text-black/60">
           Drylake has received your enquiry. A founder will review what
           you&apos;ve shared and reply within {RESPONSE_TIME}.
         </p>
@@ -190,7 +190,7 @@ export default function ProjectForm() {
       <div>
         <label
           htmlFor="projectType"
-          className="section-label text-black/40"
+          className="section-label text-black/60"
         >
           Where is the friction?
         </label>
@@ -232,7 +232,7 @@ export default function ProjectForm() {
       <div>
         <label
           htmlFor="budget"
-          className="section-label text-black/40"
+          className="section-label text-black/60"
         >
           What kind of help are you looking for?
         </label>
@@ -267,7 +267,7 @@ export default function ProjectForm() {
       <div>
         <label
           htmlFor="message"
-          className="section-label text-black/40"
+          className="section-label text-black/60"
         >
           Tell us what&apos;s happening
         </label>
@@ -283,7 +283,7 @@ export default function ProjectForm() {
           className="mt-2 w-full resize-none border-b border-black/15 bg-transparent py-4 text-base leading-7 outline-none placeholder:text-black/25 focus:border-black"
         />
 
-        <p className="mt-3 text-xs leading-5 text-black/35">
+        <p className="mt-3 text-xs leading-5 text-black/60">
           Don&apos;t worry about technical terminology. Describe
           the problem the way you would explain it to someone
           inside the business.
@@ -324,7 +324,7 @@ export default function ProjectForm() {
 
       {/* Submit */}
       <div className="flex flex-col gap-3 border-t border-black/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-xs text-xs leading-5 text-black/35">
+        <p className="max-w-xs text-xs leading-5 text-black/60">
           No technical specification required. Just give us
           enough context to understand where to start.
         </p>
@@ -379,7 +379,7 @@ function Field({
     <div>
       <label
         htmlFor={name}
-        className="section-label text-black/40"
+        className="section-label text-black/60"
       >
         {label}
       </label>

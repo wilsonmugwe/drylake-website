@@ -1,10 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientInvoiceView from "@/components/client/ClientInvoiceView";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
   title: "Invoice | Client Portal",
@@ -40,6 +41,11 @@ export default async function ClientInvoicePage({
   }
 
   const { invoiceId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(invoiceId)) {
+    notFound();
+  }
 
   // ---------------------------------------------------------
   // Authenticated Supabase client

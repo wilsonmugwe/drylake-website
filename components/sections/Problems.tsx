@@ -40,7 +40,7 @@ export default function Problems() {
       <Container>
         <div className="grid gap-5 border-b border-black/10 pb-8 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16 lg:pb-12">
           <div>
-            <p className="section-label text-black/38">
+            <p className="section-label text-black/60">
               01 / The Problem
             </p>
           </div>
@@ -49,12 +49,12 @@ export default function Problems() {
             <h2 className="max-w-5xl text-[clamp(2.55rem,11vw,4rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[clamp(4rem,6.5vw,6.5rem)]">
               Growth makes the
               <br className="hidden sm:block" />
-              <span className="text-black/24">
+              <span className="text-black/45">
                 {" "}cracks visible.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/52 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60 sm:mt-6 sm:text-base sm:leading-7">
               The business grows. Manual steps multiply. Systems that once
               worked well enough start getting in the way.
             </p>
@@ -86,11 +86,11 @@ export default function Problems() {
                 lg:py-8
               "
             >
-              <span className="font-mono text-[0.62rem] text-[#f26a2e] sm:text-xs">
+              <span className="font-mono text-[0.62rem] text-(--orange-ink) sm:text-xs">
                 {problem.number}
               </span>
 
-              <span className="tech-label text-black/28">
+              <span className="tech-label text-black/60">
                 {problem.label}
               </span>
 
@@ -98,7 +98,7 @@ export default function Problems() {
                 {problem.title}
               </h3>
 
-              <p className="max-w-lg text-sm leading-5 text-black/45 sm:leading-6">
+              <p className="max-w-lg text-sm leading-5 text-black/60 sm:leading-6">
                 {problem.text}
               </p>
             </motion.article>
@@ -106,7 +106,7 @@ export default function Problems() {
         </div>
 
         <div className="grid gap-2 pt-6 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16 lg:pt-8">
-          <span className="tech-label text-black/25">
+          <span className="tech-label text-black/60">
             NEXT
           </span>
 
@@ -115,7 +115,7 @@ export default function Problems() {
               You don&apos;t need to know the technical solution.
             </p>
 
-            <p className="mt-1.5 max-w-xl text-sm leading-6 text-black/45">
+            <p className="mt-1.5 max-w-xl text-sm leading-6 text-black/60">
               Tell us what is slowing the business down. We&apos;ll work
               backwards from the problem.
             </p>

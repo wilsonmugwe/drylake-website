@@ -104,12 +104,15 @@ function isActive(pathname: string, href: string) {
 }
 
 export default function AdminMobileNav() {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  /*
+   * The menu is open only for the path it was opened on, so any navigation closes it
+   * without a setState-in-effect (react-hooks/set-state-in-effect).
+   */
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const open = openedOn === pathname;
+  const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
 
   useEffect(() => {
     if (!open) return;

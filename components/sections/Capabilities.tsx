@@ -53,14 +53,14 @@ export default function Capabilities() {
       <Container className="relative z-10">
         <div className="grid gap-6 border-b border-black/10 pb-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12 lg:pb-10">
           <div>
-            <p className="section-label text-black/45">
+            <p className="section-label text-black/60">
               05 / Capabilities
             </p>
 
             <div className="mt-4 flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-              <span className="tech-label text-black/30">
+              <span className="tech-label text-black/60">
                 THE TOOL FOLLOWS THE PROBLEM
               </span>
             </div>
@@ -70,7 +70,7 @@ export default function Capabilities() {
             <h2 className="max-w-4xl text-[clamp(2.7rem,6vw,6rem)] font-semibold leading-[0.9] tracking-[-0.065em]">
               Different technology.
               <br />
-              <span className="text-black/30">Same objective.</span>
+              <span className="text-black/45">Same objective.</span>
             </h2>
 
             <p className="mt-5 max-w-2xl text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
@@ -99,7 +99,7 @@ export default function Capabilities() {
               "
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-black/30">
+                <span className="font-mono text-xs text-black/60">
                   {capability.number}
                 </span>
 
@@ -111,7 +111,7 @@ export default function Capabilities() {
                   {capability.title}
                 </h3>
 
-                <p className="mt-3 max-w-sm text-sm leading-6 text-black/50 transition-colors group-hover:text-black/70">
+                <p className="mt-3 max-w-sm text-sm leading-6 text-black/60 transition-colors group-hover:text-black/70">
                   {capability.description}
                 </p>
               </div>

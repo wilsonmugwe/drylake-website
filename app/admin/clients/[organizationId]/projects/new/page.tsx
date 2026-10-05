@@ -10,6 +10,7 @@ import {
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
   title: "Create Project | Drylake Admin",
@@ -51,6 +52,11 @@ export default async function NewProjectPage({
   }
 
   const { organizationId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(organizationId)) {
+    notFound();
+  }
 
   // ---------------------------------------------------------
   // Load organisation

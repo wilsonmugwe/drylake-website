@@ -29,14 +29,14 @@ export default function About() {
       <Container className="relative z-10">
         <div className="grid gap-7 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
           <div>
-            <p className="section-label text-black/45">
+            <p className="section-label text-black/60">
               08 / How We Think
             </p>
 
             <div className="mt-4 flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-              <span className="tech-label text-black/30">
+              <span className="tech-label text-black/60">
                 DRYLAKE PRINCIPLES
               </span>
             </div>
@@ -54,7 +54,7 @@ export default function About() {
               className="max-w-4xl text-[clamp(2.7rem,6vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]"
             >
               Technology should make the business
-              <span className="text-black/30"> simpler.</span>
+              <span className="text-black/45"> simpler.</span>
             </motion.h2>
 
             <p className="mt-5 max-w-2xl text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
@@ -93,7 +93,7 @@ export default function About() {
             >
               <div className="flex h-full flex-col justify-between gap-14">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-black/35">
+                  <span className="font-mono text-xs text-black/60">
                     {principle.number}
                   </span>
 
@@ -105,7 +105,7 @@ export default function About() {
                     {principle.title}
                   </h3>
 
-                  <p className="mt-4 max-w-sm text-sm leading-6 text-black/55">
+                  <p className="mt-4 max-w-sm text-sm leading-6 text-black/60">
                     {principle.text}
                   </p>
                 </div>

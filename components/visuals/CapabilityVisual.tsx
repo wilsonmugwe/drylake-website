@@ -36,7 +36,7 @@ function Frame({
   return (
     <div className="tech-panel tech-corner micro-grid relative h-[190px] w-full p-5 sm:h-[210px]">
       <div className="relative z-10 flex items-center justify-between">
-        <span className="tech-label text-black/35">{label}</span>
+        <span className="tech-label text-black/60">{label}</span>
 
         <div className="flex gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-black/15" />
@@ -143,7 +143,7 @@ function AutomationVisual({ reduceMotion }: { reduceMotion: boolean }) {
                 />
               </div>
 
-              <span className="tech-label mt-3 text-[0.48rem] text-black/35 sm:text-[0.55rem]">
+              <span className="tech-label mt-3 text-[0.48rem] text-black/60 sm:text-[0.55rem]">
                 {label}
               </span>
             </div>
@@ -205,7 +205,7 @@ function Node({
     <div
       className={`absolute flex h-10 w-14 items-center justify-center border border-black/15 bg-white ${className}`}
     >
-      <span className="tech-label text-[0.48rem] text-black/40">
+      <span className="tech-label text-[0.48rem] text-black/60">
         {label}
       </span>
     </div>
@@ -251,7 +251,7 @@ function SetupVisual({ reduceMotion }: { reduceMotion: boolean }) {
                 />
               </motion.div>
 
-              <span className="tech-label mt-3 text-[0.48rem] text-black/35 sm:text-[0.55rem]">
+              <span className="tech-label mt-3 text-[0.48rem] text-black/60 sm:text-[0.55rem]">
                 {node}
               </span>
             </div>
@@ -259,11 +259,11 @@ function SetupVisual({ reduceMotion }: { reduceMotion: boolean }) {
         </div>
 
         <div className="mt-5 flex items-center justify-between border-t border-black/10 pt-2">
-          <span className="tech-label text-[0.46rem] text-black/25">
+          <span className="tech-label text-[0.46rem] text-black/60">
             STATUS
           </span>
 
-          <span className="flex items-center gap-1.5 tech-label text-[0.46rem] text-black/45">
+          <span className="flex items-center gap-1.5 tech-label text-[0.46rem] text-black/60">
             <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
             CONNECTED
           </span>

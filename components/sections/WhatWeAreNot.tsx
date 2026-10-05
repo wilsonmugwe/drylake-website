@@ -32,14 +32,14 @@ export default function WhatWeAreNot() {
       <Container className="relative z-10">
         <div className="grid gap-10 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
           <div>
-            <p className="section-label text-white/40">
+            <p className="section-label text-white/55">
               06 / Production Matters
             </p>
 
             <div className="mt-4 flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
-              <span className="tech-label text-white/30">
+              <span className="tech-label text-white/55">
                 BEYOND THE DEMO
               </span>
             </div>
@@ -50,7 +50,7 @@ export default function WhatWeAreNot() {
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-sm font-medium uppercase tracking-[0.16em] text-white/30"
+              className="text-sm font-medium uppercase tracking-[0.16em] text-white/55"
             >
               The demo works.
             </motion.p>
@@ -63,7 +63,7 @@ export default function WhatWeAreNot() {
               className="mt-3 max-w-5xl text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.87] tracking-[-0.07em]"
             >
               That&apos;s the
-              <span className="text-white/30"> easy part.</span>
+              <span className="text-white/45"> easy part.</span>
             </motion.h2>
 
             <p className="mt-6 max-w-2xl text-sm leading-6 text-white/55 sm:text-base sm:leading-7">
@@ -102,10 +102,10 @@ export default function WhatWeAreNot() {
               <p className="text-[clamp(2.2rem,5vw,5rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
                 The boring part
                 <br />
-                <span className="text-white/35">is the hard part.</span>
+                <span className="text-white/45">is the hard part.</span>
               </p>
 
-              <p className="mt-4 max-w-xl text-sm leading-6 text-white/50 sm:text-base">
+              <p className="mt-4 max-w-xl text-sm leading-6 text-white/55 sm:text-base">
                 We care about the parts that make software dependable when your
                 business actually starts relying on it.
               </p>

@@ -47,7 +47,7 @@ export default function Footer() {
               />
             </Link>
 
-            <p className="mt-1 text-xs text-white/30">
+            <p className="mt-1 text-xs text-white/55">
               Perth, Western Australia
             </p>
           </div>
@@ -68,7 +68,8 @@ export default function Footer() {
               ))}
             </nav>
 
-            <div className="mt-4 flex flex-col gap-1 text-xs text-white/28 sm:items-end">
+            {/* Both links are 44px touch targets (WCAG 2.5.8); no gap, so the visual spacing stays close. */}
+            <div className="mt-4 flex flex-col text-xs text-white/55 sm:items-end">
               <a
                 href="mailto:hello@drylake.com.au"
                 className="inline-flex min-h-[44px] items-center transition-colors hover:text-white"
@@ -78,7 +79,7 @@ export default function Footer() {
 
               <a
                 href="tel:+61420565457"
-                className="transition-colors hover:text-white"
+                className="inline-flex min-h-[44px] items-center transition-colors hover:text-white"
               >
                 +61 420 565 457
               </a>
@@ -86,7 +87,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 border-t border-white/[0.08] py-4 text-[0.65rem] text-white/22 sm:flex-row sm:items-center sm:justify-between sm:text-xs">
+        <div className="flex flex-col gap-1 border-t border-white/[0.08] py-4 text-[0.65rem] text-white/55 sm:flex-row sm:items-center sm:justify-between sm:text-xs">
           <p>
             Drylake Pty Ltd · ABN 70 702 662 557
           </p>

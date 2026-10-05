@@ -31,8 +31,10 @@ export default function SystemScreen({
   children,
 }: SystemScreenProps) {
   return (
-    <main className="relative flex min-h-[100svh] flex-col overflow-hidden bg-black text-white">
-      <Navbar />
+    <>
+    <Navbar />
+
+    <main id="main-content" tabIndex={-1} className="relative flex min-h-[100svh] flex-col overflow-hidden bg-black text-white outline-none">
 
       <div
         aria-hidden="true"
@@ -46,7 +48,7 @@ export default function SystemScreen({
       <Container className="relative z-10 flex flex-1 flex-col justify-center pb-16 pt-[128px] sm:pt-[150px]">
         <div className="flex items-center gap-2">
           <span className="signal-dot h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-          <span className="font-mono text-xs tracking-[0.18em] text-white/45">
+          <span className="font-mono text-xs tracking-[0.18em] text-white/55">
             {code}
           </span>
         </div>
@@ -93,5 +95,6 @@ export default function SystemScreen({
         </nav>
       </Container>
     </main>
+    </>
   );
 }

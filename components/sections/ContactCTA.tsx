@@ -29,7 +29,7 @@ export default function ContactCTA() {
       </div>
 
       <Container className="relative z-10">
-        <p className="section-label flex items-center gap-2.5 text-white/35">
+        <p className="section-label flex items-center gap-2.5 text-white/55">
           <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
           Start a Conversation
@@ -41,12 +41,12 @@ export default function ContactCTA() {
               Tell us what&apos;s
               <br />
 
-              <span className="text-white/28">
+              <span className="text-white/45">
                 slowing you down.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/48 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/55 sm:mt-6 sm:text-base sm:leading-7">
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>

@@ -25,20 +25,22 @@ export const metadata: Metadata = pageMetadata({
 
 export default function Home() {
   return (
-    <main className="overflow-hidden">
+    <>
       <FaqSchema />
       <Navbar />
 
-      <Hero />
-      <Problems />
-      <Solutions />
-      <Integrations />
-      <Founders />
-      <Approach />
-      <FAQ />
-      <ContactCTA />
+      <main id="main-content" tabIndex={-1} className="overflow-hidden outline-none">
+        <Hero />
+        <Problems />
+        <Solutions />
+        <Integrations />
+        <Founders />
+        <Approach />
+        <FAQ />
+        <ContactCTA />
+      </main>
 
       <Footer />
-    </main>
+    </>
   );
 }

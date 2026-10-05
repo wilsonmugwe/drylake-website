@@ -55,7 +55,7 @@ export default function Approach() {
       <Container>
         <div className="grid gap-5 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
           <div>
-            <p className="section-label text-black/38">
+            <p className="section-label text-black/60">
               04 / How We Work
             </p>
           </div>
@@ -65,12 +65,12 @@ export default function Approach() {
               Understand first.
               <br />
 
-              <span className="text-black/24">
+              <span className="text-black/45">
                 Build second.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/52 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:mt-6 sm:text-base sm:leading-7">
               No technical specification required. We start with the business
               problem and work forward from there.
             </p>
@@ -110,8 +110,8 @@ export default function Approach() {
                   <span
                     className={`font-mono text-[0.62rem] sm:text-xs ${
                       selected
-                        ? "text-[#f26a2e]"
-                        : "text-black/25"
+                        ? "text-(--orange-ink)"
+                        : "text-black/60"
                     }`}
                   >
                     {stage.number}
@@ -121,7 +121,7 @@ export default function Approach() {
                     className={`text-xl font-semibold tracking-[-0.04em] transition-colors sm:text-2xl lg:text-[2.5rem] ${
                       selected
                         ? "text-black"
-                        : "text-black/45"
+                        : "text-black/60"
                     }`}
                   >
                     {stage.title}
@@ -148,8 +148,8 @@ export default function Approach() {
                       lg:block
                       ${
                         selected
-                          ? "text-black/55"
-                          : "text-black/25"
+                          ? "text-black/60"
+                          : "text-black/60"
                       }
                     `}
                   >
@@ -167,7 +167,7 @@ export default function Approach() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden lg:hidden"
                     >
-                      <p className="pb-5 pl-[55px] pr-4 text-sm leading-6 text-black/50 sm:pl-[83px]">
+                      <p className="pb-5 pl-[55px] pr-4 text-sm leading-6 text-black/60 sm:pl-[83px]">
                         {stage.text}
                       </p>
                     </motion.div>
@@ -181,7 +181,7 @@ export default function Approach() {
         {/* Production */}
         <div className="mt-10 grid gap-5 border-t border-black/10 pt-8 sm:mt-14 sm:pt-10 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
           <div>
-            <p className="section-label text-black/35">
+            <p className="section-label text-black/60">
               Production Matters
             </p>
           </div>
@@ -191,12 +191,12 @@ export default function Approach() {
               The boring part
               <br />
 
-              <span className="text-black/24">
+              <span className="text-black/45">
                 is the hard part.
               </span>
             </h3>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/52 sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:text-base">
               We engineer the less visible parts that make software dependable
               when the business starts relying on it.
             </p>
@@ -212,7 +212,7 @@ export default function Approach() {
                     className="shrink-0 text-[#f26a2e]"
                   />
 
-                  <span className="text-xs text-black/48 sm:text-sm">
+                  <span className="text-xs text-black/60 sm:text-sm">
                     {item}
                   </span>
                 </div>

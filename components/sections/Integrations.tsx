@@ -44,7 +44,7 @@ export default function Integrations() {
       <Container className="relative z-10">
         <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-16">
           <div>
-            <p className="section-label flex items-center gap-2.5 text-white/35">
+            <p className="section-label flex items-center gap-2.5 text-white/55">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
               Work With What You Have
@@ -54,12 +54,12 @@ export default function Integrations() {
               Don&apos;t replace
               <br />
 
-              <span className="text-white/28">
+              <span className="text-white/45">
                 what already works.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-lg text-sm leading-6 text-white/50 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-lg text-sm leading-6 text-white/55 sm:mt-6 sm:text-base sm:leading-7">
               We can connect, extend and build around the systems your
               business already depends on.
             </p>
@@ -92,7 +92,7 @@ export default function Integrations() {
                 DRYLAKE
               </span>
 
-              <span className="tech-label mt-1 text-white/25">
+              <span className="tech-label mt-1 text-white/55">
                 Connected workflow
               </span>
             </div>
@@ -105,7 +105,7 @@ export default function Integrations() {
                 <div className="flex items-center gap-2 border border-white/10 bg-black px-3 py-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
 
-                  <span className="tech-label whitespace-nowrap text-white/40">
+                  <span className="tech-label whitespace-nowrap text-white/55">
                     {system.label}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export default function Integrations() {
                 >
                   <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
 
-                  <span className="tech-label text-white/40">
+                  <span className="tech-label text-white/55">
                     {system.label}
                   </span>
                 </div>
@@ -166,7 +166,7 @@ export default function Integrations() {
           </div>
         </div>
 
-        <p className="mt-6 border-t border-white/[0.08] pt-4 text-[0.65rem] leading-5 text-white/22 sm:text-xs">
+        <p className="mt-6 border-t border-white/[0.08] pt-4 text-[0.65rem] leading-5 text-white/55 sm:text-xs">
           Integrations depend on the capabilities and access provided by each
           platform.
         </p>

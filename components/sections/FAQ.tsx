@@ -22,7 +22,7 @@ export default function FAQ() {
       <Container>
         <div className="grid gap-6 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
           <div>
-            <p className="section-label text-black/38">
+            <p className="section-label text-black/60">
               05 / FAQ
             </p>
           </div>
@@ -32,7 +32,7 @@ export default function FAQ() {
               A few things you
               <br />
 
-              <span className="text-black/24">
+              <span className="text-black/45">
                 might be wondering.
               </span>
             </h2>
@@ -64,7 +64,7 @@ export default function FAQ() {
                           className={`w-7 shrink-0 font-mono text-[0.58rem] font-normal ${
                             isOpen
                               ? "text-[#f26a2e]"
-                              : "text-black/22"
+                              : "text-black/60"
                           }`}
                         >
                           0{index + 1}
@@ -98,7 +98,7 @@ export default function FAQ() {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <p className="max-w-2xl pb-6 pl-10 pr-4 text-sm leading-6 text-black/48 sm:text-base sm:leading-7">
+                      <p className="max-w-2xl pb-6 pl-10 pr-4 text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
                         {faq.answer}
                       </p>
                     </motion.div>

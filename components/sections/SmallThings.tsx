@@ -54,13 +54,13 @@ export default function SmallThings() {
       <Container className="relative z-10">
         <div className="grid gap-9 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <div>
-            <p className="section-label text-white/40">
+            <p className="section-label text-white/55">
               04 / Practical Technology
             </p>
 
             <h2 className="mt-5 max-w-xl text-[clamp(2.8rem,6vw,6rem)] font-semibold leading-[0.9] tracking-[-0.065em]">
               Not every problem needs
-              <span className="text-white/35"> custom software.</span>
+              <span className="text-white/45"> custom software.</span>
             </h2>
 
             <p className="mt-5 max-w-lg text-sm leading-6 text-white/55 sm:mt-6 sm:text-base sm:leading-7">
@@ -91,7 +91,7 @@ export default function SmallThings() {
                   >
                     <span
                       className={`font-mono text-xs transition-colors ${
-                        isOpen ? "text-[#f26a2e]" : "text-white/30"
+                        isOpen ? "text-[#f26a2e]" : "text-white/55"
                       }`}
                     >
                       0{index + 1}
@@ -103,7 +103,7 @@ export default function SmallThings() {
                       </span>
 
                       {!isOpen && (
-                        <span className="mt-1 block text-xs leading-5 text-white/40 sm:text-sm">
+                        <span className="mt-1 block text-xs leading-5 text-white/55 sm:text-sm">
                           {item.teaser}
                         </span>
                       )}
@@ -146,7 +146,7 @@ export default function SmallThings() {
                                     }`}
                                   />
 
-                                  <span className="tech-label mt-2 truncate text-[0.46rem] text-white/35 sm:text-[0.55rem]">
+                                  <span className="tech-label mt-2 truncate text-[0.46rem] text-white/55 sm:text-[0.55rem]">
                                     {step}
                                   </span>
                                 </div>

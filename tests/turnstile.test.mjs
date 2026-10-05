@@ -9,11 +9,13 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, it } from "node:test";
 
+import { resetClaimedTokens } from "../lib/contact/consumed-tokens.ts";
 import { clientIp, verifyTurnstile } from "../lib/contact/turnstile.ts";
 
 const REAL_SECRET = "0x4AAAAAAAunit-test-secret-not-real";
 const TEST_ALWAYS_PASS = "1x0000000000000000000000000000000AA";
 const realFetch = globalThis.fetch;
+const realInfo = console.info;
 const silence = ["error", "warn"].map((level) => [level, console[level]]);
 
 let calls;
@@ -37,11 +39,14 @@ beforeEach(() => {
   delete process.env.TURNSTILE_ALLOWED_HOSTNAMES;
   calls = [];
   for (const [level] of silence) console[level] = () => {};
+  console.info = () => {};
+  resetClaimedTokens();
 });
 
 afterEach(() => {
   globalThis.fetch = realFetch;
   for (const [level, fn] of silence) console[level] = fn;
+  console.info = realInfo;
 });
 
 describe("verifyTurnstile: fails closed", () => {
@@ -161,5 +166,30 @@ describe("clientIp", () => {
       headers: { "x-forwarded-for": "203.0.113.7, 10.0.0.1" },
     });
     assert.equal(clientIp(req), "203.0.113.7");
+  });
+});
+
+describe("verifyTurnstile: single use enforced server-side", () => {
+  it("refuses a token already presented, even if Siteverify would say success again", async () => {
+    // Reproduces 5 Oct 2026: production accepted one token three times.
+    mockSiteverify(() => valid());
+    assert.deepEqual(await verifyTurnstile("reused-token", null), { ok: true });
+    const second = await verifyTurnstile("reused-token", null);
+    assert.deepEqual(second, { ok: false, reason: "rejected", errorCodes: ["duplicate-token"] });
+    assert.equal(calls.length, 1, "the replay must not reach Cloudflare");
+  });
+
+  it("refuses a token whose first attempt failed (Cloudflare consumed it)", async () => {
+    mockSiteverify(() => json({ success: false, "error-codes": ["invalid-input-response"] }));
+    assert.equal((await verifyTurnstile("burnt-token", null)).ok, false);
+    mockSiteverify(() => valid());
+    assert.equal((await verifyTurnstile("burnt-token", null)).ok, false);
+    assert.equal(calls.length, 0);
+  });
+
+  it("still accepts a different fresh token", async () => {
+    mockSiteverify(() => valid());
+    assert.equal((await verifyTurnstile("token-a", null)).ok, true);
+    assert.equal((await verifyTurnstile("token-b", null)).ok, true);
   });
 });

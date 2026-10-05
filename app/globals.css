@@ -14,6 +14,9 @@
 
   --mineral: #f2f0e9;
   --orange: #f26a2e;
+  /* Orange for small text on white/mineral: #f26a2e is 3.05:1 there (fails WCAG 1.4.3).
+     Same hue at 5.6:1 on white and 4.9:1 on mineral. */
+  --orange-ink: #b83f0c;
 
   --muted-black: rgba(0, 0, 0, 0.55);
   --muted-white: rgba(255, 255, 255, 0.55);

@@ -69,13 +69,13 @@ export default function Hero() {
               }
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="section-label flex items-center gap-3 text-white/40"
+              className="section-label flex items-center gap-3 text-white/55"
             >
               <span className="signal-dot h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
 
               <span>Perth / Western Australia</span>
 
-              <span className="hidden text-white/15 sm:inline">
+              <span className="hidden text-white/55 sm:inline">
                 /
               </span>
 
@@ -113,7 +113,7 @@ export default function Hero() {
               shouldn&apos;t run
               <br />
 
-              <span className="text-white/32">
+              <span className="text-white/45">
                 on workarounds.
               </span>
             </motion.h1>
@@ -267,7 +267,7 @@ export default function Hero() {
                 DRYLAKE
               </span>
 
-              <span className="tech-label mt-1 text-white/25">
+              <span className="tech-label mt-1 text-white/55">
                 Connected system
               </span>
             </div>
@@ -289,7 +289,7 @@ export default function Hero() {
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
 
-                  <span className="tech-label text-white/32">
+                  <span className="tech-label text-white/55">
                     {node.label}
                   </span>
                 </div>
@@ -316,7 +316,7 @@ export default function Hero() {
             </motion.div>
 
             <div className="absolute bottom-0 left-0 flex items-center gap-2">
-              <span className="tech-label text-white/20">
+              <span className="tech-label text-white/55">
                 SYSTEM STATUS
               </span>
 
@@ -345,11 +345,11 @@ export default function Hero() {
         >
           <div className="flex items-center">
             <div className="flex-1">
-              <span className="tech-label text-white/25">
+              <span className="tech-label text-white/55">
                 INPUT
               </span>
 
-              <p className="mt-1 text-xs text-white/45">
+              <p className="mt-1 text-xs text-white/55">
                 Email · Forms · Sheets
               </p>
             </div>
@@ -374,7 +374,7 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.56rem] uppercase tracking-[0.13em] text-white/25 sm:mt-8">
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.56rem] uppercase tracking-[0.13em] text-white/55 sm:mt-8">
           <span>Australian company</span>
           <span>/</span>
           <span>Founder-led</span>
