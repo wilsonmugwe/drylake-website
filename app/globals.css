@@ -1,328 +1,257 @@
-@import "tailwindcss";
-
 /* =========================================================
-   DRYLAKE DESIGN SYSTEM
+   DRYLAKE ADMIN SYSTEM
+   Permanent light workspace / dark navigation system
    ========================================================= */
 
 :root {
-  --background: #ffffff;
-  --foreground: #090909;
+  --admin-canvas: #f3f1eb;
+  --admin-canvas-deep: #ebe8e0;
+  --admin-surface: #faf9f6;
+  --admin-surface-strong: #ffffff;
+  --admin-surface-muted: #eeece5;
 
-  --black: #090909;
-  --off-black: #0b0b0b;
-  --white: #ffffff;
+  --admin-ink: #11110f;
+  --admin-ink-soft: rgba(17, 17, 15, 0.62);
+  --admin-ink-muted: rgba(17, 17, 15, 0.42);
 
-  --mineral: #f2f0e9;
-  --orange: #f26a2e;
+  --admin-border: rgba(17, 17, 15, 0.1);
+  --admin-border-strong: rgba(17, 17, 15, 0.16);
 
-  --muted-black: rgba(0, 0, 0, 0.55);
-  --muted-white: rgba(255, 255, 255, 0.55);
+  --admin-nav: #0b0b0a;
+  --admin-nav-elevated: #11110f;
 
-  --border-dark: rgba(0, 0, 0, 0.1);
-  --border-light: rgba(255, 255, 255, 0.1);
+  --admin-orange: #f26a2e;
 }
 
-/* =========================================================
-   BASE
-   ========================================================= */
-
-html {
-  scroll-behavior: smooth;
-  background: var(--background);
+.admin-shell {
+  min-height: 100vh;
+  background: var(--admin-canvas);
+  color: var(--admin-ink);
 }
 
-body {
-  margin: 0;
-  overflow-x: hidden;
-  background: var(--background);
-  color: var(--foreground);
-
-  font-family:
-    var(--font-geist),
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  text-rendering: optimizeLegibility;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-::selection {
-  background: var(--orange);
-  color: var(--black);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button {
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
-}
-
-/* =========================================================
-   TYPOGRAPHY
-   ========================================================= */
-
-.section-label {
-  font-family: var(--font-geist-mono), monospace;
-
-  font-size: 0.68rem;
-  font-weight: 500;
-
-  letter-spacing: 0.16em;
-  line-height: 1.4;
-
-  text-transform: uppercase;
-}
-
-.tech-label {
-  font-family: var(--font-geist-mono), monospace;
-
-  font-size: 0.6rem;
-  font-weight: 500;
-
-  letter-spacing: 0.14em;
-  line-height: 1.4;
-
-  text-transform: uppercase;
-}
-
-/* =========================================================
-   BUTTON CONTRAST
-   ========================================================= */
-
-.button-dark,
-.button-dark:link,
-.button-dark:visited {
-  color: #ffffff !important;
-}
-
-.button-dark span,
-.button-dark svg {
-  color: #ffffff !important;
-}
-
-.button-light,
-.button-light:link,
-.button-light:visited {
-  color: #090909 !important;
-}
-
-.button-light span,
-.button-light svg {
-  color: #090909 !important;
-}
-
-/* =========================================================
-   DRYLAKE SIGNAL GRID
-
-   Used sparingly. The grid is no longer the main brand device.
-   ========================================================= */
-
-.signal-grid-dark {
-  background-image:
-    linear-gradient(
-      rgba(255, 255, 255, 0.025) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.025) 1px,
-      transparent 1px
-    );
-
-  background-size: 96px 96px;
-}
-
-.signal-grid-light {
-  background-image:
-    linear-gradient(
-      rgba(0, 0, 0, 0.025) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.025) 1px,
-      transparent 1px
-    );
-
-  background-size: 96px 96px;
-}
-
-/* =========================================================
-   DRYLAKE CONTOURS
-
-   Abstract dry-lake / topographic geometry.
-   ========================================================= */
-
-.drylake-contours {
-  background-image:
+.admin-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
     radial-gradient(
-      ellipse at 68% 45%,
-      transparent 0 28%,
-      rgba(255, 255, 255, 0.04) 28.3%,
-      transparent 28.7% 37%,
-      rgba(255, 255, 255, 0.032) 37.3%,
-      transparent 37.7% 47%,
-      rgba(255, 255, 255, 0.025) 47.3%,
-      transparent 47.7%
-    );
-}
-
-.drylake-contours-light {
-  background-image:
+      circle at 8% 5%,
+      rgba(242, 106, 46, 0.07),
+      transparent 25rem
+    ),
     radial-gradient(
-      ellipse at 72% 45%,
-      transparent 0 28%,
-      rgba(0, 0, 0, 0.035) 28.3%,
-      transparent 28.7% 37%,
-      rgba(0, 0, 0, 0.025) 37.3%,
-      transparent 37.7% 47%,
-      rgba(0, 0, 0, 0.02) 47.3%,
-      transparent 47.7%
-    );
+      circle at 90% 20%,
+      rgba(255, 255, 255, 0.9),
+      transparent 30rem
+    ),
+    var(--admin-canvas);
+  color: var(--admin-ink);
 }
 
-/* =========================================================
-   SIGNALS
-   ========================================================= */
+.admin-page::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.035;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.7) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
 
-.signal-dot {
+.admin-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.admin-surface {
+  background: rgba(250, 249, 246, 0.88);
+  border: 1px solid var(--admin-border);
   box-shadow:
-    0 0 0 5px rgba(242, 106, 46, 0.1),
-    0 0 24px rgba(242, 106, 46, 0.15);
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 18px 55px rgba(22, 18, 12, 0.045);
+  backdrop-filter: blur(14px);
 }
 
-.signal-line {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(242, 106, 46, 0.8),
-    transparent
-  );
+.admin-surface-strong {
+  background: var(--admin-surface-strong);
+  border: 1px solid var(--admin-border);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 18px 55px rgba(22, 18, 12, 0.05);
 }
 
-/* =========================================================
-   FORMS
-   ========================================================= */
-
-input,
-textarea,
-select {
-  border-radius: 0;
+.admin-label {
+  color: var(--admin-orange);
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
-textarea:-webkit-autofill:focus {
-  -webkit-text-fill-color: #090909;
-  transition: background-color 9999s ease-out;
+.admin-muted {
+  color: var(--admin-ink-soft);
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
+.admin-faint {
+  color: var(--admin-ink-muted);
 }
 
-/* =========================================================
-   ACCESSIBILITY
-   ========================================================= */
-
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--orange);
-  outline-offset: 4px;
+.admin-divider {
+  border-color: var(--admin-border);
 }
 
-/* =========================================================
-   SCROLLBAR
-   ========================================================= */
-
-::-webkit-scrollbar {
-  width: 9px;
+.admin-input {
+  width: 100%;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.875rem;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--admin-ink);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
 }
 
-::-webkit-scrollbar-track {
+.admin-input::placeholder {
+  color: rgba(17, 17, 15, 0.3);
+}
+
+.admin-input:hover {
+  border-color: var(--admin-border-strong);
+}
+
+.admin-input:focus {
+  border-color: rgba(242, 106, 46, 0.55);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(242, 106, 46, 0.08);
+}
+
+.admin-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.875rem;
+  background: #11110f;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition:
+    transform 120ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+  touch-action: manipulation;
+}
+
+.admin-button-primary:hover {
+  background: #24221f;
+  box-shadow: 0 8px 24px rgba(17, 17, 15, 0.12);
+}
+
+.admin-button-primary:active {
+  transform: scale(0.98);
+}
+
+.admin-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.875rem;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--admin-ink);
+  font-weight: 550;
+  transition:
+    transform 120ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
+  touch-action: manipulation;
+}
+
+.admin-button-secondary:hover {
+  border-color: var(--admin-border-strong);
   background: #ffffff;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border: 3px solid #ffffff;
+.admin-button-secondary:active {
+  transform: scale(0.98);
+}
+
+.admin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(242, 106, 46, 0.22);
   border-radius: 999px;
+  background: rgba(242, 106, 46, 0.07);
+  padding: 0.38rem 0.7rem;
+  color: #d8561f;
+  font-size: 0.57rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.38);
+.admin-status::before {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--admin-orange);
+  content: "";
 }
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
+.admin-row {
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
 
-@media (max-width: 640px) {
-  .section-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.13em;
-  }
+.admin-row:hover {
+  background: rgba(255, 255, 255, 0.72);
+}
 
-  .tech-label {
-    font-size: 0.54rem;
-    letter-spacing: 0.12em;
-  }
+.admin-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: rgba(17, 17, 15, 0.07);
+}
 
-  .signal-grid-dark,
-  .signal-grid-light {
-    background-size: 64px 64px;
+.admin-skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  animation: admin-shimmer 1.3s infinite;
+}
+
+@keyframes admin-shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 
-/* =========================================================
-   REDUCED MOTION
-   ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+@media (min-width: 640px) {
+  .admin-container {
+    padding-inline: 2rem;
   }
+}
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+@media (min-width: 1024px) {
+  .admin-container {
+    padding-inline: 3rem;
   }
 }
