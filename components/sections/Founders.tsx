@@ -20,6 +20,7 @@ const founders = [
     role: "Co-founder & Head of Technology",
     focus:
       "Software engineering, technical architecture and taking systems from idea through to reliable delivery.",
+    credential: "Bachelor of Computer Science, majoring in Software Engineering",
     disciplines: "Engineering / Architecture / AI",
   },
 ];
