@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,14 @@ export async function GET(
   }
 
   const { documentId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(documentId)) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
   if (!documentId) {
     return errorResponse(

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,14 @@ export async function POST(
   }
 
   const { projectId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(projectId)) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
   if (!projectId) {
     return errorResponse("Invalid project.", 400);

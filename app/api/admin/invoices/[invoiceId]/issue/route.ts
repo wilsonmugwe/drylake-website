@@ -8,6 +8,7 @@ import {
   getResendClient,
 } from "@/lib/email/resend";
 import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
+import { isUuid } from "@/lib/validation/uuid";
 
 type RouteContext = {
   params: Promise<{
@@ -83,6 +84,14 @@ export async function POST(
   }
 
   const { invoiceId } = await context.params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(invoiceId)) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
   const supabase = createAdminSupabaseClient();
 

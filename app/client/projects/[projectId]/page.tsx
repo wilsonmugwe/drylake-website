@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import ClientProjectView from "@/components/client/ClientProjectView";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
   title: "Project | Client Portal",
@@ -34,6 +35,11 @@ export default async function ClientProjectPage({
   }
 
   const { projectId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(projectId)) {
+    notFound();
+  }
   const supabase = createServerSupabaseClient();
 
   // ---------------------------------------------------------

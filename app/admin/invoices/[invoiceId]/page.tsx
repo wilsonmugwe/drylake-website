@@ -17,6 +17,7 @@ import {
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
   title: "Invoice | Drylake Admin",
@@ -165,6 +166,11 @@ export default async function AdminInvoicePage({
   }
 
   const { invoiceId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(invoiceId)) {
+    notFound();
+  }
 
   const supabase = createAdminSupabaseClient();
 

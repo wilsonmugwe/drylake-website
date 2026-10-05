@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isGstRegistered } from "@/lib/tax";
+import { isUuid } from "@/lib/validation/uuid";
 
 const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/;
 
@@ -96,6 +97,14 @@ export async function POST(
   }
 
   const { organizationId } = await context.params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(organizationId)) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
   const formData = await request.formData();
 

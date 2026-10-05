@@ -1,0 +1,44 @@
+# Contact form: delivery path, protection and checks
+
+Path: `/contact` form (`components/forms/ProjectForm.tsx`) -> Cloudflare Turnstile widget ->
+`POST /api/contact` (`app/api/contact/route.ts`) -> server-side Siteverify
+(`lib/contact/turnstile.ts`) -> Resend (`lib/email/contact-enquiry.ts`) -> `CONTACT_TO_EMAIL` inbox.
+
+## Response contract
+
+| Outcome | Status | Body |
+|---|---|---|
+| Delivered (Resend accepted the message) | 200 | `{ "success": true }` |
+| Field validation failed | 400 / 413 / 415 | `{ "error": "..." }` |
+| Turnstile token missing, invalid, reused, wrong host or wrong action | 403 | `{ "error": "..." }` |
+| Too many requests (Vercel Firewall, see below) | 429 | Vercel's response, not JSON |
+| Turnstile secret missing or Cloudflare unreachable | 503 | `{ "error": "..." }` |
+| Resend rejected the message, or `RESEND_API_KEY` / `EMAIL_FROM` / `CONTACT_TO_EMAIL` missing | 502 | `{ "error": "...email hello@drylake.com.au directly." }` |
+
+The browser shows "Enquiry received" only for a 2xx response whose JSON is exactly
+`success: true` (`lib/contact/submit-enquiry.ts`). Any other outcome keeps the visitor's answers
+in the form and resets the single-use Turnstile token.
+
+Logs record the reason for a failure (Resend's error name and message, or which variable is
+missing) and Turnstile error codes. They never record the enquiry, the token or a secret.
+
+## Required environment variables (Vercel, Production)
+
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY`, `EMAIL_FROM` (an
+address on a Resend-verified domain), `CONTACT_TO_EMAIL`. Optional: `TURNSTILE_ALLOWED_HOSTNAMES`
+(comma-separated, added to `drylake.com.au` and `www.drylake.com.au`, e.g. for a preview domain).
+
+## Rate limiting
+
+There is **no rate limiter in this repository**. Production is protected by a **Vercel Firewall**
+rule, which lives in the Vercel dashboard (Project > Firewall), not in code.
+
+Observed on production, 5 Oct 2026: the 6th `POST /api/contact` in a rapid burst from one IP
+returns `429` with `x-vercel-mitigated: deny`. The block cleared within about 40 seconds. Page
+requests (`GET /contact`) were not affected.
+
+Manual check (needs Vercel access): open Project > Firewall, confirm the rule exists, and record
+its match (path `/api/contact`, method POST), limit, window and action here. If the rule is ever
+removed, the only remaining protection is Turnstile.
+
+To re-test: send requests at least 12 seconds apart, or you will trip the limit yourself.

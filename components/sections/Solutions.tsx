@@ -46,7 +46,7 @@ export default function Solutions() {
 
       <Container className="relative z-10">
         <div className="grid gap-5 border-b border-black/10 pb-8 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16 lg:pb-12">
-          <p className="section-label text-black/38">
+          <p className="section-label text-black/60">
             02 / What We Do
           </p>
 
@@ -55,12 +55,12 @@ export default function Solutions() {
               Less workaround.
               <br />
 
-              <span className="text-black/24">
+              <span className="text-black/45">
                 More workflow.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/52 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60 sm:mt-6 sm:text-base sm:leading-7">
               We build and connect technology that helps growing Australian
               businesses operate more effectively.
             </p>
@@ -95,13 +95,13 @@ export default function Solutions() {
                   {solution.number}
                 </span>
 
-                <span className="tech-label text-black/25 lg:hidden">
+                <span className="tech-label text-black/60 lg:hidden">
                   {solution.label}
                 </span>
               </div>
 
               <div className="mt-4 lg:mt-0">
-                <span className="tech-label hidden text-black/28 lg:block">
+                <span className="tech-label hidden text-black/60 lg:block">
                   {solution.label}
                 </span>
 
@@ -111,11 +111,11 @@ export default function Solutions() {
               </div>
 
               <div className="mt-4 lg:mt-0 lg:pt-7">
-                <p className="max-w-xl text-sm leading-6 text-black/52 sm:text-base sm:leading-7">
+                <p className="max-w-xl text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
                   {solution.text}
                 </p>
 
-                <p className="mt-4 max-w-xl font-mono text-[0.62rem] uppercase leading-5 tracking-[0.08em] text-black/28 sm:text-[0.68rem]">
+                <p className="mt-4 max-w-xl font-mono text-[0.62rem] uppercase leading-5 tracking-[0.08em] text-black/60 sm:text-[0.68rem]">
                   {solution.examples}
                 </p>
               </div>

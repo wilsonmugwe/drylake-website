@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/validation/uuid";
 
 const ALLOWED_STATUSES = new Set([
   "NOT_STARTED",
@@ -47,6 +48,14 @@ export async function POST(
   }
 
   const { milestoneId } = await context.params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(milestoneId)) {
+    return NextResponse.json(
+      { error: "Not found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
   const supabase = createAdminSupabaseClient();
 

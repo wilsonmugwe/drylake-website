@@ -5,6 +5,7 @@ import { ArrowLeft, MessageSquareText, ShieldCheck } from "lucide-react";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
   title: "New Project Update | Drylake Admin",
@@ -38,6 +39,11 @@ export default async function NewProjectUpdatePage({
   }
 
   const { projectId } = await params;
+
+  // A malformed ID can never match a row: 404 before the query, not a database error.
+  if (!isUuid(projectId)) {
+    notFound();
+  }
 
   const supabase = createAdminSupabaseClient();
 

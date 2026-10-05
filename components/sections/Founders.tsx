@@ -34,7 +34,7 @@ export default function Founders() {
       <Container>
         <div className="grid gap-5 border-b border-black/10 pb-8 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16 lg:pb-12">
           <div>
-            <p className="section-label text-black/38">
+            <p className="section-label text-black/60">
               03 / Founder-Led
             </p>
           </div>
@@ -44,12 +44,12 @@ export default function Founders() {
               Small team.
               <br />
 
-              <span className="text-black/24">
+              <span className="text-black/45">
                 Direct access.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/50 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:mt-6 sm:text-base sm:leading-7">
               Work directly with the people responsible for understanding the
               problem and delivering the solution.
             </p>
@@ -81,11 +81,11 @@ export default function Founders() {
             >
               <div className="flex h-full flex-col justify-between gap-12">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-[#f26a2e]">
+                  <span className="font-mono text-xs text-(--orange-ink)">
                     {founder.number}
                   </span>
 
-                  <span className="tech-label text-black/25">
+                  <span className="tech-label text-black/60">
                     {founder.role}
                   </span>
                 </div>
@@ -95,7 +95,7 @@ export default function Founders() {
                     {founder.name}
                   </h3>
 
-                  <p className="mt-4 max-w-lg text-sm leading-6 text-black/50 sm:text-base sm:leading-7">
+                  <p className="mt-4 max-w-lg text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
                     {founder.focus}
                   </p>
 
@@ -105,7 +105,7 @@ export default function Founders() {
                     </p>
                   )}
 
-                  <p className="tech-label mt-5 text-black/25">
+                  <p className="tech-label mt-5 text-black/60">
                     {founder.disciplines}
                   </p>
                 </div>
@@ -115,11 +115,11 @@ export default function Founders() {
         </div>
 
         <div className="grid gap-4 border-t border-black/10 pt-6 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
-          <span className="tech-label text-black/25">
+          <span className="tech-label text-black/60">
             What founder-led means
           </span>
 
-          <p className="max-w-3xl text-sm leading-6 text-black/50 sm:text-base">
+          <p className="max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
             Direct communication. Clear accountability. The people discussing
             the problem with you are the same people responsible for making
             sure it gets solved properly.

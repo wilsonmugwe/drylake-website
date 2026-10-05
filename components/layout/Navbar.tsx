@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Show, UserButton } from "@clerk/nextjs";
 
+import SkipLink from "@/components/layout/SkipLink";
 import Container from "@/components/ui/Container";
 
 const links = [
@@ -127,13 +128,7 @@ export default function Navbar() {
 
   return (
     <>
-    {/* WCAG 2.4.1: lets keyboard users jump past the navigation. Hidden until focused. */}
-    <a
-      href="#main-content"
-      className="sr-only fixed left-4 top-4 z-[60] bg-white px-4 py-3 text-sm font-semibold text-black focus:not-sr-only"
-    >
-      Skip to content
-    </a>
+    <SkipLink />
 
     <header
       className="
@@ -384,7 +379,7 @@ export default function Navbar() {
                     pb-4
                   "
                 >
-                  <span className="tech-label text-white/25">
+                  <span className="tech-label text-white/55">
                     Navigation
                   </span>
 
@@ -398,7 +393,7 @@ export default function Navbar() {
                       "
                     />
 
-                    <span className="tech-label text-white/25">
+                    <span className="tech-label text-white/55">
                       Perth / WA
                     </span>
                   </div>
@@ -429,7 +424,7 @@ export default function Navbar() {
                           w-10
                           font-mono
                           text-[0.58rem]
-                          text-white/20
+                          text-white/55
                         "
                       >
                         {link.number}
@@ -639,7 +634,7 @@ export default function Navbar() {
                   "
                 >
                   <div>
-                    <span className="tech-label block text-white/20">
+                    <span className="tech-label block text-white/55">
                       Drylake Pty Ltd
                     </span>
 
@@ -649,7 +644,7 @@ export default function Navbar() {
                         block
                         text-[0.58rem]
                         leading-4
-                        text-white/20
+                        text-white/55
                       "
                     >
                       Software · Automation · AI
@@ -689,7 +684,7 @@ export default function Navbar() {
                         />
                       </span>
 
-                      <span className="tech-label text-white/25">
+                      <span className="tech-label text-white/55">
                         Perth / WA
                       </span>
                     </div>
@@ -701,7 +696,7 @@ export default function Navbar() {
                         text-[0.55rem]
                         uppercase
                         tracking-[0.12em]
-                        text-white/15
+                        text-white/55
                       "
                     >
                       Australia
@@ -734,9 +729,6 @@ export default function Navbar() {
         </AnimatePresence>
       </Container>
     </header>
-
-    {/* Skip-link target: the content after the header on every public page. */}
-    <div id="main-content" tabIndex={-1} className="outline-none" />
     </>
   );
 }
