@@ -193,3 +193,44 @@ describe("verifyTurnstile: single use enforced server-side", () => {
     assert.equal((await verifyTurnstile("token-b", null)).ok, true);
   });
 });
+
+describe("verifyTurnstile: shared (durable) single-use store", () => {
+  const store = (code) => {
+    const rows = [];
+    return {
+      rows,
+      from: () => ({
+        insert: async (row) => {
+          if (code) return { error: { code, message: "simulated" } };
+          if (rows.includes(row.fingerprint)) return { error: { code: "23505", message: "duplicate key" } };
+          rows.push(row.fingerprint);
+          return { error: null };
+        },
+      }),
+    };
+  };
+
+  it("refuses a token another instance already claimed", async () => {
+    mockSiteverify(() => valid());
+    const shared = store();
+    assert.equal((await verifyTurnstile("cross-instance", null, shared)).ok, true);
+    resetClaimedTokens(); // simulate the replay landing on a fresh instance
+    const verdict = await verifyTurnstile("cross-instance", null, shared);
+    assert.deepEqual(verdict, { ok: false, reason: "rejected", errorCodes: ["duplicate-token"] });
+    assert.equal(calls.length, 1, "the replay must not reach Cloudflare");
+    assert.equal(shared.rows.length, 1);
+    assert.equal(shared.rows[0].length, 64, "only a SHA-256 fingerprint is stored");
+    assert.notEqual(shared.rows[0], "cross-instance");
+  });
+
+  it("keeps the form working when the table is missing (falls back to memory)", async () => {
+    mockSiteverify(() => valid());
+    assert.equal((await verifyTurnstile("no-table", null, store("42P01"))).ok, true);
+    assert.equal((await verifyTurnstile("no-table", null, store("42P01"))).ok, false);
+  });
+
+  it("keeps the form working without a store", async () => {
+    mockSiteverify(() => valid());
+    assert.equal((await verifyTurnstile("no-store", null, null)).ok, true);
+  });
+});

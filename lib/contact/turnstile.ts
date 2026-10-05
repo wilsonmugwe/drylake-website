@@ -1,6 +1,11 @@
 import "server-only";
 
-import { claimToken, tokenFingerprint } from "./consumed-tokens.ts";
+import {
+  claimToken,
+  claimTokenDurably,
+  tokenFingerprint,
+  type ClaimStore,
+} from "./consumed-tokens.ts";
 import { CONTACT_ACTION } from "./turnstile-action.ts";
 
 const SITEVERIFY_URL =
@@ -61,11 +66,13 @@ export function clientIp(request: Request): string | null {
  * its own; only this call decides whether a submission is accepted.
  *
  * Contract: { ok: true } only when Cloudflare confirms success for a token minted on one of
- * our hostnames by the contact action. Fails closed on any error or timeout. Never throws.
+ * our hostnames by the contact action, and the token has not been presented before (checked
+ * in memory and, when claimStore is given, in the shared turnstile_token_claims table). Fails closed on any error or timeout. Never throws.
  */
 export async function verifyTurnstile(
   token: string,
-  remoteIp: string | null
+  remoteIp: string | null,
+  claimStore: ClaimStore | null = null
 ): Promise<TurnstileVerdict> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
@@ -80,9 +87,14 @@ export async function verifyTurnstile(
 
   // Single use, enforced here as well as by Cloudflare (see consumed-tokens.ts). Cloudflare's
   // test keys issue the same dummy token every time, so local/CI testing is exempt.
-  if (!TEST_SECRET_PATTERN.test(secret) && !claimToken(token)) {
-    console.warn("Turnstile: token replay refused:", tokenFingerprint(token).slice(0, 12));
-    return { ok: false, reason: "rejected", errorCodes: ["duplicate-token"] };
+  if (!TEST_SECRET_PATTERN.test(secret)) {
+    const replayed =
+      !claimToken(token) || (await claimTokenDurably(token, claimStore)) === "replay";
+
+    if (replayed) {
+      console.warn("Turnstile: token replay refused:", tokenFingerprint(token).slice(0, 12));
+      return { ok: false, reason: "rejected", errorCodes: ["duplicate-token"] };
+    }
   }
 
   const body = new URLSearchParams({ secret, response: token });

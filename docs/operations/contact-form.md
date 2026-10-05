@@ -29,8 +29,17 @@ minutes (three emails were sent). Invalid, missing and Cloudflare-dummy tokens w
 refused with 403, so the secret is a real one. Cloudflare documents every token as single-use
 (`timeout-or-duplicate` on replay), so its Siteverify answer for the replays needs checking.
 
-Mitigation in code: `lib/contact/consumed-tokens.ts` refuses a token this server instance has
-already presented (403, `duplicate-token`). It does not span instances.
+The in-memory guard from PR #10 did not stop it on production (the replay reached another
+instance). Mitigation in code now has two layers in `lib/contact/consumed-tokens.ts`:
+
+1. In memory, per instance.
+2. Shared: `public.turnstile_token_claims` (primary key = token fingerprint). **Run
+   `docs/operations/sql/2026-10-05-turnstile-token-claims.sql` once in the Supabase SQL editor.**
+   Until the table exists, the logs show `Turnstile: durable token claim unavailable: 42P01`
+   (or `PGRST205`) and only layer 1 applies. The form keeps working either way.
+
+Re-test after the SQL: submit the form once, then POST the same token again; the second must
+return 403.
 
 To find the cause (needs Vercel access): in the logs, every accepted token now prints
 `Turnstile: verified <fingerprint> age <N>s`. The same fingerprint appearing twice means

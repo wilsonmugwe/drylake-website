@@ -5,16 +5,18 @@ import { createHash } from "node:crypto";
 /*
  * Server-side single-use enforcement for Turnstile tokens, in addition to Cloudflare's own.
  *
- * Why: on 5 Oct 2026 one production token was accepted by /api/contact three times in about
- * two minutes, although Cloudflare documents every token as single-use. Until the cause is
- * found in the Vercel logs, a token we have already presented to Siteverify is refused here.
+ * Why: on 5 Oct 2026 one production token was accepted by /api/contact three times, and again
+ * after the in-memory guard shipped (the replay reached a different server instance), although
+ * Cloudflare documents every token as single-use.
  *
- * Scope, stated honestly: this memory lives in one server instance. It stops replays that land
- * on the same warm instance (the common case for a burst), not replays spread across cold
- * instances. Durable cross-instance enforcement needs a shared store.
+ * Two layers:
+ * 1. claimToken: in-memory, per instance. Free, catches replays on a warm instance.
+ * 2. claimTokenDurably: a row in public.turnstile_token_claims (primary key = fingerprint),
+ *    shared by every instance. SQL: docs/operations/sql/2026-10-05-turnstile-token-claims.sql.
+ *    Until that table exists the durable layer reports "unavailable" and the form keeps
+ *    working on layer 1 (logged, so the gap is visible).
  *
- * Only a SHA-256 fingerprint is kept, never the token. Entries expire after the 300 s token
- * lifetime plus a margin, and the map is capped so it cannot grow without bound.
+ * Only a SHA-256 fingerprint is stored, never the token.
  */
 const TOKEN_LIFETIME_MS = 6 * 60 * 1000;
 const MAX_ENTRIES = 10_000;
@@ -34,7 +36,7 @@ function prune(now: number) {
 }
 
 /**
- * Marks the token as used. Returns false when it was already used on this instance.
+ * Marks the token as used on this instance. Returns false when it was already used here.
  * Call before Siteverify: Cloudflare consumes a token on any validation attempt.
  */
 export function claimToken(token: string, now = Date.now()): boolean {
@@ -54,4 +56,49 @@ export function claimToken(token: string, now = Date.now()): boolean {
 /** Test hook: forget every claimed token. */
 export function resetClaimedTokens() {
   consumed.clear();
+}
+
+/** The slice of the Supabase client this module uses (injectable for tests). */
+export interface ClaimStore {
+  from(table: string): {
+    insert(row: { fingerprint: string }): PromiseLike<{ error: { code?: string; message?: string } | null }>;
+  };
+}
+
+export type DurableClaim = "claimed" | "replay" | "unavailable";
+
+const UNIQUE_VIOLATION = "23505";
+
+/**
+ * Claims the token in the shared table. "replay" only when the fingerprint already exists.
+ * Any other failure (table missing, network, misconfiguration) is "unavailable": the caller
+ * falls back to the in-memory layer rather than breaking the contact form.
+ */
+export async function claimTokenDurably(
+  token: string,
+  store: ClaimStore | null
+): Promise<DurableClaim> {
+  if (!store) {
+    return "unavailable";
+  }
+
+  try {
+    const { error } = await store
+      .from("turnstile_token_claims")
+      .insert({ fingerprint: tokenFingerprint(token) });
+
+    if (!error) {
+      return "claimed";
+    }
+
+    if (error.code === UNIQUE_VIOLATION) {
+      return "replay";
+    }
+
+    console.error("Turnstile: durable token claim unavailable:", error.code ?? "", error.message ?? "");
+    return "unavailable";
+  } catch (error) {
+    console.error("Turnstile: durable token claim failed:", (error as Error).name);
+    return "unavailable";
+  }
 }

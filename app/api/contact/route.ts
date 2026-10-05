@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
 import { deliverContactEnquiry } from "@/lib/email/contact-enquiry";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 interface ContactRequest {
@@ -134,7 +135,17 @@ export async function POST(request: Request) {
      * Server-side Turnstile verification, after the cheap field checks and before any
      * processing. Missing, invalid, expired, reused or foreign-host tokens are rejected.
      */
-    const verdict = await verifyTurnstile(turnstileToken, clientIp(request));
+    // Shared single-use store for tokens. Missing Supabase config must not take the contact
+    // form down: the verifier then falls back to its in-memory replay check.
+    let claimStore: ReturnType<typeof createAdminSupabaseClient> | null = null;
+
+    try {
+      claimStore = createAdminSupabaseClient();
+    } catch {
+      console.error("Turnstile: Supabase not configured; token replay check is per-instance only.");
+    }
+
+    const verdict = await verifyTurnstile(turnstileToken, clientIp(request), claimStore);
 
     if (!verdict.ok) {
       if (verdict.reason === "misconfigured" || verdict.reason === "unreachable") {
