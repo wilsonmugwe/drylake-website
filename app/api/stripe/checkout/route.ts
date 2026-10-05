@@ -1,51 +1,83 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 
+import { evaluateCheckout } from "@/lib/invoices/lifecycle";
+import {
+  checkoutIdempotencyKey,
+  decideSessionReuse,
+  METADATA_INVOICE_ID,
+  METADATA_INVOICE_NUMBER,
+  METADATA_ORGANIZATION_ID,
+} from "@/lib/invoices/stripe-payment";
 import { getStripe } from "@/lib/stripe";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/validation/uuid";
 
 export const runtime = "nodejs";
 
-type CheckoutRequestBody = {
-  invoiceId?: unknown;
-};
+/*
+ * Start (or resume) a Stripe Checkout payment for one invoice.
+ *
+ * Trust model: the browser sends ONLY an invoice id. Organisation comes from the Clerk
+ * session, ownership/visibility/status/amount/currency come from the database
+ * (evaluateCheckout in lib/invoices/lifecycle.ts). This route never marks anything PAID:
+ * only the signed webhook (app/api/stripe/webhook) does.
+ *
+ * Duplicate-payment protection: the last session id is stored on the invoice. An open,
+ * matching session is re-used; a completed one (paid, or a delayed method settling) refuses
+ * a new payment; a stale one is expired before a new one is made. Creation uses a Stripe
+ * idempotency key so two concurrent clicks get the same session.
+ */
 
-function jsonError(
-  error: string,
-  status: number,
-  code?: string
-) {
+const PROCESSING_MESSAGE =
+  "A payment for this invoice is already being processed. Refresh this page in a moment to see the result.";
+
+function jsonError(error: string, status: number, code: string) {
   return NextResponse.json(
-    {
-      error,
-      ...(code ? { code } : {}),
-    },
-    {
-      status,
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    }
+    { error, code },
+    { status, headers: { "Cache-Control": "no-store" } }
   );
 }
 
-export async function POST(
-  request: Request
-) {
-  // ---------------------------------------------------------
-  // Authentication
-  // ---------------------------------------------------------
+function checkoutUrl(url: string) {
+  return NextResponse.json(
+    { url },
+    { status: 200, headers: { "Cache-Control": "no-store" } }
+  );
+}
 
-  const { userId, orgId } =
-    await auth();
+function stripeErrorCode(error: unknown) {
+  if (error && typeof error === "object") {
+    const record = error as { type?: unknown; code?: unknown };
+    return {
+      type: typeof record.type === "string" ? record.type : undefined,
+      code: typeof record.code === "string" ? record.code : undefined,
+    };
+  }
+
+  return { type: undefined, code: undefined };
+}
+
+async function retrieveSession(stripe: Stripe, sessionId: string) {
+  try {
+    return await stripe.checkout.sessions.retrieve(sessionId);
+  } catch (error) {
+    // A session from another Stripe mode/account, or deleted test data: treat as absent.
+    if (stripeErrorCode(error).code === "resource_missing") {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+export async function POST(request: Request) {
+  const { userId, orgId } = await auth();
 
   if (!userId) {
-    return jsonError(
-      "You must be signed in to make a payment.",
-      401,
-      "UNAUTHENTICATED"
-    );
+    return jsonError("You must be signed in to make a payment.", 401, "UNAUTHENTICATED");
   }
 
   if (!orgId) {
@@ -56,81 +88,41 @@ export async function POST(
     );
   }
 
-  // ---------------------------------------------------------
-  // Parse request
-  //
-  // The browser is allowed to send ONLY the invoice ID.
-  //
-  // Amount and currency are loaded from Drylake's database.
-  // ---------------------------------------------------------
-
-  let body: CheckoutRequestBody;
-
-  try {
-    body =
-      (await request.json()) as CheckoutRequestBody;
-  } catch {
-    return jsonError(
-      "Invalid payment request.",
-      400,
-      "INVALID_REQUEST"
-    );
+  // JSON only: a cross-site HTML form cannot send application/json without a CORS preflight.
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return jsonError("Invalid payment request.", 415, "INVALID_REQUEST");
   }
 
-  const invoiceId =
-    typeof body.invoiceId === "string"
-      ? body.invoiceId.trim()
-      : "";
+  let body: { invoiceId?: unknown };
+
+  try {
+    body = (await request.json()) as { invoiceId?: unknown };
+  } catch {
+    return jsonError("Invalid payment request.", 400, "INVALID_REQUEST");
+  }
+
+  const invoiceId = typeof body?.invoiceId === "string" ? body.invoiceId.trim() : "";
 
   if (!isUuid(invoiceId)) {
-    return jsonError(
-      "Invoice not found.",
-      404,
-      "INVOICE_NOT_FOUND"
-    );
+    return jsonError("Invoice not found.", 404, "INVOICE_NOT_FOUND");
   }
 
   try {
-    const supabase =
-      createServerSupabaseClient();
+    // Reads go through the caller's RLS-scoped client, with explicit filters on top.
+    const supabase = createServerSupabaseClient();
 
-    // -------------------------------------------------------
-    // Resolve authenticated organisation
-    // -------------------------------------------------------
-
-    const {
-      data: organization,
-      error: organizationError,
-    } = await supabase
+    const { data: organization, error: organizationError } = await supabase
       .from("organizations")
-      .select(
-        `
-          id,
-          clerk_org_id,
-          name,
-          status
-        `
-      )
+      .select("id, clerk_org_id, name, status")
       .eq("clerk_org_id", orgId)
       .eq("status", "ACTIVE")
       .maybeSingle();
 
     if (organizationError) {
-      console.error(
-        "Stripe Checkout organisation lookup failed:",
-        {
-          code:
-            organizationError.code,
-          message:
-            organizationError.message,
-        }
-      );
-
-      return jsonError(
-        "Unable to start payment.",
-        500,
-        "ORGANISATION_LOOKUP_FAILED"
-      );
+      console.error("Stripe Checkout organisation lookup failed:", {
+        code: organizationError.code,
+      });
+      return jsonError("Unable to start payment. Please try again.", 500, "ORGANISATION_LOOKUP_FAILED");
     }
 
     if (!organization) {
@@ -141,304 +133,182 @@ export async function POST(
       );
     }
 
-    // -------------------------------------------------------
-    // Load payable invoice
-    //
-    // Explicit organisation filter is used in addition to RLS.
-    // -------------------------------------------------------
-
-    const {
-      data: invoice,
-      error: invoiceError,
-    } = await supabase
+    const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
-      .select(
-        `
-          id,
-          organization_id,
-          invoice_number,
-          status,
-          currency,
-          total_cents,
-          visible_to_client
-        `
-      )
+      .select("id, organization_id, invoice_number, status, currency, total_cents, visible_to_client")
       .eq("id", invoiceId)
-      .eq(
-        "organization_id",
-        organization.id
-      )
+      .eq("organization_id", organization.id)
       .eq("visible_to_client", true)
+      .neq("status", "DRAFT")
       .maybeSingle();
 
     if (invoiceError) {
-      console.error(
-        "Stripe Checkout invoice lookup failed:",
-        {
-          code: invoiceError.code,
-          message:
-            invoiceError.message,
-        }
-      );
+      console.error("Stripe Checkout invoice lookup failed:", { code: invoiceError.code });
+      return jsonError("Unable to start payment. Please try again.", 500, "INVOICE_LOOKUP_FAILED");
+    }
 
-      return jsonError(
-        "Unable to start payment.",
-        500,
-        "INVOICE_LOOKUP_FAILED"
-      );
+    const eligibility = evaluateCheckout(invoice, organization.id);
+
+    if (!eligibility.ok) {
+      if (eligibility.code === "INVALID_INVOICE_TOTAL" || eligibility.code === "UNSUPPORTED_CURRENCY") {
+        console.error("Stripe Checkout refused a stored invoice:", {
+          invoiceId,
+          code: eligibility.code,
+        });
+      }
+
+      return jsonError(eligibility.message, eligibility.httpStatus, eligibility.code);
     }
 
     if (!invoice) {
-      return jsonError(
-        "Invoice not found.",
-        404,
-        "INVOICE_NOT_FOUND"
-      );
+      // Unreachable: evaluateCheckout refuses a missing invoice. Narrows the type.
+      return jsonError("Invoice not found.", 404, "INVOICE_NOT_FOUND");
     }
 
-    // -------------------------------------------------------
-    // Lifecycle validation
-    // -------------------------------------------------------
+    const payable = invoice;
+    const { amountCents, currency } = eligibility;
 
-    if (invoice.status === "PAID") {
-      return jsonError(
-        "This invoice has already been paid.",
-        409,
-        "INVOICE_ALREADY_PAID"
-      );
+    // The stored session id is server-side bookkeeping: read and write it with the service
+    // client, still scoped to this invoice AND this organisation.
+    const admin = createAdminSupabaseClient();
+
+    const { data: stored, error: storedError } = await admin
+      .from("invoices")
+      .select("stripe_checkout_session_id")
+      .eq("id", payable.id)
+      .eq("organization_id", organization.id)
+      .maybeSingle();
+
+    if (storedError) {
+      console.error("Stripe Checkout session lookup failed:", { code: storedError.code });
+      return jsonError("Unable to start payment. Please try again.", 500, "SESSION_LOOKUP_FAILED");
     }
-
-    if (
-      invoice.status !== "OPEN" &&
-      invoice.status !== "OVERDUE"
-    ) {
-      return jsonError(
-        "This invoice is not currently available for payment.",
-        409,
-        "INVOICE_NOT_PAYABLE"
-      );
-    }
-
-    // -------------------------------------------------------
-    // Validate trusted amount
-    // -------------------------------------------------------
-
-    const totalCents = Number(
-      invoice.total_cents
-    );
-
-    if (
-      !Number.isSafeInteger(
-        totalCents
-      ) ||
-      totalCents <= 0
-    ) {
-      console.error(
-        "Stripe Checkout invalid invoice total:",
-        {
-          invoiceId: invoice.id,
-          invoiceNumber:
-            invoice.invoice_number,
-          totalCents:
-            invoice.total_cents,
-        }
-      );
-
-      return jsonError(
-        "This invoice cannot currently be paid online.",
-        409,
-        "INVALID_INVOICE_TOTAL"
-      );
-    }
-
-    // -------------------------------------------------------
-    // Validate currency
-    // -------------------------------------------------------
-
-    if (
-      typeof invoice.currency !==
-        "string" ||
-      !invoice.currency.trim()
-    ) {
-      console.error(
-        "Stripe Checkout invalid currency:",
-        {
-          invoiceId: invoice.id,
-          currency:
-            invoice.currency,
-        }
-      );
-
-      return jsonError(
-        "This invoice cannot currently be paid online.",
-        409,
-        "INVALID_CURRENCY"
-      );
-    }
-
-    const currency =
-      invoice.currency
-        .trim()
-        .toLowerCase();
-
-    // Drylake currently invoices in AUD.
-    //
-    // Keep this explicit so a bad database value cannot
-    // unexpectedly create a Checkout Session in another
-    // currency.
-
-    if (currency !== "aud") {
-      return jsonError(
-        "Online payment is currently available for AUD invoices only.",
-        409,
-        "UNSUPPORTED_CURRENCY"
-      );
-    }
-
-    // -------------------------------------------------------
-    // Origin
-    //
-    // Use the incoming request origin rather than accepting
-    // a redirect URL from the browser.
-    // -------------------------------------------------------
-
-    const requestUrl =
-      new URL(request.url);
-
-    const origin =
-      requestUrl.origin;
-
-    // -------------------------------------------------------
-    // Stripe Checkout
-    //
-    // IMPORTANT:
-    //
-    // totalCents and currency came from the authenticated,
-    // organisation-scoped Drylake invoice.
-    //
-    // They did NOT come from browser input.
-    // -------------------------------------------------------
 
     const stripe = getStripe();
+    const previousSessionId: string | null = stored?.stripe_checkout_session_id ?? null;
+    const expected = { invoiceId: payable.id, amountCents, currency };
 
-    const session =
-      await stripe.checkout.sessions.create({
-        mode: "payment",
+    if (previousSessionId) {
+      const previous = await retrieveSession(stripe, previousSessionId);
+      const decision = decideSessionReuse(previous, expected, Math.floor(Date.now() / 1000));
 
-        line_items: [
-          {
-            price_data: {
-              currency,
+      if (decision.action === "PROCESSING") {
+        return jsonError(PROCESSING_MESSAGE, 409, "PAYMENT_PROCESSING");
+      }
 
-              product_data: {
-                name:
-                  `Drylake Invoice ${invoice.invoice_number}`,
+      if (decision.action === "REUSE" && previous?.url) {
+        return checkoutUrl(previous.url);
+      }
 
-                description:
-                  `Payment for ${invoice.invoice_number}`,
-              },
+      if (decision.action === "CREATE_NEW" && decision.expirePrevious && previous) {
+        try {
+          await stripe.checkout.sessions.expire(previous.id);
+        } catch {
+          // It may have completed in the meantime. Never open a second session over it.
+          const recheck = await retrieveSession(stripe, previous.id);
 
-              unit_amount:
-                totalCents,
-            },
-
-            quantity: 1,
-          },
-        ],
-
-        client_reference_id:
-          invoice.id,
-
-        metadata: {
-          drylake_invoice_id:
-            invoice.id,
-
-          drylake_invoice_number:
-            invoice.invoice_number,
-
-          drylake_organization_id:
-            organization.id,
-        },
-
-        payment_intent_data: {
-          metadata: {
-            drylake_invoice_id:
-              invoice.id,
-
-            drylake_invoice_number:
-              invoice.invoice_number,
-
-            drylake_organization_id:
-              organization.id,
-          },
-        },
-
-        success_url:
-          `${origin}/client/billing/${invoice.id}?payment=success`,
-
-        cancel_url:
-          `${origin}/client/billing/${invoice.id}?payment=cancelled`,
-      });
-
-    // NOTE:
-    //
-    // There is deliberately no permanent invoice-based Stripe
-    // idempotency key here.
-    //
-    // A client may legitimately abandon or cancel Checkout and
-    // need a completely fresh Session later.
-    //
-    // The client button prevents accidental rapid double clicks,
-    // while the webhook and invoice lifecycle prevent a paid
-    // invoice from being paid again through Drylake.
-
-    if (!session.url) {
-      console.error(
-        `Stripe Checkout Session ${session.id} has no URL`
-      );
-
-      return jsonError(
-        "Unable to open secure checkout.",
-        500,
-        "CHECKOUT_URL_MISSING"
-      );
+          if (recheck?.status !== "expired") {
+            return jsonError(PROCESSING_MESSAGE, 409, "PAYMENT_PROCESSING");
+          }
+        }
+      }
     }
 
-    console.log(
-      `Stripe Checkout ready for ${invoice.invoice_number}`,
-      {
-        invoiceId:
-          invoice.id,
+    const origin = new URL(request.url).origin;
+    const metadata = {
+      [METADATA_INVOICE_ID]: payable.id,
+      [METADATA_INVOICE_NUMBER]: payable.invoice_number,
+      [METADATA_ORGANIZATION_ID]: organization.id,
+    };
 
-        checkoutSessionId:
-          session.id,
-      }
-    );
-
-    return NextResponse.json(
-      {
-        url: session.url,
-      },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control":
-            "no-store",
+    const createSession = (previous: string | null) =>
+      stripe.checkout.sessions.create(
+        {
+          mode: "payment",
+          line_items: [
+            {
+              price_data: {
+                currency,
+                product_data: {
+                  name: `Drylake Invoice ${payable.invoice_number}`,
+                  description: `Payment for ${payable.invoice_number}`,
+                },
+                unit_amount: amountCents,
+              },
+              quantity: 1,
+            },
+          ],
+          client_reference_id: payable.id,
+          metadata,
+          payment_intent_data: { metadata },
+          success_url: `${origin}/client/billing/${payable.id}?payment=success`,
+          cancel_url: `${origin}/client/billing/${payable.id}?payment=cancelled`,
         },
-      }
-    );
-  } catch (error) {
-    console.error(
-      "Stripe Checkout creation failed:",
-      error instanceof Error
-        ? error.message
-        : error
-    );
+        {
+          idempotencyKey: checkoutIdempotencyKey(payable.id, amountCents, currency, previous),
+        }
+      );
 
-    return jsonError(
-      "Unable to start payment. Please try again.",
-      500,
-      "CHECKOUT_FAILED"
-    );
+    let session = await createSession(previousSessionId);
+
+    // An idempotent replay can hand back a session created earlier with the same key.
+    if (session.status === "complete") {
+      return jsonError(PROCESSING_MESSAGE, 409, "PAYMENT_PROCESSING");
+    }
+
+    if (session.status !== "open") {
+      session = await createSession(session.id);
+    }
+
+    if (!session.url || session.status !== "open") {
+      console.error("Stripe Checkout Session not usable:", { sessionId: session.id });
+      return jsonError("Unable to open secure checkout. Please try again.", 502, "CHECKOUT_URL_MISSING");
+    }
+
+    // Record the session so the next click re-uses it. Conditional on the invoice still being
+    // payable and on nobody having stored a DIFFERENT session meanwhile.
+    const ownership = [
+      "stripe_checkout_session_id.is.null",
+      `stripe_checkout_session_id.eq.${session.id}`,
+      ...(previousSessionId ? [`stripe_checkout_session_id.eq.${previousSessionId}`] : []),
+    ].join(",");
+
+    const { data: recorded, error: recordError } = await admin
+      .from("invoices")
+      .update({ stripe_checkout_session_id: session.id })
+      .eq("id", payable.id)
+      .eq("organization_id", organization.id)
+      .in("status", ["OPEN", "OVERDUE"])
+      .or(ownership)
+      .select("id")
+      .maybeSingle();
+
+    if (recordError) {
+      // Payment still settles through the webhook; only re-use is lost. Do not block payment.
+      console.error("Stripe Checkout session id not recorded:", { code: recordError.code });
+    } else if (!recorded) {
+      // Paid, voided, or a different session was started concurrently: never offer a second.
+      try {
+        await stripe.checkout.sessions.expire(session.id);
+      } catch {
+        // Best effort. The webhook still refuses to double-apply a payment.
+      }
+
+      return jsonError(PROCESSING_MESSAGE, 409, "PAYMENT_PROCESSING");
+    }
+
+    console.log("Stripe Checkout ready", { invoiceId: payable.id, checkoutSessionId: session.id });
+
+    return checkoutUrl(session.url);
+  } catch (error) {
+    const { type, code } = stripeErrorCode(error);
+
+    console.error("Stripe Checkout creation failed:", {
+      type,
+      code,
+      name: error instanceof Error ? error.name : undefined,
+    });
+
+    return jsonError("Unable to start payment. Please try again.", 500, "CHECKOUT_FAILED");
   }
 }

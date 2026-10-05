@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientBillingView from "@/components/client/ClientBillingView";
+import { displayStatus } from "@/lib/invoices/lifecycle";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -116,7 +117,8 @@ export default async function ClientBillingPage() {
               data: (invoices ?? []).map((invoice) => ({
                 id: invoice.id,
                 invoiceNumber: invoice.invoice_number,
-                status: invoice.status,
+                // OPEN past its due date is shown (and counted) as OVERDUE.
+                status: displayStatus(invoice),
                 currency: invoice.currency,
                 totalCents: Number(invoice.total_cents),
                 dueDate: invoice.due_date,

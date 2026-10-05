@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 
 import ClientProjectView from "@/components/client/ClientProjectView";
+import { getClientAccess } from "@/lib/auth/client-context";
+import { signInUrl } from "@/lib/auth/guards";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -24,36 +25,38 @@ type ClientProjectPageProps = {
 export default async function ClientProjectPage({
   params,
 }: ClientProjectPageProps) {
-  const { userId, orgId } = await auth();
+  const { projectId } = await params;
+  const returnTo = isUuid(projectId) ? `/client/projects/${projectId}` : "/client";
 
-  if (!userId) {
-    redirect("/sign-in?redirect_url=/client");
+  // Workspace from Clerk organisation membership (never from the URL). Anything other
+  // than a ready workspace goes to /client, which explains or activates it.
+  const access = await getClientAccess();
+
+  if (!access.signedIn) {
+    redirect(signInUrl(returnTo));
   }
 
-  if (!orgId) {
+  if (access.resolution.kind !== "ready") {
     redirect("/client");
   }
-
-  const { projectId } = await params;
 
   // A malformed ID can never match a row: 404 before the query, not a database error.
   if (!isUuid(projectId)) {
     notFound();
   }
+
   const supabase = createServerSupabaseClient();
 
   // ---------------------------------------------------------
-  // Organisation
-  //
-  // RLS also enforces that this organisation matches the
-  // active Clerk organisation.
+  // Organisation, re-read through RLS (the tenant boundary).
   // ---------------------------------------------------------
 
   const { data: organization, error: organizationError } =
     await supabase
       .from("organizations")
       .select("id, name, status")
-      .eq("clerk_org_id", orgId)
+      .eq("id", access.resolution.organization.id)
+      .eq("clerk_org_id", access.resolution.organization.clerk_org_id as string)
       .eq("status", "ACTIVE")
       .maybeSingle();
 

@@ -16,6 +16,12 @@ import {
 
 import AdminInvoiceAction from "@/components/admin/AdminInvoiceAction";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { adminNoticeFor } from "@/lib/invoices/admin-notices";
+import {
+  canIssue,
+  canResend,
+  displayStatus,
+} from "@/lib/invoices/lifecycle";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
 import { isUuid } from "@/lib/validation/uuid";
@@ -34,7 +40,23 @@ type InvoicePageProps = {
   params: Promise<{
     invoiceId: string;
   }>;
+  searchParams: Promise<{
+    notice?: string | string[];
+  }>;
 };
+
+/* Every email the invoice routes send counts as an invoice email for the status chip. */
+const INVOICE_EMAIL_TYPES = new Set([
+  "INVOICE_ISSUED",
+  "PAYMENT_REMINDER",
+  "OVERDUE_NOTICE",
+]);
+
+const NOTICE_CLASSES = {
+  success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  error: "border-red-200 bg-red-50 text-red-800",
+} as const;
 
 function formatMoney(
   cents: number,
@@ -173,6 +195,7 @@ function NotificationIcon({
 
 export default async function AdminInvoicePage({
   params,
+  searchParams,
 }: InvoicePageProps) {
   // ---------------------------------------------------------
   // Authentication
@@ -225,6 +248,8 @@ export default async function AdminInvoicePage({
         total_cents,
         due_date,
         paid_at,
+        stripe_checkout_session_id,
+        stripe_payment_intent_id,
         visible_to_client,
         created_at,
         updated_at
@@ -374,8 +399,9 @@ export default async function AdminInvoicePage({
   const latestInvoiceEmail =
     notificationList.find(
       (notification) =>
-        notification.notification_type ===
-        "INVOICE_ISSUED"
+        INVOICE_EMAIL_TYPES.has(
+          notification.notification_type
+        )
     ) ?? null;
 
   // ---------------------------------------------------------
@@ -388,22 +414,25 @@ export default async function AdminInvoicePage({
     organization.billing_email.trim().length >
       0;
 
-  const canIssue =
-    invoice.status === "DRAFT" &&
-    invoice.total_cents > 0 &&
-    invoice.visible_to_client &&
+  // Same rules the Issue / Resend routes enforce (lib/invoices/lifecycle.ts).
+  const issueAllowed =
+    canIssue(invoice).ok &&
     organization.status === "ACTIVE" &&
     hasBillingEmail;
 
-  const canResend =
-    (invoice.status === "OPEN" ||
-      invoice.status === "OVERDUE") &&
-    invoice.visible_to_client &&
-    invoice.total_cents > 0 &&
+  const resendAllowed =
+    canResend(invoice).ok &&
     organization.status === "ACTIVE" &&
     hasBillingEmail;
 
   const isPaid = invoice.status === "PAID";
+
+  // OPEN past its due date (Perth calendar) is shown as OVERDUE.
+  const shownStatus = displayStatus(invoice);
+
+  const notice = adminNoticeFor(
+    (await searchParams).notice
+  );
 
   // ---------------------------------------------------------
   // Page
@@ -444,10 +473,10 @@ export default async function AdminInvoicePage({
             <div className="mt-4 flex flex-wrap gap-2">
               <span
                 className={`inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${invoiceStatusClasses(
-                  invoice.status
+                  shownStatus
                 )}`}
               >
-                {invoice.status}
+                {shownStatus}
               </span>
 
               <span
@@ -484,11 +513,11 @@ export default async function AdminInvoicePage({
               <AdminInvoiceAction
                 invoiceId={invoice.id}
                 action="issue"
-                disabled={!canIssue}
+                disabled={!issueAllowed}
               />
             ) : null}
 
-            {canResend ? (
+            {resendAllowed ? (
               <AdminInvoiceAction
                 invoiceId={invoice.id}
                 action="resend"
@@ -496,6 +525,17 @@ export default async function AdminInvoicePage({
             ) : null}
           </div>
         </section>
+
+        {/* Result of the last Issue / Resend action */}
+
+        {notice ? (
+          <div
+            role="status"
+            className={`mt-6 rounded-2xl border p-5 text-sm leading-6 ${NOTICE_CLASSES[notice.tone]}`}
+          >
+            {notice.message}
+          </div>
+        ) : null}
 
         {/* Paid state */}
 
@@ -519,6 +559,19 @@ export default async function AdminInvoicePage({
                     )}.`
                   : "."}
               </p>
+
+              {invoice.stripe_payment_intent_id ||
+              invoice.stripe_checkout_session_id ? (
+                <p className="mt-2 break-all text-xs text-emerald-700">
+                  Stripe:{" "}
+                  {invoice.stripe_payment_intent_id ??
+                    invoice.stripe_checkout_session_id}
+                </p>
+              ) : (
+                <p className="mt-2 text-xs text-emerald-700">
+                  Recorded outside Stripe.
+                </p>
+              )}
             </div>
           </div>
         ) : null}

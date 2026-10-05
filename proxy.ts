@@ -16,9 +16,16 @@ const isPrivatePage = createRouteMatcher([
   "/portal(.*)",
 ]);
 
+/*
+ * Invitation landing: the invitee is usually signed out and the URL carries Clerk's
+ * one-time ticket. Redirecting it to sign-in here would drop the ticket, so it stays
+ * public. The page only forwards the ticket to <SignIn>/<SignUp>; it reads no data.
+ */
+const isPublicPortalPage = createRouteMatcher(["/portal/accept-invitation"]);
+
 export default clerkMiddleware(
   async (auth, request) => {
-    if (!isPrivatePage(request)) {
+    if (!isPrivatePage(request) || isPublicPortalPage(request)) {
       return;
     }
 

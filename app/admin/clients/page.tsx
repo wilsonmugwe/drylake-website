@@ -122,6 +122,9 @@ export default async function AdminClientsPage({
 
   if (status) {
     query = query.eq("status", status);
+  } else {
+    // Archived clients are hidden unless the status filter asks for them.
+    query = query.neq("status", "ARCHIVED");
   }
 
   if (q) {

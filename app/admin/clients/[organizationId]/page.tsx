@@ -1,5 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -9,10 +8,25 @@ import {
   Mail,
   Plus,
   Receipt,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
 
+import AdminClientInvitePanel from "@/components/admin/AdminClientInvitePanel";
+import AdminClientStatusControl from "@/components/admin/AdminClientStatusControl";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
+import {
+  type ClientMember,
+  listClientInvitations,
+  listClientMembers,
+} from "@/lib/auth/client-onboarding";
+import type { InvitationSummary } from "@/lib/clients/invitations";
+import {
+  availableStatusActions,
+  isClientOperational,
+  statusLabel,
+} from "@/lib/clients/status";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -30,7 +44,26 @@ type ClientPageProps = {
   params: Promise<{
     organizationId: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+/* One-shot banner after creating a client (set by POST /api/admin/clients). */
+function createdBanner(created: unknown, invite: unknown) {
+  if (created !== "1") return null;
+
+  if (invite === "sent") {
+    return { tone: "ok" as const, text: "Client created and the portal invitation was sent." };
+  }
+
+  if (invite === "failed") {
+    return {
+      tone: "warn" as const,
+      text: "Client created, but the invitation could not be sent. Send it again from Portal access below.",
+    };
+  }
+
+  return { tone: "ok" as const, text: "Client created. Invite the client contact from Portal access below." };
+}
 
 function formatMoney(cents: number, currency: string) {
   return new Intl.NumberFormat("en-AU", {
@@ -95,28 +128,20 @@ const iconTileClassName =
 
 export default async function AdminClientPage({
   params,
+  searchParams,
 }: ClientPageProps) {
-  // ==========================================================
-  // AUTHENTICATION
-  // ==========================================================
-
-  const { userId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in?redirect_url=/admin/clients");
-  }
-
-  // ==========================================================
-  // PLATFORM ADMIN AUTHORIZATION
-  // ==========================================================
-
-  const platformAdmin = await isPlatformAdmin();
-
-  if (!platformAdmin) {
-    redirect("/client");
-  }
-
   const { organizationId } = await params;
+
+  // ==========================================================
+  // PLATFORM ADMIN AUTHORIZATION (before any service-role query)
+  // ==========================================================
+
+  await requirePlatformAdmin(
+    isUuid(organizationId) ? `/admin/clients/${organizationId}` : "/admin/clients"
+  );
+
+  const query = await searchParams;
+  const banner = createdBanner(query.created, query.invite);
 
   // A malformed ID can never match a row: 404 before the query, not a database error.
   if (!isUuid(organizationId)) {
@@ -235,7 +260,30 @@ export default async function AdminClientPage({
 
   const billingConfigured = Boolean(organization.billing_email);
 
-  const active = organization.status === "ACTIVE";
+  const active = isClientOperational(organization.status);
+  const statusActions = availableStatusActions(organization.status);
+
+  // ==========================================================
+  // PORTAL ACCESS (Clerk organisation membership + invitations)
+  // ==========================================================
+
+  let members: ClientMember[] = [];
+  let invitations: InvitationSummary[] = [];
+  let portalError = false;
+
+  if (organization.clerk_org_id) {
+    try {
+      [members, invitations] = await Promise.all([
+        listClientMembers(organization.clerk_org_id),
+        listClientInvitations(organization.clerk_org_id),
+      ]);
+    } catch (error) {
+      portalError = true;
+      console.error("Admin client portal access lookup failed:", {
+        message: error instanceof Error ? error.message : "Unknown Clerk error",
+      });
+    }
+  }
 
   // ==========================================================
   // UI
@@ -260,6 +308,7 @@ export default async function AdminClientPage({
           eyebrow="Client Organisation"
           title={organization.name}
           action={
+            active ? (
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href={`/admin/clients/${organization.id}/invoices/new`}
@@ -277,6 +326,7 @@ export default async function AdminClientPage({
                 Create Project
               </Link>
             </div>
+            ) : undefined
           }
         />
 
@@ -293,11 +343,11 @@ export default async function AdminClientPage({
                 active ? "bg-emerald-500" : "bg-neutral-400"
               }`}
             />
-            {organization.status}
+            {statusLabel(organization.status)}
           </span>
 
           <span className="max-w-full truncate font-mono text-[11px] text-neutral-400 sm:max-w-[400px]">
-            {organization.clerk_org_id}
+            {organization.clerk_org_id ?? "No Clerk organisation linked"}
           </span>
 
           {organization.created_at && (
@@ -312,6 +362,27 @@ export default async function AdminClientPage({
             </span>
           )}
         </div>
+
+        {banner ? (
+          <p
+            role="status"
+            className={`mt-6 rounded-xl border px-4 py-3 text-sm ${
+              banner.tone === "ok"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : "border-amber-200 bg-amber-50 text-amber-800"
+            }`}
+          >
+            {banner.text}
+          </p>
+        ) : null}
+
+        {!active ? (
+          <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+            This client is {statusLabel(organization.status).toLowerCase()}. Client users
+            cannot open the portal, and new projects, invoices and invitations are blocked
+            until the client is reactivated.
+          </p>
+        ) : null}
 
         {/* ====================================================
             OVERVIEW
@@ -815,6 +886,99 @@ export default async function AdminClientPage({
               </Link>
             </div>
           )}
+        </section>
+
+        {/* ====================================================
+            PORTAL ACCESS + CLIENT STATUS
+        ==================================================== */}
+
+        <section className="mt-6 grid gap-6 lg:grid-cols-[1.28fr_0.72fr]">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-neutral-950">Portal access</h2>
+                <p className="mt-1 text-sm text-neutral-500">
+                  Client users reach this workspace through membership of its Clerk
+                  organisation. An email address alone never grants access.
+                </p>
+              </div>
+              <span className={iconTileClassName}>
+                <Users size={17} className="text-[#f26a2e]" />
+              </span>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+                Members
+              </h3>
+
+              {!organization.clerk_org_id ? (
+                <p className="mt-3 text-sm text-neutral-500">
+                  No Clerk organisation is linked yet. Sending the first invitation links
+                  one automatically.
+                </p>
+              ) : portalError ? (
+                <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  Unable to load members and invitations from Clerk.
+                </p>
+              ) : members.length === 0 ? (
+                <p className="mt-3 text-sm text-neutral-500">No one has joined yet.</p>
+              ) : (
+                <ul className="mt-3 divide-y divide-neutral-100 rounded-xl border border-neutral-200">
+                  {members.map((member) => (
+                    <li
+                      key={member.userId ?? member.identifier}
+                      className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-neutral-950">
+                          {member.name ?? member.identifier}
+                        </p>
+                        {member.name ? (
+                          <p className="truncate text-xs text-neutral-500">{member.identifier}</p>
+                        ) : null}
+                      </div>
+                      <span className="text-xs text-neutral-500">
+                        {member.role.replace(/^org:/, "")}, joined{" "}
+                        {formatDateTime(new Date(member.joinedAt).toISOString())}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-6 border-t border-neutral-200 pt-6">
+              <AdminClientInvitePanel
+                organizationId={organization.id}
+                defaultEmail={organization.billing_email}
+                canInvite={active && !portalError}
+                invitations={invitations}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-neutral-950">Client status</h2>
+                <p className="mt-1 text-sm text-neutral-500">
+                  Currently {statusLabel(organization.status).toLowerCase()}.
+                </p>
+              </div>
+              <span className={iconTileClassName}>
+                <ShieldCheck size={17} className="text-[#f26a2e]" />
+              </span>
+            </div>
+
+            <div className="mt-6">
+              <AdminClientStatusControl
+                organizationId={organization.id}
+                organizationName={organization.name}
+                actions={statusActions}
+              />
+            </div>
+          </div>
         </section>
 
         {/* ====================================================

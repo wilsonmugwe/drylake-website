@@ -20,6 +20,7 @@ import {
   inClause,
   orFilter,
 } from "@/lib/admin/search";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,13 @@ export default async function InvoicesPage({
   const q = readFilterParam(params, "q");
   const status = readEnumParam(params, "status", INVOICE_STATUSES);
   const hasFilters = Boolean(q || status);
+
+  // Page-level gate: the layout check alone does not stop this page's service-role
+
+  // queries from running on a direct RSC request (see lib/auth/guards.ts).
+
+  await requirePlatformAdmin("/admin/invoices");
+
 
   const supabase = createAdminSupabaseClient();
 

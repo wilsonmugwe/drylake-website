@@ -16,6 +16,7 @@ import {
   inClause,
   orFilter,
 } from "@/lib/admin/search";
+import { requirePlatformAdmin } from "@/lib/auth/guards";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,13 @@ export default async function DocumentsPage({
   const type = readEnumParam(params, "type", DOCUMENT_TYPE_KEYS);
   const visibility = readEnumParam(params, "visibility", VISIBILITY_KEYS);
   const hasFilters = Boolean(q || type || visibility);
+
+  // Page-level gate: the layout check alone does not stop this page's service-role
+
+  // queries from running on a direct RSC request (see lib/auth/guards.ts).
+
+  await requirePlatformAdmin("/admin/documents");
+
 
   const supabase = createAdminSupabaseClient();
 

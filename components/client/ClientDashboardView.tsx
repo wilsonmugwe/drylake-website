@@ -36,6 +36,8 @@ export type ClientDashboardViewProps = {
   documents: Loadable<{ items: ClientDocumentSummary[]; total: number }>;
   /** Every non-draft invoice for the organisation; the view picks out what needs attention. */
   invoices: Loadable<ClientInvoiceSummary[]>;
+  /** The user belongs to more than one active client workspace. */
+  canSwitchWorkspace?: boolean;
 };
 
 function formatBalance(balances: Array<{ currency: string; cents: number }>) {
@@ -48,6 +50,7 @@ export default function ClientDashboardView({
   updates,
   documents,
   invoices,
+  canSwitchWorkspace = false,
 }: ClientDashboardViewProps) {
   const openProjects = projects.ok ? projects.data.filter((p) => isOpenProject(p.status)) : [];
 
@@ -68,6 +71,16 @@ export default function ClientDashboardView({
         eyebrow="Your Drylake workspace"
         title={organizationName}
         description="Project progress, updates, deliverables and billing from Drylake, in one place."
+        meta={
+          canSwitchWorkspace ? (
+            <Link
+              href="/portal/workspaces"
+              className="text-sm text-white/70 underline decoration-white/25 underline-offset-4 hover:text-white"
+            >
+              Switch workspace
+            </Link>
+          ) : undefined
+        }
       />
 
       <section aria-label="Summary" className="grid grid-cols-2 gap-3 sm:grid-cols-3">

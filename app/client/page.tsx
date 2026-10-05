@@ -1,8 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientDashboardView from "@/components/client/ClientDashboardView";
+import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
 import type {
   ClientDocumentSummary,
   ClientInvoiceSummary,
@@ -10,6 +10,13 @@ import type {
   ClientUpdateSummary,
   Loadable,
 } from "@/components/client/types";
+import { isClientVisibleInvoice } from "@/lib/auth/access";
+import {
+  type ClientAccess,
+  ClientAccessLookupError,
+  getClientAccess,
+} from "@/lib/auth/client-context";
+import { signInUrl } from "@/lib/auth/guards";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -40,47 +47,59 @@ export default async function ClientDashboardPage() {
   // Authentication
   // ---------------------------------------------------------
 
-  const { userId, orgId } = await auth();
-
-  if (!userId) {
-    redirect("/sign-in?redirect_url=/client");
-  }
-
   // ---------------------------------------------------------
-  // No organisation membership
-  //
-  // An authenticated account alone never grants access
-  // to client/project data.
+  // Resolve the workspace from Clerk organisation MEMBERSHIP
+  // (lib/auth/access.ts). An authenticated account alone, or a
+  // matching email, never grants access to client data.
   // ---------------------------------------------------------
 
-  // Intentional routing rule: a Drylake admin with no active client organisation belongs
-  // in the admin workspace, not on the client "no organisation" screen. An admin who is
-  // also a member of a client org (active org set) still sees that org's client view.
-  if (!orgId && (await isPlatformAdmin())) {
-    redirect("/admin");
+  let access: ClientAccess;
+
+  try {
+    access = await getClientAccess({ includeMemberships: true });
+  } catch (error) {
+    if (error instanceof ClientAccessLookupError) {
+      return <ClientAccessState variant="lookup-failed" />;
+    }
+
+    throw error;
   }
 
-  if (!orgId) {
-    return <ClientAccessState variant="no-organisation" />;
+  if (!access.signedIn) {
+    redirect(signInUrl("/client"));
+  }
+
+  const { resolution } = access;
+
+  if (resolution.kind !== "ready") {
+    // A Drylake admin with no client membership belongs in the admin workspace, not on
+    // the client "no access" screen. An admin who IS a client member still gets the gate.
+    if (
+      (resolution.kind === "no-membership" || resolution.kind === "not-linked") &&
+      (await isPlatformAdmin())
+    ) {
+      redirect("/admin");
+    }
+
+    return <ClientWorkspaceGate resolution={resolution} returnTo="/client" />;
   }
 
   // ---------------------------------------------------------
   // Authenticated Supabase client
   //
   // Uses the Clerk session token.
-  // Supabase RLS remains the tenant-isolation boundary.
+  // Supabase RLS remains the tenant-isolation boundary: the
+  // organisation is re-read through RLS, so a session whose
+  // token disagrees with the resolver sees nothing.
   // ---------------------------------------------------------
 
   const supabase = createServerSupabaseClient();
 
-  // ---------------------------------------------------------
-  // Find organisation through active Clerk org ID
-  // ---------------------------------------------------------
-
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
     .select("id, clerk_org_id, name, status")
-    .eq("clerk_org_id", orgId)
+    .eq("id", resolution.organization.id)
+    .eq("clerk_org_id", resolution.organization.clerk_org_id as string)
     .eq("status", "ACTIVE")
     .maybeSingle();
 
@@ -170,7 +189,7 @@ export default async function ClientDashboardPage() {
       supabase
         .from("invoices")
         .select(
-          "id, invoice_number, status, currency, total_cents, due_date, created_at"
+          "id, invoice_number, status, currency, total_cents, due_date, created_at, visible_to_client"
         )
         .eq("organization_id", organization.id)
         .eq("visible_to_client", true)
@@ -271,7 +290,7 @@ export default async function ClientDashboardPage() {
     ? { ok: false }
     : {
         ok: true,
-        data: (invoicesResult.data ?? []).map((invoice) => ({
+        data: (invoicesResult.data ?? []).filter(isClientVisibleInvoice).map((invoice) => ({
           id: invoice.id,
           invoiceNumber: invoice.invoice_number,
           status: invoice.status,
@@ -289,6 +308,7 @@ export default async function ClientDashboardPage() {
       updates={updatesProp}
       documents={documentsProp}
       invoices={invoicesProp}
+      canSwitchWorkspace={(access.workspaces?.length ?? 0) > 1}
     />
   );
 }
