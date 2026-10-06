@@ -37,6 +37,13 @@ async function main() {
 
   const payload = indexNowPayload(urls);
 
+  const dropped = urls.filter((url) => !payload.urlList.includes(url));
+
+  // Anything not a canonical public URL is refused, and the run fails so it gets looked at.
+  if (dropped.length > 0) {
+    throw new Error(`sitemap lists non-canonical or non-public URLs, nothing submitted: ${dropped.join(", ")}`);
+  }
+
   console.log(`IndexNow: ${payload.urlList.length} URLs for ${payload.host}`);
 
   if (dryRun) {

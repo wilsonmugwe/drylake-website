@@ -22,7 +22,6 @@ export const ENTITY = {
   acn: DRYLAKE_BUSINESS.acn,
   url: SITE_URL,
   email: "hello@drylake.com.au",
-  telephone: "+61 420 565 457",
   locality: "Perth",
   region: "Western Australia",
   regionCode: "WA",
@@ -46,22 +45,22 @@ export type Founder = {
   id: string;
   name: string;
   jobTitle: string;
-  credential: string;
 };
 
-/* Matches components/sections/Founders.tsx (credentials as Ben approved, no university). */
+/*
+ * Public on /about (components/sections/Founders.tsx). Machine surfaces carry name and role
+ * only: credentials stay on the page, not in structured data (privacy review 2026-10-06).
+ */
 export const FOUNDERS: readonly Founder[] = [
   {
     id: `${SITE_URL}/about#benedict-wambugu`,
     name: "Benedict Wambugu",
     jobTitle: "Co-founder and CEO",
-    credential: "Master of Project Management",
   },
   {
     id: `${SITE_URL}/about#wilson-mugwe`,
     name: "Wilson Mugwe",
     jobTitle: "Co-founder and Head of Technology",
-    credential: "Bachelor of Computer Science, majoring in Software Engineering",
   },
 ];
 
@@ -186,9 +185,9 @@ export const SERVICES: readonly Service[] = [
           "No. Drylake recommends AI only where it improves a real workflow. Many problems are better solved with conventional software, automation or an integration.",
       },
       {
-        question: "How does Drylake handle business data in AI features?",
+        question: "Can AI features work with the systems we already use?",
         answer:
-          "Data handling is designed for each project and explained before work begins, including which AI provider is used and what data it receives.",
+          "Where the systems support integration, yes. Drylake builds AI into the existing workflow rather than replacing software that still does its job.",
       },
     ],
   },

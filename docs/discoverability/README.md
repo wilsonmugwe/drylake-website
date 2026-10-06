@@ -33,6 +33,8 @@ One source: `lib/discovery/entity.ts` (legal name, ABN and ACN come from `lib/bu
 the same module invoices use). Every page emits a JSON-LD `@graph` whose nodes reference
 `https://drylake.com.au/#organization`, so all pages describe the same organisation.
 
+Privacy (reviewed 2026-10-06): structured data carries only public business facts. No telephone (the site number is a founder's personal mobile), founders as name + role + employer only.
+
 Deliberately not published: street address (no public premises), ratings or reviews (none
 exist), logo (the current artwork reads "DRYLAKE TECHNOLOGIES"; see manual action M9).
 
@@ -48,7 +50,7 @@ Vercel mitigation). Desired access is what this PR ships. Sources for every row:
 | Platform | Search / AI product | Crawler / index mechanism | Current access | Desired access | robots rule | Manual action |
 |---|---|---|---|---|---|---|
 | Google | Google Search, AI Overviews, AI Mode | `Googlebot`, own index (AI features use the Search index) | Allowed | Allowed | `*` group | M1 Search Console, submit sitemap |
-| Google | Gemini training + Gemini Apps grounding | `Google-Extended` control token (no separate crawler) | Allowed | **Opted out (decision D-1)** | `Google-Extended: Disallow /` | Ben confirms D-1 |
+| Google | Gemini grounding (Gemini Apps, Vertex AI) + Gemini model training | `Google-Extended` control token (no separate crawler) | Allowed | **Allowed (decision D-1)** | `*` group | none |
 | Microsoft | Bing, Microsoft Copilot | `bingbot`, own index; Copilot grounds on Bing | Allowed | Allowed | `*` group | M2 Bing Webmaster Tools, M3 IndexNow |
 | Microsoft | Training control | No robots token; only `noarchive`/`nocache` meta, which also remove Copilot answers | n/a | No tag (decision D-2) | none | none |
 | Yahoo | Yahoo Search | Bing index [secondary source] | Via Bing | Via Bing | none needed | covered by M2 |
@@ -90,7 +92,7 @@ robots.txt is a crawl hint, never access control.
 
 | # | Decision | Why | Revisit when |
 |---|---|---|---|
-| D-1 | **Google-Extended disallowed** (training opt-out) | Brief: do not opt into training just to gain AI visibility. Google Search, AI Overviews and AI Mode are unaffected (Google docs). Cost: Drylake is excluded from grounding in the **Gemini app**. **Ben to confirm**; flip `access` in `lib/discovery/crawlers.ts` to allow if Gemini app citations matter more | Ben decides, or Google separates training from grounding |
+| D-1 | **Google-Extended ALLOWED** (business decision, Wilson/Ben 2026-10-06; drylake-ops D20) | Objective is maximum legitimate search and AI discovery for PUBLIC marketing content. Google documentation (google-common-crawlers, updated 2026-07-14, read 2026-10-06): Google-Extended controls BOTH grounding in Gemini Apps / Vertex AI API for Gemini AND use of content for training future Gemini models, and "does not impact a site's inclusion in Google Search nor is it used as a ranking signal". Google offers no grounding-only option, so allowing grounding means allowing that training use. Private/admin/client surfaces stay disallowed (`*` group) and noindexed regardless | Google separates grounding from training |
 | D-2 | No `noarchive`/`nocache` for Bing | Microsoft's only training controls also remove pages from Copilot answers | Microsoft ships a training-only control |
 | D-3 | Training tokens opted out: GPTBot, ClaudeBot, CCBot, meta-externalagent, Amazonbot, Applebot-Extended | Each vendor runs a separate search/retrieval crawler, which stays allowed, so search visibility is unaffected (per vendor docs) | A vendor merges search and training crawlers |
 | D-4 | User-triggered fetchers allowed | They fetch because a person asked about Drylake; blocking them hides Drylake from that person | n/a |

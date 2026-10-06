@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
+import { ENTITY } from "@/lib/discovery/entity";
 import { SHARE_IMAGE, SITE_NAME } from "@/lib/seo";
 
 const geist = Geist({
@@ -19,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://drylake.com.au"),
+  metadataBase: new URL(ENTITY.url),
 
   title: {
     default: "Drylake | Operational Software & Automation Australia",
@@ -45,13 +46,13 @@ export const metadata: Metadata = {
 
   authors: [
     {
-      name: "Drylake Pty Ltd",
-      url: "https://drylake.com.au",
+      name: ENTITY.legalName,
+      url: ENTITY.url,
     },
   ],
 
-  creator: "Drylake Pty Ltd",
-  publisher: "Drylake Pty Ltd",
+  creator: ENTITY.legalName,
+  publisher: ENTITY.legalName,
 
   // No site-wide canonical: every public page declares its own via pageMetadata(), and a
   // root canonical of "/" made pages without one (the 404, auth screens) claim the homepage.
