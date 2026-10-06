@@ -56,9 +56,9 @@ export default function ClientOrganizationPicker({ options, autoActivate, return
   }, [autoActivate, loaded, options]);
 
   return (
-    <div className="mt-8 max-w-[36rem]">
+    <div className="pt-3">
       {error ? (
-        <p role="alert" className="mb-4 border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+        <p role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       ) : null}
@@ -70,16 +70,16 @@ export default function ClientOrganizationPicker({ options, autoActivate, return
               type="button"
               disabled={!loaded || activating !== null}
               onClick={() => activate(option.clerkOrgId)}
-              className="group flex min-h-[56px] w-full items-center justify-between gap-4 border border-white/15 bg-white/[0.03] px-5 text-left text-sm font-semibold text-white transition hover:border-white/35 hover:bg-white/[0.06] disabled:cursor-wait disabled:opacity-70"
+              className="group flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl border border-neutral-200 bg-white px-5 text-left text-sm font-semibold text-neutral-950 transition hover:border-[#f26a2e]/50 hover:bg-[#fafaf8] disabled:cursor-wait disabled:opacity-70"
             >
               <span className="truncate">{option.name}</span>
               {activating === option.clerkOrgId ? (
-                <Loader2 aria-hidden="true" size={16} className="shrink-0 animate-spin" />
+                <Loader2 aria-hidden="true" size={16} className="shrink-0 animate-spin text-[#f26a2e]" />
               ) : (
                 <ArrowRight
                   aria-hidden="true"
                   size={16}
-                  className="shrink-0 transition-transform group-hover:translate-x-0.5"
+                  className="shrink-0 text-neutral-400 transition group-hover:translate-x-0.5 group-hover:text-[#f26a2e]"
                 />
               )}
             </button>
@@ -87,7 +87,7 @@ export default function ClientOrganizationPicker({ options, autoActivate, return
         ))}
       </ul>
 
-      <p aria-live="polite" className="mt-4 text-sm text-white/55">
+      <p aria-live="polite" className="mt-3 text-sm text-neutral-500">
         {activating ? "Opening your workspace..." : null}
       </p>
     </div>

@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { Download, LifeBuoy } from "lucide-react";
 
 import { RESPONSE_TIME } from "@/lib/site";
 
@@ -30,22 +30,20 @@ export function DocumentList({
             {/* Plain anchor: the route answers with a redirect to a short-lived signed URL. */}
             <a
               href={`/api/client/documents/${document.id}/download`}
-              className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-white/[0.03] sm:px-6"
+              className="cp-row-link group flex items-center gap-4 px-5 py-3.5 sm:px-6"
             >
-              <span className="tech-label flex h-9 w-11 shrink-0 items-center justify-center border border-white/[0.12] text-white/60">
+              <span className="flex h-10 w-11 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-[#fafaf8] text-[0.6rem] font-semibold tracking-[0.06em] text-neutral-500">
                 {fileTypeLabel(document.mimeType, document.name)}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-white" title={document.name}>
+                <span className="block truncate text-sm font-medium text-neutral-900" title={document.name}>
                   {document.name}
                 </span>
-                <span className="mt-1 block truncate text-xs text-white/55">{meta.join(" / ")}</span>
+                <span className="mt-0.5 block truncate text-xs text-neutral-500">{meta.join(" · ")}</span>
               </span>
-              <Download
-                aria-hidden="true"
-                size={16}
-                className="shrink-0 text-white/45 transition-colors group-hover:text-[#f26a2e]"
-              />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition group-hover:cp-tint group-hover:text-[#f26a2e]">
+                <Download aria-hidden="true" size={16} />
+              </span>
               <span className="sr-only">Download</span>
             </a>
           </li>
@@ -57,12 +55,20 @@ export function DocumentList({
 
 export function SupportCard() {
   return (
-    <section aria-labelledby="support-heading" className="cp-panel p-5 sm:p-6">
-      <p className="tech-label text-white/50">Support</p>
-      <h2 id="support-heading" className="mt-3 text-lg font-semibold tracking-[-0.03em]">
+    <section aria-labelledby="support-heading" className="cp-card p-5 sm:p-6">
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 items-center justify-center rounded-lg cp-tint text-[#f26a2e]"
+        >
+          <LifeBuoy size={16} />
+        </span>
+        <p className="cp-label">Support</p>
+      </div>
+      <h2 id="support-heading" className="mt-4 text-base font-semibold tracking-[-0.02em] text-neutral-950">
         Need something from Drylake?
       </h2>
-      <p className="mt-2 text-sm leading-6 text-white/60">
+      <p className="mt-1.5 text-sm leading-6 text-neutral-500">
         Message the team about your project, an invoice or access for a colleague. We reply within{" "}
         {RESPONSE_TIME}.
       </p>

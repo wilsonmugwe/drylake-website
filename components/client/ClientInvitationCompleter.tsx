@@ -60,12 +60,12 @@ export default function ClientInvitationCompleter({ returnTo }: Props) {
   }, [loaded, returnTo, setActive]);
 
   return (
-    <p aria-live="polite" className="mt-8 flex items-center gap-2.5 text-sm text-white/60">
+    <p aria-live="polite" className="flex items-center gap-2.5 rounded-xl border border-neutral-200 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-600">
       {failed ? (
         "We could not finish connecting your account. Reload the page, or start a conversation and we will sort it out."
       ) : (
         <>
-          <Loader2 aria-hidden="true" size={16} className="animate-spin" />
+          <Loader2 aria-hidden="true" size={16} className="animate-spin text-[#f26a2e]" />
           Connecting your account to your workspace...
         </>
       )}

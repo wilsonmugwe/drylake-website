@@ -15,6 +15,11 @@ import {
   invoiceSignInPath,
 } from "@/lib/invoices/invoice-url";
 import { displayStatus } from "@/lib/invoices/lifecycle";
+import {
+  logRouteTiming,
+  startRequestTiming,
+  timed,
+} from "@/lib/perf/request-timing";
 
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -49,6 +54,8 @@ export default async function ClientInvoicePage({
   params,
   searchParams,
 }: PageProps) {
+  startRequestTiming();
+
   const { invoiceId } =
     await params;
 
@@ -76,6 +83,11 @@ export default async function ClientInvoicePage({
   }
 
   if (workspace.state !== "ready") {
+    logRouteTiming(
+      "/client/billing/[invoiceId]",
+      workspace.state
+    );
+
     return (
       <ClientWorkspaceGate
         workspace={workspace}
@@ -103,7 +115,8 @@ export default async function ClientInvoicePage({
   const {
     data: invoice,
     error: invoiceError,
-  } = await supabase
+  } = await timed("content", () =>
+    supabase
     .from("invoices")
     .select(
       `
@@ -131,7 +144,8 @@ export default async function ClientInvoicePage({
       true
     )
     .neq("status", "DRAFT")
-    .maybeSingle();
+    .maybeSingle()
+  );
 
   if (invoiceError) {
     console.error(
@@ -176,8 +190,10 @@ export default async function ClientInvoicePage({
   } | null = null;
 
   if (invoice.project_id) {
+    // A second round trip only when the invoice names a project (its ID is not known before).
     const projectResult =
-      await supabase
+      await timed("content", () =>
+        supabase
         .from("projects")
         .select("id, name")
         .eq(
@@ -188,7 +204,8 @@ export default async function ClientInvoicePage({
           "organization_id",
           organization.id
         )
-        .maybeSingle();
+        .maybeSingle()
+      );
 
     if (projectResult.error) {
       console.error(
@@ -219,6 +236,11 @@ export default async function ClientInvoicePage({
   // the status shown always comes from the row above, which only
   // the Stripe webhook moves to PAID.
   // ---------------------------------------------------------
+
+  logRouteTiming(
+    "/client/billing/[invoiceId]",
+    workspace.state
+  );
 
   return (
     <ClientInvoiceView

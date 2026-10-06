@@ -167,7 +167,7 @@ export default function PayInvoiceButton({
         onClick={handlePayment}
         disabled={loading}
         aria-busy={loading}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#f26a2e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#dc5d26] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="cp-button-primary min-h-12 w-full px-6"
       >
         {loading ? (
           <>

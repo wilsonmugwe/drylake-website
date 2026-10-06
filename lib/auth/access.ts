@@ -121,6 +121,34 @@ export function resolveClientOrganization(input: ResolveInput): ClientResolution
 }
 
 /*
+ * Established-client fast path. The session's active organisation (Clerk-signed) was read
+ * back through Supabase RLS with the user's own token, and that one query returned the
+ * row. If the row IS the active org and the client is ACTIVE, the session is ready: RLS
+ * accepting the token for this exact row is stronger evidence than the service-role
+ * mapping plus a second RLS read that the full path does.
+ *
+ * Anything else returns null and the caller runs the full resolution (memberships,
+ * mapping, invitation recovery, diagnostics) exactly as before. This only ever skips work
+ * for a session that the full path would also have resolved to the same ready row.
+ */
+export function establishedResolution(input: {
+  activeOrgId: string | null | undefined;
+  rlsRow: ClientOrganizationRow | null;
+}): Extract<ClientResolution, { kind: "ready" }> | null {
+  const { activeOrgId, rlsRow } = input;
+
+  if (!activeOrgId || !rlsRow) {
+    return null;
+  }
+
+  if (rlsRow.clerk_org_id !== activeOrgId || !isClientOperational(rlsRow.status)) {
+    return null;
+  }
+
+  return { kind: "ready", organization: rlsRow };
+}
+
+/*
  * ACTIVE client workspaces among the user's memberships, for the workspace switcher.
  * Rows outside the membership list are ignored even if passed in.
  */

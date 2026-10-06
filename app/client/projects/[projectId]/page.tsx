@@ -4,6 +4,7 @@ import ClientProjectView from "@/components/client/ClientProjectView";
 import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
 import { getClientWorkspace } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
+import { logRouteTiming, startRequestTiming, timed } from "@/lib/perf/request-timing";
 import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
@@ -22,9 +23,20 @@ type ClientProjectPageProps = {
   }>;
 };
 
+function logQueryError(
+  label: string,
+  error: { code?: string; message?: string } | null
+) {
+  if (error) {
+    console.error(label, { code: error.code, message: error.message });
+  }
+}
+
 export default async function ClientProjectPage({
   params,
 }: ClientProjectPageProps) {
+  startRequestTiming();
+
   const { projectId } = await params;
   const returnTo = isUuid(projectId) ? `/client/projects/${projectId}` : "/client";
 
@@ -37,6 +49,8 @@ export default async function ClientProjectPage({
   }
 
   if (workspace.state !== "ready") {
+    logRouteTiming("/client/projects/[projectId]", workspace.state);
+
     return <ClientWorkspaceGate workspace={workspace} returnTo={returnTo} />;
   }
 
@@ -49,28 +63,81 @@ export default async function ClientProjectPage({
   const { supabase, organization } = workspace;
 
   // ---------------------------------------------------------
-  // Project
+  // One parallel wave instead of four sequential round trips.
   //
-  // We explicitly constrain by organisation_id even though
-  // RLS provides the primary tenant-isolation boundary.
+  // Every query runs through RLS with the user's token. The
+  // project query carries the explicit organisation constraint;
+  // milestones, updates and documents are keyed by the same
+  // project ID. Nothing is rendered unless the project row comes
+  // back for THIS organisation (checked below), so a project ID
+  // from another tenant still ends in notFound() with nothing
+  // shown, exactly as when the queries ran one after another.
   // ---------------------------------------------------------
 
-  const { data: project, error: projectError } = await supabase
-    .from("projects")
-    .select(
-      `
-        id,
-        organization_id,
-        name,
-        status,
-        progress_override,
-        start_date,
-        target_end_date
-      `
-    )
-    .eq("id", projectId)
-    .eq("organization_id", organization.id)
-    .maybeSingle();
+  const [projectResult, milestonesResult, updatesResult, documentsResult] =
+    await timed("content", () =>
+      Promise.all([
+        supabase
+          .from("projects")
+          .select(
+            `
+              id,
+              organization_id,
+              name,
+              status,
+              progress_override,
+              start_date,
+              target_end_date
+            `
+          )
+          .eq("id", projectId)
+          .eq("organization_id", organization.id)
+          .maybeSingle(),
+
+        supabase
+          .from("milestones")
+          .select(
+            `
+              id,
+              title,
+              description,
+              status,
+              position,
+              due_date,
+              completed_at
+            `
+          )
+          .eq("project_id", projectId)
+          .order("position", { ascending: true }),
+
+        // Published client updates only: visibility conditions on top of RLS.
+        supabase
+          .from("project_updates")
+          .select(
+            `
+              id,
+              title,
+              body,
+              published_at,
+              created_at
+            `
+          )
+          .eq("project_id", projectId)
+          .eq("visible_to_client", true)
+          .not("published_at", "is", null)
+          .order("published_at", { ascending: false }),
+
+        // Same scoping as the download route: project_id + visible_to_client, on top of RLS.
+        supabase
+          .from("documents")
+          .select("id, name, mime_type, size_bytes, created_at")
+          .eq("project_id", projectId)
+          .eq("visible_to_client", true)
+          .order("created_at", { ascending: false }),
+      ])
+    );
+
+  const { data: project, error: projectError } = projectResult;
 
   if (projectError) {
     console.error("Client project lookup failed:", {
@@ -81,90 +148,18 @@ export default async function ClientProjectPage({
     throw new Error("Unable to load project.");
   }
 
-  if (!project) {
+  // Missing, hidden or another tenant's project: nothing below is ever rendered.
+  if (!project || project.organization_id !== organization.id) {
     notFound();
   }
 
-  // ---------------------------------------------------------
-  // Milestones
-  // ---------------------------------------------------------
+  const { data: milestones, error: milestonesError } = milestonesResult;
+  const { data: updates, error: updatesError } = updatesResult;
+  const { data: documents, error: documentsError } = documentsResult;
 
-  const { data: milestones, error: milestonesError } =
-    await supabase
-      .from("milestones")
-      .select(
-        `
-          id,
-          title,
-          description,
-          status,
-          position,
-          due_date,
-          completed_at
-        `
-      )
-      .eq("project_id", project.id)
-      .order("position", { ascending: true });
-
-  if (milestonesError) {
-    console.error("Client milestones failed:", {
-      code: milestonesError.code,
-      message: milestonesError.message,
-    });
-  }
-
-  // ---------------------------------------------------------
-  // Published client updates only.
-  //
-  // The query intentionally applies the visibility conditions
-  // in addition to the database RLS policy.
-  // ---------------------------------------------------------
-
-  const { data: updates, error: updatesError } =
-    await supabase
-      .from("project_updates")
-      .select(
-        `
-          id,
-          title,
-          body,
-          published_at,
-          created_at
-        `
-      )
-      .eq("project_id", project.id)
-      .eq("visible_to_client", true)
-      .not("published_at", "is", null)
-      .order("published_at", { ascending: false });
-
-  if (updatesError) {
-    console.error("Client project updates failed:", {
-      code: updatesError.code,
-      message: updatesError.message,
-    });
-  }
-
-  // ---------------------------------------------------------
-  // Client-visible documents for this project only.
-  //
-  // Same scoping as the download route: project_id of an
-  // org-verified project + visible_to_client, on top of RLS.
-  // ---------------------------------------------------------
-
-  const { data: documents, error: documentsError } =
-    await supabase
-      .from("documents")
-      .select("id, name, mime_type, size_bytes, created_at")
-      .eq("project_id", project.id)
-      .eq("visible_to_client", true)
-      .order("created_at", { ascending: false });
-
-  if (documentsError) {
-    console.error("Client project documents failed:", {
-      code: documentsError.code,
-      message: documentsError.message,
-    });
-  }
+  logQueryError("Client milestones failed:", milestonesError);
+  logQueryError("Client project updates failed:", updatesError);
+  logQueryError("Client project documents failed:", documentsError);
 
   const milestoneList = milestones ?? [];
   const updateList = updates ?? [];
@@ -184,6 +179,8 @@ export default async function ClientProjectPage({
     project.progress_override !== null
       ? project.progress_override
       : automaticProgress;
+
+  logRouteTiming("/client/projects/[projectId]", workspace.state);
 
   return (
     <ClientProjectView

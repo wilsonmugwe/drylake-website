@@ -45,8 +45,8 @@ export default function PaymentReturnNotice({ outcome, paid }: PaymentReturnNoti
     }
 
     return (
-      <div role="status" className="cp-panel mt-6 flex items-start gap-3 p-4 text-sm leading-6 text-white/75 sm:p-5">
-        <Info aria-hidden="true" size={17} className="mt-1 shrink-0 text-white/55" />
+      <div role="status" className="cp-card mb-4 flex items-start gap-3 p-4 text-sm leading-6 text-neutral-700 sm:mb-6 sm:p-5">
+        <Info aria-hidden="true" size={17} className="mt-1 shrink-0 text-neutral-400" />
         <p>
           Payment cancelled. You have not been charged and this invoice is still open. You can
           pay again whenever you are ready.
@@ -57,7 +57,7 @@ export default function PaymentReturnNotice({ outcome, paid }: PaymentReturnNoti
 
   if (paid) {
     return (
-      <div role="status" className="cp-panel mt-6 flex items-start gap-3 p-4 text-sm leading-6 text-emerald-300 sm:p-5">
+      <div role="status" className="cp-card mb-4 flex items-start gap-3 border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800 sm:mb-6 sm:p-5">
         <CheckCircle2 aria-hidden="true" size={17} className="mt-1 shrink-0" />
         <p>Payment confirmed. Thank you, this invoice is now paid.</p>
       </div>
@@ -65,9 +65,9 @@ export default function PaymentReturnNotice({ outcome, paid }: PaymentReturnNoti
   }
 
   return (
-    <div role="status" aria-live="polite" className="cp-panel mt-6 flex items-start gap-3 p-4 text-sm leading-6 text-white/75 sm:p-5">
+    <div role="status" aria-live="polite" className="cp-card mb-4 flex items-start gap-3 p-4 text-sm leading-6 text-neutral-700 sm:mb-6 sm:p-5">
       {gaveUp ? (
-        <Info aria-hidden="true" size={17} className="mt-1 shrink-0 text-white/55" />
+        <Info aria-hidden="true" size={17} className="mt-1 shrink-0 text-neutral-400" />
       ) : (
         <Loader2 aria-hidden="true" size={17} className="mt-1 shrink-0 animate-spin text-[#f26a2e]" />
       )}

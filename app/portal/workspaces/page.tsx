@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft, ArrowLeftRight } from "lucide-react";
 
 import ClientOrganizationPicker from "@/components/client/ClientOrganizationPicker";
 import ClientShell from "@/components/client/ClientShell";
+import ClientStateCard from "@/components/client/ClientStateCard";
 import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
-import { getClientWorkspace } from "@/lib/auth/client-context";
+import { getClientWorkspace, getSwitchableWorkspaces } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
+import { logRouteTiming, startRequestTiming } from "@/lib/perf/request-timing";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +23,14 @@ export const metadata = {
 /*
  * Workspace switcher for users who belong to several Drylake client organisations.
  * Options are the user's own Clerk memberships mapped to ACTIVE client rows; selecting
- * one makes it the session's active org (Clerk enforces membership again).
+ * one makes it the session's active org (Clerk enforces membership again), and the next
+ * request re-resolves access through getClientWorkspace().
+ *
+ * Lives outside /client, so it renders its own copy of the portal frame.
  */
 export default async function WorkspacesPage() {
+  startRequestTiming();
+
   const workspace = await getClientWorkspace();
 
   if (workspace.state === "signed-out") {
@@ -30,28 +38,38 @@ export default async function WorkspacesPage() {
   }
 
   if (workspace.state !== "ready") {
-    return <ClientWorkspaceGate workspace={workspace} returnTo="/client" />;
+    logRouteTiming("/portal/workspaces", workspace.state);
+
+    return (
+      <ClientShell showNav={false}>
+        <ClientWorkspaceGate workspace={workspace} returnTo="/client" />
+      </ClientShell>
+    );
   }
 
   const current = workspace.organization;
-  const others = workspace.workspaces.filter(
+  const others = (await getSwitchableWorkspaces()).filter(
     (option) => option.organizationId !== current.id
   );
 
+  logRouteTiming("/portal/workspaces", workspace.state);
+
   return (
-    <ClientShell organizationName={current.name} showNav={false}>
-      <div className="flex min-h-[60svh] flex-col justify-center py-14 sm:py-20">
-        <div className="section-label flex items-center gap-3 text-white/55">
-          <span aria-hidden="true" className="signal-dot h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-          Switch workspace
-        </div>
-
-        <h1 className="mt-5 max-w-[18ch] text-[clamp(2.4rem,9vw,4.5rem)] font-semibold leading-[0.95] tracking-[-0.06em]">
-          {others.length > 0 ? "Choose a workspace." : "You have one workspace."}
-        </h1>
-
-        <p className="mt-6 max-w-[36rem] text-[0.95rem] leading-7 text-white/60">
-          You are currently in {current.name}.
+    <ClientShell organizationName={current.name}>
+      <ClientStateCard
+        icon={<ArrowLeftRight size={20} />}
+        tone="signal"
+        eyebrow="Switch workspace"
+        title={others.length > 0 ? "Choose a workspace." : "You have one workspace."}
+        actions={
+          <Link href="/client" className="cp-button-secondary min-h-12 sm:min-w-[180px]">
+            <ArrowLeft aria-hidden="true" size={15} />
+            Back to {current.name}
+          </Link>
+        }
+      >
+        <p>
+          You are currently in <span className="font-medium text-neutral-900">{current.name}</span>.
         </p>
 
         {others.length > 0 ? (
@@ -61,13 +79,7 @@ export default async function WorkspacesPage() {
             returnTo="/client"
           />
         ) : null}
-
-        <div className="mt-8">
-          <Link href="/client" className="cp-button-outline sm:min-w-[180px]">
-            <span>Back to {current.name}</span>
-          </Link>
-        </div>
-      </div>
+      </ClientStateCard>
     </ClientShell>
   );
 }
