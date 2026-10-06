@@ -1,0 +1,26 @@
+# Schema-as-code guard (PR 3, docs/operations/disaster-recovery/schema-as-code.md).
+#
+# Fails on badly named migrations now. Once a `*_baseline.sql` migration lands, it also fails
+# when the app uses a table, RPC or storage bucket that no committed migration defines (drift).
+# Reads files only: no database connection, no secrets.
+name: Schema
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Migration names and schema coverage
+        run: node scripts/check-migrations.mjs
