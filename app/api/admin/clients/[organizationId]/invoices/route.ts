@@ -11,7 +11,7 @@ import {
   type InvoiceField,
 } from "@/lib/invoice-creation/validate";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { isGstRegistered } from "@/lib/tax";
+import { gstAppliesToNewInvoices } from "@/lib/tax";
 
 /*
  * Create a DRAFT invoice for a client organisation.
@@ -166,12 +166,11 @@ export async function POST(request: Request, context: RouteContext) {
     {
       projectId: formData.get("projectId"),
       subtotal: formData.get("subtotal"),
-      tax: formData.get("tax"),
       dueDate: formData.get("dueDate"),
       visibleToClient: formData.get("visibleToClient"),
       requestId: formData.get("requestId"),
     },
-    { gstRegistered: isGstRegistered() }
+    { gstApplies: gstAppliesToNewInvoices() }
   );
 
   if (!validation.ok) {
@@ -323,6 +322,8 @@ export async function POST(request: Request, context: RouteContext) {
           organization_id: organizationId,
           project_id: input.projectId,
           invoice_number: invoice.invoice_number,
+          subtotal_cents: input.subtotalCents,
+          tax_cents: input.taxCents,
           total_cents: input.totalCents,
           currency: input.currency,
           visible_to_client: input.visibleToClient,

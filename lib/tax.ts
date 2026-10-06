@@ -1,11 +1,13 @@
 /*
- * Drylake is not registered for GST. Until GST_REGISTERED=true, no GST may be charged,
- * displayed or invoiced (Australian tax law: an unregistered business must not collect GST).
- * Flip the env var only after ATO registration, then review every pricing surface in one pass.
+ * Does GST apply to an invoice created or issued now? Read from the single business
+ * config (lib/business.ts), where Drylake is recorded as GST registered.
+ *
+ * Existing invoices are never recalculated by this: each invoice's GST is fixed in its
+ * stored subtotal/tax/total once issued (lib/invoices/gst.ts). Only a DRAFT is
+ * recalculated, at the moment it is issued.
  */
-export function isGstRegistered() {
-  return process.env.GST_REGISTERED === "true";
-}
+import { DRYLAKE_BUSINESS } from "@/lib/business";
 
-export const NO_GST_NOTE =
-  "No GST has been charged. Drylake Pty Ltd is not registered for GST.";
+export function gstAppliesToNewInvoices(): boolean {
+  return DRYLAKE_BUSINESS.gstRegistered;
+}

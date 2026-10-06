@@ -6,7 +6,11 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { normaliseBillingEmail, renderInvoiceEmail } from "../lib/email/invoice-email.ts";
-import { NO_GST_NOTE } from "../lib/tax.ts";
+import { NO_GST_CHARGED_NOTE } from "../lib/invoices/gst.ts";
+import { clientInvoiceUrl } from "../lib/invoices/invoice-url.ts";
+
+const INVOICE_ID = "11111111-2222-4333-8444-555555555555";
+const PORTAL_URL = clientInvoiceUrl(INVOICE_ID, "https://drylake.com.au");
 
 function input(overrides = {}) {
   return {
@@ -17,13 +21,11 @@ function input(overrides = {}) {
     projectName: "Website",
     currency: "AUD",
     subtotalCents: 125000,
-    taxCents: 12500,
+    taxCents: 0,
     totalCents: 125000,
     dueDate: "2026-10-20",
     overdue: false,
-    portalUrl: "https://drylake.com.au/client/billing/11111111-2222-4333-8444-555555555555",
-    gstRegistered: false,
-    noGstNote: NO_GST_NOTE,
+    portalUrl: PORTAL_URL,
     ...overrides,
   };
 }
@@ -36,23 +38,36 @@ describe("renderInvoiceEmail", () => {
     assert.equal(html.includes("<Care>"), false);
   });
 
-  it("shows no GST line while not registered, and the no-GST note instead", () => {
+  it("an invoice stored without GST shows no GST line and the no-GST note (historical)", () => {
     const { html, text } = renderInvoiceEmail(input());
-    assert.equal(/>GST</.test(html), false);
-    assert.equal(/^GST:/m.test(text), false);
-    assert.ok(text.includes(NO_GST_NOTE));
+    assert.equal(/>GST/.test(html), false);
+    assert.equal(/^GST/m.test(text), false);
+    assert.ok(text.includes(NO_GST_CHARGED_NOTE));
+    assert.equal(html.includes("Tax invoice"), false);
+    assert.ok(/^Total \(AUD\): \$1,250\.00$/m.test(text));
   });
 
-  it("shows the GST line only when registered", () => {
-    const { html, text } = renderInvoiceEmail(input({ gstRegistered: true }));
-    assert.ok(/>GST</.test(html));
-    assert.ok(/^GST: \$125\.00$/m.test(text));
+  it("a GST invoice shows Subtotal, GST (10%) and Total including GST, as a tax invoice", () => {
+    const { html, text } = renderInvoiceEmail(
+      input({ subtotalCents: 100_000, taxCents: 10_000, totalCents: 110_000 })
+    );
+    assert.ok(/^Subtotal: \$1,000\.00$/m.test(text));
+    assert.ok(/^GST \(10%\): \$100\.00$/m.test(text));
+    assert.ok(/^Total including GST \(AUD\): \$1,100\.00$/m.test(text));
+    assert.ok(html.includes(">GST (10%)<"));
+    assert.ok(html.includes("Total including GST (AUD)"));
+    assert.ok(html.includes("Tax invoice"));
+    assert.ok(text.includes("ABN 70 702 662 557"));
+    assert.equal(text.includes(NO_GST_CHARGED_NOTE), false);
   });
 
-  it("links to the invoice in the client portal", () => {
+  it("the button and the plain link are the same canonical invoice URL", () => {
     const { html, text } = renderInvoiceEmail(input());
-    assert.ok(html.includes('href="https://drylake.com.au/client/billing/'));
-    assert.ok(text.includes("https://drylake.com.au/client/billing/"));
+    const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+    assert.deepEqual(hrefs, [PORTAL_URL], "exactly one link: the button");
+    assert.ok(html.includes(`>${PORTAL_URL}</p>`), "plain link under the button");
+    assert.ok(text.split("\n").includes(PORTAL_URL), "plain-text body link");
+    assert.equal(PORTAL_URL, `https://drylake.com.au/client/billing/${INVOICE_ID}`);
   });
 
   it("reminder copy reflects overdue state; no stale 'payment not enabled' copy", () => {

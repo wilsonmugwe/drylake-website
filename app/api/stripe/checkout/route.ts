@@ -2,6 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
+import { formatEmailMoney } from "@/lib/email/invoice-email";
+import { clientInvoiceUrl } from "@/lib/invoices/invoice-url";
 import { evaluateCheckout } from "@/lib/invoices/lifecycle";
 import {
   checkoutIdempotencyKey,
@@ -135,7 +137,9 @@ export async function POST(request: Request) {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
-      .select("id, organization_id, invoice_number, status, currency, total_cents, visible_to_client")
+      .select(
+        "id, organization_id, invoice_number, status, currency, subtotal_cents, tax_cents, total_cents, visible_to_client"
+      )
       .eq("id", invoiceId)
       .eq("organization_id", organization.id)
       .eq("visible_to_client", true)
@@ -214,7 +218,17 @@ export async function POST(request: Request) {
       }
     }
 
+    // Return to the origin the client is signed in on (their session cookie lives there),
+    // through the same path builder the invoice email uses.
     const origin = new URL(request.url).origin;
+    const invoiceUrl = clientInvoiceUrl(payable.id, origin);
+    const taxCents = Number(payable.tax_cents);
+    // Stripe charges the stored GST-inclusive total_cents as one line; the description
+    // states the GST it contains so the Checkout page matches the invoice.
+    const description =
+      taxCents > 0
+        ? `Payment for ${payable.invoice_number}. Includes GST of ${formatEmailMoney(taxCents, currency)}.`
+        : `Payment for ${payable.invoice_number}`;
     const metadata = {
       [METADATA_INVOICE_ID]: payable.id,
       [METADATA_INVOICE_NUMBER]: payable.invoice_number,
@@ -231,7 +245,7 @@ export async function POST(request: Request) {
                 currency,
                 product_data: {
                   name: `Drylake Invoice ${payable.invoice_number}`,
-                  description: `Payment for ${payable.invoice_number}`,
+                  description,
                 },
                 unit_amount: amountCents,
               },
@@ -241,8 +255,8 @@ export async function POST(request: Request) {
           client_reference_id: payable.id,
           metadata,
           payment_intent_data: { metadata },
-          success_url: `${origin}/client/billing/${payable.id}?payment=success`,
-          cancel_url: `${origin}/client/billing/${payable.id}?payment=cancelled`,
+          success_url: `${invoiceUrl}?payment=success`,
+          cancel_url: `${invoiceUrl}?payment=cancelled`,
         },
         {
           idempotencyKey: checkoutIdempotencyKey(payable.id, amountCents, currency, previous),

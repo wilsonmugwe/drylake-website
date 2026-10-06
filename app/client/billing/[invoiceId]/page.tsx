@@ -6,16 +6,15 @@ import {
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientInvoiceView from "@/components/client/ClientInvoiceView";
 import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
-
-import { getClientWorkspace } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
-
-import { displayStatus } from "@/lib/invoices/lifecycle";
-
+import { getClientWorkspace } from "@/lib/auth/client-context";
+import { DRYLAKE_BUSINESS } from "@/lib/business";
+import { presentInvoiceTax } from "@/lib/invoices/gst";
 import {
-  isGstRegistered,
-  NO_GST_NOTE,
-} from "@/lib/tax";
+  clientInvoicePath,
+  invoiceSignInPath,
+} from "@/lib/invoices/invoice-url";
+import { displayStatus } from "@/lib/invoices/lifecycle";
 
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -54,20 +53,26 @@ export default async function ClientInvoicePage({
     await params;
 
   // Return here after sign-in or workspace activation (never a foreign URL).
+  // Same builder as the invoice email, so the destination is never dropped.
   const returnTo = isUuid(invoiceId)
-    ? `/client/billing/${invoiceId}`
+    ? clientInvoicePath(invoiceId)
     : "/client/billing";
 
   // ---------------------------------------------------------
   // The ONE authoritative workspace resolution (same as /client).
-  // Organisation comes from Clerk membership, never from the URL.
+  // Organisation comes from Clerk membership, never from the URL
+  // or from email.
   // ---------------------------------------------------------
 
   const workspace =
     await getClientWorkspace();
 
   if (workspace.state === "signed-out") {
-    redirect(signInUrl(returnTo));
+    redirect(
+      isUuid(invoiceId)
+        ? invoiceSignInPath(invoiceId)
+        : signInUrl(returnTo)
+    );
   }
 
   if (workspace.state !== "ready") {
@@ -261,12 +266,16 @@ export default async function ClientInvoicePage({
           invoice.created_at,
       }}
       project={project}
-      showTaxLine={
-        isGstRegistered()
-      }
-      noGstNote={
-        NO_GST_NOTE
-      }
+      tax={presentInvoiceTax({
+        status: invoice.status,
+        subtotalCents: Number(
+          invoice.subtotal_cents
+        ),
+        taxCents: Number(
+          invoice.tax_cents
+        ),
+      })}
+      business={DRYLAKE_BUSINESS}
       paymentReturn={readPaymentReturn(
         (await searchParams).payment
       )}
