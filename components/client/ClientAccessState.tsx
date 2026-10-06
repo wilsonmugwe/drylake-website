@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
 
 import ClientShell from "./ClientShell";
+import MessageDrylake from "./MessageDrylake";
 
 export type ClientAccessVariant =
   | "no-organisation"
@@ -23,26 +24,32 @@ type Copy = {
 };
 
 /*
+ * Access states only. A ready workspace with no projects, invoices, documents or updates
+ * never renders here; those are empty states inside the normal portal.
+ *
  * Copy never reveals why a record is missing (other tenant, hidden, draft or nonexistent):
  * the invoice state reads the same in every case, matching the loader's behaviour.
+ *
+ * The primary action is the native "Start a conversation" form (MessageDrylake), never a
+ * mailto: link. The address is shown as plain text for anyone who prefers email.
  */
 const COPY: Record<ClientAccessVariant, Copy> = {
   "no-organisation": {
-    code: "Account active",
-    title: "Your workspace is being set up.",
-    body: "You are signed in, but your account does not have access to a client workspace yet. Drylake sends an invitation to your email when your workspace is ready: open the link in that email and sign in with the same address. If you expected access already, email us and we will sort it out.",
+    code: "Signed in",
+    title: "No client workspace on this account.",
+    body: "You are signed in, but this account is not a member of a Drylake client workspace. Drylake sends an invitation to your email when a workspace is ready for you: open the link in that email, or sign in with the address it was sent to. If you expected access already, start a conversation and we will sort it out.",
     showNav: false,
   },
   "access-pending": {
     code: "Access pending",
-    title: "Portal access pending.",
-    body: "Your organisation was recognised, but there is no active Drylake client workspace for it yet. Email us if you were expecting to see your projects here.",
+    title: "We are finishing your portal access.",
+    body: "Your account is linked to a Drylake client workspace, but its access is not complete yet. Nothing is wrong on your side. Start a conversation if you were expecting to see your projects here.",
     showNav: false,
   },
   "billing-unavailable": {
     code: "Billing",
     title: "Billing is not available.",
-    body: "We could not find an active Drylake client workspace for your organisation, so there are no invoices to show. Email us if this looks wrong.",
+    body: "We could not find an active Drylake client workspace for your organisation, so there are no invoices to show. Start a conversation if this looks wrong.",
     back: { href: "/client", label: "Overview" },
     showNav: false,
   },
@@ -56,19 +63,19 @@ const COPY: Record<ClientAccessVariant, Copy> = {
   "client-inactive": {
     code: "Workspace paused",
     title: "Your workspace is paused.",
-    body: "Drylake has paused this client workspace, so projects, documents and billing are not available right now. Nothing has been deleted. Email us to resume access.",
+    body: "Drylake has paused this client workspace, so projects, documents and billing are not available right now. Nothing has been deleted. Start a conversation to resume access.",
     showNav: false,
   },
   "client-archived": {
     code: "Workspace closed",
     title: "This workspace has been closed.",
-    body: "Drylake has archived this client workspace, so it is no longer available in the portal. Email us if you need a copy of your records or believe this is a mistake.",
+    body: "Drylake has archived this client workspace, so it is no longer available in the portal. Start a conversation if you need a copy of your records or believe this is a mistake.",
     showNav: false,
   },
   "lookup-failed": {
     code: "Temporarily unavailable",
     title: "We could not open your workspace.",
-    body: "Something went wrong while checking your access. Please reload the page in a moment. If it keeps happening, email us.",
+    body: "Something went wrong while checking your access. Please reload the page in a moment. If it keeps happening, start a conversation.",
     showNav: false,
   },
 };
@@ -106,21 +113,11 @@ export default function ClientAccessState({
         </p>
 
         <p className="mt-3 max-w-[36rem] text-sm leading-6 text-white/55">
-          We reply within {RESPONSE_TIME}.
+          We reply within {RESPONSE_TIME}. You can also reach us at {CONTACT_EMAIL}.
         </p>
 
         <div className="mt-8 flex flex-col gap-2.5 sm:flex-row">
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="button-light group flex min-h-[50px] items-center justify-between gap-4 bg-white px-5 text-sm font-semibold sm:w-fit sm:min-w-[240px] sm:px-6"
-          >
-            <span>Email {CONTACT_EMAIL}</span>
-            <ArrowUpRight
-              aria-hidden="true"
-              size={16}
-              className="shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-            />
-          </a>
+          <MessageDrylake variant="cta" organizationName={organizationName} />
 
           {copy.back ? (
             <Link href={copy.back.href} className="cp-button-outline sm:min-w-[180px]">

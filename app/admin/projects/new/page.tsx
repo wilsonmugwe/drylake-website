@@ -41,7 +41,7 @@ export default async function GlobalNewProjectPage({
 
   const { data, error } = await supabase
     .from("organizations")
-    .select("id, name, status")
+    .select("id, name, status, billing_email")
     .order("name", { ascending: true });
 
   if (error) {
@@ -53,7 +53,13 @@ export default async function GlobalNewProjectPage({
     throw new Error("Unable to load clients.");
   }
 
-  const clients = data ?? [];
+  // Human-readable identity only (name + primary contact email); the id stays internal.
+  const clients = (data ?? []).map((client) => ({
+    id: client.id,
+    name: client.name,
+    status: client.status,
+    contactEmail: client.billing_email,
+  }));
 
   // Optional ?client=<uuid> preselects a client (only if it exists and is active).
   const requestedClient = readFilterParam(await searchParams, "client");

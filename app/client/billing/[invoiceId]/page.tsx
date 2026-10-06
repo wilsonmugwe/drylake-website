@@ -6,12 +6,8 @@ import {
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientInvoiceView from "@/components/client/ClientInvoiceView";
 import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
-
-import {
-  type ClientAccess,
-  ClientAccessLookupError,
-  getClientAccess,
-} from "@/lib/auth/client-context";
+import { signInUrl } from "@/lib/auth/guards";
+import { getClientWorkspace } from "@/lib/auth/client-context";
 import { DRYLAKE_BUSINESS } from "@/lib/business";
 import { presentInvoiceTax } from "@/lib/invoices/gst";
 import {
@@ -19,7 +15,6 @@ import {
   invoiceSignInPath,
 } from "@/lib/invoices/invoice-url";
 import { displayStatus } from "@/lib/invoices/lifecycle";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -57,115 +52,47 @@ export default async function ClientInvoicePage({
   const { invoiceId } =
     await params;
 
+  // Return here after sign-in or workspace activation (never a foreign URL).
+  // Same builder as the invoice email, so the destination is never dropped.
+  const returnTo = isUuid(invoiceId)
+    ? clientInvoicePath(invoiceId)
+    : "/client/billing";
+
   // ---------------------------------------------------------
-  // Authentication + workspace
-  //
-  // This is where the invoice email lands. The destination is
-  // never dropped:
-  //   - signed out: proxy.ts already sent the user to sign-in
-  //     with this exact path; the fallback below does the same.
-  //   - signed in with no active Clerk organisation (the normal
-  //     state of a fresh sign-in): the shared resolver
-  //     (lib/auth/client-context.ts) activates the user's single
-  //     client workspace, or asks them to choose, and returns
-  //     HERE, not to /client. Previously this page redirected to
-  //     /client whenever orgId was empty, which is why "View and
-  //     pay invoice" opened the dashboard (or the setup screen)
-  //     instead of the invoice.
-  // Membership is still the only route to an organisation:
-  // nothing here matches on email.
+  // The ONE authoritative workspace resolution (same as /client).
+  // Organisation comes from Clerk membership, never from the URL
+  // or from email.
   // ---------------------------------------------------------
+
+  const workspace =
+    await getClientWorkspace();
+
+  if (workspace.state === "signed-out") {
+    redirect(
+      isUuid(invoiceId)
+        ? invoiceSignInPath(invoiceId)
+        : signInUrl(returnTo)
+    );
+  }
+
+  if (workspace.state !== "ready") {
+    return (
+      <ClientWorkspaceGate
+        workspace={workspace}
+        returnTo={returnTo}
+      />
+    );
+  }
 
   if (!isUuid(invoiceId)) {
     notFound();
   }
 
-  const invoicePath =
-    clientInvoicePath(invoiceId);
-
-  let access: ClientAccess;
-
-  try {
-    access = await getClientAccess();
-  } catch (error) {
-    if (error instanceof ClientAccessLookupError) {
-      return <ClientAccessState variant="lookup-failed" />;
-    }
-
-    throw error;
-  }
-
-  if (!access.signedIn) {
-    redirect(invoiceSignInPath(invoiceId));
-  }
-
-  if (access.resolution.kind !== "ready") {
-    return (
-      <ClientWorkspaceGate
-        resolution={access.resolution}
-        returnTo={invoicePath}
-      />
-    );
-  }
-
-  const resolvedOrganization =
-    access.resolution.organization;
-
-  // ---------------------------------------------------------
-  // Authenticated Supabase client
-  //
-  // Supabase RLS remains the tenant boundary.
-  // ---------------------------------------------------------
-
-  const supabase =
-    createServerSupabaseClient();
-
-  // ---------------------------------------------------------
-  // Organisation
-  // ---------------------------------------------------------
-
+  // RLS-scoped client that verified this organisation with the user's token.
   const {
-    data: organization,
-    error: organizationError,
-  } = await supabase
-    .from("organizations")
-    .select(
-      `
-        id,
-        clerk_org_id,
-        name,
-        status
-      `
-    )
-    .eq("id", resolvedOrganization.id)
-    .eq(
-      "clerk_org_id",
-      resolvedOrganization.clerk_org_id as string
-    )
-    .eq("status", "ACTIVE")
-    .maybeSingle();
-
-  if (organizationError) {
-    console.error(
-      "Invoice organisation lookup failed:",
-      {
-        code:
-          organizationError.code,
-
-        message:
-          organizationError.message,
-      }
-    );
-  }
-
-  if (
-    organizationError ||
-    !organization
-  ) {
-    return (
-      <ClientAccessState variant="invoice-unavailable" />
-    );
-  }
+    supabase,
+    organization,
+  } = workspace;
 
   // ---------------------------------------------------------
   // Invoice

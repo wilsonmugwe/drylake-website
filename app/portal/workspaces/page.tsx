@@ -1,15 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientOrganizationPicker from "@/components/client/ClientOrganizationPicker";
 import ClientShell from "@/components/client/ClientShell";
 import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
-import {
-  type ClientAccess,
-  ClientAccessLookupError,
-  getClientAccess,
-} from "@/lib/auth/client-context";
+import { getClientWorkspace } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
 
 export const dynamic = "force-dynamic";
@@ -28,29 +23,19 @@ export const metadata = {
  * one makes it the session's active org (Clerk enforces membership again).
  */
 export default async function WorkspacesPage() {
-  let access: ClientAccess;
+  const workspace = await getClientWorkspace();
 
-  try {
-    access = await getClientAccess({ includeMemberships: true });
-  } catch (error) {
-    if (error instanceof ClientAccessLookupError) {
-      return <ClientAccessState variant="lookup-failed" />;
-    }
-
-    throw error;
-  }
-
-  if (!access.signedIn) {
+  if (workspace.state === "signed-out") {
     redirect(signInUrl("/portal/workspaces"));
   }
 
-  if (access.resolution.kind !== "ready") {
-    return <ClientWorkspaceGate resolution={access.resolution} returnTo="/client" />;
+  if (workspace.state !== "ready") {
+    return <ClientWorkspaceGate workspace={workspace} returnTo="/client" />;
   }
 
-  const current = access.resolution.organization;
-  const others = (access.workspaces ?? []).filter(
-    (workspace) => workspace.organizationId !== current.id
+  const current = workspace.organization;
+  const others = workspace.workspaces.filter(
+    (option) => option.organizationId !== current.id
   );
 
   return (

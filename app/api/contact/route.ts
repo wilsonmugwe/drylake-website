@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getPortalContext } from "@/lib/contact/portal-context";
 import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
 import { deliverContactEnquiry } from "@/lib/email/contact-enquiry";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
@@ -169,6 +170,9 @@ export async function POST(request: Request) {
       budget,
       message,
       receivedAt: new Date().toISOString(),
+      // Signed-in senders (the portal's "Start a conversation") carry server-verified
+      // account and workspace context; anonymous visitors carry none.
+      portal: await getPortalContext(),
     };
 
     // Fail loudly: a visitor must never see "received" for an enquiry that was not delivered.

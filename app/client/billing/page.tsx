@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientBillingView from "@/components/client/ClientBillingView";
+import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
+import { getClientWorkspace } from "@/lib/auth/client-context";
+import { signInUrl } from "@/lib/auth/guards";
 import { displayStatus } from "@/lib/invoices/lifecycle";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Billing | Client Portal",
@@ -18,52 +18,22 @@ export const dynamic = "force-dynamic";
 
 export default async function ClientBillingPage() {
   // ---------------------------------------------------------
-  // Authentication
+  // The ONE authoritative workspace resolution (same as /client).
+  // A ready workspace with no invoices renders the billing empty
+  // state; it never falls back to an access screen.
   // ---------------------------------------------------------
 
-  const { userId, orgId } = await auth();
+  const workspace = await getClientWorkspace();
 
-  if (!userId) {
-    redirect("/sign-in?redirect_url=/client/billing");
+  if (workspace.state === "signed-out") {
+    redirect(signInUrl("/client/billing"));
   }
 
-  // An authenticated account without an active Clerk
-  // organisation must never receive client billing data.
-  if (!orgId) {
-    redirect("/client");
+  if (workspace.state !== "ready") {
+    return <ClientWorkspaceGate workspace={workspace} returnTo="/client/billing" />;
   }
 
-  // ---------------------------------------------------------
-  // Authenticated Supabase client
-  //
-  // Uses the Clerk session token.
-  // Supabase RLS remains the actual tenant boundary.
-  // ---------------------------------------------------------
-
-  const supabase = createServerSupabaseClient();
-
-  // ---------------------------------------------------------
-  // Resolve active Drylake organisation
-  // ---------------------------------------------------------
-
-  const { data: organization, error: organizationError } =
-    await supabase
-      .from("organizations")
-      .select("id, clerk_org_id, name, status")
-      .eq("clerk_org_id", orgId)
-      .eq("status", "ACTIVE")
-      .maybeSingle();
-
-  if (organizationError) {
-    console.error("Billing organisation lookup failed:", {
-      code: organizationError.code,
-      message: organizationError.message,
-    });
-  }
-
-  if (organizationError || !organization) {
-    return <ClientAccessState variant="billing-unavailable" />;
-  }
+  const { supabase, organization } = workspace;
 
   // ---------------------------------------------------------
   // Load invoices

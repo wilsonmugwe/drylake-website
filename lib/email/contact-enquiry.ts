@@ -10,6 +10,14 @@ export interface ContactEnquiry {
   budget: string;
   message: string;
   receivedAt: string;
+  /* Present only when sent by a signed-in user; values are server-verified. */
+  portal?: PortalContext | null;
+}
+
+export interface PortalContext {
+  accountEmail: string | null;
+  workspaceName: string | null;
+  workspaceState: string;
 }
 
 function escapeHtml(value: string) {
@@ -45,10 +53,20 @@ export async function deliverContactEnquiry(enquiry: ContactEnquiry) {
     ["Project type", enquiry.projectType || "Not provided"],
     ["Budget", enquiry.budget || "Not provided"],
     ["Received", enquiry.receivedAt],
+    ...(enquiry.portal
+      ? ([
+          ["Source", "Signed-in Drylake account"],
+          ["Verified account", enquiry.portal.accountEmail || "Unknown"],
+          [
+            "Verified workspace",
+            enquiry.portal.workspaceName || `None (${enquiry.portal.workspaceState})`,
+          ],
+        ] as Array<[string, string]>)
+      : []),
   ];
 
   const html = `
-    <h2>New website enquiry</h2>
+    <h2>${enquiry.portal ? "New client message" : "New website enquiry"}</h2>
     <table cellpadding="6" style="border-collapse:collapse">
       ${rows
         .map(
@@ -72,7 +90,9 @@ export async function deliverContactEnquiry(enquiry: ContactEnquiry) {
     from: getEmailFromAddress(),
     to: getEnquiryInbox(),
     replyTo: enquiry.email,
-    subject: `Website enquiry: ${enquiry.name}${enquiry.company ? ` (${enquiry.company})` : ""}`,
+    subject: `${enquiry.portal ? "Client message" : "Website enquiry"}: ${enquiry.name}${
+      enquiry.company ? ` (${enquiry.company})` : ""
+    }`,
     html,
     text,
   });

@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 
 import ClientProjectView from "@/components/client/ClientProjectView";
-import { getClientAccess } from "@/lib/auth/client-context";
+import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
+import { getClientWorkspace } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
@@ -28,16 +28,16 @@ export default async function ClientProjectPage({
   const { projectId } = await params;
   const returnTo = isUuid(projectId) ? `/client/projects/${projectId}` : "/client";
 
-  // Workspace from Clerk organisation membership (never from the URL). Anything other
-  // than a ready workspace goes to /client, which explains or activates it.
-  const access = await getClientAccess();
+  // The ONE authoritative workspace resolution (same as /client). Organisation comes from
+  // Clerk membership, never from the URL; activation returns the user to this project.
+  const workspace = await getClientWorkspace();
 
-  if (!access.signedIn) {
+  if (workspace.state === "signed-out") {
     redirect(signInUrl(returnTo));
   }
 
-  if (access.resolution.kind !== "ready") {
-    redirect("/client");
+  if (workspace.state !== "ready") {
+    return <ClientWorkspaceGate workspace={workspace} returnTo={returnTo} />;
   }
 
   // A malformed ID can never match a row: 404 before the query, not a database error.
@@ -45,33 +45,8 @@ export default async function ClientProjectPage({
     notFound();
   }
 
-  const supabase = createServerSupabaseClient();
-
-  // ---------------------------------------------------------
-  // Organisation, re-read through RLS (the tenant boundary).
-  // ---------------------------------------------------------
-
-  const { data: organization, error: organizationError } =
-    await supabase
-      .from("organizations")
-      .select("id, name, status")
-      .eq("id", access.resolution.organization.id)
-      .eq("clerk_org_id", access.resolution.organization.clerk_org_id as string)
-      .eq("status", "ACTIVE")
-      .maybeSingle();
-
-  if (organizationError) {
-    console.error("Client organisation lookup failed:", {
-      code: organizationError.code,
-      message: organizationError.message,
-    });
-
-    throw new Error("Unable to load client organisation.");
-  }
-
-  if (!organization) {
-    notFound();
-  }
+  // RLS-scoped client that verified this organisation with the user's token.
+  const { supabase, organization } = workspace;
 
   // ---------------------------------------------------------
   // Project

@@ -107,14 +107,16 @@ describe("email -> sign-in -> invoice wiring (static)", () => {
     const page = read("app/client/billing/[invoiceId]/page.tsx");
     assert.equal(/redirect\(\s*["']\/client["']\s*\)/.test(page), false, "old redirect('/client') is back");
     assert.equal(/redirect_url=\/client\/billing["']/.test(page), false, "old hard-coded list return is back");
-    assert.ok(page.includes("redirect(invoiceSignInPath(invoiceId))"));
-    assert.ok(page.includes("getClientAccess()"), "uses the shared membership resolver");
-    assert.ok(/<ClientWorkspaceGate[\s\S]*returnTo=\{invoicePath\}/.test(page), "activation returns to the invoice");
+    assert.ok(page.includes("invoiceSignInPath(invoiceId)"), "signed-out goes to sign-in with the invoice path");
+    assert.ok(page.includes("getClientWorkspace()"), "uses the one authoritative workspace resolver");
+    assert.ok(/returnTo = isUuid\(invoiceId\)\s*\?\s*clientInvoicePath\(invoiceId\)/.test(page), "return path comes from the same builder as the email");
+    assert.ok(/<ClientWorkspaceGate[\s\S]*returnTo=\{returnTo\}/.test(page), "activation returns to the invoice");
   });
 
   it("the invoice page reads the organisation and invoice through RLS with explicit filters", () => {
     const page = read("app/client/billing/[invoiceId]/page.tsx");
-    assert.ok(page.includes("createServerSupabaseClient()"));
+    // The RLS-scoped client comes from the resolver, which verified the org with the user's own token.
+    assert.ok(/const\s*\{\s*supabase,\s*organization,\s*\}\s*=\s*workspace;/.test(page));
     assert.equal(page.includes("createAdminSupabaseClient"), false, "no service role on the client page");
     assert.ok(/\.eq\(\s*"organization_id",\s*organization\.id\s*\)/.test(page));
     assert.ok(/\.eq\(\s*"visible_to_client",\s*true\s*\)/.test(page));

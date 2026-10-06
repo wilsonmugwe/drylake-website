@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { ClientAccessLookupError, getClientAccess } from "@/lib/auth/client-context";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getClientWorkspace } from "@/lib/auth/client-context";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -36,28 +35,23 @@ export async function GET(
   { params }: RouteContext
 ) {
   // ---------------------------------------------------------
-  // 1. Clerk authentication
+  // 1. The ONE authoritative workspace resolution (same as the portal pages).
+  //
+  // INACTIVE / ARCHIVED clients, users with no client workspace, and sessions whose
+  // Clerk token Supabase RLS did not accept are all refused before any document lookup.
   // ---------------------------------------------------------
 
-  // Workspace from Clerk organisation membership; INACTIVE / ARCHIVED clients and users
-  // with no active client workspace are refused before any document lookup.
-  let access: Awaited<ReturnType<typeof getClientAccess>>;
+  const workspace = await getClientWorkspace();
 
-  try {
-    access = await getClientAccess();
-  } catch (error) {
-    if (error instanceof ClientAccessLookupError) {
-      return errorResponse("Unable to access document", 500);
-    }
-
-    throw error;
-  }
-
-  if (!access.signedIn) {
+  if (workspace.state === "signed-out") {
     return errorResponse("Unauthorized", 401);
   }
 
-  if (access.resolution.kind !== "ready") {
+  if (workspace.state === "lookup-failed") {
+    return errorResponse("Unable to access document", 500);
+  }
+
+  if (workspace.state !== "ready") {
     return errorResponse("No active client workspace", 403);
   }
 
@@ -71,46 +65,12 @@ export async function GET(
   // ---------------------------------------------------------
   // 2. Authorization client
   //
-  // This client carries the user's Clerk session token.
-  // Supabase RLS decides whether this user can retrieve the
-  // document metadata.
-  //
-  // The service-role client MUST NOT be used for this query.
+  // The RLS-scoped client that carries the user's Clerk session token and just
+  // verified the organisation. The service-role client MUST NOT be used for this query.
   // ---------------------------------------------------------
 
-  const clientSupabase =
-    createServerSupabaseClient();
-
-  const { data: organization, error: organizationError } =
-    await clientSupabase
-      .from("organizations")
-      .select("id, status")
-      .eq("id", access.resolution.organization.id)
-      .eq("clerk_org_id", access.resolution.organization.clerk_org_id as string)
-      .eq("status", "ACTIVE")
-      .maybeSingle();
-
-  if (organizationError) {
-    console.error(
-      "Document organisation authorization failed:",
-      {
-        code: organizationError.code,
-        message: organizationError.message,
-      }
-    );
-
-    return errorResponse(
-      "Unable to access document",
-      500
-    );
-  }
-
-  if (!organization) {
-    return errorResponse(
-      "Document not found",
-      404
-    );
-  }
+  const clientSupabase = workspace.supabase;
+  const organization = workspace.organization;
 
   // ---------------------------------------------------------
   // 3. Retrieve document through RLS

@@ -26,8 +26,9 @@ import { submitEnquiry } from "@/lib/contact/submit-enquiry";
 import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
 
 /*
- * "Message Drylake" for signed-in clients: replaces the portal's mailto: links so a
- * message is sent from inside the portal instead of opening an email app.
+ * "Start a conversation" for signed-in clients: the portal's only support action. It
+ * replaces every mailto: link so a message is sent from inside the portal and no email
+ * application (Outlook, Gmail, Apple Mail) is ever opened.
  *
  * Contract: it reuses the public contact pipeline unchanged. The message posts to
  * /api/contact through submitEnquiry() with a Turnstile token (same action, same
@@ -37,7 +38,10 @@ import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
  * Success is shown ONLY after the server confirms delivery.
  */
 
-type Variant = "card" | "header";
+type Variant = "card" | "header" | "cta";
+
+/* The portal's one support action label; every contact entry point uses it. */
+export const START_CONVERSATION = "Start a conversation";
 
 type MessageDrylakeProps = {
   variant: Variant;
@@ -86,15 +90,19 @@ export default function MessageDrylake({
 
   return (
     <>
-      {variant === "card" ? (
+      {variant === "card" || variant === "cta" ? (
         <button
           type="button"
           onClick={openDialog}
-          className="button-light group mt-5 flex min-h-[48px] w-full items-center justify-between gap-4 bg-white px-5 text-sm font-semibold"
+          className={
+            variant === "card"
+              ? "button-light group mt-5 flex min-h-[48px] w-full items-center justify-between gap-4 bg-white px-5 text-sm font-semibold"
+              : "button-light group flex min-h-[50px] items-center justify-between gap-4 bg-white px-5 text-sm font-semibold sm:w-fit sm:min-w-[240px] sm:px-6"
+          }
         >
           <span className="flex items-center gap-2.5">
             <MessageSquare aria-hidden="true" size={16} />
-            Message Drylake
+            {START_CONVERSATION}
           </span>
           <ArrowUpRight
             aria-hidden="true"
@@ -109,7 +117,7 @@ export default function MessageDrylake({
           className="inline-flex min-h-[44px] items-center gap-2 px-2 text-sm font-medium text-white/65 transition-colors hover:text-white"
         >
           <LifeBuoy aria-hidden="true" size={16} />
-          <span>Support</span>
+          <span className="whitespace-nowrap">{START_CONVERSATION}</span>
         </button>
       )}
 
@@ -270,7 +278,7 @@ function MessageForm({
             id="message-drylake-title"
             className="mt-2 text-2xl font-semibold tracking-[-0.04em]"
           >
-            Message Drylake
+            {START_CONVERSATION}
           </h2>
           <p className="mt-2 text-sm leading-6 text-white/60">
             Sent straight to the Drylake team. We reply by email within{" "}
