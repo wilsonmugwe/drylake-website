@@ -5,6 +5,11 @@ import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
 import { getClientWorkspace } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
 import { displayStatus } from "@/lib/invoices/lifecycle";
+import {
+  logRouteTiming,
+  startRequestTiming,
+  timed,
+} from "@/lib/perf/request-timing";
 
 export const metadata = {
   title: "Billing | Client Portal",
@@ -17,6 +22,8 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ClientBillingPage() {
+  startRequestTiming();
+
   // ---------------------------------------------------------
   // The ONE authoritative workspace resolution (same as /client).
   // A ready workspace with no invoices renders the billing empty
@@ -30,7 +37,11 @@ export default async function ClientBillingPage() {
   }
 
   if (workspace.state !== "ready") {
-    return <ClientWorkspaceGate workspace={workspace} returnTo="/client/billing" />;
+    logRouteTiming("/client/billing", workspace.state);
+
+    return (
+      <ClientWorkspaceGate workspace={workspace} returnTo="/client/billing" />
+    );
   }
 
   const { supabase, organization } = workspace;
@@ -47,10 +58,11 @@ export default async function ClientBillingPage() {
   // - invoice belongs to current Clerk organisation
   // ---------------------------------------------------------
 
-  const { data: invoices, error: invoicesError } =
-    await supabase
+  const { data: invoices, error: invoicesError } = await timed("content", () =>
+    supabase
       .from("invoices")
-      .select(`
+      .select(
+        `
         id,
         organization_id,
         project_id,
@@ -63,11 +75,13 @@ export default async function ClientBillingPage() {
         due_date,
         paid_at,
         created_at
-      `)
+      `,
+      )
       .eq("organization_id", organization.id)
       .eq("visible_to_client", true)
       .neq("status", "DRAFT")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false }),
+  );
 
   if (invoicesError) {
     console.error("Client invoice lookup failed:", {
@@ -75,6 +89,8 @@ export default async function ClientBillingPage() {
       message: invoicesError.message,
     });
   }
+
+  logRouteTiming("/client/billing", workspace.state);
 
   return (
     <ClientBillingView

@@ -38,7 +38,8 @@ import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
  * Success is shown ONLY after the server confirms delivery.
  */
 
-type Variant = "card" | "header" | "cta";
+/* card: inside a white card. cta: primary action on a page. rail: the dark navigation rail. */
+type Variant = "card" | "rail" | "cta";
 
 /* The portal's one support action label; every contact entry point uses it. */
 export const START_CONVERSATION = "Start a conversation";
@@ -59,8 +60,7 @@ const TOPICS = [
 
 const MESSAGE_MAX = 5000;
 
-const FIELD_CLASS =
-  "mt-2 min-h-11 w-full border border-white/15 bg-black/40 px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#f26a2e] focus:ring-2 focus:ring-[#f26a2e]/25 disabled:opacity-60";
+const FIELD_CLASS = "cp-input mt-2";
 
 export default function MessageDrylake({
   variant,
@@ -96,8 +96,8 @@ export default function MessageDrylake({
           onClick={openDialog}
           className={
             variant === "card"
-              ? "button-light group mt-5 flex min-h-[48px] w-full items-center justify-between gap-4 bg-white px-5 text-sm font-semibold"
-              : "button-light group flex min-h-[50px] items-center justify-between gap-4 bg-white px-5 text-sm font-semibold sm:w-fit sm:min-w-[240px] sm:px-6"
+              ? "cp-button-secondary group mt-5 w-full justify-between"
+              : "cp-button-primary group min-h-12 justify-between sm:w-fit sm:min-w-[240px] sm:px-6"
           }
         >
           <span className="flex items-center gap-2.5">
@@ -114,9 +114,9 @@ export default function MessageDrylake({
         <button
           type="button"
           onClick={openDialog}
-          className="inline-flex min-h-[44px] items-center gap-2 px-2 text-sm font-medium text-white/65 transition-colors hover:text-white"
+          className="cp-rail-item"
         >
-          <LifeBuoy aria-hidden="true" size={16} />
+          <LifeBuoy aria-hidden="true" size={16} className="text-[#f26a2e]" />
           <span className="whitespace-nowrap">{START_CONVERSATION}</span>
         </button>
       )}
@@ -131,7 +131,7 @@ export default function MessageDrylake({
             setOpen(false);
           }
         }}
-        className="m-auto w-[calc(100%-2rem)] max-w-lg border border-white/10 bg-[#0b0b0a] p-0 text-white shadow-2xl backdrop:bg-black/70"
+        className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-neutral-200 bg-white p-0 text-neutral-900 shadow-2xl backdrop:bg-neutral-950/50"
       >
         {open ? (
           <MessageForm
@@ -236,7 +236,7 @@ function MessageForm({
   // Wait for Clerk so the name and email prefill is in place before the inputs mount.
   if (!isLoaded) {
     return (
-      <div className="flex min-h-48 items-center justify-center p-8 text-white/60">
+      <div className="flex min-h-48 items-center justify-center p-8 text-neutral-500">
         <LoaderCircle size={20} className="animate-spin" aria-label="Loading" />
       </div>
     );
@@ -245,15 +245,15 @@ function MessageForm({
   if (status === "success") {
     return (
       <div role="status" className="p-6 sm:p-8">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-black">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
           <Check size={20} aria-hidden="true" />
         </div>
 
-        <h2 id="message-drylake-title" className="mt-6 text-2xl font-semibold tracking-[-0.04em]">
+        <h2 id="message-drylake-title" className="mt-6 text-2xl font-semibold tracking-[-0.04em] text-neutral-950">
           Message sent
         </h2>
 
-        <p className="mt-3 text-sm leading-6 text-white/65">
+        <p className="mt-3 text-sm leading-6 text-neutral-600">
           The Drylake team has your message and will reply by email within{" "}
           {RESPONSE_TIME}.
         </p>
@@ -261,7 +261,7 @@ function MessageForm({
         <button
           type="button"
           onClick={onClose}
-          className="button-light mt-7 inline-flex min-h-[44px] items-center justify-center bg-white px-6 text-sm font-semibold"
+          className="cp-button-primary mt-7 px-6"
         >
           Done
         </button>
@@ -273,14 +273,14 @@ function MessageForm({
     <form onSubmit={handleSubmit} className="p-6 sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="tech-label text-white/50">Support</p>
+          <p className="cp-eyebrow">Support</p>
           <h2
             id="message-drylake-title"
-            className="mt-2 text-2xl font-semibold tracking-[-0.04em]"
+            className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-neutral-950"
           >
             {START_CONVERSATION}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-white/60">
+          <p className="mt-2 text-sm leading-6 text-neutral-500">
             Sent straight to the Drylake team. We reply by email within{" "}
             {RESPONSE_TIME}.
           </p>
@@ -290,7 +290,7 @@ function MessageForm({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center text-white/60 transition hover:bg-white/10 hover:text-white"
+          className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
         >
           <X size={18} aria-hidden="true" />
         </button>
@@ -298,7 +298,7 @@ function MessageForm({
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="md-name" className="text-sm font-medium text-white/85">
+          <label htmlFor="md-name" className="text-sm font-medium text-neutral-800">
             Your name
           </label>
           <input
@@ -314,7 +314,7 @@ function MessageForm({
         </div>
 
         <div>
-          <label htmlFor="md-email" className="text-sm font-medium text-white/85">
+          <label htmlFor="md-email" className="text-sm font-medium text-neutral-800">
             Reply to
           </label>
           <input
@@ -332,7 +332,7 @@ function MessageForm({
       </div>
 
       <div className="mt-4">
-        <label htmlFor="md-topic" className="text-sm font-medium text-white/85">
+        <label htmlFor="md-topic" className="text-sm font-medium text-neutral-800">
           About
         </label>
         <select
@@ -343,7 +343,7 @@ function MessageForm({
           className={FIELD_CLASS}
         >
           {TOPICS.map((topic) => (
-            <option key={topic} value={topic} className="bg-[#0b0b0a]">
+            <option key={topic} value={topic}>
               {topic}
             </option>
           ))}
@@ -351,7 +351,7 @@ function MessageForm({
       </div>
 
       <div className="mt-4">
-        <label htmlFor="md-message" className="text-sm font-medium text-white/85">
+        <label htmlFor="md-message" className="text-sm font-medium text-neutral-800">
           Message
         </label>
         <textarea
@@ -376,7 +376,7 @@ function MessageForm({
             onUnavailable={handleUnavailable}
           />
         ) : (
-          <p className="text-sm text-red-300">
+          <p className="text-sm text-red-700">
             Messaging is temporarily unavailable. Please email {CONTACT_EMAIL}.
           </p>
         )}
@@ -387,19 +387,19 @@ function MessageForm({
           ref={errorRef}
           role="alert"
           tabIndex={-1}
-          className="mt-4 flex items-start gap-2 border-l-2 border-red-400 pl-3 text-sm leading-6 text-red-300 outline-none"
+          className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm leading-6 text-red-700 outline-none"
         >
           <RotateCcw size={14} className="mt-1 shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-end">
+      <div className="mt-6 flex flex-col-reverse gap-3 border-t border-neutral-200 pt-5 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="button"
           onClick={onClose}
           disabled={sending}
-          className="inline-flex min-h-[44px] items-center justify-center px-5 text-sm font-medium text-white/65 transition hover:text-white disabled:opacity-50"
+          className="cp-button-secondary px-5"
         >
           Cancel
         </button>
@@ -407,7 +407,7 @@ function MessageForm({
         <button
           type="submit"
           disabled={sending || !siteKey}
-          className="button-light inline-flex min-h-[44px] items-center justify-center gap-2 bg-white px-6 text-sm font-semibold disabled:cursor-wait disabled:opacity-60"
+          className="cp-button-primary px-6"
         >
           {sending ? (
             <>

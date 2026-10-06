@@ -63,25 +63,28 @@ body {
 
 /*
  * Unlayered, so on the public site it beats Tailwind utilities (pages there rely on
- * that, often with !important overrides). Admin is excluded and gets the same reset
- * inside @layer base below, so text-* utilities on admin links work as written.
+ * that, often with !important overrides). Admin and the client portal are excluded and get
+ * the same resets inside @layer base below, so text-* utilities and cp- classes on their
+ * links and form controls work as written.
  */
-a:not(:where(.drylake-admin a)) {
+a:not(:where(.drylake-admin a, .client-portal a)) {
   color: inherit;
   text-decoration: none;
 }
 
 @layer base {
-  .drylake-admin a {
+  .drylake-admin a,
+  .client-portal a {
     color: inherit;
     text-decoration: none;
   }
+
+  .client-portal :where(button, input, textarea, select) {
+    font: inherit;
+  }
 }
 
-button,
-input,
-textarea,
-select {
+:where(button, input, textarea, select):not(:where(.client-portal *)) {
   font: inherit;
 }
 
@@ -586,30 +589,48 @@ select:focus-visible {
 /* =========================================================
    DRYLAKE CLIENT PORTAL
 
-   Scoped to /client pages (components/client/**). Extends the public
-   hero language: black ground, hairline borders, square corners,
-   orange only as a signal. All selectors are prefixed cp- or scoped
-   under .client-portal so nothing here touches the public site or admin.
+   The client-facing side of the same product as Admin: the Admin canvas (#f4f4f1),
+   white cards, dark ink, muted grey secondary text, hairline grey borders, and Drylake
+   orange (#f26a2e) only for primary actions, progress, active states and intentional
+   accents. The navigation rail uses the Admin sidebar treatment.
+
+   Every selector is prefixed cp- or scoped under .client-portal, so nothing here touches
+   the public site or Admin.
    ========================================================= */
 
 /* Document-level rules stay unlayered so they beat the base html/body/scrollbar rules. */
-/* Dark document ground behind the portal so overscroll never flashes white. */
 html:has(.client-portal),
 html:has(.client-portal) body {
-  background: #050505;
+  background: #f4f4f1;
 }
 
 html:has(.client-portal)::-webkit-scrollbar-track {
-  background: #050505;
+  background: #f4f4f1;
 }
 
 html:has(.client-portal)::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: #050505;
+  background: rgba(17, 17, 15, 0.18);
+  border-color: #f4f4f1;
 }
 
 /* In the components layer so Tailwind utilities on the same element still win. */
 @layer components {
+  .client-portal {
+    --cp-canvas: #f4f4f1;
+    --cp-surface: #ffffff;
+    --cp-ink: #171716;
+    --cp-ink-soft: #5f5d58;
+    --cp-ink-muted: #8a8780;
+    --cp-border: rgba(17, 17, 15, 0.1);
+    --cp-border-strong: rgba(17, 17, 15, 0.18);
+    --cp-orange: #f26a2e;
+    --cp-orange-hover: #dc5d26;
+    --cp-orange-ink: #b9481a;
+
+    background: var(--cp-canvas);
+    color: var(--cp-ink);
+  }
+
   .cp-container {
     width: 100%;
     max-width: 1280px;
@@ -623,9 +644,9 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1280px) {
     .cp-container {
-      padding-inline: 3rem;
+      padding-inline: 2.75rem;
     }
   }
 
@@ -633,10 +654,11 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     position: absolute;
     left: 1rem;
     top: 0.75rem;
-    z-index: 60;
+    z-index: 120;
     transform: translateY(-200%);
-    background: #ffffff;
-    color: #090909;
+    border-radius: 0.75rem;
+    background: #11110f;
+    color: #ffffff;
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
     font-weight: 600;
@@ -647,58 +669,69 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     transform: translateY(0);
   }
 
-  /* Primary nav tabs: underline signal on the active page. */
-  .cp-nav-link {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    padding-inline: 0.75rem;
-    border-bottom: 2px solid transparent;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    transition: color 150ms ease, border-color 150ms ease;
-  }
-
-  .cp-nav-link:first-child {
-    padding-left: 0;
-  }
-
-  .cp-nav-link:hover {
-    color: #ffffff;
-  }
-
-  .cp-nav-link[aria-current="page"] {
-    color: #ffffff;
-    border-bottom-color: #f26a2e;
-  }
-
   .client-portal a:focus-visible,
-  .client-portal button:focus-visible {
+  .client-portal button:focus-visible,
+  .client-portal select:focus-visible,
+  .client-portal summary:focus-visible {
+    outline: 2px solid var(--cp-orange);
     outline-offset: 2px;
   }
 
-  .cp-panel {
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    background: rgba(10, 10, 10, 0.82);
+  /* An action row in the dark navigation rail (Admin sidebar treatment). */
+  .cp-rail-item {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.75rem;
+    padding-inline: 0.75rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.62);
+    text-align: left;
+    transition:
+      background 150ms ease,
+      color 150ms ease;
   }
 
-  .cp-stat {
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    background: rgba(10, 10, 10, 0.82);
-    padding: 1.25rem;
+  .cp-rail-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
   }
 
-  @media (min-width: 640px) {
-    .cp-stat {
-      padding: 1.5rem;
-    }
+  /* White card: the one surface every section, metric and panel uses. */
+  .cp-card {
+    border: 1px solid var(--cp-border);
+    border-radius: 1rem;
+    background: var(--cp-surface);
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.02),
+      0 10px 30px rgba(22, 18, 12, 0.04);
   }
 
-  /* Linked list row inside a panel. */
+  /* A card that is itself a link. */
+  .cp-card-link {
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 120ms ease;
+  }
+
+  .cp-card-link:hover {
+    border-color: var(--cp-border-strong);
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.03),
+      0 14px 34px rgba(22, 18, 12, 0.07);
+  }
+
+  .cp-card-link:active {
+    transform: scale(0.995);
+  }
+
+  /* List row inside a card. */
   .cp-row {
     display: block;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid var(--cp-border);
     transition: background-color 150ms ease;
   }
 
@@ -706,8 +739,28 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     border-top: 0;
   }
 
-  a.cp-row:hover {
-    background: rgba(255, 255, 255, 0.03);
+  .cp-row-link {
+    transition: background-color 150ms ease;
+  }
+
+  .cp-row-link:hover {
+    background: #fafaf8;
+  }
+
+  .cp-label {
+    color: var(--cp-ink-muted);
+    font-size: 0.66rem;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cp-eyebrow {
+    color: var(--cp-orange-ink);
+    font-size: 0.68rem;
+    font-weight: 650;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
   }
 
   .cp-pill {
@@ -715,95 +768,208 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     align-items: center;
     gap: 0.4rem;
     white-space: nowrap;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    padding: 0.2rem 0.5rem;
-    font-family: var(--font-geist-mono), monospace;
-    font-size: 0.62rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
+    border: 1px solid var(--cp-border);
+    border-radius: 999px;
+    background: #f6f6f3;
+    padding: 0.22rem 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     line-height: 1.4;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.72);
+    color: #4a4844;
   }
 
   .cp-pill-dot {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.45);
+    background: #a3a19b;
   }
 
   .cp-pill[data-tone="signal"] {
-    border-color: rgba(242, 106, 46, 0.4);
-    color: #ff9a6b;
+    border-color: rgba(242, 106, 46, 0.25);
+    background: rgba(242, 106, 46, 0.08);
+    color: var(--cp-orange-ink);
   }
 
   .cp-pill[data-tone="signal"] .cp-pill-dot {
-    background: #f26a2e;
-    box-shadow: 0 0 0 3px rgba(242, 106, 46, 0.15);
+    background: var(--cp-orange);
   }
 
   .cp-pill[data-tone="ok"] {
-    border-color: rgba(110, 231, 183, 0.3);
-    color: #8ef0c4;
+    border-color: rgba(4, 120, 87, 0.2);
+    background: #ecfdf5;
+    color: #047857;
   }
 
   .cp-pill[data-tone="ok"] .cp-pill-dot {
-    background: #34d399;
+    background: #10b981;
   }
 
   .cp-pill[data-tone="alert"] {
-    border-color: rgba(248, 113, 113, 0.45);
-    color: #fca5a5;
+    border-color: rgba(185, 28, 28, 0.2);
+    background: #fef2f2;
+    color: #b91c1c;
   }
 
   .cp-pill[data-tone="alert"] .cp-pill-dot {
-    background: #f87171;
+    background: #ef4444;
   }
 
   .cp-pill[data-tone="muted"] {
-    color: rgba(255, 255, 255, 0.55);
+    color: #77746d;
   }
 
   .cp-pill[data-tone="muted"] .cp-pill-dot {
-    background: rgba(255, 255, 255, 0.25);
+    background: #c9c7c1;
   }
 
   .cp-progress {
     width: 100%;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    background: #ecebe6;
   }
 
   .cp-progress-fill {
     height: 100%;
-    background: #f26a2e;
+    border-radius: 999px;
+    background: var(--cp-orange);
+    transition: width 300ms ease;
   }
 
-  /* Secondary square CTA, the outline partner of .button-light. */
-  .cp-button-outline {
+  .cp-button-primary,
+  .cp-button-secondary {
     display: inline-flex;
-    min-height: 48px;
+    min-height: 44px;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding-inline: 1.25rem;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.875rem;
+    padding-inline: 1.15rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
-    transition: border-color 150ms ease, color 150ms ease;
+    touch-action: manipulation;
+    transition:
+      transform 120ms ease,
+      background 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease;
   }
 
-  .cp-button-outline:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: #ffffff;
+  .cp-button-primary {
+    background: var(--cp-orange);
+    color: #ffffff !important;
+  }
+
+  .cp-button-primary:hover {
+    background: var(--cp-orange-hover);
+    box-shadow: 0 8px 22px rgba(242, 106, 46, 0.22);
+  }
+
+  .cp-button-secondary {
+    border: 1px solid var(--cp-border);
+    background: #ffffff;
+    color: var(--cp-ink);
+  }
+
+  .cp-button-secondary:hover {
+    border-color: var(--cp-border-strong);
+    background: #fafaf8;
+  }
+
+  .cp-button-primary:active,
+  .cp-button-secondary:active {
+    transform: scale(0.98);
+  }
+
+  .cp-button-primary:disabled,
+  .cp-button-secondary:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .cp-input {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--cp-border);
+    border-radius: 0.75rem;
+    background: #ffffff;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.875rem;
+    color: var(--cp-ink);
+    outline: none;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .cp-input::placeholder {
+    color: rgba(17, 17, 15, 0.35);
+  }
+
+  .cp-input:hover {
+    border-color: var(--cp-border-strong);
+  }
+
+  .cp-input:focus {
+    border-color: rgba(242, 106, 46, 0.6);
+    box-shadow: 0 0 0 4px rgba(242, 106, 46, 0.1);
+  }
+
+  .cp-input:disabled {
+    opacity: 0.6;
+  }
+
+  .cp-skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.6rem;
+    background: rgba(17, 17, 15, 0.07);
+  }
+
+  .cp-skeleton::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    animation: cp-shimmer 1.3s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cp-skeleton::after {
+      animation: none;
+    }
+
+    .cp-progress-fill {
+      transition: none;
+    }
   }
 
   @media print {
-    .client-portal header nav,
+    .cp-rail,
+    .cp-mobile-bar,
     .cp-skip-link {
-      display: none;
+      display: none !important;
+    }
+
+    .cp-card {
+      box-shadow: none;
     }
   }
+}
+
+@keyframes cp-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Orange tint for icon tiles and hover states. A utility (not a component class) so it
+   takes variants such as group-hover:cp-tint. */
+@utility cp-tint {
+  background-color: rgb(242 106 46 / 0.1);
 }
