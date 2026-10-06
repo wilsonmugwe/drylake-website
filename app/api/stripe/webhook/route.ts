@@ -8,7 +8,7 @@ import {
   readSessionReference,
   type SettlementInvoice,
 } from "@/lib/invoices/stripe-payment";
-import { getStripe } from "@/lib/stripe";
+import { verifyStripeWebhook } from "@/lib/invoices/webhook-verification";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -37,33 +37,26 @@ function json(body: Record<string, unknown>, status = 200) {
 }
 
 export async function POST(request: Request) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (!webhookSecret) {
-    console.error("Missing STRIPE_WEBHOOK_SECRET");
-    return json({ error: "Webhook is not configured" }, 500);
-  }
-
-  const signature = request.headers.get("stripe-signature");
-
-  if (!signature) {
-    return json({ error: "Missing Stripe signature" }, 400);
-  }
-
   // Signature verification needs the exact raw body: never request.json() first.
   const body = await request.text();
+  const verification = verifyStripeWebhook(
+    body,
+    request.headers.get("stripe-signature"),
+    process.env.STRIPE_WEBHOOK_SECRET
+  );
 
-  let event: Stripe.Event;
+  if (!verification.ok) {
+    // Log the reason only; never the body or the signature header.
+    if (verification.status === 500) {
+      console.error("Missing STRIPE_WEBHOOK_SECRET");
+    } else {
+      console.error("Stripe webhook refused:", verification.error);
+    }
 
-  try {
-    event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (error) {
-    console.error(
-      "Stripe webhook signature verification failed:",
-      error instanceof Error ? error.name : "Unknown error"
-    );
-    return json({ error: "Invalid webhook signature" }, 400);
+    return json({ error: verification.error }, verification.status);
   }
+
+  const event: Stripe.Event = verification.event;
 
   try {
     await handleEvent(event);

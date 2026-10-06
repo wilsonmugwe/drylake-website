@@ -4,43 +4,8 @@ import { getPortalContext } from "@/lib/contact/portal-context";
 import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
 import { deliverContactEnquiry } from "@/lib/email/contact-enquiry";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { MAX_REQUEST_BYTES, validateEnquiry } from "@/lib/contact/validate-enquiry";
 import { CONTACT_EMAIL } from "@/lib/site";
-
-interface ContactRequest {
-  name?: unknown;
-  email?: unknown;
-  company?: unknown;
-  projectType?: unknown;
-  budget?: unknown;
-  message?: unknown;
-  turnstileToken?: unknown;
-}
-
-const MAX_REQUEST_BYTES = 10_000;
-
-const LIMITS = {
-  name: 120,
-  email: 200,
-  company: 160,
-  projectType: 100,
-  budget: 100,
-  message: 5000,
-} as const;
-
-function getString(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function isValidEmail(email: string): boolean {
-  return (
-    email.length <= LIMITS.email &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  );
-}
-
-function containsControlCharacters(value: string): boolean {
-  return /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(value);
-}
 
 function jsonError(message: string, status: number) {
   return NextResponse.json(
@@ -76,61 +41,39 @@ export async function POST(request: Request) {
       return jsonError("Unsupported content type.", 415);
     }
 
-    let body: ContactRequest;
+    // Enforce the size on the bytes actually received: Content-Length is optional (chunked
+    // requests omit it), so the header check above cannot be the only limit.
+    let rawBody: string;
 
     try {
-      body = (await request.json()) as ContactRequest;
+      rawBody = await request.text();
     } catch {
       return jsonError("Invalid request.", 400);
     }
 
-    if (!body || typeof body !== "object" || Array.isArray(body)) {
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_REQUEST_BYTES) {
+      return jsonError("Request is too large.", 413);
+    }
+
+    let body: unknown;
+
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
       return jsonError("Invalid request.", 400);
     }
 
-    const name = getString(body.name);
-    const email = getString(body.email).toLowerCase();
-    const company = getString(body.company);
-    const projectType = getString(body.projectType);
-    const budget = getString(body.budget);
-    const message = getString(body.message);
-    const turnstileToken = getString(body.turnstileToken);
+    // Field rules (required, lengths, email shape, control characters, no line breaks in
+    // single-line fields) live in lib/contact/validate-enquiry.ts and are unit-tested.
+    const validation = validateEnquiry(body);
 
-    if (!name || !email || !message) {
-      return jsonError(
-        "Name, email and project details are required.",
-        400
-      );
+    if (!validation.ok) {
+      return jsonError(validation.message, validation.status);
     }
 
-    if (
-      name.length > LIMITS.name ||
-      email.length > LIMITS.email ||
-      company.length > LIMITS.company ||
-      projectType.length > LIMITS.projectType ||
-      budget.length > LIMITS.budget ||
-      message.length > LIMITS.message
-    ) {
-      return jsonError("One or more fields are too long.", 400);
-    }
+    const { name, email, company, projectType, budget, message, turnstileToken } =
+      validation.fields;
 
-    if (!isValidEmail(email)) {
-      return jsonError(
-        "Please enter a valid email address.",
-        400
-      );
-    }
-
-    if (
-      containsControlCharacters(name) ||
-      containsControlCharacters(email) ||
-      containsControlCharacters(company) ||
-      containsControlCharacters(projectType) ||
-      containsControlCharacters(budget) ||
-      containsControlCharacters(message)
-    ) {
-      return jsonError("Invalid characters detected.", 400);
-    }
 
     /*
      * Server-side Turnstile verification, after the cheap field checks and before any

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { hasExpectedSignature } from "@/lib/validation/file-signature";
 import { isUuid } from "@/lib/validation/uuid";
 
 export const dynamic = "force-dynamic";
@@ -301,6 +302,15 @@ export async function POST(
     return errorResponse(
       "Unable to process document.",
       400
+    );
+  }
+
+  // The MIME type and extension are labels the uploader chose; the bytes must agree,
+  // because clients download this file from the portal as that type.
+  if (!hasExpectedSignature(expectedExtension, new Uint8Array(fileBytes, 0, Math.min(16, fileBytes.byteLength)))) {
+    return errorResponse(
+      "The file contents do not match its declared file type.",
+      415
     );
   }
 
