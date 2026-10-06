@@ -34,8 +34,12 @@ export const ENTITY = {
   /* "What is Drylake Pty Ltd?" */
   legalSummary:
     "DRYLAKE PTY LTD (ABN 70 702 662 557) is the Australian proprietary company that trades as Drylake.",
-  /* Verified, Drylake-controlled public profiles only. Empty until each one exists. */
-  sameAs: [] as string[],
+  /*
+   * Verified, Drylake-controlled public profiles only. Add one only after checking it is
+   * the official page, links back to drylake.com.au and uses its canonical URL.
+   * LinkedIn: checked 2026-10-06 (name Drylake Pty Ltd, website drylake.com.au, Perth WA).
+   */
+  sameAs: ["https://www.linkedin.com/company/drylake"] as string[],
 } as const;
 
 export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
