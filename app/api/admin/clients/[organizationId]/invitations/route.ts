@@ -10,6 +10,7 @@ import {
   clerkErrorCode,
   findPendingInvitation,
   invitationErrorMessage,
+  invitationOrigin,
   invitationRedirectUrl,
 } from "@/lib/clients/invitations";
 import { isClientOperational } from "@/lib/clients/status";
@@ -119,7 +120,9 @@ export async function POST(request: Request, context: RouteContext) {
     const invitation = await createClientInvitation({
       clerkOrgId,
       emailAddress: email.value,
-      redirectUrl: invitationRedirectUrl(new URL(request.url).origin),
+      redirectUrl: invitationRedirectUrl(
+        invitationOrigin(new URL(request.url).origin, process.env)
+      ),
     });
 
     // Email is deliberately not copied into the audit log (personal information).

@@ -7,6 +7,7 @@ import { createClientInvitation } from "@/lib/auth/client-onboarding";
 import { isDocumentNavigation } from "@/lib/auth/request-kind";
 import {
   clerkErrorCode,
+  invitationOrigin,
   invitationRedirectUrl,
 } from "@/lib/clients/invitations";
 import {
@@ -184,7 +185,9 @@ export async function POST(request: Request) {
     const invitation = await createClientInvitation({
       clerkOrgId,
       emailAddress: contactEmail.value,
-      redirectUrl: invitationRedirectUrl(new URL(request.url).origin),
+      redirectUrl: invitationRedirectUrl(
+        invitationOrigin(new URL(request.url).origin, process.env)
+      ),
     });
 
     invite = "sent";

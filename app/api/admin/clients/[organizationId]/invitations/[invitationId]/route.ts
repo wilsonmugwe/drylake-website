@@ -8,6 +8,7 @@ import {
 import {
   clerkErrorCode,
   invitationErrorMessage,
+  invitationOrigin,
   invitationRedirectUrl,
   isClerkInvitationId,
 } from "@/lib/clients/invitations";
@@ -112,7 +113,9 @@ export async function POST(request: Request, context: RouteContext) {
     const replacement = await createClientInvitation({
       clerkOrgId: organization.clerk_org_id,
       emailAddress: invitation.emailAddress,
-      redirectUrl: invitationRedirectUrl(new URL(request.url).origin),
+      redirectUrl: invitationRedirectUrl(
+        invitationOrigin(new URL(request.url).origin, process.env)
+      ),
     });
 
     await writeAuditLog(supabase, {
