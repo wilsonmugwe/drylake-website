@@ -107,6 +107,11 @@ export default function ClientBillingView({ organizationName, invoices }: Client
                   </li>
                 ))}
               </ul>
+
+              <p className="border-t border-white/[0.08] px-5 py-4 text-xs leading-5 text-white/55 md:px-6">
+                Totals are the amounts payable and include GST where it was charged. Open an
+                invoice for its subtotal and GST.
+              </p>
             </>
           )}
         </Panel>

@@ -23,7 +23,9 @@ import {
   displayStatus,
 } from "@/lib/invoices/lifecycle";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
+import { DRYLAKE_BUSINESS } from "@/lib/business";
+import { calculateInvoiceAmounts, presentInvoiceTax, sameAmounts } from "@/lib/invoices/gst";
+import { gstAppliesToNewInvoices } from "@/lib/tax";
 import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
@@ -270,6 +272,28 @@ export default async function AdminInvoicePage({
   if (!invoice) {
     notFound();
   }
+
+  // Tax display from the STORED amounts (lib/invoices/gst.ts), never from today's config.
+  const taxView = presentInvoiceTax({
+    status: invoice.status,
+    subtotalCents: Number(invoice.subtotal_cents),
+    taxCents: Number(invoice.tax_cents),
+  });
+
+  // A draft is recalculated at issue if GST registration changed since it was drafted.
+  const issueAmounts =
+    invoice.status === "DRAFT"
+      ? calculateInvoiceAmounts(Number(invoice.subtotal_cents), gstAppliesToNewInvoices())
+      : null;
+  const issueRecalculation =
+    issueAmounts &&
+    !sameAmounts(issueAmounts, {
+      subtotalCents: Number(invoice.subtotal_cents),
+      taxCents: Number(invoice.tax_cents),
+      totalCents: Number(invoice.total_cents),
+    })
+      ? issueAmounts
+      : null;
 
   // ---------------------------------------------------------
   // Organisation
@@ -771,9 +795,18 @@ export default async function AdminInvoicePage({
             </h2>
 
             <p className="mt-1 text-xs text-neutral-500">
-              Financial breakdown for this
-              invoice.
+              {taxView.documentTitle} · {DRYLAKE_BUSINESS.legalName} · ABN{" "}
+              {DRYLAKE_BUSINESS.abn}
             </p>
+
+            {issueRecalculation ? (
+              <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+                Issued today, this invoice will be{" "}
+                {formatMoney(issueRecalculation.subtotalCents, invoice.currency)} +{" "}
+                {formatMoney(issueRecalculation.taxCents, invoice.currency)} GST ={" "}
+                {formatMoney(issueRecalculation.totalCents, invoice.currency)}. GST is fixed at issue.
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-4 px-6 py-6">
@@ -790,10 +823,10 @@ export default async function AdminInvoicePage({
               </span>
             </div>
 
-            {isGstRegistered() ? (
+            {taxView.showGstLine ? (
               <div className="flex justify-between gap-6 text-sm">
                 <span className="text-neutral-500">
-                  GST
+                  {taxView.gstLabel}
                 </span>
 
                 <span className="font-medium text-neutral-900">
@@ -805,14 +838,14 @@ export default async function AdminInvoicePage({
               </div>
             ) : (
               <p className="text-xs text-neutral-500">
-                {NO_GST_NOTE}
+                {taxView.noGstNote}
               </p>
             )}
 
             <div className="border-t border-neutral-200 pt-4">
               <div className="flex items-center justify-between gap-6">
                 <span className="font-semibold text-neutral-950">
-                  Total
+                  {taxView.totalLabel}
                 </span>
 
                 <span className="text-xl font-semibold text-neutral-950">

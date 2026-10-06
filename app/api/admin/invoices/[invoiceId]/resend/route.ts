@@ -8,6 +8,7 @@ import {
   loadInvoiceEmailContext,
   type InvoiceEmailRow,
 } from "@/lib/invoices/invoice-notifications";
+import { appBaseUrl, clientInvoiceUrl } from "@/lib/invoices/invoice-url";
 import { canResend } from "@/lib/invoices/lifecycle";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
@@ -85,7 +86,7 @@ export async function POST(request: Request, context: RouteContext) {
   const outcome = await deliverInvoiceEmail(supabase, invoice, emailContext.context, {
     kind: "REMINDER",
     actorUserId: userId,
-    portalUrl: new URL(`/client/billing/${invoice.id}`, request.url).toString(),
+    portalUrl: clientInvoiceUrl(invoice.id, appBaseUrl(process.env)),
   });
 
   return backToInvoice(

@@ -1,22 +1,25 @@
 import {
-  auth,
-} from "@clerk/nextjs/server";
-
-import {
   notFound,
   redirect,
 } from "next/navigation";
 
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientInvoiceView from "@/components/client/ClientInvoiceView";
-
-import { displayStatus } from "@/lib/invoices/lifecycle";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
 
 import {
-  isGstRegistered,
-  NO_GST_NOTE,
-} from "@/lib/tax";
+  type ClientAccess,
+  ClientAccessLookupError,
+  getClientAccess,
+} from "@/lib/auth/client-context";
+import { DRYLAKE_BUSINESS } from "@/lib/business";
+import { presentInvoiceTax } from "@/lib/invoices/gst";
+import {
+  clientInvoicePath,
+  invoiceSignInPath,
+} from "@/lib/invoices/invoice-url";
+import { displayStatus } from "@/lib/invoices/lifecycle";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -51,31 +54,62 @@ export default async function ClientInvoicePage({
   params,
   searchParams,
 }: PageProps) {
-  // ---------------------------------------------------------
-  // Authentication
-  // ---------------------------------------------------------
-
-  const {
-    userId,
-    orgId,
-  } = await auth();
-
-  if (!userId) {
-    redirect(
-      "/sign-in?redirect_url=/client/billing"
-    );
-  }
-
-  if (!orgId) {
-    redirect("/client");
-  }
-
   const { invoiceId } =
     await params;
+
+  // ---------------------------------------------------------
+  // Authentication + workspace
+  //
+  // This is where the invoice email lands. The destination is
+  // never dropped:
+  //   - signed out: proxy.ts already sent the user to sign-in
+  //     with this exact path; the fallback below does the same.
+  //   - signed in with no active Clerk organisation (the normal
+  //     state of a fresh sign-in): the shared resolver
+  //     (lib/auth/client-context.ts) activates the user's single
+  //     client workspace, or asks them to choose, and returns
+  //     HERE, not to /client. Previously this page redirected to
+  //     /client whenever orgId was empty, which is why "View and
+  //     pay invoice" opened the dashboard (or the setup screen)
+  //     instead of the invoice.
+  // Membership is still the only route to an organisation:
+  // nothing here matches on email.
+  // ---------------------------------------------------------
 
   if (!isUuid(invoiceId)) {
     notFound();
   }
+
+  const invoicePath =
+    clientInvoicePath(invoiceId);
+
+  let access: ClientAccess;
+
+  try {
+    access = await getClientAccess();
+  } catch (error) {
+    if (error instanceof ClientAccessLookupError) {
+      return <ClientAccessState variant="lookup-failed" />;
+    }
+
+    throw error;
+  }
+
+  if (!access.signedIn) {
+    redirect(invoiceSignInPath(invoiceId));
+  }
+
+  if (access.resolution.kind !== "ready") {
+    return (
+      <ClientWorkspaceGate
+        resolution={access.resolution}
+        returnTo={invoicePath}
+      />
+    );
+  }
+
+  const resolvedOrganization =
+    access.resolution.organization;
 
   // ---------------------------------------------------------
   // Authenticated Supabase client
@@ -103,7 +137,11 @@ export default async function ClientInvoicePage({
         status
       `
     )
-    .eq("clerk_org_id", orgId)
+    .eq("id", resolvedOrganization.id)
+    .eq(
+      "clerk_org_id",
+      resolvedOrganization.clerk_org_id as string
+    )
     .eq("status", "ACTIVE")
     .maybeSingle();
 
@@ -301,12 +339,16 @@ export default async function ClientInvoicePage({
           invoice.created_at,
       }}
       project={project}
-      showTaxLine={
-        isGstRegistered()
-      }
-      noGstNote={
-        NO_GST_NOTE
-      }
+      tax={presentInvoiceTax({
+        status: invoice.status,
+        subtotalCents: Number(
+          invoice.subtotal_cents
+        ),
+        taxCents: Number(
+          invoice.tax_cents
+        ),
+      })}
+      business={DRYLAKE_BUSINESS}
       paymentReturn={readPaymentReturn(
         (await searchParams).payment
       )}

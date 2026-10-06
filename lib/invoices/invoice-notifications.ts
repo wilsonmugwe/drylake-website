@@ -9,7 +9,6 @@ import {
   type InvoiceEmailKind,
 } from "@/lib/email/invoice-email";
 import { isOverdue } from "@/lib/invoices/lifecycle";
-import { isGstRegistered, NO_GST_NOTE } from "@/lib/tax";
 
 /*
  * Shared I/O for the admin Issue and Resend routes: load what the invoice email needs,
@@ -225,8 +224,6 @@ export async function deliverInvoiceEmail(
     dueDate: invoice.due_date,
     overdue,
     portalUrl: options.portalUrl,
-    gstRegistered: isGstRegistered(),
-    noGstNote: NO_GST_NOTE,
   });
 
   try {

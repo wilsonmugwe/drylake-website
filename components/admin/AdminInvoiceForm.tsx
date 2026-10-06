@@ -6,13 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import AdminDateInput from "@/components/admin/AdminDateInput";
+import { parseMoneyToCents } from "@/lib/invoice-creation/validate";
+import { calculateInvoiceAmounts, GST_RATE_PERCENT } from "@/lib/invoices/gst";
 
 /*
  * Create Draft Invoice form.
  *
  * Contract:
- * - Posts the same field names as before (projectId, subtotal, tax, dueDate,
- *   visibleToClient) plus requestId to /api/admin/clients/[id]/invoices, asking for JSON.
+ * - Posts projectId, subtotal, dueDate, visibleToClient and requestId to
+ *   /api/admin/clients/[id]/invoices, asking for JSON. GST is NOT posted: the server
+ *   calculates it (lib/invoices/gst.ts). The GST and total shown here are a preview from
+ *   the same function; the server's figures are what get stored.
  * - requestId is created once per form and kept across retries, so a retry after a
  *   timeout (where the insert may in fact have succeeded) returns the existing invoice
  *   instead of creating a duplicate. It changes only after a success.
@@ -27,7 +31,8 @@ type Project = { id: string; name: string };
 type AdminInvoiceFormProps = {
   organizationId: string;
   projects: Project[];
-  gstRegistered: boolean;
+  /* GST applies to an invoice created today (server-decided, lib/tax.ts). */
+  gstApplies: boolean;
   disabled: boolean;
   initialError?: string | null;
 };
@@ -45,6 +50,10 @@ const CLIENT_TIMEOUT_MS = 30_000;
 const INPUT_CLASS =
   "mt-3 min-h-11 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100";
 
+function formatAud(cents: number) {
+  return new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(cents / 100);
+}
+
 function newRequestId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
@@ -54,11 +63,17 @@ function newRequestId() {
 export default function AdminInvoiceForm({
   organizationId,
   projects,
-  gstRegistered,
+  gstApplies,
   disabled,
   initialError,
 }: AdminInvoiceFormProps) {
   const router = useRouter();
+  const [subtotalInput, setSubtotalInput] = useState("");
+  const previewSubtotal = parseMoneyToCents(subtotalInput);
+  const preview =
+    previewSubtotal !== null && previewSubtotal > 0
+      ? calculateInvoiceAmounts(previewSubtotal, gstApplies)
+      : null;
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(initialError ?? null);
@@ -196,50 +211,55 @@ export default function AdminInvoiceForm({
         </select>
       </div>
 
-      <div className={gstRegistered ? "grid gap-6 sm:grid-cols-2" : ""}>
-        <div>
-          <label htmlFor="subtotal" className="block text-sm font-semibold text-neutral-900">
-            Amount (AUD)
-          </label>
+      <div>
+        <label htmlFor="subtotal" className="block text-sm font-semibold text-neutral-900">
+          {gstApplies ? "Amount before GST (AUD)" : "Amount (AUD)"}
+        </label>
 
-          <input
-            id="subtotal"
-            name="subtotal"
-            type="number"
-            required
-            min="0.01"
-            max="9999999.99"
-            step="0.01"
-            inputMode="decimal"
-            placeholder="1000.00"
-            disabled={locked}
-            className={INPUT_CLASS}
-          />
-        </div>
+        <input
+          id="subtotal"
+          name="subtotal"
+          type="number"
+          required
+          min="0.01"
+          max="9999999.99"
+          step="0.01"
+          inputMode="decimal"
+          placeholder="1000.00"
+          disabled={locked}
+          value={subtotalInput}
+          onChange={(event) => setSubtotalInput(event.target.value)}
+          aria-describedby="invoice-amount-preview"
+          className={INPUT_CLASS}
+        />
 
-        {gstRegistered ? (
-          <div>
-            <label htmlFor="tax" className="block text-sm font-semibold text-neutral-900">
-              GST (AUD)
-            </label>
-
-            <input
-              id="tax"
-              name="tax"
-              type="number"
-              required
-              min="0"
-              max="9999999.99"
-              step="0.01"
-              inputMode="decimal"
-              defaultValue="0.00"
-              disabled={locked}
-              className={INPUT_CLASS}
-            />
+        <dl
+          id="invoice-amount-preview"
+          aria-live="polite"
+          className="mt-4 space-y-2 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm"
+        >
+          <div className="flex justify-between gap-4">
+            <dt className="text-neutral-500">Subtotal</dt>
+            <dd className="font-medium text-neutral-900">{preview ? formatAud(preview.subtotalCents) : "-"}</dd>
           </div>
-        ) : (
-          <input type="hidden" name="tax" value="0" />
-        )}
+          {gstApplies ? (
+            <div className="flex justify-between gap-4">
+              <dt className="text-neutral-500">GST ({GST_RATE_PERCENT}%)</dt>
+              <dd className="font-medium text-neutral-900">{preview ? formatAud(preview.taxCents) : "-"}</dd>
+            </div>
+          ) : null}
+          <div className="flex justify-between gap-4 border-t border-neutral-200 pt-2">
+            <dt className="font-semibold text-neutral-900">
+              {gstApplies ? "Total including GST" : "Total"}
+            </dt>
+            <dd className="font-semibold text-neutral-950">{preview ? formatAud(preview.totalCents) : "-"}</dd>
+          </div>
+          <p className="text-xs leading-5 text-neutral-500">
+            {gstApplies
+              ? "GST is calculated by Drylake when the invoice is saved and fixed when it is issued."
+              : "No GST is charged on this invoice."}
+          </p>
+        </dl>
       </div>
 
       <AdminDateInput id="dueDate" name="dueDate" label="Due date" disabled={locked} />
