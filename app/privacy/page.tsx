@@ -4,6 +4,8 @@ import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
 
 import { pageMetadata } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
 export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy | Drylake",
@@ -12,9 +14,26 @@ export const metadata: Metadata = pageMetadata({
   path: "/privacy",
 });
 
+const PRIVACY_CRUMBS = [
+  { name: "Home", path: "/" },
+  { name: "Privacy Policy", path: "/privacy" },
+];
+
 export default function PrivacyPage() {
   return (
     <>
+      <JsonLd
+        nodes={[
+          webPageNode({
+            path: "/privacy",
+            name: "Privacy Policy | Drylake",
+            description:
+              "How Drylake Pty Ltd collects, uses, stores and protects personal information provided through the Drylake website and services.",
+            breadcrumb: PRIVACY_CRUMBS,
+          }),
+          breadcrumbNode("/privacy", PRIVACY_CRUMBS),
+        ]}
+      />
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">

@@ -2,12 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/ui/Container";
+import { ENTITY, SERVICES } from "@/lib/discovery/entity";
 
 const links = [
   {
     label: "What We Do",
     href: "/solutions",
   },
+  ...SERVICES.map((service) => ({ label: service.name, href: service.path })),
   {
     label: "How We Work",
     href: "/#approach",
@@ -89,11 +91,12 @@ export default function Footer() {
 
         <div className="flex flex-col gap-1 border-t border-white/[0.08] py-4 text-[0.65rem] text-white/55 sm:flex-row sm:items-center sm:justify-between sm:text-xs">
           <p>
-            Drylake Pty Ltd · ABN 70 702 662 557
+            {ENTITY.brand} is the trading name of {ENTITY.legalName} · ABN {ENTITY.abn} ·{" "}
+            {ENTITY.locality}, {ENTITY.region}
           </p>
 
           <p>
-            © {new Date().getFullYear()} Drylake Pty Ltd.
+            © {new Date().getFullYear()} {ENTITY.legalName}.
           </p>
         </div>
       </Container>

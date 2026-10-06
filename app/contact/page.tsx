@@ -14,6 +14,8 @@ import Footer from "@/components/layout/Footer";
 import ProjectForm from "@/components/forms/ProjectForm";
 import Container from "@/components/ui/Container";
 import { RESPONSE_TIME } from "@/lib/site";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact Drylake | Software & Automation Enquiries",
@@ -42,9 +44,27 @@ const nextSteps = [
   },
 ];
 
+const CONTACT_CRUMBS = [
+  { name: "Home", path: "/" },
+  { name: "Contact", path: "/contact" },
+];
+
 export default function ContactPage() {
   return (
     <>
+      <JsonLd
+        nodes={[
+          webPageNode({
+            path: "/contact",
+            name: "Contact Drylake | Software & Automation Enquiries",
+            description:
+              "Talk to Drylake about software, automation, integrations or operational technology. Call, email or tell us what is slowing your business down.",
+            type: "ContactPage",
+            breadcrumb: CONTACT_CRUMBS,
+          }),
+          breadcrumbNode("/contact", CONTACT_CRUMBS),
+        ]}
+      />
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
