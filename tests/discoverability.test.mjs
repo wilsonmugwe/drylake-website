@@ -15,7 +15,8 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { DRYLAKE_BUSINESS } from "../lib/business.ts";
-import { CRAWLERS, blockedTokens } from "../lib/discovery/crawlers.ts";
+import { CRAWLERS, blockedTokens, robotsGroups } from "../lib/discovery/crawlers.ts";
+import { groupFor, isAllowed } from "../lib/discovery/robots-eval.ts";
 import {
   ENTITY,
   FOUNDERS,
@@ -27,7 +28,7 @@ import {
   WEBSITE_ID,
   absoluteUrl,
 } from "../lib/discovery/entity.ts";
-import { INDEXNOW_KEY, indexNowPayload } from "../lib/discovery/indexnow.ts";
+import { INDEXNOW_KEY, indexNowPayload, isSubmittableUrl } from "../lib/discovery/indexnow.ts";
 import { llmsText } from "../lib/discovery/llms.ts";
 import {
   breadcrumbNode,
@@ -272,16 +273,34 @@ describe("crawler policy: search and AI search in, training out, private closed"
   const allowed = new Set(CRAWLERS.filter((c) => c.access === "allow").map((c) => c.token));
 
   it("search engines, AI search crawlers and user fetchers are allowed", () => {
-    for (const token of ["Googlebot", "bingbot", "Applebot", "DuckDuckBot", "OAI-SearchBot", "ChatGPT-User", "Claude-SearchBot", "Claude-User", "PerplexityBot", "meta-webindexer"]) {
+    for (const token of ["Googlebot", "bingbot", "Applebot", "DuckDuckBot", "OAI-SearchBot", "ChatGPT-User", "Claude-SearchBot", "Claude-User", "PerplexityBot", "meta-webindexer", "Google-Extended"]) {
       assert.ok(allowed.has(token), token);
       assert.ok(!blocked.has(token), token);
     }
   });
 
   it("model-training crawlers and control tokens are opted out", () => {
-    for (const token of ["GPTBot", "ClaudeBot", "CCBot", "meta-externalagent", "Amazonbot", "Applebot-Extended", "Google-Extended"]) {
+    for (const token of ["GPTBot", "ClaudeBot", "CCBot", "meta-externalagent", "Amazonbot", "Applebot-Extended"]) {
       assert.ok(blocked.has(token), token);
     }
+  });
+
+  it("Google-Extended is allowed by documented business decision (grounding and training share one token)", () => {
+    const entry = CRAWLERS.find((c) => c.token === "Google-Extended");
+
+    assert.equal(entry.access, "allow");
+    assert.equal(entry.class, "control-token");
+    assert.match(entry.note, /D20/);
+    assert.match(entry.note, /grounding/i);
+    assert.match(entry.note, /training/i);
+    assert.match(entry.note, /Google Search, AI Overviews or AI Mode/);
+    assert.match(read("lib/discovery/crawlers.ts"), /does not impact a site's inclusion in Google Search/);
+  });
+
+  it("OpenAI keeps search and training separate: OAI-SearchBot and ChatGPT-User in, GPTBot out", () => {
+    assert.ok(allowed.has("OAI-SearchBot"));
+    assert.ok(allowed.has("ChatGPT-User"));
+    assert.ok(blocked.has("GPTBot"));
   });
 
   it("only training and control tokens are ever blocked", () => {
@@ -300,8 +319,11 @@ describe("crawler policy: search and AI search in, training out, private closed"
   it("robots.ts opts training out and keeps the public site open and private surfaces closed", () => {
     const source = code("app/robots.ts");
 
-    assert.match(source, /\{ userAgent: blockedTokens\(\), disallow: "\/" \}/);
-    assert.match(source, /\{ userAgent: "\*", allow: "\/", disallow: \[\.\.\.PRIVATE_PREFIXES\] \}/);
+    assert.match(source, /robotsGroups\(PRIVATE_PREFIXES\)\.map\(/);
+    assert.deepEqual(robotsGroups(PRIVATE_PREFIXES), [
+      { userAgent: blockedTokens(), allow: [], disallow: ["/"] },
+      { userAgent: ["*"], allow: ["/"], disallow: [...PRIVATE_PREFIXES] },
+    ]);
     assert.match(source, /sitemap: `\$\{SITE_URL\}\/sitemap\.xml`/);
   });
 
@@ -373,5 +395,103 @@ describe("machine-readable surfaces", () => {
     assert.match(workflow, /needs: check/);
     assert.match(workflow, /node scripts\/indexnow-submit\.mjs/);
     assert.match(workflow, /environment == 'Production'/);
+  });
+});
+
+describe("pre-merge review (2026-10-06)", () => {
+  const groups = robotsGroups(PRIVATE_PREFIXES);
+  const publicPaths = PUBLIC_PAGES.map((page) => page.path);
+  const privatePaths = PRIVATE_PREFIXES.flatMap((prefix) => [prefix, `${prefix}/anything`]);
+
+  it("computed crawler matrix: every allowed crawler reaches every public page and no private path", () => {
+    for (const crawler of CRAWLERS.filter((c) => c.access === "allow")) {
+      assert.deepEqual(groupFor(groups, crawler.token).userAgent, ["*"], crawler.token);
+      for (const path of publicPaths) assert.ok(isAllowed(groups, crawler.token, path), `${crawler.token} ${path}`);
+      for (const path of privatePaths) assert.ok(!isAllowed(groups, crawler.token, path), `${crawler.token} ${path}`);
+    }
+  });
+
+  it("computed crawler matrix: every training token reaches nothing", () => {
+    for (const token of blockedTokens()) {
+      for (const path of [...publicPaths, ...privatePaths]) assert.ok(!isAllowed(groups, token, path), `${token} ${path}`);
+    }
+  });
+
+  it("an undocumented bot is neither whitelisted nor named: it gets the * rules", () => {
+    assert.ok(isAllowed(groups, "SomeUnknownBot", "/about"));
+    assert.ok(!isAllowed(groups, "SomeUnknownBot", "/admin"));
+    assert.equal(groups.flatMap((g) => g.userAgent).filter((ua) => ua !== "*").length, blockedTokens().length);
+  });
+
+  it("structured data carries only allowlisted public business properties", () => {
+    const [organization, website, ...people] = siteGraph();
+    const text = JSON.stringify(siteGraph());
+
+    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "identifier", "knowsAbout", "legalName", "location", "name", "taxID", "url"]);
+    assert.deepEqual(Object.keys(organization.contactPoint).sort(), ["@type", "areaServed", "availableLanguage", "contactType", "email"]);
+    assert.deepEqual(Object.keys(organization.address).sort(), ["@type", "addressCountry", "addressLocality", "addressRegion"]);
+    assert.deepEqual(Object.keys(website).sort(), ["@id", "@type", "alternateName", "inLanguage", "name", "publisher", "url"]);
+    for (const person of people) assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", "jobTitle", "name", "worksFor"]);
+    assert.ok(!/telephone|\+61|hasCredential|birthDate|homeLocation|streetAddress/.test(text));
+    assert.equal(organization.email, "hello@drylake.com.au");
+  });
+
+  it("no machine-readable surface mentions a private path", () => {
+    const surfaces = [JSON.stringify(allGraphs()), llmsText(), JSON.stringify(PUBLIC_PAGES), JSON.stringify(SERVICES)].join("\n");
+
+    for (const prefix of PRIVATE_PREFIXES) {
+      assert.ok(!surfaces.includes(`drylake.com.au${prefix}`), prefix);
+      assert.ok(!new RegExp(`"${prefix}(/|")`).test(surfaces), prefix);
+    }
+  });
+
+  it("IndexNow refuses everything except canonical public production URLs", () => {
+    for (const page of PUBLIC_PAGES) assert.ok(isSubmittableUrl(absoluteUrl(page.path)), page.path);
+
+    for (const url of [
+      `${SITE_URL}/admin`,
+      `${SITE_URL}/client/billing`,
+      `${SITE_URL}/api/contact`,
+      `${SITE_URL}/portal`,
+      `${SITE_URL}/sign-in`,
+      `${SITE_URL}/about?ref=x`,
+      `${SITE_URL}/about#team`,
+      `${SITE_URL}/about/`,
+      "http://drylake.com.au/about",
+      "https://www.drylake.com.au/about",
+      "https://drylake-website-git-main-wilsonmugwe.vercel.app/about",
+      "https://drylake-website.vercel.app/",
+      "http://localhost:3000/about",
+      "https://127.0.0.1/about",
+      `${SITE_URL}/unknown-page`,
+    ]) {
+      assert.ok(!isSubmittableUrl(url), url);
+    }
+
+    assert.deepEqual(indexNowPayload([`${SITE_URL}/about`, `${SITE_URL}/about`]).urlList, [`${SITE_URL}/about`]);
+  });
+
+  it("the submitter reads only the production sitemap and refuses a sitemap with foreign URLs", () => {
+    // read(), not code(): the comment stripper would eat the "//" in https:// URLs.
+    const script = read("scripts/indexnow-submit.mjs");
+
+    assert.match(script, /const origin = `https:\/\/\$\{INDEXNOW_HOST\}`;/);
+    assert.match(script, /nothing submitted/);
+    assert.ok(!/process\.env/.test(script), "no env input that could redirect submissions");
+  });
+
+  it("service pages: one H1, FAQ rendered from the same data as the FAQ schema, Service node", () => {
+    const page = read("app/solutions/[slug]/page.tsx");
+
+    assert.equal((page.match(/<h1\b/g) ?? []).length, 1);
+    assert.match(page, /faqNode\(service\.path, service\.faqs\)/);
+    assert.match(page, /service\.faqs\.map\(\(faq\) =>/);
+    assert.match(page, /serviceNode\(service\)/);
+
+    for (const service of SERVICES) {
+      assert.ok(service.faqs.length >= 3, service.slug);
+      const perth = (JSON.stringify(service).match(/Perth/g) ?? []).length;
+      assert.ok(perth <= 5, `${service.slug} mentions Perth ${perth} times (keyword stuffing)`);
+    }
   });
 });

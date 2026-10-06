@@ -58,10 +58,33 @@ export const CRAWLERS: readonly CrawlerEntry[] = [
   { vendor: "Meta", product: "Training and product indexing", token: "meta-externalagent", class: "training", access: "disallow", source: "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers", note: "Meta AI search uses meta-webindexer, which stays allowed." },
   { vendor: "Amazon", product: "Product improvement, may train AI", token: "Amazonbot", class: "training", access: "disallow", source: "https://developer.amazon.com/amazonbot", note: "Alexa search uses Amzn-SearchBot, which stays allowed." },
   { vendor: "Apple", product: "Apple foundation-model training", token: "Applebot-Extended", class: "control-token", access: "disallow", source: "https://support.apple.com/en-us/119829", note: "Apple says pages can still appear in search results. Effect on Apple Intelligence answers is not documented." },
-  { vendor: "Google", product: "Gemini training AND Gemini Apps grounding", token: "Google-Extended", class: "control-token", access: "disallow", source: "https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers", note: "DECISION FOR BEN: does not affect Google Search, AI Overviews or AI Mode, but disallowing it also removes Drylake from grounding in the Gemini app. Flip to allow if Gemini app citations matter more than the training opt-out." },
+  /*
+   * ALLOWED by deliberate business decision (Wilson/Ben, 2026-10-06, drylake-ops D20), for
+   * PUBLIC marketing content only. Google's documentation (google-common-crawlers, updated
+   * 2026-07-14, read 2026-10-06) says Google-Extended governs BOTH use of crawled content for
+   * training future Gemini models AND grounding in Gemini Apps / Vertex AI API for Gemini, and
+   * that it "does not impact a site's inclusion in Google Search nor is it used as a ranking
+   * signal". Google offers no way to allow grounding without training, so maximum Gemini
+   * discovery requires allowing both. Private surfaces stay disallowed via the "*" group.
+   */
+  { vendor: "Google", product: "Gemini grounding (Gemini Apps, Vertex AI) and Gemini model training", token: "Google-Extended", class: "control-token", access: "allow", source: "https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers", note: "Allowed by business decision D20 for public content: one Google token controls both Gemini grounding and Gemini training. Does not affect Google Search, AI Overviews or AI Mode either way." },
 ];
 
 /* Tokens that receive "Disallow: /". */
 export function blockedTokens(): string[] {
   return CRAWLERS.filter((crawler) => crawler.access === "disallow").map((crawler) => crawler.token);
+}
+
+export type RobotsGroup = { userAgent: string[]; allow: string[]; disallow: string[] };
+
+/*
+ * The complete robots.txt policy as data: app/robots.ts renders it, and the tests evaluate
+ * it with an RFC 9309 matcher (lib/discovery/robots-eval.ts), so the crawler matrix is
+ * computed from the shipped configuration rather than asserted by hand.
+ */
+export function robotsGroups(privatePrefixes: readonly string[]): RobotsGroup[] {
+  return [
+    { userAgent: blockedTokens(), allow: [], disallow: ["/"] },
+    { userAgent: ["*"], allow: ["/"], disallow: [...privatePrefixes] },
+  ];
 }

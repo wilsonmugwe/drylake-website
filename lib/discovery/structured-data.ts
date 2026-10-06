@@ -6,6 +6,12 @@
  * all describe the SAME organisation rather than several look-alikes. Pages reference the
  * organisation by @id instead of restating it.
  *
+ * Privacy (reviewed 2026-10-06): only public business facts that help establish the entity.
+ *   - No telephone: the number on the site is a founder's personal mobile (drylake-ops D9);
+ *     the business email identifies the contact channel. Add a business number when one exists.
+ *   - Founders: name, job title and employer only (already public on /about). No credentials,
+ *     personal profiles, photos, emails or addresses.
+ *
  * Deliberately absent:
  *   - logo: the current logo artwork reads "DRYLAKE TECHNOLOGIES", which is not the brand or
  *     the legal name. Add it once a "Drylake" export exists.
@@ -43,7 +49,6 @@ export function organizationNode(): Node {
     url: ENTITY.url,
     description: ENTITY.summary,
     email: ENTITY.email,
-    telephone: ENTITY.telephone,
     taxID: ENTITY.abn,
     identifier: [
       { "@type": "PropertyValue", propertyID: "ABN", value: ENTITY.abn },
@@ -62,7 +67,6 @@ export function organizationNode(): Node {
       "@type": "ContactPoint",
       contactType: "customer service",
       email: ENTITY.email,
-      telephone: ENTITY.telephone,
       areaServed: ENTITY.countryCode,
       availableLanguage: "en-AU",
     },
@@ -84,7 +88,6 @@ export function founderNodes(): Node[] {
     "@id": founder.id,
     name: founder.name,
     jobTitle: founder.jobTitle,
-    hasCredential: { "@type": "EducationalOccupationalCredential", name: founder.credential },
     worksFor: { "@id": ORGANIZATION_ID },
   }));
 }
