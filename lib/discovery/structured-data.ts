@@ -6,6 +6,10 @@
  * all describe the SAME organisation rather than several look-alikes. Pages reference the
  * organisation by @id instead of restating it.
  *
+ * Logo: the square y mark as a 512 px PNG (Google asks for a raster at least 112 px square
+ * that stays legible on a white background). The "Drylake" wordmark artwork replaced the old
+ * "DRYLAKE TECHNOLOGIES" image, which was neither the brand nor the legal name.
+ *
  * Privacy (reviewed 2026-10-06): only public business facts that help establish the entity.
  *   - No telephone: the number on the site is a founder's personal mobile (drylake-ops D9);
  *     the business email identifies the contact channel. Add a business number when one exists.
@@ -13,8 +17,6 @@
  *     personal profiles, photos, emails or addresses.
  *
  * Deliberately absent:
- *   - logo: the current logo artwork reads "DRYLAKE TECHNOLOGIES", which is not the brand or
- *     the legal name. Add it once a "Drylake" export exists.
  *   - LocalBusiness / street address: Drylake has no public premises; only the locality is
  *     published (pre-launch checklist #14 and #17).
  *   - SearchAction: the site has no search.
@@ -33,6 +35,9 @@ import {
 
 type Node = Record<string, unknown>;
 
+/** Square brand mark served from /public; tests assert the file exists. */
+export const LOGO_PATH = "/brand/drylake-mark-512.png";
+
 const PERTH = {
   "@type": "City",
   name: "Perth",
@@ -47,6 +52,12 @@ export function organizationNode(): Node {
     legalName: ENTITY.legalName,
     alternateName: ["Drylake Pty Ltd", ENTITY.legalName],
     url: ENTITY.url,
+    logo: {
+      "@type": "ImageObject",
+      url: absoluteUrl(LOGO_PATH),
+      width: 512,
+      height: 512,
+    },
     description: ENTITY.summary,
     email: ENTITY.email,
     taxID: ENTITY.abn,

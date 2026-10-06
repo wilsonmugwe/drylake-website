@@ -440,7 +440,8 @@ describe("pre-merge review (2026-10-06)", () => {
     const [organization, website, ...people] = siteGraph();
     const text = JSON.stringify(siteGraph());
 
-    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "identifier", "knowsAbout", "legalName", "location", "name", "sameAs", "taxID", "url"]);
+    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "identifier", "knowsAbout", "legalName", "location", "logo", "name", "sameAs", "taxID", "url"]);
+    assert.deepEqual(Object.keys(organization.logo).sort(), ["@type", "height", "url", "width"]);
     assert.deepEqual(Object.keys(organization.contactPoint).sort(), ["@type", "areaServed", "availableLanguage", "contactType", "email"]);
     assert.deepEqual(Object.keys(organization.address).sort(), ["@type", "addressCountry", "addressLocality", "addressRegion"]);
     assert.deepEqual(Object.keys(website).sort(), ["@id", "@type", "alternateName", "inLanguage", "name", "publisher", "url"]);

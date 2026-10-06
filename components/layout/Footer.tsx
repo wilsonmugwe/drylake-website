@@ -41,11 +41,12 @@ export default function Footer() {
               className="inline-flex"
             >
               <Image
-                src="/brand/drylake-logo-black.png"
+                src="/brand/drylake-wordmark-dark-bg.svg"
                 alt="Drylake"
-                width={1536}
-                height={1024}
-                className="h-[64px] w-[100px] object-contain sm:h-[72px] sm:w-[112px]"
+                width={1657}
+                height={516}
+                unoptimized
+                className="h-[28px] w-auto sm:h-[32px]"
               />
             </Link>
 
