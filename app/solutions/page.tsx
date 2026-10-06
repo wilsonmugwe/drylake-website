@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 
 import { pageMetadata } from "@/lib/seo";
+import { SERVICES } from "@/lib/discovery/entity";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbNode, serviceNode, webPageNode } from "@/lib/discovery/structured-data";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -18,9 +21,28 @@ export const metadata: Metadata = pageMetadata({
     "Custom software, automation, AI and connected systems built around real business problems.",
 });
 
+const SOLUTIONS_CRUMBS = [
+  { name: "Home", path: "/" },
+  { name: "Solutions", path: "/solutions" },
+];
+
 export default function SolutionsPage() {
   return (
     <>
+      <JsonLd
+        nodes={[
+          webPageNode({
+            path: "/solutions",
+            name: "Software, Automation & AI Solutions | Drylake",
+            description:
+              "Drylake builds custom software, automation, AI and connected systems for Australian businesses, from small technical fixes to complete platforms.",
+            type: "CollectionPage",
+            breadcrumb: SOLUTIONS_CRUMBS,
+          }),
+          breadcrumbNode("/solutions", SOLUTIONS_CRUMBS),
+          ...SERVICES.map(serviceNode),
+        ]}
+      />
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="outline-none">

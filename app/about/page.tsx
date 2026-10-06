@@ -7,6 +7,9 @@ import Footer from "@/components/layout/Footer";
 import Founders from "@/components/sections/Founders";
 import ContactCTA from "@/components/sections/ContactCTA";
 import Container from "@/components/ui/Container";
+import CompanyDetails from "@/components/seo/CompanyDetails";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Drylake | Perth Technology Company",
@@ -32,9 +35,27 @@ const values = [
   },
 ];
 
+const ABOUT_CRUMBS = [
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about" },
+];
+
 export default function AboutPage() {
   return (
     <>
+      <JsonLd
+        nodes={[
+          webPageNode({
+            path: "/about",
+            name: "About Drylake | Perth Technology Company",
+            description:
+              "Drylake is a Perth-based technology company building practical software, automation and technical systems for Australian businesses.",
+            type: "AboutPage",
+            breadcrumb: ABOUT_CRUMBS,
+          }),
+          breadcrumbNode("/about", ABOUT_CRUMBS),
+        ]}
+      />
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
@@ -94,6 +115,7 @@ export default function AboutPage() {
         </section>
 
         <Founders />
+        <CompanyDetails />
         <ContactCTA />
       </main>
 

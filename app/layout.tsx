@@ -84,6 +84,20 @@ export const metadata: Metadata = {
   },
 
   category: "technology",
+
+  /*
+   * Search Console / Bing Webmaster Tools ownership tokens. Rendered only when set in the
+   * Vercel environment (they are public by design, but are per-account, so not hard-coded).
+   * DNS TXT verification works too and needs no deploy.
+   */
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.BING_SITE_VERIFICATION
+      ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } }
+      : {}),
+  },
 };
 
 export default function RootLayout({

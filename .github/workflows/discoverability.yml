@@ -1,0 +1,52 @@
+# Search and AI discoverability guard for drylake.com.au.
+#
+# After every successful PRODUCTION deploy (Vercel posts a GitHub deployment status):
+#   1. check the live site is still crawlable, indexable and consistent (fails loudly if not)
+#   2. notify IndexNow (Bing, Yandex, Seznam, Naver, Yep, ...) that the public URLs changed
+# Weekly, the check runs again so drift that is not caused by a deploy is caught too
+# (a firewall rule, a Vercel setting, an expired domain).
+#
+# No secrets: the IndexNow key is public by design (lib/discovery/indexnow.ts).
+name: Discoverability
+
+on:
+  deployment_status:
+  schedule:
+    - cron: "0 23 * * 0" # Monday 07:00 AWST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Live crawler and indexing check
+        run: node scripts/discoverability-check.mjs
+
+  indexnow:
+    needs: check
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Submit public URLs to IndexNow
+        run: node scripts/indexnow-submit.mjs

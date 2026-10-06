@@ -14,6 +14,8 @@ const solutions = [
     text: "Internal systems, portals and applications designed around the workflows your business actually depends on.",
     examples:
       "Internal platforms / Client & staff portals / Workflow systems / Web & mobile applications",
+    href: "/solutions/custom-software",
+    linkLabel: "Custom software and client portals",
   },
   {
     number: "02",
@@ -22,6 +24,8 @@ const solutions = [
     text: "Connect systems, remove duplicate handling and automate routine steps that slow teams down.",
     examples:
       "Workflow automation / System integrations / Approvals / Notifications / Data synchronisation",
+    href: "/solutions/automation-integration",
+    linkLabel: "Business automation and systems integration",
   },
   {
     number: "03",
@@ -30,6 +34,8 @@ const solutions = [
     text: "Use AI where it can improve a real workflow, reduce work or create genuinely useful functionality.",
     examples:
       "Document processing / AI-assisted workflows / Internal tools / Decision support",
+    href: "/solutions/applied-ai",
+    linkLabel: "Applied AI for business workflows",
   },
 ];
 
@@ -118,6 +124,19 @@ export default function Solutions() {
                 <p className="mt-4 max-w-xl font-mono text-[0.62rem] uppercase leading-5 tracking-[0.08em] text-black/60 sm:text-[0.68rem]">
                   {solution.examples}
                 </p>
+
+                {/* Crawlable link to the service page (no orphan pages, checklist #3). */}
+                <Link
+                  href={solution.href}
+                  className="group/link mt-5 inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline"
+                >
+                  {solution.linkLabel}
+                  <ArrowUpRight
+                    aria-hidden="true"
+                    size={15}
+                    className="transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                  />
+                </Link>
               </div>
             </motion.article>
           ))}

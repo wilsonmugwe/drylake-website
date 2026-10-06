@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
-export const SITE_URL = "https://drylake.com.au";
-export const SITE_NAME = "Drylake";
+import { ENTITY, SITE_URL } from "@/lib/discovery/entity";
+
+export { SITE_URL };
+export const SITE_NAME = ENTITY.brand;
 
 export const SHARE_IMAGE = {
   url: "/opengraph-image.png",
