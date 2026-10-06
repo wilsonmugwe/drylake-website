@@ -18,7 +18,9 @@ import {
 } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { logClientOrganizationRlsMiss } from "@/lib/supabase/rls-diagnostics";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { classifyOrganizationLookup } from "@/lib/supabase/token-shape";
 
 export const metadata = {
   title: "Client Portal",
@@ -106,11 +108,32 @@ export default async function ClientDashboardPage() {
   logQueryError("Client organisation lookup failed:", organizationError);
 
   // ---------------------------------------------------------
-  // No authorized Drylake organisation
+  // RLS disagreed with the resolver
+  //
+  // The service-role resolver already mapped the session's active Clerk org to an
+  // ACTIVE client, so an empty or failed read here means the Clerk token did not
+  // authorise the row in Supabase (token, role claim, current_clerk_org_id() or
+  // policy). Log which link broke, without the token or any identifier, and fail
+  // closed. A rejected request is a lookup failure, not "access pending".
   // ---------------------------------------------------------
 
-  if (organizationError || !organization) {
-    return <ClientAccessState variant="access-pending" />;
+  const organizationOutcome = classifyOrganizationLookup(
+    organizationError,
+    organization
+  );
+
+  if (organizationOutcome !== "found" || !organization) {
+    await logClientOrganizationRlsMiss({
+      supabase,
+      outcome: organizationOutcome === "request-error" ? "request-error" : "rls-empty",
+      error: organizationError,
+    });
+
+    return (
+      <ClientAccessState
+        variant={organizationOutcome === "request-error" ? "lookup-failed" : "access-pending"}
+      />
+    );
   }
 
   // ---------------------------------------------------------
