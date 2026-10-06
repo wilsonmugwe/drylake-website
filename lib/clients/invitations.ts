@@ -4,6 +4,8 @@
  * these plain shapes, and tests/client-invitations.test.mjs covers the decisions.
  */
 
+import { appBaseUrl } from "../invoices/invoice-url.ts";
+
 /* Every invited client contact joins as a plain member. Client users never administer
  * their Clerk organisation (no inviting others, no deleting it); Drylake does that. */
 export const CLIENT_INVITATION_ROLE = "org:member";
@@ -74,6 +76,21 @@ export function sortInvitations(
 
     return aPending - bPending || b.createdAt - a.createdAt;
   });
+}
+
+/*
+ * Origin the invitation link points at. A PRODUCTION deployment always uses the canonical
+ * domain (APP_BASE_URL, default https://drylake.com.au): the Clerk production instance is
+ * bound to that domain, so an admin who happened to be on the vercel.app production alias
+ * would otherwise mail the client a link that cannot sign them in. Same failure class the
+ * invoice email fixed in lib/invoices/invoice-url.ts. Preview and local deployments keep the
+ * request origin, because they run against their own development Clerk instance.
+ */
+export function invitationOrigin(
+  requestOrigin: string,
+  env: Record<string, string | undefined>
+): string {
+  return env.VERCEL_ENV === "production" ? appBaseUrl(env) : requestOrigin;
 }
 
 export function invitationRedirectUrl(origin: string): string {
