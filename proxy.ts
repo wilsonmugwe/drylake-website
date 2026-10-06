@@ -1,6 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { CSP_DIRECTIVES } from "./lib/security/csp";
+import { isCrossSiteMutation } from "./lib/security/same-origin";
+
 /*
  * First layer of route protection: any signed-out request for a private PAGE is sent to
  * sign-in with its full path (nested routes and query kept) as the return URL.
@@ -25,6 +28,23 @@ const isPublicPortalPage = createRouteMatcher(["/portal/accept-invitation"]);
 
 export default clerkMiddleware(
   async (auth, request) => {
+    // CSRF defence in depth: refuse state-changing API calls a browser says came from
+    // another origin, before any handler runs (rules and exemptions in same-origin.ts).
+    if (
+      isCrossSiteMutation({
+        method: request.method,
+        pathname: request.nextUrl.pathname,
+        requestOrigin: request.nextUrl.origin,
+        origin: request.headers.get("origin"),
+        secFetchSite: request.headers.get("sec-fetch-site"),
+      })
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403, headers: { "Cache-Control": "private, no-store, max-age=0" } }
+      );
+    }
+
     if (!isPrivatePage(request) || isPublicPortalPage(request)) {
       return;
     }
@@ -46,10 +66,7 @@ export default clerkMiddleware(
     jwtKey: process.env.CLERK_JWT_KEY,
 
     contentSecurityPolicy: {
-      directives: {
-        "frame-src": ["https://challenges.cloudflare.com"],
-        "script-src": ["https://challenges.cloudflare.com"],
-      },
+      directives: CSP_DIRECTIVES,
     },
   }
 );

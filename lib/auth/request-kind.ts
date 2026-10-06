@@ -21,12 +21,18 @@ export function isDocumentNavigation(headers: HeaderSource): boolean {
   return accept.includes("text/html");
 }
 
-/* Same-origin relative path only; anything else becomes the fallback. */
+/*
+ * Same-origin relative path only; anything else becomes the fallback.
+ * Control characters and whitespace are refused outright: browsers strip tab and newline
+ * from URLs, so "/\t/evil.example" would otherwise become the protocol-relative
+ * "//evil.example" after the check passed.
+ */
 export function safeReturnPath(value: unknown, fallback = "/portal"): string {
   return typeof value === "string" &&
     value.startsWith("/") &&
     !value.startsWith("//") &&
-    !value.startsWith("/\\")
+    !value.startsWith("/\\") &&
+    !/[\x00-\x20\x7F]/.test(value)
     ? value
     : fallback;
 }

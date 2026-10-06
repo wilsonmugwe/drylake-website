@@ -4,11 +4,15 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { safeReturnPath } from "@/lib/auth/request-kind";
 
-/** Sign-in URL that returns the user to `returnTo` afterwards. Relative paths only. */
+/**
+ * Sign-in URL that returns the user to `returnTo` afterwards. Same-origin relative paths
+ * only, through the same rule as the API gate: "//host" and "/\host" are both treated as
+ * another origin by browsers, so either falls back to /portal.
+ */
 export function signInUrl(returnTo: string): string {
-  const safe = returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/portal";
-  return `/sign-in?redirect_url=${encodeURIComponent(safe)}`;
+  return `/sign-in?redirect_url=${encodeURIComponent(safeReturnPath(returnTo, "/portal"))}`;
 }
 
 /*
