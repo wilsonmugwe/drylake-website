@@ -5,9 +5,12 @@
  * No framework or database imports: relative imports only, so Node's test runner can
  * load it directly.
  *
- * Money is handled as integer cents end to end. Amounts typed in the browser are only
- * ever parsed here on the server; the browser never supplies a total.
+ * Money is handled as integer cents end to end. The browser supplies ONLY the subtotal:
+ * GST and total are calculated here by lib/invoices/gst.ts. Any tax value the browser
+ * sends is ignored, so a tampered form cannot set its own GST.
  */
+
+import { calculateInvoiceAmounts } from "../invoices/gst.ts";
 
 export const MAX_INVOICE_CENTS = 999_999_999;
 
@@ -109,7 +112,7 @@ type RawFields = {
  */
 export function validateDraftInvoice(
   fields: RawFields,
-  options: { gstRegistered: boolean }
+  options: { gstApplies: boolean }
 ): ValidationResult {
   const subtotalCents = parseMoneyToCents(fields.subtotal);
 
@@ -117,14 +120,8 @@ export function validateDraftInvoice(
     return { ok: false, code: "invalid_amount", field: "subtotal" };
   }
 
-  // Not GST-registered: tax is always zero, whatever the form sent.
-  const taxCents = options.gstRegistered ? parseMoneyToCents(fields.tax ?? "0") : 0;
-
-  if (taxCents === null) {
-    return { ok: false, code: "invalid_tax", field: "tax" };
-  }
-
-  const totalCents = subtotalCents + taxCents;
+  // Authoritative: GST from the subtotal and today's registration, never from the form.
+  const { taxCents, totalCents } = calculateInvoiceAmounts(subtotalCents, options.gstApplies);
 
   if (!Number.isSafeInteger(totalCents) || totalCents <= 0 || totalCents > MAX_INVOICE_CENTS) {
     return { ok: false, code: "invalid_total", field: "subtotal" };

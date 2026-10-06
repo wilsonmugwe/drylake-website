@@ -15,7 +15,7 @@ import {
 } from "@/lib/invoice-creation/validate";
 import { isUuid } from "@/lib/validation/uuid";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { isGstRegistered } from "@/lib/tax";
+import { gstAppliesToNewInvoices } from "@/lib/tax";
 
 export const metadata = {
   title: "Create Invoice | Drylake Admin",
@@ -144,8 +144,8 @@ export default async function NewInvoicePage({
   const disabled =
     organization.status !== "ACTIVE";
 
-  const gstRegistered =
-    isGstRegistered();
+  const gstApplies =
+    gstAppliesToNewInvoices();
 
   return (
     <main className="min-h-screen p-5 sm:p-8 lg:p-10">
@@ -177,7 +177,7 @@ export default async function NewInvoicePage({
               id: project.id,
               name: project.name,
             }))}
-            gstRegistered={gstRegistered}
+            gstApplies={gstApplies}
             disabled={disabled}
             initialError={initialError}
           />

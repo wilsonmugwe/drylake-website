@@ -44,8 +44,8 @@ describe("isValidIsoDate", () => {
 describe("validateDraftInvoice", () => {
   const base = { subtotal: "1500.00", tax: "0", dueDate: "", projectId: "", visibleToClient: "true" };
 
-  it("computes totals server-side and ignores browser tax when not GST-registered", () => {
-    const result = validateDraftInvoice({ ...base, tax: "999" }, { gstRegistered: false });
+  it("computes totals server-side and ignores browser tax when GST does not apply", () => {
+    const result = validateDraftInvoice({ ...base, tax: "999" }, { gstApplies: false });
 
     assert.equal(result.ok, true);
     assert.equal(result.value.subtotalCents, 150_000);
@@ -54,43 +54,60 @@ describe("validateDraftInvoice", () => {
     assert.equal(result.value.currency, "AUD");
   });
 
-  it("adds GST when registered", () => {
-    const result = validateDraftInvoice({ ...base, tax: "150.00" }, { gstRegistered: true });
+  it("calculates 10% GST itself when GST applies: $1,000.00 -> $100.00 -> $1,100.00", () => {
+    const result = validateDraftInvoice({ ...base, subtotal: "1000.00" }, { gstApplies: true });
 
     assert.equal(result.ok, true);
-    assert.equal(result.value.totalCents, 165_000);
+    assert.equal(result.value.subtotalCents, 100_000);
+    assert.equal(result.value.taxCents, 10_000);
+    assert.equal(result.value.totalCents, 110_000);
+  });
+
+  it("ignores a tampered browser GST value when GST applies", () => {
+    for (const tax of ["0", "999.99", "-5", "abc"]) {
+      const result = validateDraftInvoice({ ...base, subtotal: "1500.00", tax }, { gstApplies: true });
+      assert.equal(result.ok, true, tax);
+      assert.equal(result.value.taxCents, 15_000, tax);
+      assert.equal(result.value.totalCents, 165_000, tax);
+    }
+  });
+
+  it("rounds GST half up on a fractional cent and keeps subtotal + GST = total", () => {
+    const result = validateDraftInvoice({ ...base, subtotal: "10.05" }, { gstApplies: true });
+    assert.equal(result.value.taxCents, 101);
+    assert.equal(result.value.subtotalCents + result.value.taxCents, result.value.totalCents);
   });
 
   it("rejects zero, negative and malformed amounts", () => {
     for (const subtotal of ["0", "0.00", "-1", "abc"]) {
-      const result = validateDraftInvoice({ ...base, subtotal }, { gstRegistered: false });
+      const result = validateDraftInvoice({ ...base, subtotal }, { gstApplies: false });
       assert.deepEqual([result.ok, result.code, result.field], [false, "invalid_amount", "subtotal"]);
     }
   });
 
   it("allows an empty or past due date but rejects an invalid one", () => {
-    assert.equal(validateDraftInvoice({ ...base, dueDate: "" }, { gstRegistered: false }).value.dueDate, null);
-    assert.equal(validateDraftInvoice({ ...base, dueDate: "2020-01-01" }, { gstRegistered: false }).ok, true);
+    assert.equal(validateDraftInvoice({ ...base, dueDate: "" }, { gstApplies: false }).value.dueDate, null);
+    assert.equal(validateDraftInvoice({ ...base, dueDate: "2020-01-01" }, { gstApplies: false }).ok, true);
 
-    const bad = validateDraftInvoice({ ...base, dueDate: "2026-13-01" }, { gstRegistered: false });
+    const bad = validateDraftInvoice({ ...base, dueDate: "2026-13-01" }, { gstApplies: false });
     assert.equal(bad.code, "invalid_date");
   });
 
   it("treats browser ids as untrusted: project and request ids must be UUIDs", () => {
-    const project = validateDraftInvoice({ ...base, projectId: "1 OR 1=1" }, { gstRegistered: false });
+    const project = validateDraftInvoice({ ...base, projectId: "1 OR 1=1" }, { gstApplies: false });
     assert.equal(project.code, "invalid_project");
 
-    const request = validateDraftInvoice({ ...base, requestId: "not-a-uuid" }, { gstRegistered: false });
+    const request = validateDraftInvoice({ ...base, requestId: "not-a-uuid" }, { gstApplies: false });
     assert.equal(request.code, "invalid_request");
 
-    const ok = validateDraftInvoice({ ...base, projectId: UUID, requestId: OTHER_UUID }, { gstRegistered: false });
+    const ok = validateDraftInvoice({ ...base, projectId: UUID, requestId: OTHER_UUID }, { gstApplies: false });
     assert.equal(ok.value.projectId, UUID);
     assert.equal(ok.value.requestId, OTHER_UUID);
   });
 
   it("only the exact string 'true' makes an invoice visible to the client", () => {
-    assert.equal(validateDraftInvoice({ ...base, visibleToClient: "on" }, { gstRegistered: false }).value.visibleToClient, false);
-    assert.equal(validateDraftInvoice({ ...base, visibleToClient: null }, { gstRegistered: false }).value.visibleToClient, false);
+    assert.equal(validateDraftInvoice({ ...base, visibleToClient: "on" }, { gstApplies: false }).value.visibleToClient, false);
+    assert.equal(validateDraftInvoice({ ...base, visibleToClient: null }, { gstApplies: false }).value.visibleToClient, false);
   });
 });
 

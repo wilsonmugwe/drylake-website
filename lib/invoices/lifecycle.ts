@@ -174,6 +174,9 @@ type CheckoutInvoice = {
   visible_to_client: unknown;
   total_cents: unknown;
   currency: unknown;
+  /* When supplied, subtotal + tax must equal total or the invoice is not charged. */
+  subtotal_cents?: unknown;
+  tax_cents?: unknown;
 };
 
 export type CheckoutEligibility =
@@ -210,6 +213,18 @@ export function evaluateCheckout(
   const amountCents = Number(invoice.total_cents);
 
   if (!isValidTotalCents(amountCents)) {
+    return {
+      ...refuse("INVALID_INVOICE_TOTAL", "This invoice cannot currently be paid online."),
+      httpStatus: 409,
+    };
+  }
+
+  if (
+    invoice.subtotal_cents !== undefined &&
+    invoice.tax_cents !== undefined &&
+    Number(invoice.subtotal_cents) + Number(invoice.tax_cents) !== amountCents
+  ) {
+    // A stored total that disagrees with its own breakdown is never sent to Stripe.
     return {
       ...refuse("INVALID_INVOICE_TOTAL", "This invoice cannot currently be paid online."),
       httpStatus: 409,

@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 
 import PaymentReturnNotice from "@/components/billing/PaymentReturnNotice";
 import PayInvoiceButton from "@/components/billing/PayInvoiceButton";
+import type { InvoiceTaxPresentation } from "@/lib/invoices/gst";
 
 import ClientShell from "./ClientShell";
 import { formatDate, formatMoney, humanizeStatus, isPayableInvoice } from "./format";
@@ -27,11 +28,12 @@ export type ClientInvoiceViewProps = {
   };
   project: { id: string; name: string } | null;
   /*
-   * Tax display is decided by the loader (lib/tax.ts). While not GST-registered the tax line
-   * is never rendered and `noGstNote` is shown instead.
+   * Tax labels from presentInvoiceTax (lib/invoices/gst.ts), derived from the STORED amounts:
+   * the same function the admin page and the invoice email use.
    */
-  showTaxLine: boolean;
-  noGstNote: string;
+  tax: InvoiceTaxPresentation;
+  /* Supplier identity for the tax invoice (lib/business.ts). */
+  business: { legalName: string; abn: string };
   /* Set when Stripe Checkout redirected back here (?payment=success|cancelled). */
   paymentReturn: "success" | "cancelled" | null;
 };
@@ -40,8 +42,8 @@ export default function ClientInvoiceView({
   organizationName,
   invoice,
   project,
-  showTaxLine,
-  noGstNote,
+  tax,
+  business,
   paymentReturn,
 }: ClientInvoiceViewProps) {
   const total = formatMoney(invoice.totalCents, invoice.currency);
@@ -86,7 +88,7 @@ export default function ClientInvoiceView({
           <Panel
             labelledBy="invoice-summary-heading"
             title="Billing summary"
-            description="Invoice totals recorded by Drylake"
+            description={tax.documentTitle}
           >
             <dl className="px-5 sm:px-6">
               <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] py-4">
@@ -94,24 +96,30 @@ export default function ClientInvoiceView({
                 <dd className="text-sm font-medium">{formatMoney(invoice.subtotalCents, invoice.currency)}</dd>
               </div>
 
-              {showTaxLine ? (
+              {tax.showGstLine ? (
                 <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] py-4">
-                  <dt className="text-sm text-white/60">Tax</dt>
+                  <dt className="text-sm text-white/60">{tax.gstLabel}</dt>
                   <dd className="text-sm font-medium">{formatMoney(invoice.taxCents, invoice.currency)}</dd>
                 </div>
               ) : null}
 
               <div className="flex items-center justify-between gap-4 py-5">
-                <dt className="font-semibold">Total</dt>
+                <dt className="font-semibold">
+                  {tax.totalLabel} <span className="text-xs font-normal text-white/55">({invoice.currency.toUpperCase()})</span>
+                </dt>
                 <dd className="text-xl font-semibold tracking-[-0.03em]">{total}</dd>
               </div>
             </dl>
 
-            {!showTaxLine ? (
+            {tax.noGstNote ? (
               <p className="border-t border-white/[0.08] px-5 py-4 text-xs leading-5 text-white/55 sm:px-6">
-                {noGstNote}
+                {tax.noGstNote}
               </p>
             ) : null}
+
+            <p className="border-t border-white/[0.08] px-5 py-4 text-xs leading-5 text-white/55 sm:px-6">
+              {tax.documentTitle} issued by {business.legalName}, ABN {business.abn}
+            </p>
           </Panel>
 
           {project ? (
