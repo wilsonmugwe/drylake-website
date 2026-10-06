@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientDashboardView from "@/components/client/ClientDashboardView";
 import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
 import type {
@@ -11,16 +10,9 @@ import type {
   Loadable,
 } from "@/components/client/types";
 import { isClientVisibleInvoice } from "@/lib/auth/access";
-import {
-  type ClientAccess,
-  ClientAccessLookupError,
-  getClientAccess,
-} from "@/lib/auth/client-context";
+import { getClientWorkspace } from "@/lib/auth/client-context";
 import { signInUrl } from "@/lib/auth/guards";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
-import { logClientOrganizationRlsMiss } from "@/lib/supabase/rls-diagnostics";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { classifyOrganizationLookup } from "@/lib/supabase/token-shape";
 
 export const metadata = {
   title: "Client Portal",
@@ -46,95 +38,33 @@ function logQueryError(
 
 export default async function ClientDashboardPage() {
   // ---------------------------------------------------------
-  // Authentication
+  // The ONE authoritative workspace resolution
+  // (lib/auth/client-context.ts -> decideClientWorkspace).
+  //
+  // Clerk membership -> active Clerk org -> organizations.clerk_org_id
+  // -> RLS re-read with the user's Clerk token. An email address never
+  // grants access. "ready" already includes the RLS check, so nothing
+  // below can send a ready client back to a setup screen.
   // ---------------------------------------------------------
 
-  // ---------------------------------------------------------
-  // Resolve the workspace from Clerk organisation MEMBERSHIP
-  // (lib/auth/access.ts). An authenticated account alone, or a
-  // matching email, never grants access to client data.
-  // ---------------------------------------------------------
+  const workspace = await getClientWorkspace();
 
-  let access: ClientAccess;
-
-  try {
-    access = await getClientAccess({ includeMemberships: true });
-  } catch (error) {
-    if (error instanceof ClientAccessLookupError) {
-      return <ClientAccessState variant="lookup-failed" />;
-    }
-
-    throw error;
-  }
-
-  if (!access.signedIn) {
+  if (workspace.state === "signed-out") {
     redirect(signInUrl("/client"));
   }
 
-  const { resolution } = access;
-
-  if (resolution.kind !== "ready") {
+  if (workspace.state !== "ready") {
     // A Drylake admin with no client membership belongs in the admin workspace, not on
     // the client "no access" screen. An admin who IS a client member still gets the gate.
-    if (
-      (resolution.kind === "no-membership" || resolution.kind === "not-linked") &&
-      (await isPlatformAdmin())
-    ) {
+    if (workspace.state === "no-organisation" && (await isPlatformAdmin())) {
       redirect("/admin");
     }
 
-    return <ClientWorkspaceGate resolution={resolution} returnTo="/client" />;
+    return <ClientWorkspaceGate workspace={workspace} returnTo="/client" />;
   }
 
-  // ---------------------------------------------------------
-  // Authenticated Supabase client
-  //
-  // Uses the Clerk session token.
-  // Supabase RLS remains the tenant-isolation boundary: the
-  // organisation is re-read through RLS, so a session whose
-  // token disagrees with the resolver sees nothing.
-  // ---------------------------------------------------------
-
-  const supabase = createServerSupabaseClient();
-
-  const { data: organization, error: organizationError } = await supabase
-    .from("organizations")
-    .select("id, clerk_org_id, name, status")
-    .eq("id", resolution.organization.id)
-    .eq("clerk_org_id", resolution.organization.clerk_org_id as string)
-    .eq("status", "ACTIVE")
-    .maybeSingle();
-
-  logQueryError("Client organisation lookup failed:", organizationError);
-
-  // ---------------------------------------------------------
-  // RLS disagreed with the resolver
-  //
-  // The service-role resolver already mapped the session's active Clerk org to an
-  // ACTIVE client, so an empty or failed read here means the Clerk token did not
-  // authorise the row in Supabase (token, role claim, current_clerk_org_id() or
-  // policy). Log which link broke, without the token or any identifier, and fail
-  // closed. A rejected request is a lookup failure, not "access pending".
-  // ---------------------------------------------------------
-
-  const organizationOutcome = classifyOrganizationLookup(
-    organizationError,
-    organization
-  );
-
-  if (organizationOutcome !== "found" || !organization) {
-    await logClientOrganizationRlsMiss({
-      supabase,
-      outcome: organizationOutcome === "request-error" ? "request-error" : "rls-empty",
-      error: organizationError,
-    });
-
-    return (
-      <ClientAccessState
-        variant={organizationOutcome === "request-error" ? "lookup-failed" : "access-pending"}
-      />
-    );
-  }
+  // RLS-scoped client that just verified this organisation with the user's token.
+  const { supabase, organization } = workspace;
 
   // ---------------------------------------------------------
   // Load projects
@@ -331,7 +261,7 @@ export default async function ClientDashboardPage() {
       updates={updatesProp}
       documents={documentsProp}
       invoices={invoicesProp}
-      canSwitchWorkspace={(access.workspaces?.length ?? 0) > 1}
+      canSwitchWorkspace={workspace.workspaces.length > 1}
     />
   );
 }

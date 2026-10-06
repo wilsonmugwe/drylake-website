@@ -1,56 +1,84 @@
 import "server-only";
 
+import { cache } from "react";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   type ClientOption,
   type ClientOrganizationRow,
-  type ClientResolution,
+  type PendingReason,
+  type RlsOutcome,
+  decideClientWorkspace,
   resolveClientOrganization,
   usableWorkspaces,
 } from "@/lib/auth/access";
+import {
+  type CompletableInvitation,
+  completableInvitations,
+} from "@/lib/clients/invitation-completion";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { logClientOrganizationRlsMiss } from "@/lib/supabase/rls-diagnostics";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { classifyOrganizationLookup } from "@/lib/supabase/token-shape";
 
 /* A client user belongs to a handful of orgs at most; one page is plenty. */
-const MEMBERSHIP_PAGE_SIZE = 100;
+const PAGE_SIZE = 100;
 
-export type ClientAccess =
-  | { signedIn: false }
+/*
+ * The ONE authoritative client workspace for this request. See decideClientWorkspace()
+ * in lib/auth/access.ts for the meaning of every state.
+ *
+ * `ready` carries the RLS-scoped Supabase client that verified the organisation, so the
+ * page loads content with the exact client whose token was just accepted. Projects,
+ * invoices, documents and updates are content: their absence never changes the state.
+ */
+export type ClientWorkspace =
+  | { state: "signed-out" }
+  | { state: "lookup-failed"; userId: string }
+  | { state: "no-organisation"; userId: string }
+  | { state: "blocked"; userId: string; status: string; organizationName: string }
+  | { state: "access-pending"; userId: string; reason: PendingReason; options: ClientOption[] }
   | {
-      signedIn: true;
+      state: "ready";
       userId: string;
-      resolution: ClientResolution;
-      /* Usable (ACTIVE) workspaces from the membership list; null when not fetched. */
-      workspaces: ClientOption[] | null;
+      organization: ClientOrganizationRow;
+      supabase: SupabaseClient;
+      /* ACTIVE workspaces among the user's memberships, for the switcher. */
+      workspaces: ClientOption[];
     };
 
-export class ClientAccessLookupError extends Error {}
+export type NotReadyWorkspace = Exclude<ClientWorkspace, { state: "ready" | "signed-out" }>;
+
+class LookupError extends Error {}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Unknown error";
+}
 
 async function membershipOrgIds(userId: string): Promise<string[]> {
   const clerk = await clerkClient();
   const memberships = await clerk.users.getOrganizationMembershipList({
     userId,
-    limit: MEMBERSHIP_PAGE_SIZE,
+    limit: PAGE_SIZE,
   });
 
   return memberships.data.map((membership) => membership.organization.id);
 }
 
-async function organizationsForClerkIds(
+/*
+ * Service role maps Clerk-verified org ids to client rows (id, name, status) ONLY. The ids
+ * come from Clerk (signed session + Backend API), never from the browser. Client DATA is
+ * always read through the RLS-scoped client.
+ */
+export async function organizationsForClerkIds(
   clerkOrgIds: readonly string[]
 ): Promise<ClientOrganizationRow[]> {
   if (clerkOrgIds.length === 0) {
     return [];
   }
 
-  /*
-   * Service role is used ONLY to map Clerk-verified org ids to client rows (id, name,
-   * status), including non-active rows so the user can be told their workspace is
-   * inactive. The ids come from Clerk (signed session claim + Backend API), never from
-   * the browser. All client DATA is still read through the RLS-scoped client.
-   */
-  const supabase = createAdminSupabaseClient();
-  const { data, error } = await supabase
+  const { data, error } = await createAdminSupabaseClient()
     .from("organizations")
     .select("id, clerk_org_id, name, status")
     .in("clerk_org_id", [...clerkOrgIds]);
@@ -61,67 +89,146 @@ async function organizationsForClerkIds(
       message: error.message,
     });
 
-    throw new ClientAccessLookupError("Unable to resolve client organisation.");
+    throw new LookupError("Unable to resolve client organisation.");
   }
 
   return data ?? [];
 }
 
 /*
- * Resolve which Drylake client workspace the signed-in user may open.
- *
- * Fast path: the session's active org maps to an ACTIVE client -> ready, no Backend API
- * call. Otherwise (no active org, or it is unmapped or not active) the user's Clerk
- * memberships are listed so the portal can auto-activate a single workspace, offer a
- * choice, or explain why access is blocked. `includeMemberships` forces the list even on
- * the fast path (used to decide whether to show "Switch organisation").
+ * Pending Drylake invitations this account can complete (see
+ * lib/clients/invitation-completion.ts). Used only when the user has no usable membership.
  */
-export async function getClientAccess(
-  options: { includeMemberships?: boolean } = {}
-): Promise<ClientAccess> {
+export async function pendingClientInvitations(
+  userId: string
+): Promise<CompletableInvitation[]> {
+  const clerk = await clerkClient();
+  const [invitations, user] = await Promise.all([
+    clerk.users.getOrganizationInvitationList({ userId, status: "pending", limit: PAGE_SIZE }),
+    clerk.users.getUser(userId),
+  ]);
+
+  if (invitations.data.length === 0) {
+    return [];
+  }
+
+  const verifiedAddresses = user.emailAddresses
+    .filter((address) => address.verification?.status === "verified")
+    .map((address) => address.emailAddress);
+
+  const rows = await organizationsForClerkIds(
+    [...new Set(invitations.data.map((invitation) => invitation.organizationId))]
+  );
+
+  return completableInvitations({
+    invitations: invitations.data.map((invitation) => ({
+      id: invitation.id,
+      clerkOrgId: invitation.organizationId,
+      emailAddress: invitation.emailAddress,
+      status: invitation.status,
+      role: invitation.role,
+      expiresAt: invitation.expiresAt,
+    })),
+    organizations: rows,
+    verifiedAddresses,
+    now: Date.now(),
+  });
+}
+
+/* Re-read the resolved organisation through RLS with the user's Clerk token. */
+async function verifyThroughRls(
+  organization: ClientOrganizationRow
+): Promise<{ outcome: RlsOutcome; supabase: SupabaseClient }> {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("id", organization.id)
+    .eq("clerk_org_id", organization.clerk_org_id as string)
+    .eq("status", "ACTIVE")
+    .maybeSingle();
+
+  const outcome = classifyOrganizationLookup(error, data);
+
+  if (outcome !== "found") {
+    // One diagnostic line: which link of Clerk token -> Supabase -> RLS broke.
+    await logClientOrganizationRlsMiss({ supabase, outcome, error });
+  }
+
+  return { outcome, supabase };
+}
+
+async function resolveWorkspace(): Promise<ClientWorkspace> {
   const { userId, orgId } = await auth();
 
   if (!userId) {
-    return { signedIn: false };
+    return { state: "signed-out" };
   }
 
-  if (orgId && !options.includeMemberships) {
-    const rows = await organizationsForClerkIds([orgId]);
+  try {
+    const memberOf = await membershipOrgIds(userId);
+    const ids = orgId && !memberOf.includes(orgId) ? [...memberOf, orgId] : memberOf;
+    const rows = await organizationsForClerkIds(ids);
     const resolution = resolveClientOrganization({
       activeOrgId: orgId,
-      membershipOrgIds: null,
+      membershipOrgIds: memberOf,
       organizations: rows,
     });
 
+    const pending =
+      resolution.kind === "no-membership" || resolution.kind === "not-linked"
+        ? await pendingClientInvitations(userId)
+        : [];
+
+    let rls: RlsOutcome | null = null;
+    let supabase: SupabaseClient | null = null;
+
     if (resolution.kind === "ready") {
-      return { signedIn: true, userId, resolution, workspaces: null };
+      const verified = await verifyThroughRls(resolution.organization);
+      rls = verified.outcome;
+      supabase = verified.supabase;
     }
-  }
 
-  let memberOf: string[];
-
-  try {
-    memberOf = await membershipOrgIds(userId);
-  } catch (error) {
-    console.error("Clerk membership lookup failed:", {
-      message: error instanceof Error ? error.message : "Unknown Clerk error",
+    const decision = decideClientWorkspace({
+      resolution,
+      pendingInvitations: pending.map(({ clerkOrgId, organizationId, name }) => ({
+        clerkOrgId,
+        organizationId,
+        name,
+      })),
+      rls,
     });
 
-    throw new ClientAccessLookupError("Unable to resolve client organisation.");
+    switch (decision.state) {
+      case "ready":
+        return {
+          state: "ready",
+          userId,
+          organization: decision.organization,
+          supabase: supabase as SupabaseClient,
+          workspaces: usableWorkspaces(rows, memberOf),
+        };
+      case "access-pending":
+        return { state: "access-pending", userId, reason: decision.reason, options: decision.options };
+      case "blocked":
+        return {
+          state: "blocked",
+          userId,
+          status: decision.status,
+          organizationName: decision.organizationName,
+        };
+      case "no-organisation":
+        return { state: "no-organisation", userId };
+      case "lookup-failed":
+        return { state: "lookup-failed", userId };
+    }
+  } catch (error) {
+    // Clerk or Supabase failed: fail closed, never "pending", never another tenant.
+    console.error("Client workspace resolution failed:", { message: errorMessage(error) });
+
+    return { state: "lookup-failed", userId };
   }
-
-  const ids = orgId && !memberOf.includes(orgId) ? [...memberOf, orgId] : memberOf;
-  const rows = await organizationsForClerkIds(ids);
-  const resolution = resolveClientOrganization({
-    activeOrgId: orgId,
-    membershipOrgIds: memberOf,
-    organizations: rows,
-  });
-
-  return {
-    signedIn: true,
-    userId,
-    resolution,
-    workspaces: usableWorkspaces(rows, memberOf),
-  };
 }
+
+/* Memoised per request: every component and the page share one resolution. */
+export const getClientWorkspace = cache(resolveWorkspace);

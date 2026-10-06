@@ -141,6 +141,102 @@ export function usableWorkspaces(
     .map(toOption);
 }
 
+/*
+ * THE workspace decision. Every client surface (pages, the document route, the contact
+ * context) renders from this one result, so two lookups can never disagree about whether
+ * the same session is ready.
+ *
+ *   ready            the user is a member of an ACTIVE Drylake client AND the session's
+ *                    Clerk token was accepted by Supabase RLS for that organisation row.
+ *                    Content (projects, invoices, documents, updates) is loaded AFTER this
+ *                    and its absence never changes the state.
+ *   access-pending   a real, incomplete onboarding/linking condition:
+ *                      activate-membership  member, but the session has not activated it
+ *                      choose-membership    several workspaces, none active
+ *                      accept-invitation    a Drylake invitation for this account is still
+ *                                           pending (signed in without redeeming the link)
+ *                      not-linked           Clerk org(s) with no Drylake client row
+ *                      authorization-pending resolver ready but RLS refused the row
+ *                                           (Clerk -> Supabase configuration)
+ *   blocked          membership exists but the client is INACTIVE / ARCHIVED
+ *   no-organisation  genuinely no membership and no pending invitation
+ *   lookup-failed    a request failed (Clerk, Supabase, missing token): fail closed
+ */
+export type PendingReason =
+  | "activate-membership"
+  | "choose-membership"
+  | "accept-invitation"
+  | "not-linked"
+  | "authorization-pending";
+
+export type WorkspaceDecision =
+  | { state: "ready"; organization: ClientOrganizationRow }
+  | { state: "access-pending"; reason: PendingReason; options: ClientOption[] }
+  | { state: "blocked"; status: string; organizationName: string }
+  | { state: "no-organisation" }
+  | { state: "lookup-failed" };
+
+/* Outcome of re-reading the resolved organisation through RLS with the user's token. */
+export type RlsOutcome = "found" | "rls-empty" | "request-error";
+
+export function decideClientWorkspace(input: {
+  resolution: ClientResolution;
+  /* ACTIVE Drylake clients with a pending invitation the account can complete. */
+  pendingInvitations: readonly ClientOption[];
+  /* Required when the resolution is ready; anything else fails closed. */
+  rls: RlsOutcome | null;
+}): WorkspaceDecision {
+  const { resolution } = input;
+
+  switch (resolution.kind) {
+    case "ready":
+      if (input.rls === "found") {
+        return { state: "ready", organization: resolution.organization };
+      }
+
+      if (input.rls === "rls-empty") {
+        return { state: "access-pending", reason: "authorization-pending", options: [] };
+      }
+
+      return { state: "lookup-failed" };
+
+    case "activate":
+      return {
+        state: "access-pending",
+        reason: "activate-membership",
+        options: [resolution.option],
+      };
+
+    case "choose":
+      return {
+        state: "access-pending",
+        reason: "choose-membership",
+        options: resolution.options,
+      };
+
+    case "blocked":
+      return {
+        state: "blocked",
+        status: resolution.status,
+        organizationName: resolution.organizationName,
+      };
+
+    case "not-linked":
+    case "no-membership":
+      if (input.pendingInvitations.length > 0) {
+        return {
+          state: "access-pending",
+          reason: "accept-invitation",
+          options: [...input.pendingInvitations],
+        };
+      }
+
+      return resolution.kind === "not-linked"
+        ? { state: "access-pending", reason: "not-linked", options: [] }
+        : { state: "no-organisation" };
+  }
+}
+
 /* True only when the resolved workspace IS this organisation. */
 export function canAccessOrganization(
   resolution: ClientResolution,

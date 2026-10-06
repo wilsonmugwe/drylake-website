@@ -11,14 +11,15 @@ const inputClassName =
   "h-12 w-full rounded-xl border border-neutral-200 bg-white pl-10 pr-4 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-[#f26a2e] focus:ring-4 focus:ring-[#f26a2e]/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400";
 
 /*
- * Create a client: organisation name, the primary contact (stored as the billing
- * contact), and an optional portal invitation sent in the same step.
+ * Create a client from human-readable details only: organisation name and the primary
+ * contact (stored as the billing contact). The server creates and links the Clerk and
+ * Supabase organisations and invites the contact in the same step; nobody ever types an
+ * organisation id.
  */
 export default function AdminClientCreateForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [sendInvite, setSendInvite] = useState(true);
   const [email, setEmail] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -53,7 +54,7 @@ export default function AdminClientCreateForm() {
     }
   }
 
-  const inviteNeedsEmail = sendInvite && !email.trim();
+  const missingEmail = !email.trim();
 
   return (
     <form
@@ -113,6 +114,7 @@ export default function AdminClientCreateForm() {
                   id="contactName"
                   name="contactName"
                   type="text"
+                  required
                   maxLength={100}
                   autoComplete="name"
                   placeholder="Alex Citizen"
@@ -137,7 +139,7 @@ export default function AdminClientCreateForm() {
                   placeholder="alex@example.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  required={sendInvite}
+                  required
                   disabled={submitting}
                   className={inputClassName}
                 />
@@ -145,25 +147,12 @@ export default function AdminClientCreateForm() {
             </div>
           </div>
 
-          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-neutral-200 bg-neutral-50/70 p-4">
-            <input
-              type="checkbox"
-              name="sendInvite"
-              checked={sendInvite}
-              onChange={(event) => setSendInvite(event.target.checked)}
-              disabled={submitting}
-              className="mt-0.5 h-4 w-4 accent-[#f26a2e]"
-            />
-            <span>
-              <span className="block text-sm font-medium text-neutral-900">
-                Send a portal invitation now
-              </span>
-              <span className="mt-1 block text-xs leading-5 text-neutral-500">
-                Clerk emails the contact a link to create their account. Access is granted
-                by workspace membership, not by the email address alone.
-              </span>
-            </span>
-          </label>
+          <p className="mt-5 rounded-xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs leading-5 text-neutral-600">
+            Creating the client sends the portal invitation to this email automatically. The
+            contact accepts it, signs in, and lands in their workspace. Projects and issued
+            invoices for this client appear there without any further linking. Access is
+            granted by workspace membership, never by the email address alone.
+          </p>
         </div>
       </div>
 
@@ -177,7 +166,7 @@ export default function AdminClientCreateForm() {
 
         <button
           type="submit"
-          disabled={submitting || inviteNeedsEmail}
+          disabled={submitting || missingEmail}
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? (

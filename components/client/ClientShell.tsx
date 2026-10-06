@@ -108,15 +108,11 @@ export default function ClientShell({
       <footer className="relative z-10 border-t border-white/[0.08]">
         <div className="cp-container flex flex-col gap-3 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <span>&copy; {new Date().getFullYear()} Drylake Pty Ltd. Secure client environment.</span>
+          {/* Plain text on purpose: the portal's contact action is "Start a conversation". */}
           <span>
-            Questions? Email{" "}
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="text-white/75 underline decoration-white/25 underline-offset-4 hover:text-white"
-            >
-              {CONTACT_EMAIL}
-            </a>
-            . We reply within {RESPONSE_TIME}.
+            Questions? Use Start a conversation, or write to{" "}
+            <span className="text-white/75">{CONTACT_EMAIL}</span>. We reply within{" "}
+            {RESPONSE_TIME}.
           </span>
         </div>
       </footer>

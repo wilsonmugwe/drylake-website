@@ -199,14 +199,8 @@ export function ErrorState({ subject }: { subject: string }) {
         className="mt-0.5 shrink-0 text-[#f26a2e]"
       />
       <p className="text-sm leading-6 text-white/65">
-        We couldn&apos;t load {subject}. Refresh the page, or email{" "}
-        <a
-          href={`mailto:${CONTACT_EMAIL}`}
-          className="break-all text-white underline decoration-white/30 underline-offset-4 hover:decoration-[#f26a2e]"
-        >
-          {CONTACT_EMAIL}
-        </a>
-        .
+        We couldn&apos;t load {subject}. Refresh the page, or use Start a conversation at the top
+        of the page (or write to <span className="break-all text-white">{CONTACT_EMAIL}</span>).
       </p>
     </div>
   );

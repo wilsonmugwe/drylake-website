@@ -10,25 +10,28 @@ import {
   invitationRedirectUrl,
 } from "@/lib/clients/invitations";
 import {
-  isChecked,
+  ilikeExact,
   normalizeClientName,
-  normalizeContactName,
-  parseOptionalEmail,
+  parseRequiredContactName,
+  parseRequiredEmail,
 } from "@/lib/clients/validation";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-type InviteOutcome = "sent" | "failed" | "skipped";
+type InviteOutcome = "sent" | "failed";
 
 /*
  * POST /api/admin/clients
- * Form fields: name (required), contactName, contactEmail (optional), sendInvite.
+ * Form fields: name, contactName, contactEmail (all required).
  *
- * 1. Create the Clerk organisation (the tenant identity).
- * 2. Create the Supabase organizations row mapped to it, with the primary contact stored
- *    in billing_contact_name / billing_email (the existing contact columns).
- * 3. Optionally invite the contact to the Clerk org as org:member.
+ * The admin only ever supplies human-readable details. Drylake then:
+ * 0. refuses a duplicate client name (no twin tenants from a double submit);
+ * 1. creates the Clerk organisation (the tenant identity);
+ * 2. creates the Supabase organizations row mapped to it (organizations.clerk_org_id),
+ *    with the primary contact stored in billing_contact_name / billing_email;
+ * 3. invites the contact's email to the Clerk org as org:member, automatically.
+ * Nobody types, copies or sees an organisation id.
  *
  * A failed invitation never rolls back the client: the admin can resend from the client
  * page. A failed Supabase insert deletes the Clerk org so no orphan is left behind.
@@ -54,22 +57,46 @@ export async function POST(request: Request) {
     return jsonError(name.error, 400);
   }
 
-  const contactName = normalizeContactName(formData.get("contactName"));
+  const contactName = parseRequiredContactName(formData.get("contactName"));
 
   if (!contactName.ok) {
     return jsonError(contactName.error, 400);
   }
 
-  const contactEmail = parseOptionalEmail(formData.get("contactEmail"));
+  // The invitation goes to this address, so it is required.
+  const contactEmail = parseRequiredEmail(formData.get("contactEmail"));
 
   if (!contactEmail.ok) {
-    return jsonError(contactEmail.error, 400);
+    return jsonError("Enter the primary contact's email address.", 400);
   }
 
-  const wantsInvite = isChecked(formData.get("sendInvite"));
+  const supabase = createAdminSupabaseClient();
 
-  if (wantsInvite && !contactEmail.value) {
-    return jsonError("Add the contact email to send a portal invitation.", 400);
+  // -------------------------------------------------------
+  // 0. Duplicate guard: one Drylake client per organisation name (case-insensitive).
+  //    A double-submitted form or a second admin cannot create a twin tenant.
+  // -------------------------------------------------------
+
+  const { data: existing, error: existingError } = await supabase
+    .from("organizations")
+    .select("id")
+    .ilike("name", ilikeExact(name.value))
+    .limit(1);
+
+  if (existingError) {
+    console.error("Client duplicate check failed:", {
+      code: existingError.code,
+      message: existingError.message,
+    });
+
+    return jsonError("Unable to create client organisation.", 500);
+  }
+
+  if (existing && existing.length > 0) {
+    return jsonError(
+      "A client with this name already exists. Open it from the client list instead.",
+      409
+    );
   }
 
   // -------------------------------------------------------
@@ -95,7 +122,6 @@ export async function POST(request: Request) {
   // 2. Supabase organisation, mapped to the Clerk org
   // -------------------------------------------------------
 
-  const supabase = createAdminSupabaseClient();
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
     .insert({
@@ -149,39 +175,37 @@ export async function POST(request: Request) {
   });
 
   // -------------------------------------------------------
-  // 3. Optional portal invitation
+  // 3. Portal invitation to the primary contact (always)
   // -------------------------------------------------------
 
-  let invite: InviteOutcome = "skipped";
+  let invite: InviteOutcome = "failed";
 
-  if (wantsInvite && contactEmail.value) {
-    try {
-      const invitation = await createClientInvitation({
-        clerkOrgId,
-        emailAddress: contactEmail.value,
-        redirectUrl: invitationRedirectUrl(new URL(request.url).origin),
-      });
+  try {
+    const invitation = await createClientInvitation({
+      clerkOrgId,
+      emailAddress: contactEmail.value,
+      redirectUrl: invitationRedirectUrl(new URL(request.url).origin),
+    });
 
-      invite = "sent";
+    invite = "sent";
 
-      await writeAuditLog(supabase, {
-        actorClerkUserId: gate.userId,
-        action: "CLIENT_INVITATION_SENT",
-        entityType: "organization",
-        entityId: organization.id,
-        metadata: {
-          organization_id: organization.id,
-          clerk_org_id: clerkOrgId,
-          invitation_id: invitation.id,
-        },
-      });
-    } catch (error) {
-      invite = "failed";
-      console.error("Initial client invitation failed:", {
-        code: clerkErrorCode(error),
-        message: error instanceof Error ? error.message : "Unknown Clerk error",
-      });
-    }
+    await writeAuditLog(supabase, {
+      actorClerkUserId: gate.userId,
+      action: "CLIENT_INVITATION_SENT",
+      entityType: "organization",
+      entityId: organization.id,
+      metadata: {
+        organization_id: organization.id,
+        clerk_org_id: clerkOrgId,
+        invitation_id: invitation.id,
+      },
+    });
+  } catch (error) {
+    invite = "failed";
+    console.error("Initial client invitation failed:", {
+      code: clerkErrorCode(error),
+      message: error instanceof Error ? error.message : "Unknown Clerk error",
+    });
   }
 
   const destination = `/admin/clients/${organization.id}?created=1&invite=${invite}`;

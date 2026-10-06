@@ -1,17 +1,16 @@
 import {
-  auth,
-} from "@clerk/nextjs/server";
-
-import {
   notFound,
   redirect,
 } from "next/navigation";
 
 import ClientAccessState from "@/components/client/ClientAccessState";
 import ClientInvoiceView from "@/components/client/ClientInvoiceView";
+import ClientWorkspaceGate from "@/components/client/ClientWorkspaceGate";
+
+import { getClientWorkspace } from "@/lib/auth/client-context";
+import { signInUrl } from "@/lib/auth/guards";
 
 import { displayStatus } from "@/lib/invoices/lifecycle";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 import {
   isGstRegistered,
@@ -51,83 +50,44 @@ export default async function ClientInvoicePage({
   params,
   searchParams,
 }: PageProps) {
-  // ---------------------------------------------------------
-  // Authentication
-  // ---------------------------------------------------------
-
-  const {
-    userId,
-    orgId,
-  } = await auth();
-
-  if (!userId) {
-    redirect(
-      "/sign-in?redirect_url=/client/billing"
-    );
-  }
-
-  if (!orgId) {
-    redirect("/client");
-  }
-
   const { invoiceId } =
     await params;
+
+  // Return here after sign-in or workspace activation (never a foreign URL).
+  const returnTo = isUuid(invoiceId)
+    ? `/client/billing/${invoiceId}`
+    : "/client/billing";
+
+  // ---------------------------------------------------------
+  // The ONE authoritative workspace resolution (same as /client).
+  // Organisation comes from Clerk membership, never from the URL.
+  // ---------------------------------------------------------
+
+  const workspace =
+    await getClientWorkspace();
+
+  if (workspace.state === "signed-out") {
+    redirect(signInUrl(returnTo));
+  }
+
+  if (workspace.state !== "ready") {
+    return (
+      <ClientWorkspaceGate
+        workspace={workspace}
+        returnTo={returnTo}
+      />
+    );
+  }
 
   if (!isUuid(invoiceId)) {
     notFound();
   }
 
-  // ---------------------------------------------------------
-  // Authenticated Supabase client
-  //
-  // Supabase RLS remains the tenant boundary.
-  // ---------------------------------------------------------
-
-  const supabase =
-    createServerSupabaseClient();
-
-  // ---------------------------------------------------------
-  // Organisation
-  // ---------------------------------------------------------
-
+  // RLS-scoped client that verified this organisation with the user's token.
   const {
-    data: organization,
-    error: organizationError,
-  } = await supabase
-    .from("organizations")
-    .select(
-      `
-        id,
-        clerk_org_id,
-        name,
-        status
-      `
-    )
-    .eq("clerk_org_id", orgId)
-    .eq("status", "ACTIVE")
-    .maybeSingle();
-
-  if (organizationError) {
-    console.error(
-      "Invoice organisation lookup failed:",
-      {
-        code:
-          organizationError.code,
-
-        message:
-          organizationError.message,
-      }
-    );
-  }
-
-  if (
-    organizationError ||
-    !organization
-  ) {
-    return (
-      <ClientAccessState variant="invoice-unavailable" />
-    );
-  }
+    supabase,
+    organization,
+  } = workspace;
 
   // ---------------------------------------------------------
   // Invoice

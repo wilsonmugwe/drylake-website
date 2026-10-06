@@ -48,6 +48,27 @@ export function normalizeContactName(value: unknown): FieldResult<string | null>
   return { ok: true, value: name };
 }
 
+/* Required variant: the primary contact is who the portal invitation is addressed to. */
+export function parseRequiredContactName(value: unknown): FieldResult<string> {
+  const result = normalizeContactName(value);
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return result.value
+    ? { ok: true, value: result.value }
+    : { ok: false, error: "Enter the primary contact's name." };
+}
+
+/*
+ * Escape a value for an exact, case-insensitive PostgREST `ilike` match: `%` and `_` are
+ * wildcards and `\` is the escape character, so a name like "50% Off_Co" matches only itself.
+ */
+export function ilikeExact(value: string): string {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
+}
+
 export function normalizeEmail(value: unknown): string {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }

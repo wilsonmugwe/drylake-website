@@ -146,7 +146,7 @@ function ProjectsPanel({ projects }: { projects: Loadable<ClientProjectSummary[]
       {!projects.ok ? (
         <ErrorState subject="your projects" />
       ) : ordered.length === 0 ? (
-        <EmptyState icon={<FolderKanban size={16} />} title="No projects yet.">
+        <EmptyState icon={<FolderKanban size={16} />} title="No active projects yet.">
           When Drylake starts work with you, each project and its progress will appear here.
         </EmptyState>
       ) : (

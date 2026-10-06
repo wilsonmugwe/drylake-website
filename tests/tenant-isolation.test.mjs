@@ -133,9 +133,20 @@ describe("client surfaces authenticate and scope by membership", () => {
       const source = read(file);
 
       assert.ok(
-        /getClientAccess\(|await auth\(\)/.test(source),
+        /getClientWorkspace\(|await auth\(\)/.test(source),
         `${file} must resolve the caller from the Clerk session`
       );
+
+      // One authoritative resolver: portal pages never re-derive the workspace themselves
+      // (a second lookup is how /client and billing disagreed about the same session).
+      if (file.startsWith("app/client/")) {
+        assert.match(source, /getClientWorkspace\(/, `${file} must use getClientWorkspace()`);
+        assert.ok(
+          !/from\(\s*["']organizations["']\s*\)/.test(source),
+          `${file} must not look up the organisation itself`
+        );
+        assert.ok(!/\borgId\b/.test(source), `${file} must not read auth().orgId directly`);
+      }
 
       // The organisation comes from the session, never from the browser.
       assert.ok(
