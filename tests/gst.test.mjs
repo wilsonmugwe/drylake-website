@@ -41,7 +41,7 @@ describe("calculateGstCents (10%, integer cents, half up)", () => {
       [1005, 101], // 100.5c
       [1006, 101], // 100.6c
       [99_999, 10_000], // 9,999.9c
-      [645_000, 64_500], // the Central Therapy full move
+      [645_000, 64_500], // a typical five-figure project
       [999_999_999, 100_000_000],
     ];
 

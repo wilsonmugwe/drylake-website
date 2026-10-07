@@ -1,0 +1,34 @@
+# Pull-request checks for drylake.com.au: the unit suite, typecheck and lint run before a merge.
+# Until 2026-10-08 only the post-deploy discoverability and schema checks ran on GitHub, so the
+# unit tests were only ever run locally. The Playwright e2e suite stays out of per-push CI (D30:
+# placeholder Clerk keys cannot create sessions); run it locally with `npm run test:e2e`.
+# No secrets needed: the unit tests are source-level and pure.
+name: Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx eslint .
