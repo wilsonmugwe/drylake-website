@@ -99,3 +99,35 @@ directly: what makes software dependable is underneath.
 Read as a Perth owner running on spreadsheets and email. Outcomes over capability names: "joins up
 the systems you already use" rather than "connected systems"; no API, LLM, middleware or agentic
 language on the homepage. Claims stay true: no clients, results or numbers.
+
+## 7. Measured results (LOCAL, `next start`, rebased on main d752cb4)
+
+Page heights (px): homepage 1440: 15,281 to 9,493 (-38%); 375: 12,403 to 10,317 (-17%).
+About 1440: 5,606 to 4,281; 375: 5,975 to 5,762. Benedict's name on /about: y 1,730 to 517
+(1440x900), 500 at 1280x720, 420 at 375x812: inside the first viewport at every size.
+
+Removed spacing, and why: the 9 rem desktop chapter padding (both sides of every seam), the hero's
+100svh minimum, four 58vh problem statements, 75vh of pinned systems track, the whole AppliedAI
+chapter, the FAQ as its own chapter (merged into the close), the founders' full-width stacked rows,
+and footer link rows at 44 px on desktop (34 px there; 44 px kept on touch sizes).
+
+Story timing (connected state reached, as % of the section's on-screen travel):
+problems 1440 69% to 36%, 375 31% to 27% (and now with the whole field on screen, top at 45% of
+the viewport, instead of 30%); systems 1440 66% to 44%, 375 46% to 39%. Scroll from first movement
+to connected: desktop problems 1,512 to 504 px, systems 1,320 to 584 px; phones 480 to 424 and
+440 to 352 px. Full tables: drylake-ops/docs/review/2026-10-07-polish/public/frag-*.txt.
+
+## 8. Hero self-check (brief section 2)
+
+1. New concept: yes (not a restyle of the horizon ruler; the old component is deleted).
+2. Memorable idea: yes, the logo assembled from the parts of your business.
+3. Could it belong to another tech company without the logo: no; it IS the logo's geometry.
+4. Custom-designed: yes; no library, no stock, no generated imagery.
+5. Motion serves a purpose: yes, broken, workarounds struck out, connected; finite, 1.6 s.
+6. Confident typography: yes, poster headline kept, painted on the first frame.
+7. Interesting composition: partly. Phones (caption beside the tile) and the chapter hand-off are
+   distinctive; the desktop headline-left, picture-right split is the most conventional part.
+8. An ordinary SME owner understands it: yes, Quotes / Customers / Jobs / Invoices and a caption.
+9. Mobile equally intentional: yes, its own composition, all inside a 375 x 812 first screen.
+10. Approaches the MetaLab / Basement / Instrument bar: on the idea and the moment, yes; the desktop
+    layout is the place Wilson's eye should go first if it needs another pass.
