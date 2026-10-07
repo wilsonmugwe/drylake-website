@@ -48,6 +48,7 @@ const CHANGED = [
   "components/sections/ContactCTA.tsx",
   "components/layout/Footer.tsx",
   "components/visuals/LakeBed.tsx",
+  "components/visuals/LakeField.tsx",
   "components/visuals/lakebed-geometry.ts",
   "components/visuals/horizon-geometry.ts",
   "components/visuals/SystemsStage.tsx",
@@ -99,8 +100,16 @@ describe("PUBLIC: the hero", () => {
     assert.equal(lakebedPct(106), 100);
   });
 
+  it("the lake bed is the composition: a full-bleed field behind the type, no left/right split", () => {
+    assert.match(hero, /<LakeField \/>/);
+    assert.ok(!/lg:grid-cols-12/.test(hero), "no column split in the hero");
+    const field = code("components/visuals/LakeField.tsx");
+    assert.match(field, /preserveAspectRatio="xMidYMid slice"/);
+    assert.match(field, /aria-hidden="true"/);
+  });
+
   it("is a server component with a finite CSS timeline and no client JavaScript", () => {
-    for (const file of ["components/sections/Hero.tsx", "components/visuals/LakeBed.tsx"]) {
+    for (const file of ["components/sections/Hero.tsx", "components/visuals/LakeBed.tsx", "components/visuals/LakeField.tsx"]) {
       assert.ok(!read(file).startsWith('"use client"'), file);
     }
     const lb = CSS.slice(CSS.indexOf("/* ------------------------------------------------------------- lake bed ---- */"));
@@ -256,8 +265,9 @@ describe("MOTION", () => {
       assert.ok(rm.includes(name), name);
     }
     assert.match(code("components/motion/ScrollProgress.tsx"), /prefers-reduced-motion: reduce\)"\)\.matches\)\s*\{\s*return;/);
-    // Production text is never hidden by its motion: only probe, markers and textures animate.
-    assert.ok(!/\[data-inview="false"\] \.core-stratum \{/.test(CSS));
+    // Production text is never hidden by its motion: the layers only move (transform), never fade.
+    const pre = CSS.match(/\[data-inview="false"\] \.core-stratum \{([^}]*)\}/)?.[1] ?? "";
+    assert.ok(!/opacity|visibility|display/.test(pre), pre);
   });
 
   it("motion is transform / opacity / fill / dash only on the new pieces (no layout properties)", () => {

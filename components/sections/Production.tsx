@@ -17,13 +17,13 @@ const strata = [
 ];
 
 /*
- * Production matters (experience polish, 2026-10-07). Not boxes feeding a logo: a core sample.
- * The thin top band is the product your team sees; beneath it, six strata in order of depth,
- * each one a real list item (name + sentence), so nothing lives only in the picture. The strata
- * textures (app/public-site.css, CORE SAMPLE) get denser with depth, like the layers under a dry
- * lake. Motion: on arrival the probe line runs down the core and each stratum settles in turn
- * (InView, CSS only); without JavaScript or under reduced motion everything is simply there.
- * Heading left, sample right on desktop, so the section is about half its old height.
+ * Production matters (experience polish, 2026-10-07). Not boxes feeding a logo: a cross-section.
+ * On top, a light surface band: what your team sees. Beneath it, six layers in order of depth,
+ * each one stepping further in and darker, like strata under a dry lake, so "surface vs what is
+ * underneath" is visible at a glance. Each layer is a real list item (name + sentence); nothing
+ * lives only in the picture. Motion: on arrival the layers settle down in turn (transform only,
+ * InView); without JavaScript or under reduced motion they are simply there. Heading left,
+ * section right on desktop.
  */
 export default function Production() {
   return (
@@ -51,33 +51,34 @@ export default function Production() {
           </div>
 
           <InView className="core relative lg:col-span-7" threshold={0.2}>
-            <div className="core-surface flex items-baseline justify-between gap-4 pb-3">
-              <span className="text-sm font-semibold text-white">What your team sees</span>
-              <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-white/55">
+            <div className="core-surface flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3.5 sm:px-5">
+              <span className="text-sm font-semibold">What your team sees</span>
+              <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-black/60">
                 The app / the portal / the website
               </span>
             </div>
 
-            <div className="relative">
-              <span aria-hidden="true" className="core-probe" />
-              <ol className="core-strata">
+            <p aria-hidden="true" className="core-under font-mono text-[0.6rem] uppercase tracking-[0.14em] text-white/50">
+              What it stands on
+            </p>
+
+            <ol className="core-strata">
               {strata.map((layer, i) => (
                 <li
                   key={layer.name}
-                  className="core-stratum grid gap-x-6 gap-y-1 py-3.5 pl-7 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.6fr)] sm:items-baseline sm:py-4 sm:pl-9"
+                  className="core-stratum grid gap-x-6 gap-y-1 py-3 pl-4 pr-4 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.6fr)] sm:items-baseline sm:py-3.5 sm:pl-5"
                   style={{ "--i": i } as CSSProperties}
                 >
                   <span className="flex items-baseline gap-3">
-                    <span aria-hidden="true" className="font-mono text-[0.62rem] text-white/45">
+                    <span aria-hidden="true" className="font-mono text-[0.62rem] text-white/50">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span className="text-[1.02rem] font-semibold tracking-[-0.015em] text-white">{layer.name}</span>
                   </span>
-                  <span className="text-sm leading-6 text-white/70">{layer.text}</span>
+                  <span className="text-sm leading-6 text-white/72">{layer.text}</span>
                 </li>
               ))}
-              </ol>
-            </div>
+            </ol>
           </InView>
         </div>
       </Container>

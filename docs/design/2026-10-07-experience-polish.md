@@ -86,13 +86,14 @@ its scroll range and holds it for the rest. Both stories start as soon as they e
 an ease-out curve (fast start, gentle landing) and hold the connected state on screen. Measured
 before and after in `docs/review/2026-10-07-polish/public/` (`frag-before.txt`, `frag-after.txt`).
 
-## 5. Production: the core sample
+## 5. Production: the cross-section
 
-Not boxes feeding a logo. A geological cross-section: the thin top band is the product your team
-sees; under it, six strata in order of depth (Authentication, Permissions, Data validation,
-Integrations, Monitoring, Backups and recovery), each with one plain sentence about what it does
-for the business. It reuses the lake-bed language (strata under a dry lake) and says the point
-directly: what makes software dependable is underneath.
+Not boxes feeding a logo. A geological cross-section: a light surface band labelled "What your team
+sees" (the app, the portal, the website), then "What it stands on": six layers in order of depth
+(Authentication, Permissions, Data validation, Integrations, Monitoring, Backups and recovery), each
+stepping further in and darker, with a strata texture on its cut face and one plain sentence about
+what it does for the business. Pass 1 (a strata texture behind table rows) read as a styled table;
+pass 2 makes surface versus underneath visible at a glance in the same height.
 
 ## 6. Language (section 7)
 
@@ -117,7 +118,7 @@ the viewport, instead of 30%); systems 1440 66% to 44%, 375 46% to 39%. Scroll f
 to connected: desktop problems 1,512 to 504 px, systems 1,320 to 584 px; phones 480 to 424 and
 440 to 352 px. Full tables: drylake-ops/docs/review/2026-10-07-polish/public/frag-*.txt.
 
-## 8. Hero self-check (brief section 2)
+## 8. Hero self-check, pass 1 (superseded by section 9)
 
 1. New concept: yes (not a restyle of the horizon ruler; the old component is deleted).
 2. Memorable idea: yes, the logo assembled from the parts of your business.
@@ -131,3 +132,30 @@ to connected: desktop problems 1,512 to 504 px, systems 1,320 to 584 px; phones 
 9. Mobile equally intentional: yes, its own composition, all inside a 375 x 812 first screen.
 10. Approaches the MetaLab / Basement / Instrument bar: on the idea and the moment, yes; the desktop
     layout is the place Wilson's eye should go first if it needs another pass.
+
+## 9. Composition pass (pass 2, after orchestrator review)
+
+Review: the concept passed; questions 7 and 10 did not, because the desktop hero was a
+headline-left, picture-right split and the phone caption was a cramped nine-line column. Changes are
+composition only (concept, copy, first-frame h1, no-JS hero, performance, SEO and accessibility
+rules unchanged):
+
+- **The lake bed is the hero.** A cracked field of dark plates (components/visuals/LakeField.tsx,
+  seeded geometry, 9 x 5 wide and 4 x 8 tall variants, sliced to cover) bleeds off every edge. The
+  headline is set on it; plates are #141412 on #0b0b0a, so white type stays about 18:1 and the grey
+  third line about 5:1. The tile sits in the field, breaking off the right edge beside the type,
+  and its backing takes the plate tone so it reads as part of the lake bed, not a card. When it
+  locks, field cracks light up as connections that run under the headline. No column grid.
+- **The hero ends on a cracked edge** into the problem chapter, which opens "Growth makes the
+  cracks visible".
+- **Phones:** headline, then the tile breaking off the right edge under it, one short caption line
+  ("Held together by copy and paste. Until they are one system."), then the proposition and the
+  primary action inside the first 375 x 812 screen.
+- **Production:** the cross-section in section 5.
+
+Self-check, pass 2: 1 new concept: yes. 2 memorable: yes. 3 could belong to another company without
+the logo: no. 4 custom: yes. 5 motion has a purpose: yes. 6 confident typography: yes, the headline
+is larger and set on the lake bed. 7 interesting composition: yes; the picture is the page, the type
+sits in it, the mark breaks off the edge and the cracks carry into the next chapter. 8 an owner
+understands it: yes. 9 mobile intentional: yes. 10 approaches the bar: yes, with the honest caveat
+that this is judged on local renders, not on a device in Wilson's hand.

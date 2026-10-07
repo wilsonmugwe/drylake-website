@@ -22,7 +22,7 @@ import {
  * and no-CSS-animation browsers show the finished, readable mark. Decorative: the figcaption
  * beside it carries the meaning in words. Never the LCP element: the h1 is larger and static.
  */
-export default function LakeBed({ surface = "#0b0b0a" }: { surface?: string }) {
+export default function LakeBed({ surface = "#0b0b0a", backing = "#141412" }: { surface?: string; backing?: string }) {
   return (
     <div aria-hidden="true" className="lb relative aspect-square w-full">
       <svg viewBox={LAKEBED_VIEW} className="absolute inset-0 h-full w-full overflow-visible">
@@ -31,6 +31,10 @@ export default function LakeBed({ surface = "#0b0b0a" }: { surface?: string }) {
             <rect x="4" y="4" width="92" height="92" rx="18" />
           </clipPath>
         </defs>
+
+        {/* Backing under the tile outline in the field plate tone (LakeField), so the tile reads as
+            part of the lake bed rather than a card; its cracks stay ink like the field cracks. */}
+        <rect x="4" y="4" width="92" height="92" rx="18" fill={backing} />
 
         {TILE_PLATES.map((d, i) => {
           const plate = LAKEBED_PLATES[i];

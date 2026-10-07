@@ -758,21 +758,87 @@ main [tabindex="-1"]:focus {
   }
 }
 
-/* Desktop: the headline shares the row with the lake bed (7 of 12 columns). */
+/* Desktop: the headline runs across the lake bed; the tile breaks off the right edge beside it. */
 @media (min-width: 1024px) {
   .hz-display {
-    font-size: clamp(3.9rem, 6.3vw, 8.4rem);
+    font-size: clamp(4.6rem, 7.6vw, 8.6rem);
     line-height: 0.88;
   }
 }
 
-/* Fine grid, strongest behind the headline row, fading out at the top and bottom. */
-.hz-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, transparent 8%, #000 45%, transparent 98%);
+/* --------------------------------------------------------- lake bed field ---- */
+
+/*
+ * The hero's composition (components/visuals/LakeField.tsx + the tile placement below). The field
+ * is static: it paints with the first frame and never moves. Only its lit cracks draw, once,
+ * after the tile has locked (1.2 s), so the connection reads as spreading out from the mark.
+ */
+.lf-plates path {
+  fill: #141412;
+  stroke: var(--ink);
+  stroke-width: 6;
+  stroke-linejoin: round;
+}
+
+.lf-link {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  opacity: 0.55;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: lb-draw 0.9s var(--ease-out) calc(1.25s + var(--i, 0) * 0.12s) both;
+}
+
+.lf-node {
+  fill: var(--signal);
+  animation: dl-fade 0.3s ease 1.9s both;
+}
+
+/* Phones: the tile breaks off the right edge under the headline; one short caption line. */
+.lb-figure {
+  margin-top: 0.75rem;
+}
+
+.lb-tile {
+  width: min(72vw, 340px);
+  margin-left: auto;
+  margin-right: -12vw;
+}
+
+.lb-caption {
+  margin-top: 0.5rem;
+  max-width: 30rem;
+}
+
+@media (min-width: 640px) {
+  .lb-tile {
+    width: min(58vw, 460px);
+    margin-right: -8vw;
+  }
+}
+
+/* Desktop: the tile is placed in the field, breaking off the right edge beside the type. */
+@media (min-width: 1024px) {
+  .lb-figure {
+    position: absolute;
+    top: 2.25rem;
+    right: -3vw;
+    width: min(38vw, 600px);
+    margin: 0;
+  }
+
+  .lb-tile {
+    width: 100%;
+    margin: 0;
+  }
+
+  .lb-caption {
+    margin-top: -1.5rem;
+    padding-inline: 8.9% 14%;
+  }
 }
 
 /* ------------------------------------------------------------- lake bed ---- */
@@ -826,12 +892,6 @@ main [tabindex="-1"]:focus {
   pointer-events: none;
 }
 
-/* Desktop: the caption starts where the tile starts (the tile is 92 of the 112-unit box). */
-@media (min-width: 1024px) {
-  .lb-caption {
-    padding-inline: 8.9%;
-  }
-}
 
 .lb-label {
   position: absolute;
@@ -1237,115 +1297,61 @@ main [tabindex="-1"]:focus {
 }
 
 
-/* ---------------------------------------------------------- core sample ---- */
+/* --------------------------------------------------------- cross-section ---- */
 
 /*
- * Production (components/sections/Production.tsx): a cross-section under a finished product.
- * The surface band is the product; each stratum below carries a texture that gets denser with
- * depth. Textures sit on a ::before that fades out to the right, so the sentences never sit on
- * a busy pattern. On arrival (InView) the probe runs down the core and each stratum's marker
- * turns on in turn. Text is never hidden: only the probe, markers and textures animate.
+ * Production (components/sections/Production.tsx). A light surface band (the product) over six
+ * layers that step in and darken with depth: the left edge forms the cut face of a cross-section.
+ * Each layer carries a narrow strata texture on its cut face; text sits on flat tone only.
+ * Contrast: white on the darkest layer (#141412) 18:1; white/72 on the lightest (#2b2b27) 8.9:1.
  */
 .core-surface {
-  border-bottom: 2px solid #eceae4;
+  background: #eceae4;
+  color: var(--ink);
+}
+
+.core-under {
+  padding: 0.85rem 0 0.55rem;
 }
 
 .core-stratum {
+  --step: 2.4%;
   position: relative;
-  isolation: isolate;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.core-stratum::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 1;
-  mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.35) 38%, transparent 72%);
-  transition: opacity 0.6s ease calc(0.15s + var(--i, 0) * 0.09s);
-}
-
-.core-stratum:nth-child(1)::before {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.3px);
-  background-size: 14px 14px;
-}
-
-.core-stratum:nth-child(2)::before {
-  background-image:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.11) 0 8px, transparent 8px 18px),
-    repeating-linear-gradient(90deg, transparent 0 4px, rgba(255, 255, 255, 0.08) 4px 10px, transparent 10px 18px);
-  background-size: 100% 1px, 100% 1px;
-  background-repeat: no-repeat;
-  background-position: 0 35%, 0 70%;
-}
-
-.core-stratum:nth-child(3)::before {
-  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 9px);
-}
-
-.core-stratum:nth-child(4)::before {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.3px);
-  background-size: 7px 7px;
-}
-
-.core-stratum:nth-child(5)::before {
-  background-image:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px);
-}
-
-.core-stratum:nth-child(6)::before {
-  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px 4px);
-}
-
-/* The probe: the core's axis, drawn top to bottom on arrival. */
-.core-probe {
-  position: absolute;
-  left: 10px;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.28);
-  transform-origin: center top;
-  transition: transform 0.9s var(--ease-out);
-}
-
-/* A marker on the probe per stratum: grey until the probe reaches it, then signal orange. */
-.core-stratum::after {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 999px;
-  background: var(--signal);
-  box-shadow: 0 0 0 3px var(--ink-2);
-  transition: background-color 0.3s ease calc(0.2s + var(--i, 0) * 0.12s);
+  margin-left: calc(var(--i, 0) * var(--step));
+  background: color-mix(in srgb, #2d2d29 calc(100% - var(--i, 0) * 17%), #121210);
+  border-top: 1px solid rgba(0, 0, 0, 0.45);
+  transition: transform 0.6s var(--ease-out) calc(0.08s + var(--i, 0) * 0.07s);
 }
 
 @media (min-width: 640px) {
-  .core-probe {
-    left: 14px;
-  }
-
-  .core-stratum::after {
-    left: 11px;
+  .core-stratum {
+    --step: 3.2%;
   }
 }
 
-[data-inview="false"] .core-probe {
-  transform: scaleY(0);
+/* The cut face: a strip of strata texture down the left of each layer, denser with depth. */
+.core-stratum::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px calc(7px - var(--i, 0) * 0.8px));
 }
 
-[data-inview="false"] .core-stratum::before {
-  opacity: 0;
+.core-stratum::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.14);
 }
 
-[data-inview="false"] .core-stratum::after {
-  background: rgba(255, 255, 255, 0.3);
+[data-inview="false"] .core-stratum {
+  transform: translateY(-10px);
 }
 
 /* ---------------------------------------------------------------- footer ---- */
@@ -1364,6 +1370,8 @@ main [tabindex="-1"]:focus {
 /* ------------------------------------------------------- reduced motion ---- */
 
 @media (prefers-reduced-motion: reduce) {
+  .lf-link,
+  .lf-node,
   .lb-plate,
   .lb-fill,
   .lb-link,

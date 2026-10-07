@@ -52,3 +52,63 @@ export const LAKEBED_JUNCTIONS: readonly (readonly [number, number])[] = [
   [44, 40],
   [55, 64],
 ];
+
+/* ------------------------------------------------------------ the full field ---- */
+
+/*
+ * Composition pass (2026-10-07): the lake bed is the whole hero, not an object in it. A cracked
+ * field of plates bleeds off every edge behind the headline; the tile above sits in it. The field
+ * is a jittered grid (deterministic, seeded), so server and browser draw identical markup.
+ * Each plate is a quad; each grid line is a crack. A few cracks are "lit" as connections.
+ */
+function seeded(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export type LakeField = {
+  view: string;
+  plates: readonly string[];
+  /* Lit cracks: polylines along grid lines (horizontal rows / vertical columns). */
+  links: readonly string[];
+  nodes: readonly (readonly [number, number])[];
+};
+
+function buildField(cols: number, rows: number, w: number, h: number, seed: number, litRows: number[], litCols: number[]): LakeField {
+  const rand = seeded(seed);
+  const cw = w / cols;
+  const ch = h / rows;
+  const pt: [number, number][][] = [];
+  for (let i = 0; i <= cols; i += 1) {
+    pt[i] = [];
+    for (let j = 0; j <= rows; j += 1) {
+      // Edge points sit outside the box so plates bleed off every side.
+      const x = i === 0 ? -cw * 0.3 : i === cols ? w + cw * 0.3 : i * cw + (rand() - 0.5) * cw * 0.55;
+      const y = j === 0 ? -ch * 0.3 : j === rows ? h + ch * 0.3 : j * ch + (rand() - 0.5) * ch * 0.6;
+      pt[i][j] = [Math.round(x), Math.round(y)];
+    }
+  }
+  const plates: string[] = [];
+  for (let i = 0; i < cols; i += 1) {
+    for (let j = 0; j < rows; j += 1) {
+      const [a, b, c, d] = [pt[i][j], pt[i + 1][j], pt[i + 1][j + 1], pt[i][j + 1]];
+      plates.push(`M${a[0]} ${a[1]} L${b[0]} ${b[1]} L${c[0]} ${c[1]} L${d[0]} ${d[1]} Z`);
+    }
+  }
+  const links: string[] = [];
+  const nodes: [number, number][] = [];
+  for (const j of litRows) links.push(pt.map((col) => col[j]).map(([x, y], k) => `${k ? "L" : "M"}${x} ${y}`).join(" "));
+  for (const i of litCols) links.push(pt[i].map(([x, y], k) => `${k ? "L" : "M"}${x} ${y}`).join(" "));
+  for (const j of litRows) for (const i of litCols) nodes.push(pt[i][j]);
+  return { view: `0 0 ${w} ${h}`, plates, links, nodes };
+}
+
+/* Desktop: 9 x 5 plates over a 16:9 box. Phones: 4 x 8 over a tall box. */
+export const LAKEFIELD_WIDE: LakeField = buildField(9, 5, 1600, 900, 20261007, [3], [2, 7]);
+export const LAKEFIELD_TALL: LakeField = buildField(4, 8, 420, 900, 70226621, [5], [3]);
