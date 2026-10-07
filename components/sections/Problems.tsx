@@ -1,22 +1,12 @@
-import type { ReactNode } from "react";
-
-import InView from "@/components/motion/InView";
+import ScrollProgress from "@/components/motion/ScrollProgress";
 import Container from "@/components/ui/Container";
-import {
-  DisconnectedVisual,
-  DoubleHandlingVisual,
-  FollowUpVisual,
-  SpreadsheetVisual,
-} from "@/components/visuals/ProblemVisuals";
+import FragmentField from "@/components/visuals/FragmentField";
 
 type Problem = {
   number: string;
   label: string;
   title: string;
   text: string;
-  visual: ReactNode;
-  /* Each statement gets its own composition, not a repeated card. */
-  layout: "text-left" | "text-right" | "wide" | "narrow";
 };
 
 const problems: Problem[] = [
@@ -25,55 +15,39 @@ const problems: Problem[] = [
     label: "SPREADSHEETS",
     title: "The spreadsheet has become the system.",
     text: "Important processes depend on files that are becoming difficult to manage, share or scale.",
-    visual: <SpreadsheetVisual />,
-    layout: "text-left",
   },
   {
     number: "02",
     label: "DOUBLE HANDLING",
     title: "We're entering the same information more than once.",
     text: "Your team is copying information between systems instead of doing useful work.",
-    visual: <DoubleHandlingVisual />,
-    layout: "text-right",
   },
   {
     number: "03",
     label: "DISCONNECTED",
     title: "Our systems don't talk to each other.",
     text: "Information is spread across platforms, creating gaps, delays and manual work.",
-    visual: <DisconnectedVisual />,
-    layout: "wide",
   },
   {
     number: "04",
     label: "MANUAL",
     title: "Too much depends on manual follow-up.",
     text: "Routine work still relies on emails, reminders and somebody remembering what happens next.",
-    visual: <FollowUpVisual />,
-    layout: "narrow",
   },
 ];
 
-function Statement({ problem }: { problem: Problem }) {
-  return (
-    <div>
-      <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
-        <span className="text-(--orange-ink)">{problem.number}</span>
-        <span aria-hidden="true" className="h-px w-6 bg-black/20" />
-        <span>{problem.label}</span>
-      </p>
-
-      <h3 className="type-statement text-balance mt-5 max-w-[14ch]">{problem.title}</h3>
-
-      <p className="type-body mt-5 max-w-md text-black/62">{problem.text}</p>
-    </div>
-  );
-}
-
+/*
+ * Chapter 1, the problem (light). Desktop: the fragment field is pinned on the left while the
+ * four statements pass on the right; reading them sorts the scattered work artefacts into lanes.
+ * Phones: the field sits above the statements and sorts itself as it crosses the screen. No
+ * cards: statements are editorial rows on hairlines. Copy unchanged.
+ *
+ * overflow-clip (not hidden) so the sticky field still pins.
+ */
 export default function Problems() {
   return (
-    <section id="problems" className="surface-paper relative overflow-hidden">
-      <Container className="pb-6 pt-20 sm:pt-28 lg:pt-36">
+    <section id="problems" className="surface-paper relative overflow-clip">
+      <Container className="pt-20 sm:pt-28 lg:pt-36">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">01 / The Problem</p>
 
@@ -92,52 +66,39 @@ export default function Problems() {
         </div>
       </Container>
 
-      <div>
-        {problems.map((problem) => (
-          <InView key={problem.number} as="article" className="border-t border-black/10 first:border-t-0">
-            <Container className="py-16 sm:py-20 lg:py-28">
-              {problem.layout === "text-left" ? (
-                <div className="grid items-center gap-12 lg:grid-cols-12">
-                  <div className="lg:col-span-6">
-                    <Statement problem={problem} />
-                  </div>
-                  <div className="lg:col-span-5 lg:col-start-8">{problem.visual}</div>
-                </div>
-              ) : null}
+      <ScrollProgress rest={0} start={0.4} passStart={0.7} end={0} className="mt-14 sm:mt-16 lg:mt-20">
+        <Container>
+          <div className="grid gap-14 lg:grid-cols-12 lg:gap-8">
+            <div className="lg:sticky lg:top-[calc(var(--nav-h)+7vh)] lg:col-span-6 lg:self-start">
+              <FragmentField />
+            </div>
 
-              {problem.layout === "text-right" ? (
-                <div className="grid items-center gap-12 lg:grid-cols-12">
-                  <div className="order-2 lg:order-1 lg:col-span-5">{problem.visual}</div>
-                  <div className="order-1 lg:order-2 lg:col-span-6 lg:col-start-7">
-                    <Statement problem={problem} />
-                  </div>
-                </div>
-              ) : null}
+            <ol className="lg:col-span-5 lg:col-start-8">
+              {problems.map((problem) => (
+                <li
+                  key={problem.number}
+                  className="border-t border-black/12 py-10 sm:py-12 lg:flex lg:min-h-[58vh] lg:flex-col lg:justify-center lg:py-16"
+                >
+                  <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
+                    <span className="text-(--orange-ink)">{problem.number}</span>
+                    <span aria-hidden="true" className="h-px w-6 bg-black/20" />
+                    <span>{problem.label}</span>
+                  </p>
 
-              {problem.layout === "wide" ? (
-                <div>
-                  <div className="lg:ml-[25%]">
-                    <Statement problem={problem} />
-                  </div>
-                  <div className="mt-14 lg:-mx-6">{problem.visual}</div>
-                </div>
-              ) : null}
+                  <h3 className="mt-5 max-w-[15ch] text-balance text-[clamp(2rem,8.6vw,3.6rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
+                    {problem.title}
+                  </h3>
 
-              {problem.layout === "narrow" ? (
-                <div className="grid items-end gap-12 lg:grid-cols-12">
-                  <div className="lg:col-span-5">
-                    <Statement problem={problem} />
-                  </div>
-                  <div className="lg:col-span-6 lg:col-start-7">{problem.visual}</div>
-                </div>
-              ) : null}
-            </Container>
-          </InView>
-        ))}
-      </div>
+                  <p className="type-body mt-5 max-w-md text-black/62">{problem.text}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Container>
+      </ScrollProgress>
 
       <Container>
-        <div className="grid gap-3 border-t border-black/10 py-12 lg:grid-cols-12 lg:py-16">
+        <div className="grid gap-3 border-t border-black/12 py-12 lg:grid-cols-12 lg:py-16">
           <span className="tech-label text-black/62 lg:col-span-3">NEXT</span>
 
           <div className="lg:col-span-9">

@@ -292,7 +292,9 @@ describe("every public page is listed, titled and canonical", () => {
   });
 
   it("the homepage What We Do section links into the service pages", () => {
-    const solutions = read("components/sections/Solutions.tsx");
+    // PR 2: the homepage renders WhatWeDo (service rows); Solutions stays on /solutions.
+    const solutions = read("components/sections/WhatWeDo.tsx");
+    assert.match(read("app/page.tsx"), /<WhatWeDo \/>/);
 
     for (const slug of ["custom-software-development", "business-automation", "systems-integration", "ai-automation"]) {
       assert.ok(solutions.includes(`href: "/services/${slug}"`), slug);

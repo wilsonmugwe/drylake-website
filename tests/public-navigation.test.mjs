@@ -28,6 +28,9 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
 const code = (rel) => read(rel).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
 
+/* Section components the homepage actually renders, in import order. */
+const HOME_SECTIONS = [...read("app/page.tsx").matchAll(/from "@\/components\/sections\/(\w+)"/g)].map((m) => m[1]);
+
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
@@ -98,7 +101,8 @@ describe("navigation labels and destinations", () => {
   });
 
   it("every homepage section target exists exactly once", () => {
-    const home = ["Hero", "Problems", "Solutions", "Integrations", "Founders", "Approach", "Production", "FAQ", "ContactCTA"]
+    // The homepage's own section list (read from app/page.tsx, PR 2), not a hand-kept copy.
+    const home = HOME_SECTIONS
       .map((name) => code(`components/sections/${name}.tsx`))
       .join("\n");
 
@@ -189,7 +193,8 @@ describe("scroll and sign-out root causes", () => {
 });
 
 describe("the redesign kept the approved homepage copy", () => {
-  const files = ["Hero", "Problems", "Solutions", "Integrations", "Founders", "Approach", "Production", "FAQ", "ContactCTA"];
+  // PR 2: What We Do moved from Solutions (still used by /solutions) to WhatWeDo on the homepage.
+  const files = HOME_SECTIONS;
   const text = files
     .map((name) => read(`components/sections/${name}.tsx`))
     .join("\n")
@@ -237,7 +242,9 @@ describe("the redesign kept the approved homepage copy", () => {
     "Authentication", "Permissions", "Data validation", "Monitoring", "Backups & recovery",
     // FAQ + close
     "05 / FAQ", "A few things you", "might be wondering.",
-    "Tell us what's", "slowing you down.",
+    // PR 2: the closing headline is now Ben's "Have a problem worth fixing?" (brief, 7 Oct 2026);
+    // "Tell us what's slowing you down." was retired with it.
+    "Have a problem", "worth fixing?",
     "No technical brief required. Tell us what's manual, disconnected or taking too much time.",
     "TALK TO A PERSON, NOT A SALES QUEUE", "+61 420 565 457", "hello@drylake.com.au",
   ];

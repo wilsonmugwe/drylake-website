@@ -1,40 +1,30 @@
 import { ArrowUpRight, Mail, Phone } from "lucide-react";
 
-import { WordmarkY } from "@/components/brand/DrylakeWordmark";
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
 
 /*
- * The close. Strong type, one unmissable action, and the end of the Drylake Line: it crosses
- * the section and becomes the y of the Drylake mark (the same geometry as the logo, scaled
- * x3 and traced as a line), then the solid mark settles in behind it. Copy unchanged.
- * Used on every public page, so the motif closes every page the same way.
+ * The ending (every public page): one question, one action, two direct lines to a person. It
+ * closes on the horizon, a full-bleed rule that draws in and runs straight into the footer,
+ * where the large cropped wordmark sits on it (components/layout/Footer.tsx).
  */
-
-/* WORDMARK_Y_TRACE_PATH (components/brand/DrylakeWordmark.tsx) under translate(201.85 168) scale(3), traced from the tail back to the arm. */
-const LINE_INTO_Y =
-  "M -640 186.81 H 540 C 556 186.81 566 185.4 570.76 186.81 C 581.47 190.32 598.72 229.47 615.85 229.47 C 641.38 229.47 662.68 204.39 671.98 180.3 L 730 29.88";
-const Y_ARM = "M 626.74 29.88 L 678.37 163.74";
-
 export default function ContactCTA() {
   return (
     <section className="surface-ink relative overflow-hidden">
-      <Container className="relative pt-20 sm:pt-28 lg:pt-36">
+      <Container className="relative pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-24 lg:pt-36">
         <p className="section-label flex items-center gap-2.5 text-white/60">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
           Start a Conversation
         </p>
 
         <div className="mt-8 grid gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
           <div className="lg:col-span-8">
-            <h2 className="type-display">
-              Tell us what&apos;s
-              <br />
-              <span className="text-white/40">slowing you down.</span>
+            <h2 className="type-display max-w-[11ch] text-balance">
+              Have a problem <span className="text-white/45">worth fixing?</span>
             </h2>
 
-            <p className="type-lede mt-8 max-w-xl text-white/62">
+            <p className="type-lede mt-8 max-w-xl text-white/66">
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>
@@ -45,7 +35,7 @@ export default function ContactCTA() {
           </div>
 
           <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-            <p className="tech-label text-[#f26a2e]">TALK TO A PERSON, NOT A SALES QUEUE</p>
+            <p className="tech-label text-signal">TALK TO A PERSON, NOT A SALES QUEUE</p>
 
             <a
               href="tel:+61420565457"
@@ -69,19 +59,13 @@ export default function ContactCTA() {
         </div>
       </Container>
 
-      {/* The Drylake Line resolves into the mark. */}
-      <InView className="relative mt-12 sm:mt-16" threshold={0.4}>
-        {/* Full-bleed, cropped from the left on narrow screens so the line always enters at the edge. */}
-        <svg aria-hidden="true" viewBox="-640 0 1460 290" preserveAspectRatio="xMaxYMax slice" className="block h-[166px] w-full sm:h-[232px] lg:h-[290px]">
-          <g className="dl-fade-view" style={{ ["--d" as string]: "1.5s" }}>
-            <g transform="translate(201.85 168) scale(3)">
-              <WordmarkY variant="trace" opacity={0.9} />
-            </g>
-          </g>
-
-          <path d={LINE_INTO_Y} pathLength={1} className="dl-path dl-draw-view" stroke="#f26a2e" strokeWidth="1.5" style={{ ["--d" as string]: "0.1s" }} />
-          <path d={Y_ARM} pathLength={1} className="dl-path dl-draw-view" stroke="#f26a2e" strokeWidth="1.5" style={{ ["--d" as string]: "1.05s" }} />
-        </svg>
+      <InView className="relative" threshold={0.5}>
+        <span aria-hidden="true" className="dl-grow-x block h-px w-full bg-white/22" />
+        <span
+          aria-hidden="true"
+          className="dl-fade-view absolute right-5 top-0 h-[7px] w-[7px] -translate-y-1/2 rounded-full bg-signal sm:right-8 lg:right-12"
+          style={{ ["--d" as string]: "0.7s" }}
+        />
       </InView>
     </section>
   );
