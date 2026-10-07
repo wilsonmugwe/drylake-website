@@ -58,7 +58,7 @@ export default function Integrations() {
             })}
 
             <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-3">
-              <DrylakeMark className="h-[60px] w-[60px]" />
+              <DrylakeMark surface="#0b0b0a" className="h-[60px] w-[60px]" />
             </div>
           </div>
 
@@ -73,7 +73,7 @@ export default function Integrations() {
             ))}
             <li className="relative mt-3 flex items-center gap-4">
               <span aria-hidden="true" className="absolute -top-3 left-[5px] h-3 w-px bg-[#f26a2e]" />
-              <DrylakeMark className="relative z-10 -ml-[14px] h-10 w-10" />
+              <DrylakeMark surface="#0b0b0a" className="relative z-10 -ml-[14px] h-10 w-10" />
               <span className="text-lg font-semibold tracking-[-0.03em]">Drylake</span>
             </li>
           </ol>

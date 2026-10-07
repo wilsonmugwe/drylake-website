@@ -56,14 +56,26 @@ describe("brand artwork", () => {
     assert.match(read("components/layout/Footer.tsx"), /\/brand\/drylake-wordmark-dark-bg\.svg/);
   });
 
-  it("the inline header mark is the approved tile geometry", () => {
-    const tile = read("public/brand/drylake-mark-tile.svg");
+  it("the mark is Wilson's cracked lake-bed tile, identical in every asset (D27)", () => {
     const inline = read("components/brand/DrylakeMark.tsx");
-    const path = tile.match(/<path d="([^"]+)"/)[1];
+    const generator = read("scripts/brand/generate-tile.py");
 
-    assert.ok(inline.includes(path), "MARK_Y_PATH must match drylake-mark-tile.svg");
-    assert.ok(inline.includes('translate(-68.56 60.13) scale(0.7930)'));
-    assert.ok(inline.includes("#C2703D") && inline.includes("#17191E"));
+    for (const file of ["public/brand/drylake-mark-tile.svg", "public/brand/drylake-mark-tile-light.svg", "app/icon.svg"]) {
+      const svg = read(file);
+      const plates = [...svg.matchAll(/<path d="([^"]+)" fill="([^"]+)"/g)];
+
+      assert.equal(plates.length, 5, `${file}: five plates`);
+      assert.equal(plates.filter(([, , fill]) => fill === "#C2703D").length, 1, `${file}: one ochre plate`);
+      assert.equal(plates[3][2], "#C2703D", `${file}: the fourth plate is ochre`);
+      for (const [, d] of plates) {
+        assert.ok(inline.includes(`"${d}"`), `${file}: plate ${d} missing from DrylakeMark.tsx`);
+        assert.ok(generator.includes(`"${d}"`), `${file}: plate ${d} missing from the generator`);
+      }
+    }
+
+    // The retired y tile is gone from the header and from every square asset.
+    assert.ok(!read("public/brand/drylake-mark-tile.svg").includes("141.63"));
+    assert.match(read("components/brand/BrandHomeLink.tsx"), /<DrylakeMark/);
   });
 
   it("publishes a square Organization logo that exists and meets Google's 112 px minimum", () => {
