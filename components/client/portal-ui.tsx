@@ -119,6 +119,7 @@ export function Panel({
   children,
   labelledBy,
   count,
+  anchor,
 }: {
   title: string;
   description?: string;
@@ -127,11 +128,17 @@ export function Panel({
   labelledBy: string;
   /* Optional item count shown beside the title. */
   count?: number;
+  /* Section id for deep links (/client#projects). Part of the URL contract: see ClientNav. */
+  anchor?: string;
   /* Accepted for compatibility; sections no longer carry icon tiles. */
   icon?: ReactNode;
 }) {
   return (
-    <section aria-labelledby={labelledBy} className="cp-card min-w-0 overflow-hidden">
+    <section
+      id={anchor}
+      aria-labelledby={labelledBy}
+      className={`cp-card min-w-0 overflow-hidden${anchor ? " cp-anchor" : ""}`}
+    >
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 px-5 pb-3 pt-5 sm:px-6">
         <div className="min-w-0">
           <h2 id={labelledBy} className="cp-section-title">

@@ -150,7 +150,17 @@ describe("the Workspace shell carries the canonical wordmark", () => {
 
 describe("mobile navigation is a modal dialog", () => {
   const rail = code("components/client/ClientRail.tsx");
-  const mobile = rail.slice(rail.indexOf("export function ClientMobileNav"));
+  const markup = rail.slice(rail.indexOf("export function ClientMobileNav"));
+  // The dialog behaviour lives in ONE hook shared with Admin (polish PR); the markup stays here.
+  const drawer = code("components/shell/useModalDrawer.ts");
+  const mobile = `${markup}
+${drawer}`;
+
+  it("the Workspace drawer uses the shared drawer contract", () => {
+    assert.match(markup, /useModalDrawer\(\)/);
+    assert.match(markup, /onKeyDown=\{onKeyDown\}/);
+    assert.match(markup, /ref=\{panelRef\}/);
+  });
 
   it("toggle exposes state and controls the drawer", () => {
     assert.match(mobile, /ref=\{toggleRef\}/);

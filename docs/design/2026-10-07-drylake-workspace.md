@@ -26,8 +26,57 @@ product-language and presentation change, with no migration.
 | Billing | `/client/billing` | Balance figures, To pay (overdue first), History (paid/void), payment security note, support |
 | Invoice | `/client/billing/[id]` | Amount + Stripe pay button (first on phones), details, tax breakdown (unchanged logic), related project |
 
-The rail: wordmark + "Workspace", organisation (+ switch when more than one), Navigate (Overview,
-Billing), then Start a conversation, Drylake website, Sign out, account.
+The rail: wordmark + "Workspace", organisation (+ switch when more than one), Navigate (grouped,
+below), then Start a conversation, Drylake website, Sign out, account.
+
+### Grouped navigation and deep links (Experience Polish, Workstream W)
+
+Every entry is a real route or a section id the view renders (`components/client/ClientNav.tsx`,
+test-pinned in `tests/workspace-polish.test.mjs`):
+
+| Group | Destination | URL |
+|---|---|---|
+| Overview | Overview (top) | `/client` |
+| | Needs your attention | `/client#needs-attention` |
+| | Projects | `/client#projects` |
+| | Recent activity | `/client#recent-activity` |
+| | Documents | `/client#documents` |
+| This project (only while a project is open) | Status and progress | `/client/projects/[id]#project-status` |
+| | Milestones | `/client/projects/[id]#milestones` |
+| | Updates | `/client/projects/[id]#updates` |
+| | Documents | `/client/projects/[id]#project-documents` |
+| Billing | Billing (top) | `/client/billing` |
+| | To pay | `/client/billing#to-pay` |
+| | Invoice history | `/client/billing#invoice-history` |
+| | Paying online | `/client/billing#paying-online` |
+
+Not offered, because the capability does not exist: Account > Members / Settings (account
+security is Clerk's own menu in the rail footer, organisation switching is the existing "Switch
+workspace" link), Documents > Agreements / Shared files / Deliverables as separate places (one
+document list per scope, no document categories in the data), Billing > Payments as a separate
+list (payments are recorded per invoice; the invoice page shows the paid state).
+
+Arrival (`components/client/WorkspaceAnchors.tsx`, mounted once in the shell): on a full load,
+refresh, cross-page link, same-page link, Back/Forward or a typed hash, it waits for the section
+if the page is still streaming, scrolls it in (smooth only without reduced motion,
+`scroll-margin-top` clears the sticky bar), moves focus to the section heading (tabIndex -1),
+and marks the section for a moment. A missing section (an empty workspace shows the Welcome
+panel) falls back to the page heading. Same-page links push a history entry first, so Back
+returns to where the reader was.
+
+The rail lists every group's sections. Below lg the menu is a sheet that rises from the bottom
+edge (a floating panel from sm), navigation first; each group is a disclosure (the group link plus
+a separate expand button, 48px wide), the current group open; every target is 44px or more.
+
+### Product environment
+
+`components/shell/ProductEnvironment.tsx` is the ground under the content column: a dot field, a
+slightly lighter sky above a horizon line, the tile's own plate geometry drawn large and faint at
+the top right with its ochre plate barely tinted, and one short ochre stroke where the horizon
+meets the right gutter. Admin uses the same primitive with its "admin" variant (measured line
+grid, ruled horizon, construction-line cracks with ochre registration marks). Background only:
+aria-hidden, no pointer events, CSS backgrounds plus one static SVG, no script, no animation, no
+asset request, fades out below the header band; every card keeps its opaque white surface.
 
 ## Overview hierarchy
 
@@ -66,8 +115,9 @@ Every access state renders before the ready branch, from the one resolver: uncha
 
 ## Mobile navigation (below lg)
 
-Sticky top bar (wordmark + "Workspace", current section from md, menu button). The drawer is a modal
-dialog: `role="dialog"`, `aria-modal`, toggle has `aria-expanded`/`aria-controls`/`aria-haspopup`.
+Sticky top bar (wordmark + "Workspace", current section from md, menu button). The menu is a
+grouped bottom sheet (see above) and a modal dialog, on the contract shared with Admin
+(`components/shell/useModalDrawer.ts`): `role="dialog"`, `aria-modal`, toggle has `aria-expanded`/`aria-controls`/`aria-haspopup`.
 Focus moves to the close button on open, Tab and Shift+Tab stay inside, Escape and the scrim close
 it, focus returns to the menu button, the page scroll lock is released on close, navigation and
 unmount. A nested Start a conversation `<dialog>` keeps its own keyboard. Motion is a short slide,

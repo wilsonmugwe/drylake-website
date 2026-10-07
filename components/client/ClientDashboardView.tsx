@@ -222,7 +222,7 @@ function AttentionSection({
 }) {
   if (!invoices.ok) {
     return (
-      <section aria-labelledby="attention-heading" className="cp-card mt-6 overflow-hidden">
+      <section id="needs-attention" aria-labelledby="attention-heading" className="cp-card cp-anchor mt-6 overflow-hidden">
         <h2 id="attention-heading" className="cp-section-title px-5 pt-5 sm:px-6">
           Needs your attention
         </h2>
@@ -234,8 +234,9 @@ function AttentionSection({
   if (items.length === 0) {
     return (
       <section
+        id="needs-attention"
         aria-labelledby="attention-heading"
-        className="cp-calm mt-6 flex items-center gap-3 px-5 py-4 sm:px-6"
+        className="cp-calm cp-anchor mt-6 flex items-center gap-3 px-5 py-4 sm:px-6"
       >
         <CheckCircle2 aria-hidden="true" size={18} className="shrink-0 text-emerald-700" />
         <h2 id="attention-heading" className="text-sm font-semibold text-neutral-900">
@@ -247,7 +248,11 @@ function AttentionSection({
   }
 
   return (
-    <section aria-labelledby="attention-heading" className="cp-card cp-attention mt-6 overflow-hidden">
+    <section
+      id="needs-attention"
+      aria-labelledby="attention-heading"
+      className="cp-card cp-attention cp-anchor mt-6 overflow-hidden"
+    >
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 px-5 pb-3 pt-5 sm:px-6">
         <h2 id="attention-heading" className="cp-section-title">
           Needs your attention
@@ -322,6 +327,7 @@ function ProjectsPanel({ projects }: { projects: Loadable<ClientProjectSummary[]
   return (
     <Panel
       labelledBy="projects-heading"
+      anchor="projects"
       title="Projects"
       count={projects.ok ? projects.data.length : undefined}
       description="Open work first. Select a project for milestones, updates and files."
@@ -399,6 +405,7 @@ function ActivityPanel({ feed }: { feed: ActivityItem[] | null }) {
   return (
     <Panel
       labelledBy="activity-heading"
+      anchor="recent-activity"
       title="Recent activity"
       description="Updates, documents and invoices from Drylake, newest first"
     >
@@ -467,6 +474,7 @@ function DocumentsPanel({
   return (
     <Panel
       labelledBy="documents-heading"
+      anchor="documents"
       title="Documents"
       count={documents.ok ? documents.data.total : undefined}
       description="Latest files shared with you"

@@ -71,6 +71,7 @@ export default function ClientBillingView({ organizationName, invoices }: Client
         <div className="flex min-w-0 flex-col gap-6">
           <Panel
             labelledBy="to-pay-heading"
+            anchor="to-pay"
             title="To pay"
             count={invoices.ok ? outstanding.length : undefined}
             description="Overdue first, then by due date"
@@ -94,14 +95,23 @@ export default function ClientBillingView({ organizationName, invoices }: Client
             )}
           </Panel>
 
-          {invoices.ok && history.length > 0 ? (
+          {/* Always rendered once invoices load, so /client/billing#invoice-history always
+              lands somewhere real: the list, or an honest empty state. */}
+          {invoices.ok ? (
             <Panel
               labelledBy="history-heading"
-              title="History"
+              anchor="invoice-history"
+              title="Invoice history"
               count={history.length}
               description="Paid and closed invoices, newest first"
             >
-              <InvoiceTable items={history} />
+              {history.length > 0 ? (
+                <InvoiceTable items={history} />
+              ) : (
+                <EmptyState icon={<ReceiptText size={17} />} title="No paid invoices yet.">
+                  Invoices appear here once they are paid or closed.
+                </EmptyState>
+              )}
             </Panel>
           ) : null}
 
@@ -114,7 +124,7 @@ export default function ClientBillingView({ organizationName, invoices }: Client
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">
-          <section aria-labelledby="payments-heading" className="cp-card p-5 sm:p-6">
+          <section id="paying-online" aria-labelledby="payments-heading" className="cp-card cp-anchor p-5 sm:p-6">
             <p className="cp-label flex items-center gap-2">
               <LockKeyhole aria-hidden="true" size={13} />
               Payments

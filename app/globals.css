@@ -445,7 +445,8 @@ summary:focus-visible,
 .admin-page {
   position: relative;
   min-height: 100vh;
-  background: var(--admin-canvas);
+  /* Transparent: the admin layout paints the canvas and the product environment. */
+  background: transparent;
   color: var(--admin-ink);
 }
 
@@ -641,6 +642,29 @@ summary:focus-visible,
   }
 }
 
+/* Admin mobile drawer (components/admin/AdminMobileNav.tsx). */
+.admin-scrim {
+  animation: cp-fade 200ms ease both;
+}
+
+.admin-drawer {
+  animation: admin-drawer-in 240ms var(--ease-out) both;
+}
+
+@keyframes admin-drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-scrim,
+  .admin-drawer {
+    animation: none;
+  }
+}
+
 @media (min-width: 640px) {
   .admin-container {
     padding-inline: 2rem;
@@ -650,6 +674,203 @@ summary:focus-visible,
 @media (min-width: 1024px) {
   .admin-container {
     padding-inline: 3rem;
+  }
+}
+
+/* =========================================================
+   DRYLAKE PRODUCT ENVIRONMENT (shared by Admin and Workspace)
+
+   The ground both product canvases sit on (components/shell/ProductEnvironment.tsx).
+   One primitive, two variants: "workspace" (client-facing: dot field, a lighter sky above
+   a horizon, the tile's cracks large and faint, its ochre plate barely tinted) and "admin"
+   (operational: a measured line grid, the horizon as a ruler, the cracks as construction
+   lines with ochre registration marks at the joints).
+
+   Background only: aria-hidden, no pointer events, painted once (CSS backgrounds + one
+   static SVG), no animation, no scroll work. It fades out below the header band, every
+   card keeps its own opaque white surface, and the strongest line is 11% ink on the
+   #f4f4f1 canvas, so no text contrast moves. The ochre arrives as --dl-env-accent from
+   TILE_OCHRE (never retyped here).
+   ========================================================= */
+
+.dl-env {
+  --dl-env-ink: 17 17 15;
+  --dl-env-horizon: 12.5rem;
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint;
+}
+
+.dl-env-field {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 58rem;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 16rem, transparent 52rem);
+  mask-image: linear-gradient(to bottom, #000 0, #000 16rem, transparent 52rem);
+}
+
+.dl-env-horizon {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--dl-env-horizon);
+  border-bottom: 1px solid rgb(var(--dl-env-ink) / 0.08);
+}
+
+/* The tile at landscape scale, faded at its edges so no straight tile border shows. */
+.dl-env-cracks {
+  position: absolute;
+  top: -7rem;
+  right: -11rem;
+  width: 30rem;
+  height: 30rem;
+  -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 45%, transparent 100%);
+}
+
+/* Workspace: the plates are faint surfaces and the cracks are the gaps between them,
+   exactly as in the mark. The ochre plate is barely warmer than the rest. */
+.dl-env-plate {
+  fill: rgb(var(--dl-env-ink) / 0.045);
+  stroke: none;
+}
+
+.dl-env-plate-accent {
+  fill: var(--dl-env-accent);
+  fill-opacity: 0.12;
+}
+
+/* Workspace: a dot field (the restrained texture) and a lighter sky over the header. */
+[data-environment="workspace"] .dl-env-field {
+  background-image: radial-gradient(circle, rgb(var(--dl-env-ink) / 0.11) 0.8px, transparent 1.3px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+}
+
+[data-environment="workspace"] .dl-env-horizon {
+  background: rgb(255 255 255 / 0.42);
+}
+
+/* One short ochre stroke where the horizon leaves the rail (the y of the wordmark). It sits
+   in the left gutter, which no card ever covers. */
+[data-environment="workspace"] .dl-env-horizon::after {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0.75rem;
+  height: 2px;
+  background: var(--dl-env-accent);
+  opacity: 0.7;
+  content: "";
+}
+
+/* Admin: a measured grid (24px minor, 120px major) and a ruled horizon. */
+[data-environment="admin"] {
+  --dl-env-horizon: 10.5rem;
+}
+
+[data-environment="admin"] .dl-env-field {
+  background-image:
+    linear-gradient(to right, rgb(var(--dl-env-ink) / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--dl-env-ink) / 0.07) 1px, transparent 1px),
+    linear-gradient(to right, rgb(var(--dl-env-ink) / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--dl-env-ink) / 0.035) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+}
+
+[data-environment="admin"] .dl-env-horizon {
+  border-bottom-color: rgb(var(--dl-env-ink) / 0.11);
+}
+
+[data-environment="admin"] .dl-env-horizon::before,
+[data-environment="admin"] .dl-env-horizon::after {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  content: "";
+}
+
+[data-environment="admin"] .dl-env-horizon::before {
+  height: 6px;
+  background-image: repeating-linear-gradient(to right, rgb(var(--dl-env-ink) / 0.16) 0 1px, transparent 1px 24px);
+}
+
+[data-environment="admin"] .dl-env-horizon::after {
+  height: 11px;
+  background-image: repeating-linear-gradient(to right, rgb(var(--dl-env-ink) / 0.2) 0 1px, transparent 1px 120px);
+}
+
+/* Admin: the same plates as construction drawing: dashed outlines, no fill. */
+[data-environment="admin"] .dl-env-plate {
+  fill: none;
+  stroke: rgb(var(--dl-env-ink) / 0.12);
+  stroke-width: 1px;
+}
+
+[data-environment="admin"] .dl-env-plate-accent {
+  fill: var(--dl-env-accent);
+  fill-opacity: 0.05;
+  stroke: var(--dl-env-accent);
+  stroke-opacity: 0.35;
+}
+
+.dl-env-joint {
+  stroke: var(--dl-env-accent);
+  stroke-opacity: 0.35;
+  stroke-width: 1px;
+}
+
+.dl-env-joint circle {
+  fill: var(--dl-env-accent);
+  fill-opacity: 0.3;
+  stroke: none;
+}
+
+@media (min-width: 640px) {
+  .dl-env {
+    --dl-env-horizon: 14rem;
+  }
+
+  [data-environment="admin"] {
+    --dl-env-horizon: 12rem;
+  }
+
+  .dl-env-cracks {
+    top: -9rem;
+    right: -9rem;
+    width: 42rem;
+    height: 42rem;
+  }
+
+  [data-environment="workspace"] .dl-env-horizon::after {
+    width: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dl-env-cracks {
+    top: -11rem;
+    right: -6rem;
+    width: 52rem;
+    height: 52rem;
+  }
+
+  [data-environment="workspace"] .dl-env-horizon::after {
+    width: 2.25rem;
+  }
+}
+
+@media print {
+  .dl-env {
+    display: none;
   }
 }
 
@@ -1242,6 +1463,73 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     transform: translateX(2px);
   }
 
+  /* Deep-link targets (polish brief 18): clear of the sticky mobile bar on arrival. */
+  .cp-anchor {
+    scroll-margin-top: 5.25rem;
+  }
+
+  @media (min-width: 1024px) {
+    .cp-anchor {
+      scroll-margin-top: 1.5rem;
+    }
+  }
+
+  /* Focus lands on a section heading on arrival: a ring for keyboard users only. */
+  .client-portal :is(h1, h2, h3, section)[tabindex="-1"]:focus {
+    outline: none;
+  }
+
+  .client-portal :is(h1, h2, h3, section)[tabindex="-1"]:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring);
+    outline-offset: 4px;
+    border-radius: 0.25rem;
+  }
+
+  /* The section the reader just arrived at, marked for a moment (none under reduced motion). */
+  .cp-anchor[data-arrived] {
+    animation: cp-arrive 1.6s var(--ease-out) both;
+  }
+
+  /* Section links under a navigation group: a hairline spine, quieter than the groups. */
+  .cp-nav-subs {
+    margin: 0.25rem 0 0.5rem 1.35rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 0.4rem;
+  }
+
+  .cp-nav-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.6rem;
+    padding-inline: 0.75rem;
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.66);
+    transition:
+      background 150ms ease,
+      color 150ms ease;
+  }
+
+  .cp-nav-sub:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+
+  .cp-nav-subhead {
+    margin: 0.6rem 0 0.15rem;
+    padding-inline: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .cp-chevron {
+    transition: transform 180ms var(--ease-out);
+  }
+
   /* Mobile drawer. */
   .cp-scrim {
     animation: cp-fade 200ms ease both;
@@ -1255,6 +1543,12 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     .cp-drawer,
     .cp-scrim {
       animation: none;
+    }
+
+    .cp-anchor[data-arrived],
+    .cp-chevron {
+      animation: none;
+      transition: none;
     }
 
     .cp-nudge,
@@ -1299,10 +1593,23 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
   }
 }
 
+/* The Workspace menu is a sheet that rises from the bottom edge. */
 @keyframes cp-slide-in {
   from {
-    transform: translateX(24px);
+    transform: translateY(28px);
     opacity: 0;
+  }
+}
+
+@keyframes cp-arrive {
+  from {
+    outline: 2px solid rgba(242, 106, 46, 0.55);
+    outline-offset: 4px;
+  }
+
+  to {
+    outline: 2px solid rgba(242, 106, 46, 0);
+    outline-offset: 4px;
   }
 }
 

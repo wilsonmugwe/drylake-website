@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import ClerkScope from "@/components/auth/ClerkScope";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import ProductEnvironment from "@/components/shell/ProductEnvironment";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
 
 export const metadata = {
@@ -42,7 +43,11 @@ export default async function AdminLayout({
         <div className="flex min-h-screen">
           <AdminSidebar />
 
-          <div className="min-w-0 flex-1">{children}</div>
+          {/* The operational variant of the product environment: background only. */}
+          <div className="relative isolate min-w-0 flex-1">
+            <ProductEnvironment variant="admin" />
+            <div className="relative z-[1]">{children}</div>
+          </div>
         </div>
       </div>
     </ClerkScope>
