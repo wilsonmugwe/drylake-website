@@ -23,7 +23,7 @@ export const CONTACT_PATH = "/contact";
 export const SIGN_IN_PATH = "/sign-in";
 export const PORTAL_PATH = "/portal";
 
-/* Where every sign-out lands: ClerkProvider afterSignOutUrl and every signOut() call. */
+/* Where every sign-out lands: ClerkScope's afterSignOutUrl and every signOut() call. */
 export const SIGN_OUT_REDIRECT_URL = "/";
 
 export type NavItem = { label: string; href: string };
@@ -40,7 +40,8 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Contact", href: CONTACT_PATH },
 ];
 
-export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: SIGN_IN_PATH };
+/* /portal, not /sign-in: it serves both states server-side (see ClientAccessLink). */
+export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: PORTAL_PATH };
 export const PRIMARY_CTA: NavItem = { label: "Start a Conversation", href: CONTACT_PATH };
 
 export type NavAction =

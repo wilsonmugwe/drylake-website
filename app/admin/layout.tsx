@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+import ClerkScope from "@/components/auth/ClerkScope";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { isPlatformAdmin } from "@/lib/auth/platform-admin";
@@ -34,14 +35,16 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="drylake-admin min-h-screen bg-[#f4f4f1] text-[#171716]">
-      <AdminMobileNav />
+    <ClerkScope>
+      <div className="drylake-admin min-h-screen bg-[#f4f4f1] text-[#171716]">
+        <AdminMobileNav />
 
-      <div className="flex min-h-screen">
-        <AdminSidebar />
+        <div className="flex min-h-screen">
+          <AdminSidebar />
 
-        <div className="min-w-0 flex-1">{children}</div>
+          <div className="min-w-0 flex-1">{children}</div>
+        </div>
       </div>
-    </div>
+    </ClerkScope>
   );
 }

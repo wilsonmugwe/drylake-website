@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { Show, UserButton } from "@clerk/nextjs";
 
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import MobileMenu from "@/components/layout/MobileMenu";
@@ -78,10 +77,6 @@ export default function Navbar() {
             {/* Desktop: utility + primary action */}
             <div className="hidden items-center gap-5 lg:flex">
               <ClientAccessLink className="nav-link !text-[0.82rem]" />
-
-              <Show when="signed-in">
-                <UserButton appearance={{ elements: { avatarBox: "h-8 w-8" } }} />
-              </Show>
 
               <span aria-hidden="true" className="h-5 w-px bg-white/15" />
 

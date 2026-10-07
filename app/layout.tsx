@@ -1,4 +1,3 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
@@ -8,7 +7,6 @@ import "./public-site.css";
 
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import { ENTITY } from "@/lib/discovery/entity";
-import { SIGN_OUT_REDIRECT_URL } from "@/lib/navigation/site-nav";
 import { SHARE_IMAGE, SITE_NAME } from "@/lib/seo";
 
 const geist = Geist({
@@ -118,13 +116,12 @@ export default function RootLayout({
      */
     <html lang="en-AU" data-scroll-behavior="smooth">
       <body className={`${geist.variable} ${geistMono.variable}`}>
-        <ClerkProvider afterSignOutUrl={SIGN_OUT_REDIRECT_URL}>
-          <OrganizationSchema />
+        {/* No ClerkProvider here: see components/auth/ClerkScope.tsx. */}
+        <OrganizationSchema />
 
-          {children}
+        {children}
 
-          <Analytics />
-        </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
