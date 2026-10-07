@@ -15,6 +15,10 @@ Recorded during PR 1 and deliberately **not** fixed here, per the programme rule
   other mutation routes in PR 2.
 
 ## PR 3: Backup, disaster recovery, resilience
+
+> **Status (PR 3):** addressed by `docs/operations/disaster-recovery/`. The schema baseline itself
+> needs a real production dump (Wilson, W2 in `wilson-actions.md`); CI (`.github/workflows/schema.yml`)
+> enforces coverage once it lands. A throwaway restore-test project replaces a standing staging DB for now.
 - **Only one migration (`20261005120000_client_status_lifecycle.sql`) is committed.** Tables,
   RLS policies, functions (including invoice numbering) and grants exist only in Supabase. A
   lost project cannot be rebuilt from Git. Highest-priority PR 3 item.
