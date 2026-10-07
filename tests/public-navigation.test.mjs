@@ -68,7 +68,7 @@ describe("navigation decisions (resolveNavClick)", () => {
     assert.deepEqual(resolveNavClick({ href: "/", currentPath: "/", currentHash: "" }), { kind: "scroll-top", replaceUrl: null });
   });
 
-  it("Start a Conversation while already on /contact goes to the top", () => {
+  it("Start a conversation while already on /contact goes to the top", () => {
     assert.deepEqual(resolveNavClick({ href: "/contact", currentPath: "/contact", currentHash: "" }), { kind: "scroll-top", replaceUrl: null });
   });
 
@@ -97,7 +97,7 @@ describe("navigation labels and destinations", () => {
       ]
     );
     assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/portal"]);
-    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Start a Conversation", "/contact"]);
+    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Start a conversation", "/contact"]);
   });
 
   it("every homepage section target exists exactly once", () => {
@@ -111,7 +111,7 @@ describe("navigation labels and destinations", () => {
     }
   });
 
-  it("the header: one brand control, all links through SiteLink, Start a Conversation kept", () => {
+  it("the header: one brand control, all links through SiteLink, Start a conversation kept", () => {
     const navbar = code("components/layout/Navbar.tsx");
     const lockup = read("components/brand/BrandHomeLink.tsx");
 

@@ -34,7 +34,7 @@ const stages = [
 export default function Approach() {
   return (
     <section id="approach" className="surface-mineral relative overflow-hidden">
-      <Container className="py-20 sm:py-28 lg:py-36">
+      <Container className="py-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">04 / How We Work</p>
 
@@ -45,19 +45,19 @@ export default function Approach() {
               <span className="text-black/50">Build second.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-xl text-black/62">
+            <p className="type-lede mt-5 sm:mt-7 max-w-xl text-black/62">
               No technical specification required. We start with the business
               problem and work forward from there.
             </p>
           </div>
         </div>
 
-        <InView className="relative mt-16 lg:mt-24" threshold={0.2}>
+        <InView className="relative mt-(--block-gap)" threshold={0.2}>
           {/* The rail: horizontal from lg, vertical below. */}
           <span aria-hidden="true" className="dl-grow-x absolute left-0 right-0 top-[7px] hidden h-px bg-black/25 lg:block" />
           <span aria-hidden="true" className="dl-grow-y absolute bottom-6 left-[7px] top-2 w-px bg-black/25 lg:hidden" />
 
-          <ol className="relative grid gap-12 lg:grid-cols-4 lg:gap-8">
+          <ol className="relative grid gap-9 sm:gap-12 lg:grid-cols-4 lg:gap-8">
             {stages.map((stage, index) => (
               <li
                 key={stage.number}

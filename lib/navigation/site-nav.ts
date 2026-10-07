@@ -42,7 +42,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 
 /* /portal, not /sign-in: it serves both states server-side (see ClientAccessLink). */
 export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: PORTAL_PATH };
-export const PRIMARY_CTA: NavItem = { label: "Start a Conversation", href: CONTACT_PATH };
+export const PRIMARY_CTA: NavItem = { label: "Start a conversation", href: CONTACT_PATH };
 
 export type NavAction =
   /* Let next/link navigate (different page). Next lands at the top, or at the hash target. */

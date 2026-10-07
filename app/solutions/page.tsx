@@ -43,7 +43,7 @@ export default function SolutionsPage() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="outline-none">
-        <section className="light-grid relative overflow-hidden bg-white pb-20 pt-36 text-black sm:pb-24 sm:pt-40 lg:pb-28 lg:pt-48">
+        <section className="light-grid relative overflow-hidden bg-white pb-(--section-y) pt-(--page-top) text-black lg:pb-28 lg:pt-48">
           <div className="pointer-events-none absolute -right-36 top-24 h-96 w-96 rounded-full border border-black/[0.05]">
             <div className="absolute inset-16 rounded-full border border-black/[0.06]" />
             <div className="absolute inset-32 rounded-full border border-black/[0.08]" />

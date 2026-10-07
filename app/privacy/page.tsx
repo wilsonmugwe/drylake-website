@@ -34,7 +34,7 @@ export default function PrivacyPage() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <Container className="pb-20 pt-36 sm:pt-44">
+        <Container className="pb-(--section-y-compact) pt-(--page-top) sm:pt-44">
           <p className="section-label text-black/60">Legal</p>
 
           <h1 className="type-section mt-6">
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
           </p>
         </Container>
 
-        <section className="bg-[#f2f0e9] py-16 sm:py-20">
+        <section className="bg-[#f2f0e9] py-(--section-y-compact) sm:py-20">
           <Container>
             <div className="max-w-3xl space-y-10 text-base leading-7 text-black/65">
               <PolicySection title="1. About this policy">

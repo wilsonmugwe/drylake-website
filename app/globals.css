@@ -370,13 +370,14 @@ summary:focus-visible,
    ========================================================= */
 
 @media (max-width: 640px) {
+  /* PR 3: phone floor raised (was 0.6rem / 0.54rem, 9.6 / 8.6 px): labels stay readable. */
   .section-label {
-    font-size: 0.6rem;
+    font-size: 0.64rem;
     letter-spacing: 0.13em;
   }
 
   .tech-label {
-    font-size: 0.54rem;
+    font-size: 0.6rem;
     letter-spacing: 0.12em;
   }
 

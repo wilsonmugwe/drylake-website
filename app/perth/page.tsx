@@ -86,10 +86,10 @@ export default function PerthPage() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <Container className="pb-16 pt-32 sm:pb-20 sm:pt-40">
+        <Container className="pb-(--section-y-compact) pt-(--page-top) sm:pb-20">
           <Breadcrumbs crumbs={CRUMBS} />
 
-          <p className="section-label mt-10 text-black/60">Perth / Western Australia</p>
+          <p className="section-label mt-6 text-black/60 sm:mt-10">Perth / Western Australia</p>
 
           <h1 className="type-section text-balance mt-5 max-w-5xl">
             A Perth technology company.
@@ -104,11 +104,11 @@ export default function PerthPage() {
           </p>
 
           <PrimaryCta href="/contact" surface="light" className="mt-8">
-            Start a Conversation
+            Start a conversation
           </PrimaryCta>
         </Container>
 
-        <section aria-labelledby="local-heading" className="mineral-texture bg-[#f2f0e9] py-16 lg:py-24">
+        <section aria-labelledby="local-heading" className="mineral-texture bg-[#f2f0e9] py-(--section-y-compact)">
           <Container>
             <h2 id="local-heading" className="max-w-3xl text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
               Working with a team in Perth
@@ -132,7 +132,7 @@ export default function PerthPage() {
           intro="The same five service lines, whether the business is in Perth, regional WA or elsewhere in Australia."
         />
 
-        <section aria-labelledby="context-heading" className="bg-black py-16 text-white lg:py-24">
+        <section aria-labelledby="context-heading" className="bg-black py-(--section-y-compact) text-white">
           <Container>
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
               <div>
@@ -154,7 +154,7 @@ export default function PerthPage() {
           </Container>
         </section>
 
-        <section aria-labelledby="perth-faq-heading" className="py-16 lg:py-24">
+        <section aria-labelledby="perth-faq-heading" className="py-(--section-y-compact)">
           <Container>
             <h2 id="perth-faq-heading" className="text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
               Questions
@@ -162,8 +162,8 @@ export default function PerthPage() {
 
             <div className="mt-8 divide-y divide-black/10 border-y border-black/10">
               {FAQS.map((faq) => (
-                <details key={faq.question} className="py-5">
-                  <summary className="cursor-pointer list-none text-lg font-medium tracking-[-0.02em]">
+                <details key={faq.question} className="py-3">
+                  <summary className="flex min-h-[44px] cursor-pointer list-none items-center text-lg font-medium tracking-[-0.02em]">
                     {faq.question}
                   </summary>
                   <p className="mt-3 max-w-3xl text-base leading-7 text-black/65">{faq.answer}</p>

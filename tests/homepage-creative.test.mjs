@@ -86,12 +86,12 @@ describe("the hero is typography, not imagery", () => {
     assert.ok(!/<img\b|<Image\b|<picture\b|next\/image|backgroundImage|url\(/.test(hero));
   });
 
-  it("holds the headline as a server-rendered h1 that only rises by transform", () => {
+  it("holds the headline as a server-rendered h1 that paints in place (no entrance animation)", () => {
     const source = code("components/sections/Hero.tsx");
     assert.ok(!source.startsWith('"use client"'), "Hero stays a server component");
     assert.equal((source.match(/<h1\b/g) ?? []).length, 1);
     assert.match(source, /Your business[\s\S]*shouldn&apos;t run[\s\S]*on workarounds\./);
-    // dl-rise-load animates transform only; the h1 is never faded in (LCP).
+    // No entrance animation on the headline at all (PR 3: the delayed line was the LCP element).
     assert.ok(!/<h1[^>]*dl-fade/.test(source));
   });
 });
@@ -102,7 +102,11 @@ describe("calls to action", () => {
       const source = code(file);
       for (const match of source.matchAll(/Start a conversation/g)) {
         const after = source.slice(match.index + match[0].length, match.index + match[0].length + 40);
-        assert.match(after, /^\s*<\/PrimaryCta>/, `${file}: "Start a conversation" outside PrimaryCta`);
+        // PR 3: the ending's eyebrow label shares the CTA's sentence case; it is a heading label,
+        // not an action, so it may sit in a .section-label paragraph.
+        const before = source.slice(Math.max(0, match.index - 240), match.index);
+        const eyebrow = /className="section-label[^"]*"[^<]*>(?:(?!<\/p>)[\s\S])*$/.test(before) && /^\s*<\/p>/.test(after);
+        assert.ok(eyebrow || /^\s*<\/PrimaryCta>/.test(after), `${file}: "Start a conversation" outside PrimaryCta`);
       }
     }
     assert.match(code("components/sections/ContactCTA.tsx"), /Have a problem[\s\S]*worth fixing\?/);

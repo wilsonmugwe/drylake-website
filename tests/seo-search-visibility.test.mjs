@@ -108,14 +108,14 @@ describe("/services architecture", () => {
     assert.equal(findService("web-development")?.name, "Web development");
   });
 
-  it("the service template renders every content block and a Start a Conversation link", () => {
+  it("the service template renders every content block and a Start a conversation link", () => {
     const page = code("app/services/[slug]/page.tsx");
 
     for (const field of ["service.problem", "service.builds", "service.useCases", "service.approach", "service.production", "service.faqs"]) {
       assert.ok(page.includes(`${field}.map(`), field);
     }
     assert.match(page, /href="\/contact"/);
-    assert.match(page, /Start a Conversation/);
+    assert.match(page, /Start a conversation/);
     assert.match(page, /relatedServices\(service\)/);
     assert.match(page, /href="\/perth"/);
   });
@@ -212,7 +212,7 @@ describe("Perth page", () => {
     assert.ok(!INVENTED_PROOF.test(page.replace(/\/\*[\s\S]*?\*\//g, "")));
   });
 
-  it("links to the services and to Start a Conversation", () => {
+  it("links to the services and to Start a conversation", () => {
     assert.match(source, /<ServiceIndex\b/);
     assert.match(source, /href="\/contact"/);
   });
