@@ -12,6 +12,7 @@ import Container from "@/components/ui/Container";
 import { ENTITY, PERTH_PATH } from "@/lib/discovery/entity";
 import { breadcrumbNode, faqNode, webPageNode } from "@/lib/discovery/structured-data";
 import { pageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seo-pages";
 
 /*
  * The one local page (no suburb or city variants). States only what is true and public:
@@ -20,16 +21,11 @@ import { pageMetadata } from "@/lib/seo";
  * Structured data stays Organization + WebPage: no LocalBusiness without a real address.
  */
 
-const TITLE = "Perth Technology Company for Software, Automation and AI | Drylake";
-const DESCRIPTION =
-  "Drylake is a Perth technology company building custom software, business automation, systems integration, AI and websites for businesses in Perth, WA and Australia.";
+const SEO = PAGE_SEO.perth;
+const TITLE = SEO.title;
+const DESCRIPTION = SEO.description;
 
-export const metadata: Metadata = pageMetadata({
-  title: "Perth Technology Company for Software, Automation and AI | Drylake",
-  description:
-    "Drylake is a Perth technology company building custom software, business automation, systems integration, AI and websites for businesses in Perth, WA and Australia.",
-  path: "/perth",
-});
+export const metadata: Metadata = pageMetadata(SEO);
 
 const CRUMBS = [
   { name: "Home", path: "/" },

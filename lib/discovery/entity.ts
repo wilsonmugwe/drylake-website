@@ -29,6 +29,8 @@ export const ENTITY = {
   country: "Australia",
   countryCode: "AU",
   category: "Australian technology and software company",
+  /* Date DRYLAKE PTY LTD was registered with ASIC (public on ABN Lookup). */
+  foundingDate: "2026-09-24",
   /* One sentence that answers "What is Drylake?" everywhere it is asked. */
   summary:
     "Drylake is a Perth, Western Australia technology company that builds custom software, client and staff portals, business automation, systems integrations and applied AI for Australian businesses.",

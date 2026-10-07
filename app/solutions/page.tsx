@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { pageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seo-pages";
 import { SERVICES } from "@/lib/discovery/entity";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, serviceNode, webPageNode } from "@/lib/discovery/structured-data";
@@ -14,14 +15,9 @@ import Production from "@/components/sections/Production";
 import ContactCTA from "@/components/sections/ContactCTA";
 import ServiceIndex from "@/components/sections/ServiceIndex";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Software, Automation & AI Solutions | Drylake",
-  description:
-    "Drylake builds custom software, automation, AI and connected systems for Australian businesses, from small technical fixes to complete platforms.",
-  path: "/solutions",
-  shareDescription:
-    "Custom software, automation, AI and connected systems built around real business problems.",
-});
+const SEO = PAGE_SEO.solutions;
+
+export const metadata: Metadata = pageMetadata(SEO);
 
 const SOLUTIONS_CRUMBS = [
   { name: "Home", path: "/" },
@@ -34,10 +30,9 @@ export default function SolutionsPage() {
       <JsonLd
         nodes={[
           webPageNode({
-            path: "/solutions",
-            name: "Software, Automation & AI Solutions | Drylake",
-            description:
-              "Drylake builds custom software, automation, AI and connected systems for Australian businesses, from small technical fixes to complete platforms.",
+            path: SEO.path,
+            name: SEO.title,
+            description: SEO.description,
             type: "CollectionPage",
             breadcrumb: SOLUTIONS_CRUMBS,
           }),

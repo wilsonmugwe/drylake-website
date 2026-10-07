@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { pageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seo-pages";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -17,14 +18,9 @@ import { RESPONSE_TIME } from "@/lib/site";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Contact Drylake | Software & Automation Enquiries",
-  description:
-    "Talk to Drylake about software, automation, integrations or operational technology. Call, email or tell us what is slowing your business down.",
-  path: "/contact",
-  shareDescription:
-    "Talk to Drylake about software, automation, integrations or operational technology for your business.",
-});
+const SEO = PAGE_SEO.contact;
+
+export const metadata: Metadata = pageMetadata(SEO);
 
 const nextSteps = [
   {
@@ -55,10 +51,9 @@ export default function ContactPage() {
       <JsonLd
         nodes={[
           webPageNode({
-            path: "/contact",
-            name: "Contact Drylake | Software & Automation Enquiries",
-            description:
-              "Talk to Drylake about software, automation, integrations or operational technology. Call, email or tell us what is slowing your business down.",
+            path: SEO.path,
+            name: SEO.title,
+            description: SEO.description,
             type: "ContactPage",
             breadcrumb: CONTACT_CRUMBS,
           }),

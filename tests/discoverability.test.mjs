@@ -30,6 +30,7 @@ import {
 } from "../lib/discovery/entity.ts";
 import { INDEXNOW_KEY, indexNowPayload, isSubmittableUrl } from "../lib/discovery/indexnow.ts";
 import { llmsText } from "../lib/discovery/llms.ts";
+import { PAGE_SEO } from "../lib/seo-pages.ts";
 import {
   breadcrumbNode,
   faqNode,
@@ -243,26 +244,30 @@ describe("every public page is listed, titled and canonical", () => {
     for (const file of routeFiles.filter((f) => !f.includes("["))) {
       const route = `/${file.replace(/^app\//, "").replace(/\/?page\.tsx$/, "")}`.replace(/\/$/, "") || "/";
       const source = code(file);
+      const key = source.match(/const SEO = PAGE_SEO\.(\w+);/)?.[1];
 
-      assert.match(source, /pageMetadata\(/, file);
-      assert.match(source, new RegExp(`path:\\s*"${route.replace(/\//g, "\\/")}"`), `${file} canonical path`);
+      assert.ok(key, `${file} reads its copy from PAGE_SEO`);
+      assert.equal(PAGE_SEO[key].path, route, `${file} canonical path`);
+      assert.match(source, /pageMetadata\(SEO\)/, file);
     }
   });
 
-  it("titles and descriptions are unique, and descriptions fit a result snippet", () => {
+  it("titles and descriptions are unique, and descriptions fit a result snippet (140 to 160)", () => {
     const titles = [];
     const descriptions = [];
 
-    for (const file of routeFiles.filter((f) => !f.includes("["))) {
-      const source = read(file);
-      titles.push(source.match(/pageMetadata\(\{\s*title:\s*"([^"]+)"/)?.[1]);
-      descriptions.push(source.match(/description:\s*\n?\s*"([^"]+)"/)?.[1]);
+    for (const entry of Object.values(PAGE_SEO)) {
+      titles.push(entry.title);
+      descriptions.push(entry.description);
     }
 
     for (const service of SERVICES) {
       titles.push(service.title);
       descriptions.push(service.description);
-      assert.ok(service.description.length >= 110 && service.description.length <= 180, `${service.slug}: ${service.description.length}`);
+    }
+
+    for (const description of descriptions) {
+      assert.ok(description.length >= 140 && description.length <= 160, `${description.length}: ${description}`);
     }
 
     assert.ok(titles.every(Boolean) && descriptions.every(Boolean));
@@ -455,7 +460,7 @@ describe("pre-merge review (2026-10-06)", () => {
     const [organization, website, ...people] = siteGraph();
     const text = JSON.stringify(siteGraph());
 
-    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "identifier", "knowsAbout", "legalName", "location", "logo", "name", "sameAs", "taxID", "url"]);
+    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "foundingDate", "identifier", "knowsAbout", "legalName", "location", "logo", "name", "sameAs", "taxID", "url"]);
     assert.deepEqual(Object.keys(organization.logo).sort(), ["@type", "height", "url", "width"]);
     assert.deepEqual(Object.keys(organization.contactPoint).sort(), ["@type", "areaServed", "availableLanguage", "contactType", "email"]);
     assert.deepEqual(Object.keys(organization.address).sort(), ["@type", "addressCountry", "addressLocality", "addressRegion"]);

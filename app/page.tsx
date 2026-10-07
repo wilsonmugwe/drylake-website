@@ -16,27 +16,18 @@ import JsonLd from "@/components/seo/JsonLd";
 import { faqNode, webPageNode } from "@/lib/discovery/structured-data";
 import { faqs } from "@/lib/faqs";
 import { pageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seo-pages";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Drylake | Operational Software & Automation Australia",
-  description:
-    "Drylake builds operational software, automation and connected systems for Australian businesses held back by manual processes and disconnected tools.",
-  path: "/",
-  shareDescription:
-    "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
-});
+const SEO = PAGE_SEO.home;
+
+export const metadata: Metadata = pageMetadata(SEO);
 
 export default function Home() {
   return (
     <>
       <JsonLd
         nodes={[
-          webPageNode({
-            path: "/",
-            name: "Drylake | Operational Software & Automation Australia",
-            description:
-              "Drylake builds operational software, automation and connected systems for Australian businesses held back by manual processes and disconnected tools.",
-          }),
+          webPageNode({ path: SEO.path, name: SEO.title, description: SEO.description }),
           faqNode("/", faqs),
         ]}
       />

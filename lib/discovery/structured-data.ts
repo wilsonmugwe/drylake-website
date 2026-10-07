@@ -27,6 +27,7 @@ import {
   ENTITY,
   FOUNDERS,
   ORGANIZATION_ID,
+  PUBLIC_PAGES,
   type Service,
   SITE_URL,
   WEBSITE_ID,
@@ -59,6 +60,7 @@ export function organizationNode(): Node {
       height: 512,
     },
     description: ENTITY.summary,
+    foundingDate: ENTITY.foundingDate,
     email: ENTITY.email,
     taxID: ENTITY.abn,
     identifier: [
@@ -127,6 +129,8 @@ export function webPageNode(input: {
   breadcrumb?: readonly Crumb[];
 }): Node {
   const url = absoluteUrl(input.path);
+  /* Same date as the sitemap's lastmod, so the two freshness signals never disagree. */
+  const modified = PUBLIC_PAGES.find((page) => page.path === input.path)?.lastModified;
 
   return {
     "@type": input.type ?? "WebPage",
@@ -134,6 +138,7 @@ export function webPageNode(input: {
     url,
     name: input.name,
     description: input.description,
+    ...(modified ? { dateModified: modified } : {}),
     inLanguage: "en-AU",
     isPartOf: { "@id": WEBSITE_ID },
     about: { "@id": ORGANIZATION_ID },

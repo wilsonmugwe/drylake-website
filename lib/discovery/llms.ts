@@ -43,7 +43,66 @@ export function llmsText(): string {
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,
     "",
+    "## Optional",
+    "",
+    `- [Full service detail](${absoluteUrl(LLMS_FULL_PATH)}): every service page as plain text`,
+    "",
   ];
+
+  return lines.join("\n");
+}
+
+export const LLMS_FULL_PATH = "/llms-full.txt";
+
+/*
+ * /llms-full.txt: the company facts plus the full text of every service page, in the order the
+ * pages render it. Same source as the pages (services.ts), so it cannot say anything the
+ * pages do not. llms.txt is a community proposal with little evidence of use by the major
+ * answer engines (docs/search/search-audit.md section 7); it is kept because it is generated,
+ * accurate and free to maintain, not because it is expected to move rankings.
+ */
+export function llmsFullText(): string {
+  const lines = [
+    `# ${ENTITY.brand}: services in full`,
+    "",
+    `> ${ENTITY.summary}`,
+    "",
+    `${ENTITY.legalSummary} Based in ${ENTITY.locality}, ${ENTITY.region}. Works with businesses in ${ENTITY.locality} and across ${ENTITY.country}. Contact: ${ENTITY.email}. Website: ${ENTITY.url}.`,
+    "",
+  ];
+
+  for (const service of SERVICES) {
+    lines.push(
+      `## ${service.name}`,
+      "",
+      `URL: ${absoluteUrl(service.path)}`,
+      "",
+      service.intro,
+      "",
+      `### ${service.problemHeading}`,
+      "",
+      ...service.problem.flatMap((paragraph) => [paragraph, ""]),
+      "### What Drylake can build",
+      "",
+      ...service.builds.map((item) => `- ${item}`),
+      "",
+      "### Where it fits",
+      "",
+      ...service.useCases.map((point) => `- ${point.title}: ${point.text}`),
+      "",
+      "### How we approach it",
+      "",
+      ...service.approach.map((point) => `- ${point.title}: ${point.text}`),
+      "",
+      `### ${service.productionHeading}`,
+      "",
+      ...service.production.map((item) => `- ${item}`),
+      "",
+      "### Questions",
+      "",
+      ...service.faqs.flatMap((faq) => [`Q: ${faq.question}`, `A: ${faq.answer}`, ""]),
+    );
+  }
 
   return lines.join("\n");
 }

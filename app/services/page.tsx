@@ -11,17 +11,13 @@ import Container from "@/components/ui/Container";
 import { SERVICES, SERVICES_PATH } from "@/lib/discovery/entity";
 import { breadcrumbNode, serviceNode, webPageNode } from "@/lib/discovery/structured-data";
 import { pageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seo-pages";
 
-const TITLE = "Services: Software, Automation, Integration, AI and Web | Drylake";
-const DESCRIPTION =
-  "The five things Drylake builds for Australian businesses: custom software, business automation, systems integration, AI automation and web development.";
+const SEO = PAGE_SEO.services;
+const TITLE = SEO.title;
+const DESCRIPTION = SEO.description;
 
-export const metadata: Metadata = pageMetadata({
-  title: "Services: Software, Automation, Integration, AI and Web | Drylake",
-  description:
-    "The five things Drylake builds for Australian businesses: custom software, business automation, systems integration, AI automation and web development.",
-  path: "/services",
-});
+export const metadata: Metadata = pageMetadata(SEO);
 
 const CRUMBS = [
   { name: "Home", path: "/" },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { pageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seo-pages";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -12,14 +13,9 @@ import CompanyDetails from "@/components/seo/CompanyDetails";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
-export const metadata: Metadata = pageMetadata({
-  title: "About Drylake | Perth Technology Company",
-  description:
-    "Drylake is a Perth-based technology company building practical software, automation and technical systems for Australian businesses.",
-  path: "/about",
-  shareDescription:
-    "A Perth technology company building practical software, automation and technical systems for Australian businesses.",
-});
+const SEO = PAGE_SEO.about;
+
+export const metadata: Metadata = pageMetadata(SEO);
 
 const values = [
   {
@@ -47,10 +43,9 @@ export default function AboutPage() {
       <JsonLd
         nodes={[
           webPageNode({
-            path: "/about",
-            name: "About Drylake | Perth Technology Company",
-            description:
-              "Drylake is a Perth-based technology company building practical software, automation and technical systems for Australian businesses.",
+            path: SEO.path,
+            name: SEO.title,
+            description: SEO.description,
             type: "AboutPage",
             breadcrumb: ABOUT_CRUMBS,
           }),
