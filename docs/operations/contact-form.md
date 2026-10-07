@@ -52,6 +52,13 @@ dashboard that the widget's secret has not been rotated or shared with another s
 address on a Resend-verified domain), `CONTACT_TO_EMAIL`. Optional: `TURNSTILE_ALLOWED_HOSTNAMES`
 (comma-separated, added to `drylake.com.au` and `www.drylake.com.au`, e.g. for a preview domain).
 
+**Sender name (since PR #41):** enquiries send from `EMAIL_FROM`'s address under the display name
+"Drylake website enquiries" (`lib/email/contact-enquiry-sender.ts`), so they are never labelled
+as billing mail. Optional `CONTACT_EMAIL_FROM` (a full `Name <address>` on the same verified
+domain) overrides it. Invoice email keeps `EMAIL_FROM` unchanged. If enquiries still show as
+"Drylake billing" after deploy, the label is coming from the mailbox (an Outlook contact saved for
+that address): rename the contact.
+
 ## Rate limiting
 
 There is **no rate limiter in this repository**. Production is protected by a **Vercel Firewall**
