@@ -24,6 +24,7 @@ import {
   webPageNode,
 } from "@/lib/discovery/structured-data";
 import { pageMetadata } from "@/lib/seo";
+import { serviceShareImage } from "@/lib/seo-pages";
 
 /*
  * One page per service line (lib/discovery/services.ts). Statically generated: no auth, no
@@ -44,7 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {};
   }
 
-  return pageMetadata({ title: service.title, description: service.description, path: service.path });
+  return pageMetadata({
+    title: service.title,
+    description: service.description,
+    path: service.path,
+    image: serviceShareImage(service.slug),
+    imageAlt: `Drylake: ${service.name} for Australian businesses`,
+  });
 }
 
 export default async function ServicePage({ params }: Props) {

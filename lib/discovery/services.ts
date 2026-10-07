@@ -32,7 +32,7 @@ export type Service = {
   serviceType: string;
   /* <title>, used verbatim. */
   title: string;
-  /* Meta description, 110 to 180 characters (tested). */
+  /* Meta description, 140 to 160 characters (tested). */
   description: string;
   /* One line for service lists and link cards. */
   summary: string;
@@ -226,7 +226,7 @@ export const SERVICES: readonly Service[] = [
     path: path("systems-integration"),
     name: "Systems integration",
     serviceType: "Systems integration",
-    title: "Systems Integration: Connect the Software You Already Use | Drylake",
+    title: "Systems Integration: Connect Your Existing Software | Drylake",
     description:
       "Drylake connects the systems Australian businesses already use, such as accounting, CRM, payments and Microsoft 365, so information stops being copied by hand.",
     summary:
@@ -311,7 +311,7 @@ export const SERVICES: readonly Service[] = [
     serviceType: "Artificial intelligence solutions for business",
     title: "AI Automation for Real Business Workflows | Drylake",
     description:
-      "Drylake builds practical AI into Australian business workflows: document processing, drafting and summarising, internal tools and decision support, checked by people.",
+      "Drylake builds practical AI into Australian business workflows: document processing, drafting, summarising and internal tools, with people checking the results.",
     summary:
       "Practical AI inside real workflows: reading documents, drafting, summarising and answering questions from your own records.",
     headline: "AI where it earns its place.",
@@ -394,7 +394,7 @@ export const SERVICES: readonly Service[] = [
     serviceType: "Website and web application development",
     title: "Web Development and Business Websites | Drylake",
     description:
-      "Drylake builds fast, clear business websites and web applications for Australian businesses, with forms, bookings and payments connected to the systems behind them.",
+      "Drylake builds fast, clear business websites and web applications for Australian businesses, with forms, bookings and payments connected to your systems.",
     summary:
       "Fast, clear business websites and web applications, connected to the forms, bookings and systems behind them.",
     headline: "A professional digital front door for the business.",

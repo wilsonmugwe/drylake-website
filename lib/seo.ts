@@ -20,6 +20,9 @@ interface PageMetadataInput {
   path: string;
   /** Optional shorter share copy; defaults to the description. */
   shareDescription?: string;
+  /** The page's own 1200 x 630 share card (lib/seo-pages.ts); defaults to the site card. */
+  image?: string;
+  imageAlt?: string;
 }
 
 /*
@@ -27,14 +30,25 @@ interface PageMetadataInput {
  * Why: Next.js replaces (not merges) nested openGraph/twitter objects per page, so a page that
  * set only openGraph silently inherited the homepage twitter:title. Building all four surfaces
  * (title, canonical, Open Graph, Twitter) together keeps them in agreement.
+ * The Twitter image is passed as an object so twitter:image:alt is rendered too (it was
+ * missing on every page before 2026-10-07).
  */
 export function pageMetadata({
   title,
   description,
   path,
   shareDescription = description,
+  image,
+  imageAlt,
 }: PageMetadataInput): Metadata {
   const url = path === "/" ? SITE_URL : `${SITE_URL}${path}`;
+  const shareImage = {
+    url: image ?? SHARE_IMAGE.url,
+    width: SHARE_IMAGE.width,
+    height: SHARE_IMAGE.height,
+    alt: imageAlt ?? SHARE_IMAGE.alt,
+    type: "image/png",
+  };
 
   return {
     title: { absolute: title },
@@ -47,13 +61,13 @@ export function pageMetadata({
       url,
       title,
       description: shareDescription,
-      images: [SHARE_IMAGE],
+      images: [shareImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: shareDescription,
-      images: [SHARE_IMAGE.url],
+      images: [{ url: shareImage.url, alt: shareImage.alt }],
     },
   };
 }

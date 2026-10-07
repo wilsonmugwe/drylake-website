@@ -21,8 +21,19 @@ import {
   findService,
   relatedServices,
 } from "../lib/discovery/entity.ts";
-import { llmsText } from "../lib/discovery/llms.ts";
-import { faqNode, serviceNode } from "../lib/discovery/structured-data.ts";
+import { ENTITY, ORGANIZATION_ID, absoluteUrl } from "../lib/discovery/entity.ts";
+import { robotsGroups, CRAWLERS } from "../lib/discovery/crawlers.ts";
+import { isAllowed } from "../lib/discovery/robots-eval.ts";
+import { LLMS_FULL_PATH, llmsFullText, llmsText } from "../lib/discovery/llms.ts";
+import {
+  breadcrumbNode,
+  faqNode,
+  jsonLd,
+  serviceNode,
+  siteGraph,
+  webPageNode,
+} from "../lib/discovery/structured-data.ts";
+import { PAGE_SEO, serviceShareImage } from "../lib/seo-pages.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -188,8 +199,10 @@ describe("Perth page", () => {
 
   it("is the single local page, with its own canonical and metadata", () => {
     assert.equal(PERTH_PATH, "/perth");
-    assert.match(source, /pageMetadata\(\{\s*title: "Perth Technology Company[^"]+",/);
-    assert.match(source, /path: "\/perth"/);
+    assert.match(source, /const SEO = PAGE_SEO\.perth;/);
+    assert.match(source, /pageMetadata\(SEO\)/);
+    assert.equal(PAGE_SEO.perth.path, "/perth");
+    assert.match(PAGE_SEO.perth.title, /^Perth /);
   });
 
   it("invents no address, opening hours, local clients, reviews or statistics", () => {
@@ -204,7 +217,7 @@ describe("Perth page", () => {
 });
 
 describe("metadata quality", () => {
-  const pageTitles = STATIC_PUBLIC_PAGES.map((file) => read(file).match(/pageMetadata\(\{\s*title:\s*"([^"]+)"/)?.[1]);
+  const pageTitles = STATIC_PUBLIC_PAGES.map((file) => PAGE_SEO[code(file).match(/const SEO = PAGE_SEO\.(\w+);/)?.[1]]?.title);
   const titles = [...pageTitles, ...SERVICES.map((service) => service.title)];
 
   it("every public page has a title", () => {
@@ -217,7 +230,7 @@ describe("metadata quality", () => {
   });
 
   it("titles stay short enough to display in results", () => {
-    for (const title of titles) assert.ok(title.length <= 70, `${title.length}: ${title}`);
+    for (const title of titles) assert.ok(title.length <= 65, `${title.length}: ${title}`);
   });
 });
 
@@ -231,6 +244,166 @@ describe("honest, client-facing copy", () => {
 
   it("uses no em dashes", () => {
     assert.ok(!copy.includes("—"));
+  });
+});
+
+/*
+ * PR 6 "Drylake Search Visibility, GEO & Local Discovery" (2026-10-07).
+ * One copy registry (lib/seo-pages.ts), a share card per page, honest JSON-LD, llms-full.txt.
+ */
+const PAGE_ENTRIES = Object.values(PAGE_SEO);
+const ALL_SEO = [
+  ...PAGE_ENTRIES.map((entry) => ({ path: entry.path, title: entry.title, description: entry.description, image: entry.image, alt: entry.imageAlt })),
+  ...SERVICES.map((service) => ({ path: service.path, title: service.title, description: service.description, image: serviceShareImage(service.slug), alt: `Drylake: ${service.name} for Australian businesses` })),
+];
+
+function pngSize(file) {
+  const buffer = readFileSync(join(ROOT, "public", file));
+  assert.equal(buffer.readUInt32BE(0), 0x89504e47, `${file} is not a PNG`);
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+}
+
+/* Properties that would claim something Drylake cannot evidence, or publish what it must not. */
+const FORBIDDEN_SCHEMA = /aggregateRating|"review"|ratingValue|"award"|telephone|streetAddress|postalCode|openingHours|priceRange|"offers"|numberOfEmployees|"geo"|hasCredential/;
+
+describe("PR 6: one registry for page search copy", () => {
+  it("every public page in the sitemap has exactly one copy entry", () => {
+    assert.deepEqual(ALL_SEO.map((entry) => entry.path).sort(), PUBLIC_PAGES.map((page) => page.path).sort());
+  });
+
+  it("titles and descriptions are unique; descriptions 140 to 160 characters; titles at most 65", () => {
+    assert.equal(new Set(ALL_SEO.map((e) => e.title)).size, ALL_SEO.length);
+    assert.equal(new Set(ALL_SEO.map((e) => e.description)).size, ALL_SEO.length);
+    for (const entry of ALL_SEO) {
+      assert.ok(entry.description.length >= 140 && entry.description.length <= 160, `${entry.path} ${entry.description.length}`);
+      assert.ok(entry.title.length <= 65, `${entry.path} ${entry.title.length}`);
+      assert.match(entry.title, /Drylake/, entry.path);
+    }
+  });
+
+  it("search copy contains no em dash, invented proof, price or GST wording", () => {
+    const text = JSON.stringify(PAGE_SEO);
+    assert.ok(!text.includes("—"));
+    assert.equal(text.match(INVENTED_PROOF), null);
+    assert.ok(!/\$|\bGST\b|inc-GST|ex-GST/.test(text));
+  });
+
+  it("no surface publishes a street address (remote-first, locality only)", () => {
+    const surfaces = [JSON.stringify(PAGE_SEO), JSON.stringify(siteGraph()), llmsText(), llmsFullText()].join("\n");
+    assert.ok(!/Joondalup|Davidson|\b6027\b|streetAddress/i.test(surfaces));
+  });
+});
+
+describe("PR 6: social share images", () => {
+  it("every page has its own 1200 x 630 PNG card with alt text", () => {
+    assert.equal(new Set(ALL_SEO.map((e) => e.image)).size, ALL_SEO.length, "cards are per page");
+    for (const entry of ALL_SEO) {
+      assert.match(entry.image, /^\/og\/[a-z-]+\.png$/);
+      assert.deepEqual(pngSize(entry.image), { width: 1200, height: 630 }, entry.image);
+      assert.ok(entry.alt.length >= 10 && !entry.alt.includes("—"), entry.path);
+    }
+    assert.deepEqual(pngSize("/opengraph-image.png"), { width: 1200, height: 630 });
+  });
+
+  it("pageMetadata emits og:image with size and alt, and twitter:image with alt", () => {
+    const source = code("lib/seo.ts");
+    assert.match(source, /width: SHARE_IMAGE\.width/);
+    assert.match(source, /images: \[shareImage\]/);
+    assert.match(source, /images: \[\{ url: shareImage\.url, alt: shareImage\.alt \}\]/);
+    assert.match(code("app/services/[slug]/page.tsx"), /image: serviceShareImage\(service\.slug\)/);
+  });
+
+  it("the card generator reads the same copy registry as the pages", () => {
+    const script = read("scripts/og/render-share-cards.mjs");
+    assert.match(script, /from "\.\.\/\.\.\/lib\/seo-pages\.ts"/);
+    assert.match(script, /from "\.\.\/\.\.\/lib\/discovery\/services\.ts"/);
+  });
+
+  it("crawlers that build link previews and indexes can fetch the cards and llms files", () => {
+    const groups = robotsGroups(PRIVATE_PREFIXES);
+    for (const crawler of CRAWLERS.filter((c) => c.access === "allow")) {
+      for (const path of ["/og/home.png", "/opengraph-image.png", "/llms.txt", LLMS_FULL_PATH]) {
+        assert.ok(isAllowed(groups, crawler.token, path), `${crawler.token} ${path}`);
+      }
+    }
+  });
+});
+
+describe("PR 6: structured data is valid and honest", () => {
+  const pageNodes = ALL_SEO.map((entry) => webPageNode({ path: entry.path, name: entry.title, description: entry.description }));
+  const nodes = [
+    ...siteGraph(),
+    ...pageNodes,
+    ...SERVICES.flatMap((service) => [
+      serviceNode(service),
+      faqNode(service.path, service.faqs),
+      breadcrumbNode(service.path, [
+        { name: "Home", path: "/" },
+        { name: "Services", path: SERVICES_PATH },
+        { name: service.name, path: service.path },
+      ]),
+    ]),
+  ];
+
+  it("serialises to JSON that parses back to the same graph", () => {
+    const parsed = JSON.parse(jsonLd(nodes));
+    assert.equal(parsed["@context"], "https://schema.org");
+    assert.equal(parsed["@graph"].length, nodes.length);
+    for (const node of parsed["@graph"]) assert.ok(node["@type"], JSON.stringify(node).slice(0, 80));
+  });
+
+  it("every @id is unique and every @id reference resolves", () => {
+    const ids = nodes.map((n) => n["@id"]).filter(Boolean);
+    assert.equal(new Set(ids).size, ids.length);
+    const refs = [...JSON.stringify(nodes).matchAll(/\{"@id":"([^"]+)"\}/g)].map((m) => m[1]);
+    const known = new Set([...ids, ...ALL_SEO.map((e) => `${absoluteUrl(e.path)}#breadcrumb`)]);
+    for (const ref of refs) assert.ok(known.has(ref), ref);
+  });
+
+  it("carries no fabricated or private properties", () => {
+    assert.equal(JSON.stringify(nodes).match(FORBIDDEN_SCHEMA), null);
+  });
+
+  it("Organization is not a LocalBusiness and states only verifiable facts", () => {
+    const [organization] = siteGraph();
+    assert.equal(organization["@type"], "Organization");
+    assert.equal(organization["@id"], ORGANIZATION_ID);
+    assert.equal(organization.foundingDate, "2026-09-24");
+    assert.equal(organization.foundingDate, ENTITY.foundingDate);
+    assert.ok(new Date(organization.foundingDate) <= new Date());
+  });
+
+  it("each page's dateModified equals its sitemap lastmod", () => {
+    for (const node of pageNodes) {
+      const page = PUBLIC_PAGES.find((p) => absoluteUrl(p.path) === node.url);
+      assert.equal(node.dateModified, page.lastModified, node.url);
+    }
+  });
+});
+
+describe("PR 6: llms-full.txt", () => {
+  const full = llmsFullText();
+
+  it("is linked from llms.txt and served as static text", () => {
+    assert.ok(llmsText().includes(`${absoluteUrl(LLMS_FULL_PATH)})`));
+    const route = code("app/llms-full.txt/route.ts");
+    assert.match(route, /force-static/);
+    assert.match(route, /text\/plain/);
+  });
+
+  it("carries every service's text, so it says nothing the pages do not", () => {
+    for (const service of SERVICES) {
+      assert.ok(full.includes(service.intro), service.slug);
+      assert.ok(full.includes(absoluteUrl(service.path)), service.slug);
+      for (const faq of service.faqs) assert.ok(full.includes(faq.answer), faq.question);
+    }
+    assert.ok(full.includes(ENTITY.legalSummary));
+  });
+
+  it("has no em dash, private path or invented proof", () => {
+    assert.ok(!full.includes("—"));
+    for (const prefix of PRIVATE_PREFIXES) assert.ok(!full.includes(`drylake.com.au${prefix}`), prefix);
+    assert.equal(full.match(INVENTED_PROOF), null);
   });
 });
 
