@@ -60,7 +60,7 @@ export default function ClientProjectView({
       />
 
       {/* Where the project stands: progress, dates, and what comes next. */}
-      <section aria-labelledby="standing-heading" className="cp-card overflow-hidden">
+      <section id="project-status" aria-labelledby="standing-heading" className="cp-card cp-anchor overflow-hidden">
         <h2 id="standing-heading" className="sr-only">
           Project status
         </h2>
@@ -128,6 +128,7 @@ export default function ClientProjectView({
         <div className="flex min-w-0 flex-col gap-6">
           <Panel
             labelledBy="milestones-heading"
+            anchor="milestones"
             title="Milestones"
             count={milestones.ok ? total : undefined}
             description="Delivery checkpoints, in order"
@@ -154,6 +155,7 @@ export default function ClientProjectView({
 
           <Panel
             labelledBy="updates-heading"
+            anchor="updates"
             title="Project updates"
             count={updates.ok ? updates.data.length : undefined}
             description="Published by Drylake, newest first"
@@ -205,6 +207,7 @@ export default function ClientProjectView({
         <div className="flex min-w-0 flex-col gap-6">
           <Panel
             labelledBy="project-documents-heading"
+            anchor="project-documents"
             title="Documents"
             count={documents.ok ? documents.data.length : undefined}
             description="Files shared for this project"

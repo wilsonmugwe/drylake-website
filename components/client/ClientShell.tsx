@@ -2,8 +2,11 @@ import type { ReactNode } from "react";
 
 import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
 
+import ProductEnvironment from "@/components/shell/ProductEnvironment";
+
 import type { ClientSection } from "./ClientNav";
 import { ClientMobileNav, ClientSidebar } from "./ClientRail";
+import WorkspaceAnchors from "./WorkspaceAnchors";
 
 type ClientShellProps = {
   children: ReactNode;
@@ -25,6 +28,10 @@ type ClientShellProps = {
  * a click changes the content area (and shows that route's skeleton) without the frame
  * blinking or freezing. Purely presentational; pages and the layout do all auth.
  *
+ * The content column sits on the Drylake product environment (components/shell, the
+ * "workspace" variant): background only, behind everything, no JavaScript. WorkspaceAnchors
+ * moves focus to a section when the URL names one (/client#recent-activity).
+ *
  * (The `client-portal` class and `portal-main` id are internal CSS/anchor hooks, kept so
  * nothing outside this component has to change.)
  */
@@ -41,6 +48,8 @@ export default function ClientShell({
         Skip to content
       </a>
 
+      <WorkspaceAnchors />
+
       <ClientMobileNav
         organizationName={organizationName}
         showNav={showNav}
@@ -56,12 +65,14 @@ export default function ClientShell({
           fallback={section}
         />
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <main id="portal-main" tabIndex={-1} className="flex-1 outline-none">
+        <div className="relative isolate flex min-w-0 flex-1 flex-col">
+          <ProductEnvironment variant="workspace" />
+
+          <main id="portal-main" tabIndex={-1} className="relative z-[1] flex-1 outline-none">
             <div className="cp-container py-7 sm:py-10 lg:py-12">{children}</div>
           </main>
 
-          <footer className="border-t border-neutral-200">
+          <footer className="relative z-[1] border-t border-neutral-200">
             <div className="cp-container flex flex-col gap-2 py-5 text-xs leading-5 text-neutral-600 sm:flex-row sm:items-center sm:justify-between">
               <span>&copy; {new Date().getFullYear()} Drylake Pty Ltd. Drylake Workspace, a secure client environment.</span>
               {/* Plain text on purpose: the Workspace contact action is "Start a conversation". */}
