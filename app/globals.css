@@ -1,8 +1,66 @@
 @import "tailwindcss";
 
 /* =========================================================
-   DRYLAKE DESIGN SYSTEM
+   DRYLAKE DESIGN SYSTEM: TOKENS (PR "Brand System & Experience Foundations", 2026-10-07)
+
+   One vocabulary for every surface. Tailwind v4 @theme turns these into utilities
+   (bg-ink, text-mineral, font-display, font-mono, ease-brand, rounded-app ...). The
+   :root block below carries the runtime variables plain CSS uses (focus ring, motion).
+
+   Colour sources:
+   - Drylake orange accent (the tile ochre, the y of the wordmark) is NOT a CSS token: it is
+     TILE_OCHRE in components/brand/DrylakeMark.tsx, the one place it is written. Components
+     that need it import it.
+   - Signal orange (#f26a2e) is the action/attention accent (status dots, nav underline,
+     focus ring). Primary CTAs are white (.btn-primary in public-site.css).
+
+   Type roles: display = Geist SemiBold, tight tracking (.type-display/.type-section/.type-title
+   in public-site.css); editorial = Geist body (.type-lede/.type-body); utility = Geist Mono
+   uppercase (.section-label/.tech-label, font-mono).
+   Surfaces: dark = ink family (public) / #10100f rails (Workspace, Admin); light = paper,
+   mineral, and the #f4f4f1 app canvas.
+   Radius: public site is square (0); app controls 0.875rem, app cards 1rem.
    ========================================================= */
+
+/* inline: the next/font variables live on <body>, so the utility must resolve them there. */
+@theme inline {
+  --font-display: var(--font-geist), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@theme {
+  --color-ink: #0b0b0a;
+  --color-ink-2: #121210;
+  --color-ink-3: #1a1a17;
+  --color-rail: #10100f;
+  --color-paper: #ffffff;
+  --color-mineral: #f2f0e9;
+  --color-stone: #e6e3da;
+  --color-canvas: #f4f4f1;
+  --color-signal: #f26a2e;
+  --color-signal-ink: #b83f0c;
+
+  --radius-app: 0.875rem;
+  --radius-app-card: 1rem;
+
+  --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  /* Focus: one ring everywhere (public, Workspace, Admin). A deeper signal orange, chosen so
+     the ring is >= 3:1 (WCAG 1.4.11) on EVERY surface: white 4.4, mineral 3.9, app canvas 4.0,
+     ink 4.5, rail 4.3. The old ring (#f26a2e) failed on mineral (2.67) and canvas (2.78).
+     tests/brand-system.test.mjs recomputes these. */
+  --focus-ring: #c4581f;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 4px;
+
+  /* Motion primitives. Every duration collapses under prefers-reduced-motion (below). */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
 :root {
   --background: #ffffff;
@@ -278,9 +336,11 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--orange);
-  outline-offset: 4px;
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 /* =========================================================
@@ -331,6 +391,12 @@ select:focus-visible {
    ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+
   html {
     scroll-behavior: auto;
   }
@@ -673,7 +739,7 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
   .client-portal button:focus-visible,
   .client-portal select:focus-visible,
   .client-portal summary:focus-visible {
-    outline: 2px solid var(--cp-orange);
+    outline: var(--focus-ring-width) solid var(--focus-ring);
     outline-offset: 2px;
   }
 

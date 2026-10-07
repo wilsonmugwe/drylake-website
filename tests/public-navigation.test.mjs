@@ -111,12 +111,12 @@ describe("navigation labels and destinations", () => {
     const navbar = code("components/layout/Navbar.tsx");
     const lockup = read("components/brand/BrandHomeLink.tsx");
 
-    assert.match(lockup, /aria-label="Drylake — Home"/);
+    // No em dash in an accessible name (visitor-facing string rule).
+    assert.match(lockup, /aria-label="Drylake home"/);
     assert.match(lockup, /href=\{HOME_PATH\}/);
     assert.match(navbar, /<BrandHomeLink \/>/);
     assert.match(navbar, /PRIMARY_NAV\.map/);
-    assert.match(navbar, /href=\{PRIMARY_CTA\.href\}/);
-    assert.match(navbar, /btn-signal/);
+    assert.match(navbar, /<PrimaryCta href=\{PRIMARY_CTA\.href\}/);
     assert.ok(!/from "next\/link"/.test(navbar), "header links go through SiteLink");
   });
 

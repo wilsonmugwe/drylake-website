@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight } from "lucide-react";
 
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import MobileMenu from "@/components/layout/MobileMenu";
@@ -10,6 +9,7 @@ import SkipLink from "@/components/layout/SkipLink";
 import ClientAccessLink from "@/components/navigation/ClientAccessLink";
 import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 import { HOME_PATH, PRIMARY_CTA, PRIMARY_NAV } from "@/lib/navigation/site-nav";
 
 /*
@@ -20,7 +20,7 @@ import { HOME_PATH, PRIMARY_CTA, PRIMARY_NAV } from "@/lib/navigation/site-nav";
  *
  * Hierarchy: Drylake (identity, home) / What We Do, Our Approach, About, Contact
  * (exploration) / Client Login (existing-client utility) / Start a Conversation (the one
- * primary action, in signal orange).
+ * primary action: the canonical white PrimaryCta).
  */
 export default function Navbar() {
   const pathname = usePathname();
@@ -80,10 +80,9 @@ export default function Navbar() {
 
               <span aria-hidden="true" className="h-5 w-px bg-white/15" />
 
-              <SiteLink href={PRIMARY_CTA.href} className="btn-signal !min-h-[44px] !text-[0.85rem]">
-                <span>{PRIMARY_CTA.label}</span>
-                <ArrowUpRight aria-hidden="true" size={15} />
-              </SiteLink>
+              <PrimaryCta href={PRIMARY_CTA.href} size="compact">
+                {PRIMARY_CTA.label}
+              </PrimaryCta>
             </div>
 
             {/* Mobile: menu control */}

@@ -1,38 +1,40 @@
 "use client";
 
-import DrylakeMark from "@/components/brand/DrylakeMark";
+import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 import SiteLink from "@/components/navigation/SiteLink";
 import { HOME_PATH } from "@/lib/navigation/site-nav";
 
+/* Header and footer lockup sizes (wordmark height in px; the tile scales with it). */
+const SIZES = { header: 26, footer: 48 } as const;
+
 /*
- * [mark] Drylake: one control, always "home + top" (SiteLink resolves a click on "/" to a
+ * [tile] Drylake: one control, always "home + top" (SiteLink resolves a click on "/" to a
  * scroll to the top and drops any stale hash; from any other route it navigates to "/").
+ * Used by the public header, the mobile menu and the footer, so all three show the same
+ * canonical lockup (DrylakeWordmark: ochre y, letters adapted to the dark surface).
  */
 export default function BrandHomeLink({
   onNavigate,
   size = "header",
 }: {
   onNavigate?: () => void;
-  size?: "header" | "footer";
+  size?: keyof typeof SIZES;
 }) {
-  const footer = size === "footer";
-
   return (
     <SiteLink
       href={HOME_PATH}
       onNavigate={onNavigate}
-      aria-label="Drylake — Home"
-      className="group inline-flex min-h-[44px] shrink-0 items-center gap-2.5"
+      aria-label="Drylake home"
+      className="group inline-flex min-h-[44px] shrink-0 items-center"
     >
-      <DrylakeMark
+      <DrylakeWordmark
+        lockup
+        tone="dark"
         surface="#0b0b0a"
-        className={`${footer ? "h-10 w-10" : "h-7 w-7 lg:h-[30px] lg:w-[30px]"} shrink-0 transition-transform duration-300 group-hover:-rotate-3`}
+        height={SIZES[size]}
+        label={null}
+        markClassName="transition-transform duration-300 group-hover:-rotate-3"
       />
-      <span
-        className={`${footer ? "text-[1.9rem]" : "text-[1.18rem] lg:text-[1.26rem]"} font-semibold leading-none tracking-[-0.045em] text-white`}
-      >
-        Drylake
-      </span>
     </SiteLink>
   );
 }

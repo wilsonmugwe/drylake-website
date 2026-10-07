@@ -1,6 +1,4 @@
-import Image from "next/image";
-
-import DrylakeMark from "@/components/brand/DrylakeMark";
+import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
 import { ENTITY, SERVICES, SERVICES_PATH } from "@/lib/discovery/entity";
@@ -38,17 +36,7 @@ export default function Footer() {
       <Container className="pt-16 sm:pt-20">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
-            <SiteLink href="/" aria-label="Drylake — Home" className="inline-flex min-h-[44px] items-center gap-4">
-              <DrylakeMark surface="#0b0b0a" className="h-[44px] w-[44px] sm:h-[54px] sm:w-[54px]" />
-              <Image
-                src="/brand/drylake-wordmark-dark-bg.svg"
-                alt=""
-                width={1657}
-                height={516}
-                unoptimized
-                className="h-[44px] w-auto sm:h-[56px]"
-              />
-            </SiteLink>
+            <BrandHomeLink size="footer" />
 
             <p className="mt-5 flex items-center gap-2 text-sm text-white/60">
               <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />

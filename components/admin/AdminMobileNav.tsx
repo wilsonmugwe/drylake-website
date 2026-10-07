@@ -14,9 +14,10 @@ import {
   LogOut,
   Menu,
   Receipt,
-  ShieldCheck,
   X,
 } from "lucide-react";
+
+import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 
 const navigation = [
   {
@@ -61,10 +62,11 @@ export default function AdminMobileNav() {
       <div className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-white/10 bg-[#10100f] px-4 text-white lg:hidden">
         <Link
           href="/admin"
-          className="flex min-h-11 items-center gap-2 font-semibold text-white"
+          className="flex min-h-11 items-center gap-2.5 font-semibold text-white"
         >
-          <ShieldCheck size={18} className="text-[#f26a2e]" />
-          Drylake Admin
+          {/* Canonical wordmark (brand slot swap only, D13). Name: "Drylake Admin". */}
+          <DrylakeWordmark lockup tone="dark" surface="#10100f" height={20} />
+          <span className="text-xs uppercase tracking-[0.16em] text-white/55">Admin</span>
         </Link>
 
         <button

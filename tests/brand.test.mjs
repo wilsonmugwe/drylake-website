@@ -49,11 +49,13 @@ describe("brand artwork", () => {
       }
     }
 
-    // Redesign (2026-10-07): the approved mark sits immediately left of the word Drylake.
+    // Brand system (2026-10-07): header and footer both render the canonical lockup
+    // ([tile] + wordmark with the ochre y) through BrandHomeLink; no plain-text "Drylake".
     assert.match(read("components/layout/Navbar.tsx"), /<BrandHomeLink \/>/);
+    assert.match(read("components/layout/Footer.tsx"), /<BrandHomeLink size="footer" \/>/);
     const lockup = read("components/brand/BrandHomeLink.tsx");
-    assert.ok(lockup.indexOf("<DrylakeMark") < lockup.indexOf(">\n        Drylake\n"), "mark before the word");
-    assert.match(read("components/layout/Footer.tsx"), /\/brand\/drylake-wordmark-dark-bg\.svg/);
+    assert.match(lockup, /<DrylakeWordmark\s[^>]*\blockup\b/);
+    assert.ok(!lockup.includes(">\n        Drylake\n"), "the header word is the wordmark, not text");
   });
 
   it("the mark is Wilson's cracked lake-bed tile, identical in every asset (D27)", () => {
@@ -75,7 +77,8 @@ describe("brand artwork", () => {
 
     // The retired y tile is gone from the header and from every square asset.
     assert.ok(!read("public/brand/drylake-mark-tile.svg").includes("141.63"));
-    assert.match(read("components/brand/BrandHomeLink.tsx"), /<DrylakeMark/);
+    // The tile renders through the lockup (DrylakeWordmark draws DrylakeMark).
+    assert.match(read("components/brand/DrylakeWordmark.tsx"), /<DrylakeMark/);
   });
 
   it("publishes a square Organization logo that exists and meets Google's 112 px minimum", () => {

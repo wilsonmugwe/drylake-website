@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight } from "lucide-react";
 
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
@@ -10,6 +9,7 @@ import ServiceIndex from "@/components/sections/ServiceIndex";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
 import Container from "@/components/ui/Container";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 import {
   ENTITY,
   SERVICES,
@@ -99,13 +99,9 @@ export default async function ServicePage({ params }: Props) {
             {service.intro}
           </p>
 
-          <Link
-            href="/contact"
-            className="btn-signal mt-8"
-          >
-            <span>Start a Conversation</span>
-            <ArrowUpRight aria-hidden="true" size={15} />
-          </Link>
+          <PrimaryCta href="/contact" surface="light" className="mt-8">
+            Start a Conversation
+          </PrimaryCta>
         </Container>
 
         <section aria-labelledby="problem-heading" className="mineral-texture bg-[#f2f0e9] py-16 lg:py-24">

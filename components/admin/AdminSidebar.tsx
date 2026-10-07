@@ -13,8 +13,9 @@ import {
   LayoutDashboard,
   LogOut,
   Receipt,
-  ShieldCheck,
 } from "lucide-react";
+
+import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 
 const navigation = [
   {
@@ -64,20 +65,13 @@ export default function AdminSidebar() {
   return (
     <aside className="hidden h-screen w-[268px] shrink-0 flex-col border-r border-white/10 bg-[#10100f] text-white lg:sticky lg:top-0 lg:flex">
       <div className="border-b border-white/10 px-5 py-6">
-        <Link href="/admin" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f26a2e]/10 ring-1 ring-[#f26a2e]/25">
-            <ShieldCheck size={18} className="text-[#f26a2e]" />
-          </div>
+        <Link href="/admin" className="flex min-h-11 flex-col justify-center gap-1.5">
+          {/* Canonical wordmark (brand slot swap only, D13). */}
+          <DrylakeWordmark lockup tone="dark" surface="#10100f" height={22} />
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em]">
-              Drylake
-            </p>
-
-            <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
-              Administration
-            </p>
-          </div>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">
+            Administration
+          </p>
         </Link>
       </div>
 

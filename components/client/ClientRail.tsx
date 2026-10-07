@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Globe2, Menu, ShieldCheck, X } from "lucide-react";
+import { Building2, Globe2, Menu, X } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
+
+import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 
 import {
   ClientAccountButton,
@@ -22,17 +24,11 @@ type RailProps = {
 
 function Brand() {
   return (
-    <Link href={"/client"} className="flex min-h-11 items-center gap-3">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl cp-tint ring-1 ring-[#f26a2e]/25">
-        <ShieldCheck aria-hidden="true" size={18} className="text-[#f26a2e]" />
-      </span>
-      <span>
-        <span className="block text-xs font-semibold uppercase tracking-[0.22em] text-white">
-          Drylake
-        </span>
-        <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-white/40">
-          Client portal
-        </span>
+    <Link href={"/client"} className="flex min-h-11 flex-col justify-center gap-1.5">
+      {/* Canonical wordmark (brand swap only; the rail itself is PR 4's). */}
+      <DrylakeWordmark lockup tone="dark" surface="#10100f" height={22} />
+      <span className="block text-[10px] uppercase tracking-[0.16em] text-white/40">
+        Client portal
       </span>
     </Link>
   );

@@ -7,6 +7,7 @@ import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import ClientAccessLink from "@/components/navigation/ClientAccessLink";
 import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 import { ENTITY } from "@/lib/discovery/entity";
 import { PRIMARY_CTA, PRIMARY_NAV } from "@/lib/navigation/site-nav";
 
@@ -156,14 +157,14 @@ export default function MobileMenu({
               )}
             </ClientAccessLink>
 
-            <SiteLink
+            <PrimaryCta
               href={PRIMARY_CTA.href}
               onNavigate={handleNavigate}
-              className="btn-signal mt-3 w-full !min-h-[60px] !text-base"
+              size="large"
+              className="mt-3 w-full"
             >
-              <span>{PRIMARY_CTA.label}</span>
-              <ArrowUpRight aria-hidden="true" size={18} />
-            </SiteLink>
+              {PRIMARY_CTA.label}
+            </PrimaryCta>
 
             <div className="mt-8 flex items-center justify-between gap-4 border-t border-white/10 pt-5 text-xs text-white/55">
               <a href={`mailto:${ENTITY.email}`} className="inline-flex min-h-[44px] items-center">

@@ -1,7 +1,8 @@
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 
 import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 import SystemsMap from "@/components/visuals/SystemsMap";
 
 /*
@@ -46,10 +47,9 @@ export default function Hero() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <SiteLink href="/contact" className="btn-signal w-full sm:w-auto sm:min-w-[232px]">
-                  <span>Start a conversation</span>
-                  <ArrowUpRight aria-hidden="true" size={16} />
-                </SiteLink>
+                <PrimaryCta href="/contact" className="w-full sm:w-auto sm:min-w-[232px]">
+                  Start a conversation
+                </PrimaryCta>
 
                 <SiteLink href="/#approach" className="btn-ghost-dark w-full sm:w-auto sm:min-w-[188px]">
                   <span>How we work</span>
