@@ -10,9 +10,10 @@ import PrimaryCta from "@/components/ui/PrimaryCta";
  * closes on the horizon, a full-bleed rule that draws in and runs straight into the footer,
  * where the cropped wordmark sits as the full stop (components/layout/Footer.tsx).
  *
- * `aside` (homepage): the questions block (FAQ) takes the right-hand column and the direct lines
- * move under the call to action, so "conversation" is one place: the ask, the answers to what an
- * owner would wonder first, and the phone number. Other pages keep the direct lines on the right.
+ * `aside` (homepage): the questions block (FAQ) follows as its own full-width band under the
+ * call to action and the direct lines (mobile refinement 2026-10-07: it was a five-column side
+ * panel, too narrow on desktop), so "conversation" is still one place: the ask, the phone number
+ * and the answers to what an owner would wonder first.
  */
 export default function ContactCTA({ aside }: { aside?: ReactNode }) {
   const lines = (
@@ -45,8 +46,8 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
           Start a conversation
         </p>
 
-        <div className={`mt-6 grid gap-10 sm:mt-8 sm:gap-12 lg:grid-cols-12 lg:gap-8 ${aside ? "lg:items-start" : "lg:items-end"}`}>
-          <div className={aside ? "lg:col-span-6" : "lg:col-span-8"}>
+        <div className="mt-6 grid gap-10 sm:mt-8 sm:gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
+          <div className="lg:col-span-8">
             <h2 className="type-display max-w-[11ch] text-balance">
               Have a problem <span className="text-white/45">worth fixing?</span>
             </h2>
@@ -59,16 +60,12 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
             <PrimaryCta href="/contact" size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
               Start a conversation
             </PrimaryCta>
-
-            {aside && <div className="mt-8 max-w-md sm:mt-10">{lines}</div>}
           </div>
 
-          {aside ? (
-            <div className="border-t border-white/12 pt-7 lg:col-span-5 lg:col-start-8 lg:border-t-0 lg:pt-2">{aside}</div>
-          ) : (
-            <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">{lines}</div>
-          )}
+          <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">{lines}</div>
         </div>
+
+        {aside && <div className="mt-12 border-t border-white/12 pt-10 sm:mt-16 sm:pt-14 lg:mt-(--section-y) lg:pt-16">{aside}</div>}
       </Container>
 
       <InView className="relative" threshold={0.5}>

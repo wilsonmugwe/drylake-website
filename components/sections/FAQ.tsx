@@ -6,8 +6,13 @@ import { faqs } from "@/lib/faqs";
 
 /*
  * The homepage questions, folded into the closing conversation (experience polish, 2026-10-07,
- * brief section 9): the same five questions and answers, now beside the call to action they
- * support instead of a whole chapter before it. Rendered inside ContactCTA (dark surface).
+ * brief section 9): the same five questions and answers, under the call to action they support
+ * instead of a whole chapter before it. Rendered inside ContactCTA (dark surface).
+ *
+ * Desktop (mobile refinement 2026-10-07): an editorial split across the full content width, the
+ * heading and a short note in the first third (sticky while answers open), the accordion in the
+ * remaining two thirds, so questions get room to breathe instead of a narrow column. The
+ * Container's max width bounds it on very large screens. Phones stack: heading, note, accordion.
  *
  * Accessible accordion (button inside the heading). Answers stay in the DOM when collapsed, so
  * search engines and the FAQPage schema (app/page.tsx, lib/faqs.ts) see exactly the text a
@@ -17,23 +22,37 @@ export default function FAQ() {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <div id="faq">
-      <h2 className="tech-label text-white/60">Before you ask</h2>
+    <div id="faq" className="grid gap-7 sm:gap-9 lg:grid-cols-12 lg:gap-8">
+      <div className="lg:col-span-4">
+        <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
+          <p className="section-label flex items-center gap-2.5 text-white/60">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
+            Questions
+          </p>
+          <h2 className="mt-5 text-[clamp(2rem,7.5vw,2.9rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-white lg:text-[clamp(2.2rem,2.9vw,3.1rem)]">
+            Before you ask.
+          </h2>
+          <p className="mt-4 max-w-[22rem] text-sm leading-6 text-white/62 sm:text-[0.95rem] sm:leading-7">
+            What owners usually want to know first, answered plainly. Anything else, call or email us
+            directly.
+          </p>
+        </div>
+      </div>
 
-      <div className="mt-3 border-t border-white/14">
+      <div className="border-t border-white/14 lg:col-span-8">
         {faqs.map((faq, index) => {
           const isOpen = active === index;
 
           return (
             <div key={faq.question} className="border-b border-white/14">
-              <h3 className="text-[0.98rem] font-medium leading-snug tracking-[-0.015em] text-white/90 sm:text-[1.05rem]">
+              <h3 className="text-[0.98rem] font-medium leading-snug tracking-[-0.015em] text-white/90 sm:text-[1.05rem] lg:text-[1.22rem] lg:tracking-[-0.02em]">
                 <button
                   type="button"
                   id={`faq-question-${index}`}
                   onClick={() => setActive(isOpen ? null : index)}
                   aria-expanded={isOpen}
                   aria-controls={`faq-answer-${index}`}
-                  className="group flex min-h-[52px] w-full items-center gap-4 py-3 text-left"
+                  className="group flex min-h-[52px] w-full items-center gap-6 py-3 text-left lg:min-h-[76px] lg:py-5"
                 >
                   <span className="flex-1">{faq.question}</span>
 
@@ -57,7 +76,7 @@ export default function FAQ() {
                 data-open={isOpen ? "true" : "false"}
               >
                 <div>
-                  <p className="pb-5 pr-6 text-sm leading-6 text-white/68">{faq.answer}</p>
+                  <p className="max-w-[64ch] pb-5 pr-6 text-sm leading-6 text-white/68 lg:pb-7 lg:text-[0.98rem] lg:leading-7">{faq.answer}</p>
                 </div>
               </div>
             </div>
