@@ -222,7 +222,10 @@ describe("the redesign kept the approved homepage copy", () => {
     "We're entering the same information more than once.", "Your team is copying information between systems instead of doing useful work.",
     "Our systems don't talk to each other.", "Information is spread across platforms, creating gaps, delays and manual work.",
     "Too much depends on manual follow-up.", "Routine work still relies on emails, reminders and somebody remembering what happens next.",
-    "You don't need to know the technical solution.", "Tell us what is slowing the business down. We'll work backwards from the problem.",
+    // Final refinement 2026-10-08: the Problems "NEXT" reassurance ("You don't need to know the
+    // technical solution...") was retired as a repeat of the closing "No technical brief required"
+    // (kept below); that slot now links to /solutions.
+    "See every business problem we solve",
     // What We Do
     "02 / What We Do", "Less workaround.", "More workflow.",
     "We build software, automate the repetitive work and join up the systems you already use, so your team spends less time on admin.",
@@ -243,7 +246,8 @@ describe("the redesign kept the approved homepage copy", () => {
     // "What founder-led means" + its statement now close the founders block on /about (variant="page").
     // Approach + production
     "04 / How We Work", "Understand first.", "Build second.",
-    "No technical specification required. We start with the business problem and work forward from there.",
+    // Final refinement: "No technical specification required." dropped here (it repeated the CTA).
+    "We start with the business problem and work forward from there.",
     "We learn how the business works today, where time is being lost and what actually needs to improve.",
     "Production Matters", "The boring part", "is the hard part.",
     "We engineer the less visible parts that make software dependable when the business starts relying on it.",

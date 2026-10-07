@@ -770,8 +770,14 @@ main [tabindex="-1"]:focus {
 
 /*
  * The hero's composition (components/visuals/LakeField.tsx + the tile placement below). The field
- * is static: it paints with the first frame and never moves. Only its lit cracks draw, once,
- * after the tile has locked (1.2 s), so the connection reads as spreading out from the mark.
+ * is static: it paints with the first frame and never moves. Its lit cracks draw once, after the
+ * tile has locked (1.2 s), so the connection reads as spreading out from the mark.
+ *
+ * Final refinement (2026-10-08): the background whispers. The lit cracks were orange at 0.55 and
+ * ran straight through "on workarounds." and the proposition; they are now a warm neutral just
+ * above the plate tone, so the geometry stays legible as structure but never competes with the
+ * type. Orange is kept where it means something: the small nodes where cracks meet, and the tile
+ * itself (LakeBed), whose connections stay signal orange.
  */
 .lf-plates path {
   fill: #141412;
@@ -782,10 +788,9 @@ main [tabindex="-1"]:focus {
 
 .lf-link {
   fill: none;
-  stroke: var(--signal);
+  stroke: #3a332c;
   stroke-width: 2;
   stroke-linejoin: round;
-  opacity: 0.55;
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
@@ -794,6 +799,7 @@ main [tabindex="-1"]:focus {
 
 .lf-node {
   fill: var(--signal);
+  opacity: 0.7;
   animation: dl-fade 0.3s ease 1.9s both;
 }
 
@@ -844,19 +850,15 @@ main [tabindex="-1"]:focus {
 /* ------------------------------------------------- phone composition ---- */
 
 /*
- * Phones only (under 640 px, mobile refinement 2026-10-07; Hero.tsx). The first screen is one
- * composition: location, headline, the ConvergeMark still and the proposition fill exactly the
- * small viewport (100svh less the section's top padding), the picture taking the spare height
- * between headline and copy, so the white action starts just below the fold instead of peeking.
+ * Phones only (under 640 px, final refinement 2026-10-08; Hero.tsx). Document order is the
+ * hierarchy: location, headline, proposition, the five plates assembling, then the actions. No
+ * forced full-height first screen any more: the headline and proposition own the opening view and
+ * the picture follows them, so the CTA arrives after the story instead of competing with it.
  * Tablet and desktop are untouched: every rule here sits inside max-width 639px.
  */
 @media (max-width: 639px) {
   .hz-first {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100svh - var(--nav-h) - 20px);
-    padding-bottom: 1.75rem;
   }
 
   .hz-display {
@@ -877,105 +879,22 @@ main [tabindex="-1"]:focus {
     pointer-events: none;
   }
 
-  /* The field's lit cracks step back on phones; the picture carries the orange network. */
+  /* The field steps back further on phones: the plates carry the only orange movement. */
   .lf-link {
-    opacity: 0.3;
+    stroke: #2a2723;
   }
 
   .lf-node {
-    opacity: 0.55;
+    opacity: 0.4;
   }
 
-  .hz-first-art {
-    margin-block: auto;
-    padding-block: 1.75rem 0.5rem;
+  /* The assembly: a reserved square (aspect-ratio on .lb), so nothing below moves when the plates
+     lock. Wide enough that the labels stay at a readable size down to 320 px. */
+  .hz-assemble {
+    position: relative;
+    width: min(100%, 23rem);
+    margin: 2rem auto 0;
   }
-
-  .hz-first-art .cv {
-    max-width: 26rem;
-    margin-inline: auto;
-  }
-}
-
-/* Short phones (iPhone SE class): a smaller picture, so the proposition still lands on screen. */
-@media (max-width: 639px) and (max-height: 700px) {
-  .hz-first-art {
-    padding-block: 1rem 0.25rem;
-  }
-
-  .hz-first-art .cv {
-    max-width: 16.5rem;
-  }
-}
-
-/* ------------------------------------------------------------- converge ---- */
-
-/*
- * The phone hero picture (components/visuals/ConvergeMark.tsx). Static by design: the still is
- * the finished picture. The only motion is the paths drawing once into the node (about 1.5 s,
- * after first paint), then the node fading up. Finite, transform/opacity/dashoffset only.
- */
-.cv-shard {
-  fill: #1d1d1a;
-  stroke: rgba(255, 255, 255, 0.42);
-  stroke-width: 1;
-}
-
-.cv-row {
-  fill: rgba(255, 255, 255, 0.26);
-}
-
-.cv-path {
-  fill: none;
-  stroke: var(--signal);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  opacity: 0.85;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-  animation: lb-draw 1.1s var(--ease-out) calc(0.35s + var(--i, 0) * 0.09s) both;
-}
-
-.cv-path-in {
-  stroke-width: 2;
-  opacity: 1;
-  animation-delay: 1.2s;
-  animation-duration: 0.35s;
-}
-
-.cv-node-ring {
-  fill: var(--ink);
-  stroke: var(--signal);
-  stroke-width: 1.2;
-}
-
-.cv-node-dot {
-  fill: var(--signal);
-}
-
-.cv-node {
-  animation: dl-fade 0.4s ease 1.1s both;
-}
-
-.cv-label {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  transform: translateX(-50%);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.cv-label-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--signal);
 }
 
 /* ------------------------------------------------------------- lake bed ---- */
@@ -1085,6 +1004,86 @@ main [tabindex="-1"]:focus {
   transform: scaleX(0);
   transform-origin: left center;
   animation: lb-strike 0.3s ease calc(0.55s + var(--i, 0) * 0.06s) both;
+}
+
+/*
+ * Phone assembly (LakeBed variant="phone", final refinement 2026-10-08). Same story as the desktop
+ * tile, paced for a calm read rather than a flourish, about 3.6 s after the tiles reach the screen:
+ *   0.00-0.60  fragmented: five plates apart, dimmed, labels already readable on them
+ *   0.60-2.30  the plates travel home, staggered 0.11 s, on an ease with no overshoot
+ *   2.10-2.80  plates light up; the ochre plate turns on as "One system"
+ *   2.50-3.40  the cracks draw as connections, then a node lands at each junction
+ * Then it holds. No loop. Every phone keyframe is "from"-only and every fill is "backwards", so
+ * once the timeline ends nothing is left in effect and the resting tile is byte-for-byte the
+ * reduced-motion render (held animations left letter gaps in the labels' text). InView sets data-inview="false" while the tiles are below the fold,
+ * which pauses the timeline at its start (no JavaScript: it simply plays from page load).
+ */
+.lb-phone {
+  --lb-calm: cubic-bezier(0.33, 0, 0.12, 1);
+  --lb-dark: #2b2a25;
+  --t0: 0.6s;
+}
+
+.lb-phone .lb-plate {
+  animation: lb-settle-phone 1.7s var(--lb-calm) calc(var(--t0) + var(--i, 0) * 0.11s) backwards;
+}
+
+.lb-phone .lb-fill {
+  animation: lb-light 0.7s ease calc(var(--t0) + 1.5s + var(--i, 0) * 0.05s) backwards;
+}
+
+.lb-phone .lb-fill-ochre {
+  animation-delay: calc(var(--t0) + 1.85s);
+}
+
+.lb-phone .lb-link {
+  animation: lb-draw 0.75s var(--lb-calm) calc(var(--t0) + 1.9s + var(--i, 0) * 0.06s) backwards;
+}
+
+.lb-phone .lb-node {
+  animation: dl-fade 0.45s ease calc(var(--t0) + 2.6s) backwards;
+}
+
+/* Each label rides with its plate, then turns to ink in step with its own plate lighting up
+   (the same delay as .lb-fill), so it is never dark-on-dark in between. Fill is "backwards", not
+   "both": both keyframes are "from"-only, so the end state is identical, and releasing the
+   animation at the end lets the text re-rasterise crisply (a held layer left gaps in "Jobs"). */
+.lb-phone .lb-label {
+  font-size: clamp(12px, 4.15cqw, 15px);
+  animation:
+    lb-label-ride 1.7s var(--lb-calm) calc(var(--t0) + var(--i, 0) * 0.11s) backwards,
+    lb-label-ink 0.7s ease calc(var(--t0) + 1.5s + var(--i, 0) * 0.05s) backwards;
+}
+
+/* "One system" sits on the narrowest plate: a step smaller, so it keeps clear of the plate edge. */
+.lb-phone .lb-label-ochre {
+  font-size: clamp(11px, 3.7cqw, 13.5px);
+  animation: dl-fade 0.55s ease calc(var(--t0) + 2s) backwards;
+}
+
+[data-inview="false"] .lb-phone,
+[data-inview="false"] .lb-phone * {
+  animation-play-state: paused;
+}
+
+@keyframes lb-settle-phone {
+  from {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--r));
+    opacity: 0.9;
+  }
+}
+
+@keyframes lb-label-ink {
+  from {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* The phone view box is 122 units wide, so one tile unit is 100/122 of 1cqw. */
+@keyframes lb-label-ride {
+  from {
+    translate: calc(var(--dx) * 0.82cqw) calc(var(--dy) * 0.82cqh);
+  }
 }
 
 @keyframes lb-settle {
@@ -1227,15 +1226,15 @@ main [tabindex="-1"]:focus {
 .hz-sys {
   container-type: size;
   /* k: nodes travel; w: workarounds fade; q: spine draws; c: drops connect; h: hub + status.
-     Mobile refinement 2026-10-07: two movements with a rest between them. The first (travel)
-     ends at 0.34; nothing moves from 0.34 to 0.48, so the arranged-but-unconnected state can be
-     read; the second (spine, drops, hub) then runs over the remaining half instead of a quarter
-     that overlapped the first. Was: travel 0-0.45 overlapping a 0.38-0.88 connect, no rest. */
-  --k: clamp(0, var(--p, 1) / 0.34, 1);
-  --w: clamp(0, 1 - var(--p, 1) / 0.3, 1);
-  --q: clamp(0, (var(--p, 1) - 0.48) / 0.18, 1);
-  --c: clamp(0, (var(--p, 1) - 0.58) / 0.24, 1);
-  --h: clamp(0, (var(--p, 1) - 0.74) / 0.26, 1);
+     Final refinement 2026-10-08: three readable states, each held. Disconnected holds still for
+     the first 0.08; travel runs 0.08-0.40; arranged rests 0.40-0.54; the connect movement runs
+     0.54-1 (spine, drops, hub). Integrations.tsx resolves --p at 72% of a longer track, so the
+     connected state then holds for the rest of the pin. Was: travel from 0, rest 0.34-0.48. */
+  --k: clamp(0, (var(--p, 1) - 0.08) / 0.32, 1);
+  --w: clamp(0, 1 - (var(--p, 1) - 0.06) / 0.28, 1);
+  --q: clamp(0, (var(--p, 1) - 0.54) / 0.16, 1);
+  --c: clamp(0, (var(--p, 1) - 0.62) / 0.22, 1);
+  --h: clamp(0, (var(--p, 1) - 0.76) / 0.24, 1);
 }
 
 .hz-workarounds,
@@ -1363,11 +1362,12 @@ main [tabindex="-1"]:focus {
 }
 
 /* Desktop track for the pinned stage (experience polish: 250vh to 175vh; mobile refinement:
-   230vh, so the slower two-movement story has scroll to play out over). Motion only: under
-   reduced motion the stage rests connected and the track is just its content. */
+   230vh; final refinement: 300vh, so each of the three states has scroll to be read in and the
+   connected state holds). Motion only: under reduced motion the stage rests connected and the
+   track is just its content. */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .hz-sys-track {
-    height: 230vh;
+    height: 300vh;
   }
 }
 
@@ -1377,15 +1377,15 @@ main [tabindex="-1"]:focus {
 }
 
 .hz-readout-0 {
-  opacity: clamp(0, (0.32 - var(--p, 1)) * 8, 1);
+  opacity: clamp(0, (0.36 - var(--p, 1)) * 8, 1);
 }
 
 .hz-readout-1 {
-  opacity: clamp(0, min((var(--p, 1) - 0.34) * 8, (0.84 - var(--p, 1)) * 8), 1);
+  opacity: clamp(0, min((var(--p, 1) - 0.38) * 8, (0.86 - var(--p, 1)) * 8), 1);
 }
 
 .hz-readout-2 {
-  opacity: clamp(0, (var(--p, 1) - 0.84) * 8, 1);
+  opacity: clamp(0, (var(--p, 1) - 0.86) * 8, 1);
 }
 
 /* -------------------------------------------------------- service rows ---- */
@@ -1520,9 +1520,7 @@ main [tabindex="-1"]:focus {
   .lb-node,
   .lb-label,
   .lb-note,
-  .lb-note::after,
-  .cv-path,
-  .cv-node {
+  .lb-note::after {
     animation: none !important;
   }
 

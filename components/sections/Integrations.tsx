@@ -22,8 +22,11 @@ export default function Integrations() {
       {/* Mobile refinement 2026-10-07: the second movement (connecting) was arriving before the
           first (arranging) could be read. The story now resolves 80% of the way through a longer
           track (desktop) and, on phones, runs while the stage is on screen (it used to finish with
-          the stage half below the fold), with a rest between the two movements (public-site.css). */}
-      <ScrollProgress rest={1} start={0.35} finish={0.8} passStart={0.3} end={-0.6} className="hz-sys-track relative">
+          the stage half below the fold), with a rest between the two movements (public-site.css).
+          Final refinement 2026-10-08: still read as too fast. The story now starts as the stage
+          enters on phones (passStart 0.6; 0.79 viewport heights of story, was 0.72), resolves at 72% of a 300vh desktop track and then
+          holds connected; on phones it resolves with the whole stage on screen. */}
+      <ScrollProgress rest={1} start={0.35} finish={0.72} passStart={0.6} end={-0.5} className="hz-sys-track relative">
         <div className="lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:items-center">
           <Container className="relative w-full pt-(--section-y) lg:pb-6 lg:pt-[calc(var(--nav-h)+12px)]">
             <div className="grid gap-8 sm:gap-12 lg:grid-cols-12 lg:items-center lg:gap-8">

@@ -9,6 +9,10 @@ import { faqs } from "@/lib/faqs";
  * brief section 9): the same five questions and answers, under the call to action they support
  * instead of a whole chapter before it. Rendered inside ContactCTA (dark surface).
  *
+ * Final refinement 2026-10-08: open answers were tight under their questions on desktop; rows
+ * get more height, the columns a wider gutter, answers a larger size, longer leading and a
+ * clearer gap from the next question. Same component, same five questions.
+ *
  * Desktop (mobile refinement 2026-10-07): an editorial split across the full content width, the
  * heading and a short note in the first third (sticky while answers open), the accordion in the
  * remaining two thirds, so questions get room to breathe instead of a narrow column. The
@@ -22,7 +26,7 @@ export default function FAQ() {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <div id="faq" className="grid gap-7 sm:gap-9 lg:grid-cols-12 lg:gap-8">
+    <div id="faq" className="grid gap-7 sm:gap-9 lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
       <div className="lg:col-span-4">
         <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
           <p className="section-label flex items-center gap-2.5 text-white/60">
@@ -52,7 +56,7 @@ export default function FAQ() {
                   onClick={() => setActive(isOpen ? null : index)}
                   aria-expanded={isOpen}
                   aria-controls={`faq-answer-${index}`}
-                  className="group flex min-h-[52px] w-full items-center gap-6 py-3 text-left lg:min-h-[76px] lg:py-5"
+                  className="group flex min-h-[52px] w-full items-center gap-6 py-3 text-left lg:min-h-[84px] lg:py-6"
                 >
                   <span className="flex-1">{faq.question}</span>
 
@@ -76,7 +80,7 @@ export default function FAQ() {
                 data-open={isOpen ? "true" : "false"}
               >
                 <div>
-                  <p className="max-w-[64ch] pb-5 pr-6 text-sm leading-6 text-white/68 lg:pb-7 lg:text-[0.98rem] lg:leading-7">{faq.answer}</p>
+                  <p className="max-w-[62ch] pb-6 pr-6 text-sm leading-6 text-white/72 lg:-mt-1 lg:pb-9 lg:text-[1.04rem] lg:leading-[1.8]">{faq.answer}</p>
                 </div>
               </div>
             </div>

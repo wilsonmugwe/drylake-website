@@ -46,8 +46,7 @@ export default function Approach() {
             </h2>
 
             <p className="type-lede mt-5 sm:mt-7 max-w-xl text-black/62">
-              No technical specification required. We start with the business
-              problem and work forward from there.
+              We start with the business problem and work forward from there.
             </p>
           </div>
         </div>

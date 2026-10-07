@@ -256,10 +256,11 @@ describe("MOTION", () => {
     assert.ok(!/min-h-\[58vh\]/.test(problems));
   });
 
-  it("the pinned systems track is shorter than the original and only exists when motion is allowed", () => {
+  it("the pinned systems track only exists when motion is allowed", () => {
     assert.ok(!/lg:h-\[250vh\]/.test(integrations));
-    // 175vh (experience polish) to 230vh (mobile refinement: room for the slower second movement).
-    assert.match(CSS, /@media \(min-width: 1024px\) and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.hz-sys-track\s*\{\s*height:\s*230vh;/);
+    // 175vh (experience polish), 230vh (mobile refinement), 300vh (final refinement 2026-10-08: the
+    // sequence read as too fast; each state now holds, in CSS only, never on reduced motion).
+    assert.match(CSS, /@media \(min-width: 1024px\) and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.hz-sys-track\s*\{\s*height:\s*300vh;/);
   });
 
   it("reduced motion stops every new animation and keeps readable resting states", () => {

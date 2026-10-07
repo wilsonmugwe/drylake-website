@@ -26,6 +26,6 @@ export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: "How do we get started?",
     answer:
-      "Start with a conversation. Call +61 420 565 457, email hello@drylake.com.au or use our contact form. You do not need to prepare a technical brief first.",
+      "Start with a conversation. Call +61 420 565 457, email hello@drylake.com.au or use our contact form.",
   },
 ];
