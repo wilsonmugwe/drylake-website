@@ -9,6 +9,7 @@ import {
   type InvoiceEmailKind,
 } from "@/lib/email/invoice-email";
 import { isOverdue } from "@/lib/invoices/lifecycle";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 /*
  * Shared I/O for the admin Issue and Resend routes: load what the invoice email needs,
@@ -230,6 +231,9 @@ export async function deliverInvoiceEmail(
     const { data, error } = await getResendClient().emails.send({
       from: getEmailFromAddress(),
       to: [context.billingEmail],
+      // The sender address (billing@) has no mailbox: without this, a client replying to an
+      // invoice gets a bounce (verified 2026-10-08, "billing wasn't found at drylake.com.au").
+      replyTo: CONTACT_EMAIL,
       subject: email.subject,
       html: email.html,
       text: email.text,
