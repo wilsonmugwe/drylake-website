@@ -167,14 +167,16 @@ describe("structured data describes one organisation", () => {
   });
 
   it("breadcrumbs are absolute and ordered", () => {
-    const crumbs = breadcrumbNode("/solutions/applied-ai", [
+    const crumbs = breadcrumbNode("/services/ai-automation", [
       { name: "Home", path: "/" },
-      { name: "Solutions", path: "/solutions" },
+      { name: "Services", path: "/services" },
+      { name: "AI automation", path: "/services/ai-automation" },
     ]);
 
     assert.deepEqual(crumbs.itemListElement.map((item) => [item.position, item.item]), [
       [1, SITE_URL],
-      [2, `${SITE_URL}/solutions`],
+      [2, `${SITE_URL}/services`],
+      [3, `${SITE_URL}/services/ai-automation`],
     ]);
   });
 
@@ -188,7 +190,9 @@ describe("structured data describes one organisation", () => {
     for (const file of [
       "app/page.tsx",
       "app/solutions/page.tsx",
-      "app/solutions/[slug]/page.tsx",
+      "app/services/page.tsx",
+      "app/services/[slug]/page.tsx",
+      "app/perth/page.tsx",
       "app/about/page.tsx",
       "app/contact/page.tsx",
       "app/privacy/page.tsx",
@@ -208,7 +212,7 @@ describe("every public page is listed, titled and canonical", () => {
   const routes = routeFiles.flatMap((file) => {
     const route = `/${file.replace(/^app\//, "").replace(/\/?page\.tsx$/, "")}`.replace(/\/$/, "") || "/";
 
-    if (route === "/solutions/[slug]") return SERVICES.map((service) => service.path);
+    if (route === "/services/[slug]") return SERVICES.map((service) => service.path);
     assert.ok(!route.includes("["), `unexpected dynamic public route ${route}: list its pages in PUBLIC_PAGES`);
 
     return [route];
@@ -267,17 +271,28 @@ describe("every public page is listed, titled and canonical", () => {
   });
 
   it("service pages are statically generated and only for known services", () => {
-    const source = code("app/solutions/[slug]/page.tsx");
+    const source = code("app/services/[slug]/page.tsx");
 
     assert.match(source, /export const dynamicParams = false/);
     assert.match(source, /generateStaticParams/);
   });
 
-  it("every service page is linked from the homepage section, the footer and /solutions", () => {
+  it("every service page is linked from the footer and the /services, /solutions, /perth and /about lists", () => {
+    // ServiceIndex renders every service by default; these pages render it without a subset.
+    assert.match(code("components/sections/ServiceIndex.tsx"), /services = SERVICES/);
+    for (const page of ["app/services/page.tsx", "app/solutions/page.tsx", "app/perth/page.tsx", "app/about/page.tsx"]) {
+      assert.match(code(page), /<ServiceIndex\b(?![^>]*services=)/, page);
+    }
+    assert.match(code("components/layout/Footer.tsx"), /SERVICES\.map\(/);
+  });
+
+  it("the homepage What We Do section links into the service pages", () => {
     const solutions = read("components/sections/Solutions.tsx");
 
-    for (const service of SERVICES) assert.ok(solutions.includes(`href: "${service.path}"`), service.path);
-    assert.match(code("components/layout/Footer.tsx"), /SERVICES\.map\(/);
+    for (const slug of ["custom-software-development", "business-automation", "systems-integration", "ai-automation"]) {
+      assert.ok(solutions.includes(`href: "/services/${slug}"`), slug);
+    }
+    assert.match(solutions, /href="\/services"/);
   });
 });
 
@@ -495,7 +510,7 @@ describe("pre-merge review (2026-10-06)", () => {
   });
 
   it("service pages: one H1, FAQ rendered from the same data as the FAQ schema, Service node", () => {
-    const page = read("app/solutions/[slug]/page.tsx");
+    const page = read("app/services/[slug]/page.tsx");
 
     assert.equal((page.match(/<h1\b/g) ?? []).length, 1);
     assert.match(page, /faqNode\(service\.path, service\.faqs\)/);

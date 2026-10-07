@@ -4,7 +4,7 @@
  * structured data. PURE (tests import it directly).
  */
 
-import { ENTITY, FOUNDERS, SERVICES, absoluteUrl } from "./entity.ts";
+import { ENTITY, FOUNDERS, PERTH_PATH, SERVICES, SERVICES_PATH, absoluteUrl } from "./entity.ts";
 
 export function llmsText(): string {
   const lines = [
@@ -36,7 +36,9 @@ export function llmsText(): string {
     "## Pages",
     "",
     `- [Home](${absoluteUrl("/")}): what Drylake does and who it works with`,
-    `- [Solutions](${absoluteUrl("/solutions")}): all service lines`,
+    `- [What we do](${absoluteUrl("/solutions")}): how the service lines fit together`,
+    `- [Services](${absoluteUrl(SERVICES_PATH)}): the five service lines`,
+    `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company`,
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,

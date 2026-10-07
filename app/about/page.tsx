@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Founders from "@/components/sections/Founders";
 import ContactCTA from "@/components/sections/ContactCTA";
+import ServiceIndex from "@/components/sections/ServiceIndex";
 import Container from "@/components/ui/Container";
 import CompanyDetails from "@/components/seo/CompanyDetails";
 import JsonLd from "@/components/seo/JsonLd";
@@ -115,6 +116,13 @@ export default function AboutPage() {
         </section>
 
         <Founders />
+        <ServiceIndex
+          id="about-services"
+          label="What we build"
+          heading="What Drylake builds"
+          showAllLink
+          secondaryLink={{ href: "/solutions", label: "How it fits together" }}
+        />
         <CompanyDetails />
         <ContactCTA />
       </main>
