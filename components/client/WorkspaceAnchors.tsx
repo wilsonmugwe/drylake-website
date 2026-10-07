@@ -27,6 +27,22 @@ import { anchorFromHash } from "./section-anchor";
 
 const WAIT_MS = 6000;
 
+/* Next 16 keeps a load-time hash in its route cache: see ANCHOR_STASH_SCRIPT (section-anchor.ts). */
+declare global {
+  interface Window {
+    __dlAnchor?: string;
+  }
+}
+
+/* A section is ready once it is laid out (not still inside React's hidden streaming slot). */
+function rendered(element: HTMLElement | null): element is HTMLElement {
+  return (
+    element !== null &&
+    element.getClientRects().length > 0 &&
+    !document.querySelector("#portal-main .cp-skeleton")
+  );
+}
+
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -44,9 +60,7 @@ function focusTarget(section: HTMLElement): HTMLElement {
   return section;
 }
 
-function land(section: HTMLElement, smooth: boolean) {
-  section.scrollIntoView({ block: "start", behavior: smooth ? "smooth" : "instant" });
-
+function focusSection(section: HTMLElement) {
   const target = focusTarget(section);
 
   if (!target.hasAttribute("tabindex")) {
@@ -54,6 +68,25 @@ function land(section: HTMLElement, smooth: boolean) {
   }
 
   target.focus({ preventScroll: true });
+}
+
+function land(section: HTMLElement, smooth: boolean) {
+  section.scrollIntoView({ block: "start", behavior: smooth ? "smooth" : "instant" });
+  focusSection(section);
+
+  // React can still be settling a just-streamed boundary, which drops focus to <body> a few
+  // milliseconds later (measured locally). Re-apply ONCE per check, and only if nothing
+  // else has taken focus since: a reader who has already moved on is never pulled back.
+  const id = section.id;
+  for (const delay of [60, 250]) {
+    window.setTimeout(() => {
+      const current = id ? document.getElementById(id) : null;
+
+      if (current && (document.activeElement === document.body || document.activeElement === null)) {
+        focusSection(current);
+      }
+    }, delay);
+  }
 
   if (!prefersReducedMotion()) {
     section.setAttribute("data-arrived", "");
@@ -89,7 +122,7 @@ export function revealSection(id: string, { smooth = false }: { smooth?: boolean
 
   const found = document.getElementById(id);
 
-  if (found) {
+  if (rendered(found)) {
     land(found, smooth && !prefersReducedMotion());
     return;
   }
@@ -100,8 +133,8 @@ export function revealSection(id: string, { smooth = false }: { smooth?: boolean
   const observer = new MutationObserver(() => {
     const element = document.getElementById(id);
 
-    // The skeleton is gone and the section exists: land on it.
-    if (element && !root.querySelector(".cp-skeleton")) {
+    // The skeleton is gone and the section is laid out: land on it.
+    if (rendered(element)) {
       cleanup();
       land(element, false);
     }
@@ -113,13 +146,13 @@ export function revealSection(id: string, { smooth = false }: { smooth?: boolean
     pending = null;
   }
 
-  observer.observe(root, { childList: true, subtree: true });
+  observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "style"] });
   timer = window.setTimeout(() => {
     cleanup();
 
     const element = document.getElementById(id);
 
-    if (element) {
+    if (rendered(element)) {
       land(element, false);
     } else {
       landOnPage();
@@ -149,7 +182,19 @@ export default function WorkspaceAnchors() {
 
   // Full load, refresh, or arrival from another Workspace page with a section in the URL.
   useEffect(() => {
-    const id = anchorFromHash(window.location.hash);
+    const stashed = anchorFromHash(window.__dlAnchor);
+
+    if (stashed) {
+      // Put the section back in the URL now that the router owns history (ANCHOR_STASH_SCRIPT).
+      delete window.__dlAnchor;
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${window.location.search}#${stashed}`
+      );
+    }
+
+    const id = stashed ?? anchorFromHash(window.location.hash);
 
     if (id) {
       revealSection(id);

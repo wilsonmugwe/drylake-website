@@ -17,6 +17,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  ANCHOR_STASH_SCRIPT,
   anchorFromHash,
   isSamePageDestination,
   splitDestination,
@@ -111,8 +112,8 @@ describe("Workspace navigation: grouped, real destinations only", () => {
     assert.match(nav, /event\.metaKey \|\| event\.ctrlKey \|\| event\.shiftKey \|\| event\.altKey \|\| event\.button !== 0/);
   });
 
-  it("touch targets: 44px groups and drawer sub-links, 36px rail sub-links (pointer)", () => {
-    assert.match(nav, /size === "drawer" \? "min-h-11" : "min-h-9"/);
+  it("touch targets: 44px groups and drawer sub-links, 32px rail sub-links (desktop pointer, above WCAG 2.5.8's 24px)", () => {
+    assert.match(nav, /size === "drawer" \? "min-h-11" : "min-h-8"/);
     assert.match(nav, /flex min-h-11 min-w-0 flex-1 items-center/);
     assert.match(nav, /className="flex w-12 shrink-0 items-center justify-center/);
   });
@@ -143,6 +144,11 @@ describe("Workspace deep links", () => {
     assert.match(code("components/client/ClientShell.tsx"), /<WorkspaceAnchors \/>/);
   });
 
+  it("focus dropped by a settling stream is restored once, never stolen back", () => {
+    assert.match(anchors, /for \(const delay of \[60, 250\]\)/);
+    assert.match(anchors, /document\.activeElement === document\.body \|\| document\.activeElement === null/);
+  });
+
   it("arrival focuses the section heading without a second scroll", () => {
     assert.match(anchors, /target\.setAttribute\("tabindex", "-1"\)/);
     assert.match(anchors, /target\.focus\(\{ preventScroll: true \}\)/);
@@ -156,15 +162,53 @@ describe("Workspace deep links", () => {
   });
 
   it("refresh, cross-page arrival, Back/Forward and typed hashes are all handled", () => {
-    assert.match(anchors, /useEffect\(\(\) => \{\s*const id = anchorFromHash\(window\.location\.hash\);[\s\S]*?\}, \[pathname\]\);/);
+    assert.match(anchors, /const id = stashed \?\? anchorFromHash\(window\.location\.hash\);[\s\S]*?\}, \[pathname\]\);/);
     assert.match(anchors, /addEventListener\("popstate", onHistory\)/);
     assert.match(anchors, /addEventListener\("hashchange", onHistory\)/);
   });
 
-  it("waits for a streaming page and falls back to the page heading", () => {
+  it("waits for a streaming page (laid out, skeleton gone) and falls back to the page heading", () => {
     assert.match(anchors, /new MutationObserver/);
-    assert.match(anchors, /root\.querySelector\("\.cp-skeleton"\)/);
+    assert.match(anchors, /element\.getClientRects\(\)\.length > 0/);
+    assert.match(anchors, /!document\.querySelector\("#portal-main \.cp-skeleton"\)/);
     assert.match(anchors, /landOnPage\(\);/);
+  });
+
+  /* Runs the real inline script against a stand-in location/history. */
+  function runStash(hash) {
+    const calls = [];
+    const win = {};
+    const location = { hash, pathname: "/client", search: "?a=1" };
+    const history = { state: { n: 1 }, replaceState: (...args) => calls.push(args) };
+    new Function("window", "location", "history", ANCHOR_STASH_SCRIPT)(win, location, history);
+    return { win, calls };
+  }
+
+  it("a load-time section hash is stashed before the router hydrates (Next 16 cache leak)", () => {
+    const { win, calls } = runStash("#recent-activity");
+    assert.equal(win.__dlAnchor, "recent-activity");
+    assert.deepEqual(calls, [[{ n: 1 }, "", "/client?a=1"]]);
+  });
+
+  it("the stash script survives React's text escaping (no & < > \" ' characters)", () => {
+    assert.ok(!/[&<>"']/.test(ANCHOR_STASH_SCRIPT));
+  });
+
+  it("anything that is not a plain section id is left alone", () => {
+    for (const hash of ["", "#", "#Projects", "#a b", "#<img>", "#portal-main1".replace("1", "!")]) {
+      const { win, calls } = runStash(hash);
+      assert.equal(win.__dlAnchor, undefined, hash);
+      assert.equal(calls.length, 0, hash);
+    }
+  });
+
+  it("the shell renders the stash script first, and the arrival handler restores the hash", () => {
+    const shell = code("components/client/ClientShell.tsx");
+    assert.match(shell, /<script>\{ANCHOR_STASH_SCRIPT\}<\/script>/);
+    assert.ok(!/dangerouslySetInnerHTML/.test(shell), "no raw HTML API");
+    assert.ok(shell.indexOf("<script>{ANCHOR_STASH_SCRIPT}") < shell.indexOf("<ClientMobileNav"));
+    assert.match(anchors, /const stashed = anchorFromHash\(window\.__dlAnchor\);/);
+    assert.match(anchors, /window\.history\.replaceState\(\s*window\.history\.state,/);
   });
 
   it("same-page links record history and wait for the drawer to release the scroll lock", () => {

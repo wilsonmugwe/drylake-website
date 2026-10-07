@@ -6,6 +6,7 @@ import ProductEnvironment from "@/components/shell/ProductEnvironment";
 
 import type { ClientSection } from "./ClientNav";
 import { ClientMobileNav, ClientSidebar } from "./ClientRail";
+import { ANCHOR_STASH_SCRIPT } from "./section-anchor";
 import WorkspaceAnchors from "./WorkspaceAnchors";
 
 type ClientShellProps = {
@@ -44,6 +45,9 @@ export default function ClientShell({
 }: ClientShellProps) {
   return (
     <div className="client-portal min-h-[100svh]">
+      {/* Runs during parse, before the router hydrates: see WorkspaceAnchors. */}
+      <script>{ANCHOR_STASH_SCRIPT}</script>
+
       <a href="#portal-main" className="cp-skip-link">
         Skip to content
       </a>

@@ -719,22 +719,27 @@ summary:focus-visible,
   border-bottom: 1px solid rgb(var(--dl-env-ink) / 0.08);
 }
 
+/* The tile at landscape scale, faded at its edges so no straight tile border shows. */
 .dl-env-cracks {
   position: absolute;
   top: -7rem;
   right: -11rem;
   width: 30rem;
   height: 30rem;
-  fill: none;
-  stroke: rgb(var(--dl-env-ink) / 0.075);
-  stroke-width: 1px;
+  -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 45%, transparent 100%);
+}
+
+/* Workspace: the plates are faint surfaces and the cracks are the gaps between them,
+   exactly as in the mark. The ochre plate is barely warmer than the rest. */
+.dl-env-plate {
+  fill: rgb(var(--dl-env-ink) / 0.045);
+  stroke: none;
 }
 
 .dl-env-plate-accent {
   fill: var(--dl-env-accent);
-  fill-opacity: 0.07;
-  stroke: var(--dl-env-accent);
-  stroke-opacity: 0.4;
+  fill-opacity: 0.12;
 }
 
 /* Workspace: a dot field (the restrained texture) and a lighter sky over the header. */
@@ -748,12 +753,13 @@ summary:focus-visible,
   background: rgb(255 255 255 / 0.42);
 }
 
-/* One short ochre stroke where the horizon meets the right gutter: the y of the wordmark. */
+/* One short ochre stroke where the horizon leaves the rail (the y of the wordmark). It sits
+   in the left gutter, which no card ever covers. */
 [data-environment="workspace"] .dl-env-horizon::after {
   position: absolute;
-  right: 1rem;
+  left: 0;
   bottom: -1px;
-  width: 2.25rem;
+  width: 0.75rem;
   height: 2px;
   background: var(--dl-env-accent);
   opacity: 0.7;
@@ -801,23 +807,29 @@ summary:focus-visible,
   background-image: repeating-linear-gradient(to right, rgb(var(--dl-env-ink) / 0.2) 0 1px, transparent 1px 120px);
 }
 
-[data-environment="admin"] .dl-env-cracks {
-  stroke: rgb(var(--dl-env-ink) / 0.1);
+/* Admin: the same plates as construction drawing: dashed outlines, no fill. */
+[data-environment="admin"] .dl-env-plate {
+  fill: none;
+  stroke: rgb(var(--dl-env-ink) / 0.12);
+  stroke-width: 1px;
 }
 
 [data-environment="admin"] .dl-env-plate-accent {
+  fill: var(--dl-env-accent);
   fill-opacity: 0.05;
-  stroke-opacity: 0.32;
+  stroke: var(--dl-env-accent);
+  stroke-opacity: 0.35;
 }
 
 .dl-env-joint {
   stroke: var(--dl-env-accent);
-  stroke-opacity: 0.6;
+  stroke-opacity: 0.35;
+  stroke-width: 1px;
 }
 
 .dl-env-joint circle {
   fill: var(--dl-env-accent);
-  fill-opacity: 0.6;
+  fill-opacity: 0.3;
   stroke: none;
 }
 
@@ -838,7 +850,7 @@ summary:focus-visible,
   }
 
   [data-environment="workspace"] .dl-env-horizon::after {
-    right: 2rem;
+    width: 1.5rem;
   }
 }
 
@@ -851,7 +863,7 @@ summary:focus-visible,
   }
 
   [data-environment="workspace"] .dl-env-horizon::after {
-    right: 2.75rem;
+    width: 2.25rem;
   }
 }
 

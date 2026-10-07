@@ -45,3 +45,23 @@ export function isSamePageDestination(href: string, pathname: string | null): bo
 
   return anchor !== null && path === pathname;
 }
+
+/*
+ * Next 16 seeds its route cache with the URL the document was loaded at, hash included, and
+ * reuses it: after a full load of /client#recent-activity, a later link to /client came back
+ * as /client#recent-activity and a link to /client#documents as
+ * /client#recent-activity#documents (reproduced locally, 2026-10-07). A hash added after
+ * hydration (history.pushState / replaceState) does not leak. So the shell's inline script
+ * (ANCHOR_STASH_SCRIPT, rendered by ClientShell before the router hydrates) moves a valid
+ * section hash out of the URL into window.__dlAnchor, and WorkspaceAnchors puts it back with
+ * replaceState once the router is live. Back/Forward and refresh are unaffected.
+ *
+ * It is a fixed string (no user input), rendered as a plain <script> text child: no raw-HTML
+ * API (tests/security-hardening allows raw HTML in the JSON-LD component only). React escapes
+ * & < > " ' in text, which would corrupt script source, so the string contains none of them
+ * (String() stands in for an empty string literal; test-pinned). It relies on the current
+ * script-src allowing inline scripts (lib/security/csp.ts); if a nonce-based CSP lands, give
+ * it the nonce. Without it the only loss is this workaround: deep links still work.
+ */
+export const ANCHOR_STASH_SCRIPT =
+  "(function(){try{var h=location.hash;if(/^#[a-z][a-z0-9-]{0,63}$/.test(h)){window.__dlAnchor=h.slice(1);history.replaceState(history.state,String(),location.pathname+location.search)}}catch(e){}})();";

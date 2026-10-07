@@ -147,7 +147,7 @@ function SectionNavLink({
 
   return (
     <li>
-      <Link href={href} onClick={onClick} className={`cp-nav-sub ${size === "drawer" ? "min-h-11" : "min-h-9"}`}>
+      <Link href={href} onClick={onClick} className={`cp-nav-sub ${size === "drawer" ? "min-h-11" : "min-h-8"}`}>
         <span className="min-w-0 truncate">{label}</span>
         <PendingAnnouncement />
         <PendingMark selected={false} />

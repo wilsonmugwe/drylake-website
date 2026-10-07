@@ -7,10 +7,11 @@ import { TILE_OCHRE, TILE_OCHRE_PLATE, TILE_PLATES } from "@/components/brand/Dr
  * (polish brief 15 and 16). ONE primitive, two variants, so both products stay one family:
  *
  *   workspace  client-facing: a dot field, a horizon with a slightly lighter "sky" above it,
- *              and the tile's cracks drawn large and faint, its ochre plate barely tinted.
+ *              and the tile drawn large and faint: plates as surfaces, cracks as the gaps
+ *              between them (as in the mark), its ochre plate barely warmer.
  *   admin      operational: a measured line grid (minor + major), the horizon as a ruler
- *              with ticks, the same cracks as construction lines with registration marks
- *              at their joints, ochre only on those marks.
+ *              with ticks, the same plates as dashed construction outlines with small
+ *              registration marks at their joints, ochre only on the accent plate and marks.
  *
  * Background only. It is aria-hidden, takes no pointer events, sits behind the content
  * (z-index 0 inside an `isolate` parent) and is drawn with CSS backgrounds and one static
@@ -63,8 +64,8 @@ export default function ProductEnvironment({ variant }: { variant: EnvironmentVa
         {admin
           ? JOINTS.map(([x, y]) => (
               <g key={`${x}-${y}`} className="dl-env-joint">
-                <circle cx={x} cy={y} r={0.9} vectorEffect="non-scaling-stroke" />
-                <path d={`M${x - 2.4} ${y} H${x + 2.4} M${x} ${y - 2.4} V${y + 2.4}`} vectorEffect="non-scaling-stroke" />
+                <circle cx={x} cy={y} r={0.55} />
+                <path d={`M${x - 1.8} ${y} H${x + 1.8} M${x} ${y - 1.8} V${y + 1.8}`} vectorEffect="non-scaling-stroke" />
               </g>
             ))
           : null}
