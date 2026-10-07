@@ -1,4 +1,6 @@
 import Link from "next/link";
+
+import SiteLink from "@/components/navigation/SiteLink";
 import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -64,7 +66,7 @@ export default function SystemScreen({
         {children}
 
         <div className="mt-8 flex flex-col gap-2.5 sm:flex-row">
-          <Link
+          <SiteLink
             href="/"
             className="button-light group flex min-h-[50px] items-center justify-between gap-4 bg-white px-5 text-sm font-semibold text-black sm:w-fit sm:min-w-[220px] sm:px-6"
           >
@@ -73,7 +75,7 @@ export default function SystemScreen({
               size={16}
               className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
             />
-          </Link>
+          </SiteLink>
         </div>
 
         <nav

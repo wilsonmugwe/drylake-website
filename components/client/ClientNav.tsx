@@ -3,6 +3,7 @@
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useClerk } from "@clerk/nextjs";
+import { SIGN_OUT_REDIRECT_URL } from "@/lib/navigation/site-nav";
 import { LayoutDashboard, LoaderCircle, LogOut, Receipt, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -136,7 +137,7 @@ export function SignOutButton() {
       disabled={signingOut}
       onClick={() => {
         setSigningOut(true);
-        void signOut({ redirectUrl: "/" });
+        void signOut({ redirectUrl: SIGN_OUT_REDIRECT_URL });
       }}
       className="cp-rail-item disabled:cursor-wait disabled:opacity-60"
     >

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
+import { SIGN_OUT_REDIRECT_URL } from "@/lib/navigation/site-nav";
 import { useState } from "react";
 import {
   Building2,
@@ -139,7 +140,7 @@ export default function AdminMobileNav() {
 
             <button
               type="button"
-              onClick={() => signOut({ redirectUrl: "/" })}
+              onClick={() => signOut({ redirectUrl: SIGN_OUT_REDIRECT_URL })}
               className="flex items-center gap-3 border-t border-white/10 px-3 pt-5 text-sm text-white/60"
             >
               <LogOut size={17} />

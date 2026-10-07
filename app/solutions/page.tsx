@@ -10,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import Solutions from "@/components/sections/Solutions";
 import SmallThings from "@/components/sections/SmallThings";
 import Approach from "@/components/sections/Approach";
+import Production from "@/components/sections/Production";
 import ContactCTA from "@/components/sections/ContactCTA";
 import ServiceIndex from "@/components/sections/ServiceIndex";
 
@@ -71,7 +72,7 @@ export default function SolutionsPage() {
               </div>
 
               <div>
-                <h1 className="max-w-5xl text-[clamp(3.6rem,8vw,8rem)] font-semibold leading-[0.86] tracking-[-0.07em]">
+                <h1 className="type-section text-balance max-w-5xl">
                   Technology should solve the problem.
                 </h1>
 
@@ -93,6 +94,7 @@ export default function SolutionsPage() {
           secondaryLink={{ href: "/perth", label: "Drylake in Perth" }}
         />
         <Approach />
+        <Production />
         <ContactCTA />
       </main>
 

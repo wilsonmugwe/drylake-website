@@ -1,0 +1,590 @@
+/* =========================================================
+   DRYLAKE PUBLIC SITE: VISUAL SYSTEM (2026-10 redesign)
+
+   One language for every public marketing route: type scale, colour rhythm, the sticky
+   header, and "the Drylake Line", a 1px technical path that draws itself and carries a
+   small orange signal. Admin (.drylake-admin) and the client portal (.client-portal) do
+   not use any of this.
+
+   Motion rules: CSS only (no scroll listeners), transform/opacity/stroke-dashoffset only,
+   nothing perpetual, everything off under prefers-reduced-motion (globals.css), and no
+   text is ever hidden waiting for JavaScript: only decorative SVG strokes are pre-hidden,
+   and only after a script has marked them as below the fold (data-inview="false").
+   ========================================================= */
+
+:root {
+  --ink: #0b0b0a;
+  --ink-2: #121210;
+  --ink-3: #1a1a17;
+  --paper: #ffffff;
+  --mineral: #f2f0e9;
+  --stone: #e6e3da;
+  --signal: #f26a2e;
+
+  --nav-h: 68px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --nav-h: 76px;
+  }
+}
+
+/* Section links land below the sticky header, never under it. */
+main [id] {
+  scroll-margin-top: calc(var(--nav-h) + 8px);
+}
+
+/* Sections receive programmatic focus from the nav (SiteLink); no outline box on them. */
+main section[tabindex="-1"]:focus,
+main [tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* =========================================================
+   TYPE SCALE
+   ========================================================= */
+
+/* Sized against the longest hero line ("shouldn't run", about 6.8em wide). */
+.type-display {
+  font-size: clamp(2.45rem, 12.4vw, 4.8rem);
+  font-weight: 600;
+  line-height: 0.88;
+  letter-spacing: -0.068em;
+}
+
+@media (min-width: 640px) {
+  .type-display {
+    font-size: clamp(4.6rem, 11.6vw, 6.8rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .type-display {
+    font-size: clamp(5rem, 7.3vw, 8.6rem);
+    line-height: 0.86;
+  }
+}
+
+/* Oversized editorial statements (problem lines, closing CTA). */
+.type-statement {
+  font-size: clamp(2.2rem, 10.4vw, 3.6rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.058em;
+}
+
+@media (min-width: 640px) {
+  .type-statement {
+    font-size: clamp(3.4rem, 7.4vw, 5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .type-statement {
+    font-size: clamp(4rem, 5.6vw, 6.6rem);
+    line-height: 0.92;
+  }
+}
+
+.type-section {
+  font-size: clamp(2.35rem, 10.6vw, 3.8rem);
+  font-weight: 600;
+  line-height: 0.93;
+  letter-spacing: -0.058em;
+}
+
+@media (min-width: 640px) {
+  .type-section {
+    font-size: clamp(3.6rem, 8vw, 5.4rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .type-section {
+    font-size: clamp(4.4rem, 6vw, 6.8rem);
+    line-height: 0.9;
+  }
+}
+
+.type-title {
+  font-size: clamp(1.6rem, 5.4vw, 2.9rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.type-lede {
+  font-size: clamp(1rem, 2.8vw, 1.25rem);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+.type-body {
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 640px) {
+  .type-body {
+    font-size: 1rem;
+  }
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* =========================================================
+   SURFACES
+   ========================================================= */
+
+.surface-ink {
+  background: var(--ink);
+  color: #fff;
+}
+
+.surface-ink-2 {
+  background: var(--ink-2);
+  color: #fff;
+}
+
+.surface-mineral {
+  background: var(--mineral);
+  color: var(--ink);
+}
+
+.surface-paper {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Fine engineering grid, for the technical sections only. */
+.grid-ink {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 30%, transparent 78%);
+}
+
+.dots-ink {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse at 60% 50%, #000 25%, transparent 72%);
+}
+
+.dots-mineral {
+  background-image: radial-gradient(rgba(11, 11, 10, 0.13) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* =========================================================
+   BUTTONS (public)
+   ========================================================= */
+
+.btn-signal,
+.btn-signal:link,
+.btn-signal:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 48px;
+  padding: 0 1.15rem 0 1.25rem;
+  background: var(--signal);
+  color: var(--ink) !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition:
+    background-color 200ms ease,
+    transform 200ms var(--ease-out);
+}
+
+.btn-signal:hover {
+  background: #ff7a3d;
+}
+
+.btn-signal:active {
+  transform: translateY(1px);
+}
+
+.btn-signal svg {
+  transition: transform 200ms var(--ease-out);
+}
+
+.btn-signal:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.btn-ghost-dark,
+.btn-ghost-dark:link,
+.btn-ghost-dark:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 48px;
+  padding: 0 1.15rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.86) !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: box-shadow 200ms ease, color 200ms ease;
+}
+
+.btn-ghost-dark:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  color: #fff !important;
+}
+
+.btn-ink,
+.btn-ink:link,
+.btn-ink:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 48px;
+  padding: 0 1.15rem 0 1.25rem;
+  background: var(--ink);
+  color: #fff !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform 200ms var(--ease-out);
+}
+
+.btn-ink:active {
+  transform: translateY(1px);
+}
+
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 300ms var(--ease-out);
+}
+
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+/* =========================================================
+   SITE HEADER
+   ========================================================= */
+
+.site-header {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 60;
+  height: var(--nav-h);
+  color: #fff;
+  transition:
+    background-color 300ms ease,
+    box-shadow 300ms ease,
+    height 300ms var(--ease-out);
+}
+
+/* Over the dark homepage hero: transparent at the top. */
+.site-header[data-tone="clear"][data-scrolled="false"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+.site-header[data-tone="clear"][data-scrolled="true"],
+.site-header[data-tone="solid"] {
+  background: rgba(11, 11, 10, 0.86);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header[data-tone="clear"][data-scrolled="true"],
+  .site-header[data-tone="solid"] {
+    background: var(--ink);
+  }
+}
+
+.nav-link,
+.nav-link:link,
+.nav-link:visited {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: color 200ms ease;
+}
+
+.nav-link:hover {
+  color: #fff;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  height: 1px;
+  background: var(--signal);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms var(--ease-out);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* Spacer that keeps page content clear of the fixed header on non-hero pages. */
+.header-offset {
+  height: var(--nav-h);
+}
+
+/* Mobile menu panel */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink);
+  color: #fff;
+  animation: menu-in 260ms var(--ease-out) both;
+}
+
+.mobile-menu-item {
+  animation: menu-item-in 420ms var(--ease-out) both;
+  animation-delay: calc(60ms + var(--i, 0) * 45ms);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* =========================================================
+   THE DRYLAKE LINE (SVG)
+   Paths use pathLength="1", so a dash of 1 is the whole path.
+   ========================================================= */
+
+.dl-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Draw on page load (hero): no JavaScript needed. */
+.dl-draw-load {
+  stroke-dasharray: 1;
+  animation: dl-draw 1.25s var(--ease-out) both;
+  animation-delay: var(--d, 0s);
+}
+
+.dl-fade-load {
+  animation: dl-fade 0.7s ease both;
+  animation-delay: var(--d, 0s);
+}
+
+.dl-fade-out-load {
+  animation: dl-fade-out 0.9s ease both;
+  animation-delay: var(--d, 0s);
+}
+
+.dl-rise-load {
+  animation: dl-rise 0.9s var(--ease-out) both;
+  animation-delay: var(--d, 0s);
+}
+
+/* Draw when scrolled into view (InView sets data-inview). Default = drawn. */
+.dl-draw-view {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.3s var(--ease-out);
+  transition-delay: var(--d, 0s);
+}
+
+[data-inview="false"] .dl-draw-view {
+  stroke-dashoffset: 1;
+}
+
+.dl-fade-view {
+  opacity: 1;
+  transition: opacity 0.7s ease;
+  transition-delay: var(--d, 0s);
+}
+
+[data-inview="false"] .dl-fade-view {
+  opacity: 0;
+}
+
+.dl-fade-out-view {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  transition-delay: var(--d, 0s);
+}
+
+[data-inview="false"] .dl-fade-out-view {
+  opacity: 1;
+}
+
+@keyframes dl-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dl-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dl-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dl-rise {
+  from {
+    transform: translateY(0.35em);
+  }
+}
+
+/* HTML connectors (capability diagrams, process): grow along their axis on view. */
+.dl-grow-x,
+.dl-grow-y {
+  transition: transform 0.8s var(--ease-out);
+  transition-delay: var(--d, 0s);
+}
+
+.dl-grow-x {
+  transform-origin: left center;
+}
+
+.dl-grow-y {
+  transform-origin: center top;
+}
+
+[data-inview="false"] .dl-grow-x {
+  transform: scaleX(0);
+}
+
+[data-inview="false"] .dl-grow-y {
+  transform: scaleY(0);
+}
+
+/* Hero map: workarounds show, then give way to the routed lines. */
+.dl-workaround {
+  opacity: 0;
+  animation: dl-workaround 2.2s ease both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes dl-workaround {
+  0% {
+    opacity: 0;
+  }
+  18%,
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Status dot: grey until its line lands, then signal orange. */
+.dl-dot {
+  fill: var(--signal);
+  animation: dl-dot-on 0.4s ease both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes dl-dot-on {
+  from {
+    fill: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Signals (orange dots travelling along a path) only exist when motion is allowed. */
+@media (prefers-reduced-motion: reduce) {
+  .dl-signal {
+    display: none;
+  }
+
+  .dl-draw-load,
+  .dl-fade-load,
+  .dl-rise-load,
+  .dl-dot,
+  .mobile-menu,
+  .mobile-menu-item {
+    animation: none !important;
+  }
+
+  .dl-fade-out-load,
+  .dl-workaround {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  [data-inview="false"] .dl-draw-view {
+    stroke-dashoffset: 0;
+  }
+
+  [data-inview="false"] .dl-fade-view {
+    opacity: 1;
+  }
+
+  [data-inview="false"] .dl-grow-x,
+  [data-inview="false"] .dl-grow-y {
+    transform: none;
+  }
+
+  [data-inview="false"] .dl-fade-out-view {
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   FAQ (quiet)
+   ========================================================= */
+
+.faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--ease-out);
+}
+
+.faq-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.faq-panel > div {
+  overflow: hidden;
+}

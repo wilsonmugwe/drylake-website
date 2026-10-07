@@ -1,7 +1,3 @@
-"use client";
-
-import { motion } from "motion/react";
-
 import Container from "@/components/ui/Container";
 
 const founders = [
@@ -25,101 +21,68 @@ const founders = [
   },
 ];
 
+/*
+ * The human moment: quiet paper, large names, restrained rules, lots of air. No photos are
+ * approved, so none are shown (and none are generated). Copy unchanged; id="about" is the
+ * About navigation target.
+ */
 export default function Founders() {
   return (
-    <section
-      id="about"
-      className="relative overflow-hidden bg-white py-12 text-black sm:py-20 lg:py-24"
-    >
-      <Container>
-        <div className="grid gap-5 border-b border-black/10 pb-8 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16 lg:pb-12">
-          <div>
-            <p className="section-label text-black/60">
-              03 / Founder-Led
-            </p>
-          </div>
+    <section id="about" className="surface-paper relative overflow-hidden">
+      <Container className="py-20 sm:py-28 lg:py-36">
+        <div className="grid gap-6 lg:grid-cols-12">
+          <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">03 / Founder-Led</p>
 
-          <div>
-            <h2 className="max-w-5xl text-[clamp(2.55rem,11vw,4rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[clamp(4rem,6.5vw,6.5rem)]">
+          <div className="lg:col-span-9">
+            <h2 className="type-section">
               Small team.
               <br />
-
-              <span className="text-black/45">
-                Direct access.
-              </span>
+              <span className="text-black/50">Direct access.</span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="type-lede mt-7 max-w-xl text-black/62">
               Work directly with the people responsible for understanding the
               problem and delivering the solution.
             </p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2">
-          {founders.map((founder, index) => (
-            <motion.article
+        <div className="mt-16 lg:mt-24">
+          {founders.map((founder) => (
+            <article
               key={founder.name}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.45,
-                delay: index * 0.05,
-              }}
-              className="
-                border-b
-                border-black/10
-                py-7
-                md:min-h-[330px]
-                md:border-b-0
-                md:py-10
-                md:first:border-r
-                md:first:pr-10
-                md:last:pl-10
-              "
+              className="grid gap-6 border-t border-black/12 py-10 sm:py-12 lg:grid-cols-12 lg:gap-8 lg:py-16"
             >
-              <div className="flex h-full flex-col justify-between gap-12">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-(--orange-ink)">
-                    {founder.number}
-                  </span>
+              <span className="font-mono text-xs text-(--orange-ink) lg:col-span-1 lg:pt-3">{founder.number}</span>
 
-                  <span className="tech-label text-black/60">
-                    {founder.role}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-[2.25rem] font-semibold leading-[0.95] tracking-[-0.055em] sm:text-[clamp(2.8rem,4vw,4.7rem)]">
-                    {founder.name}
-                  </h3>
-
-                  <p className="mt-4 max-w-lg text-sm leading-6 text-black/60 sm:text-base sm:leading-7">
-                    {founder.focus}
-                  </p>
-
-                  {founder.credential && (
-                    <p className="mt-3 max-w-lg text-sm leading-6 text-black/70">
-                      {founder.credential}
-                    </p>
-                  )}
-
-                  <p className="tech-label mt-5 text-black/60">
-                    {founder.disciplines}
-                  </p>
-                </div>
+              <div className="lg:col-span-6">
+                <p className="tech-label text-black/62">{founder.role}</p>
+                <h3 className="mt-4 text-[clamp(2.4rem,10vw,5.4rem)] font-semibold leading-[0.9] tracking-[-0.06em]">
+                  {founder.name}
+                </h3>
               </div>
-            </motion.article>
+
+              <div className="lg:col-span-4 lg:col-start-9 lg:pt-8">
+                <p className="type-body text-black/70">{founder.focus}</p>
+
+                {founder.credential && (
+                  <p className="mt-4 text-sm leading-6 text-black/75">{founder.credential}</p>
+                )}
+
+                <p className="tech-label mt-6 border-t border-black/10 pt-4 text-black/62">
+                  {founder.disciplines}
+                </p>
+              </div>
+            </article>
           ))}
         </div>
 
-        <div className="grid gap-4 border-t border-black/10 pt-6 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
-          <span className="tech-label text-black/60">
+        <div className="grid gap-5 border-t border-black/12 pt-10 lg:grid-cols-12 lg:pt-14">
+          <span className="tech-label text-black/62 lg:col-span-3 lg:pt-2">
             What founder-led means
           </span>
 
-          <p className="max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
+          <p className="text-pretty text-[clamp(1.45rem,4.4vw,2.6rem)] font-medium leading-[1.12] tracking-[-0.035em] lg:col-span-8">
             Direct communication. Clear accountability. The people discussing
             the problem with you are the same people responsible for making
             sure it gets solved properly.

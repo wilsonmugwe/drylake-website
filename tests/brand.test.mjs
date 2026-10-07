@@ -40,15 +40,30 @@ describe("brand artwork", () => {
     }
   });
 
-  it("points header and footer at the wordmark, and every brand src exists", () => {
-    for (const file of ["components/layout/Navbar.tsx", "components/layout/Footer.tsx"]) {
+  it("header shows [mark] Drylake, footer the wordmark, and every brand src exists", () => {
+    for (const file of ["components/layout/Navbar.tsx", "components/layout/Footer.tsx", "components/brand/BrandHomeLink.tsx"]) {
       const src = read(file);
       assert.ok(!src.includes("drylake-logo-"), `${file} still references the old logo`);
-      assert.match(src, /\/brand\/drylake-wordmark-dark-bg\.svg/);
       for (const [, path] of src.matchAll(/src="(\/brand\/[^"]+)"/g)) {
         assert.ok(existsSync(join(ROOT, "public", path)), `${file}: ${path} not in /public`);
       }
     }
+
+    // Redesign (2026-10-07): the approved mark sits immediately left of the word Drylake.
+    assert.match(read("components/layout/Navbar.tsx"), /<BrandHomeLink \/>/);
+    const lockup = read("components/brand/BrandHomeLink.tsx");
+    assert.ok(lockup.indexOf("<DrylakeMark") < lockup.indexOf(">\n        Drylake\n"), "mark before the word");
+    assert.match(read("components/layout/Footer.tsx"), /\/brand\/drylake-wordmark-dark-bg\.svg/);
+  });
+
+  it("the inline header mark is the approved tile geometry", () => {
+    const tile = read("public/brand/drylake-mark-tile.svg");
+    const inline = read("components/brand/DrylakeMark.tsx");
+    const path = tile.match(/<path d="([^"]+)"/)[1];
+
+    assert.ok(inline.includes(path), "MARK_Y_PATH must match drylake-mark-tile.svg");
+    assert.ok(inline.includes('translate(-68.56 60.13) scale(0.7930)'));
+    assert.ok(inline.includes("#C2703D") && inline.includes("#17191E"));
   });
 
   it("publishes a square Organization logo that exists and meets Google's 112 px minimum", () => {

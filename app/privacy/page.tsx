@@ -40,7 +40,7 @@ export default function PrivacyPage() {
         <Container className="pb-20 pt-36 sm:pt-44">
           <p className="section-label text-black/60">Legal</p>
 
-          <h1 className="mt-6 text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">
+          <h1 className="type-section mt-6">
             Privacy Policy
           </h1>
 

@@ -95,7 +95,7 @@ export default function PerthPage() {
 
           <p className="section-label mt-10 text-black/60">Perth / Western Australia</p>
 
-          <h1 className="mt-5 max-w-5xl text-[clamp(2.6rem,6.5vw,5.6rem)] font-semibold leading-[0.93] tracking-[-0.06em]">
+          <h1 className="type-section text-balance mt-5 max-w-5xl">
             A Perth technology company.
             <br />
             <span className="text-black/45">Building for Australian businesses.</span>
@@ -109,10 +109,9 @@ export default function PerthPage() {
 
           <Link
             href="/contact"
-            className="group mt-8 inline-flex min-h-[48px] items-center gap-3 bg-black px-5 text-sm font-semibold !text-white transition-transform hover:-translate-y-0.5"
+            className="btn-signal mt-8"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-            Start a Conversation
+            <span>Start a Conversation</span>
             <ArrowUpRight aria-hidden="true" size={15} />
           </Link>
         </Container>
