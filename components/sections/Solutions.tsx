@@ -14,8 +14,7 @@ const solutions = [
     text: "Internal systems, portals and applications designed around the workflows your business actually depends on.",
     examples:
       "Internal platforms / Client & staff portals / Workflow systems / Web & mobile applications",
-    href: "/solutions/custom-software",
-    linkLabel: "Custom software and client portals",
+    links: [{ href: "/services/custom-software-development", label: "Custom software development" }],
   },
   {
     number: "02",
@@ -24,8 +23,10 @@ const solutions = [
     text: "Connect systems, remove duplicate handling and automate routine steps that slow teams down.",
     examples:
       "Workflow automation / System integrations / Approvals / Notifications / Data synchronisation",
-    href: "/solutions/automation-integration",
-    linkLabel: "Business automation and systems integration",
+    links: [
+      { href: "/services/business-automation", label: "Business automation" },
+      { href: "/services/systems-integration", label: "Systems integration" },
+    ],
   },
   {
     number: "03",
@@ -34,8 +35,7 @@ const solutions = [
     text: "Use AI where it can improve a real workflow, reduce work or create genuinely useful functionality.",
     examples:
       "Document processing / AI-assisted workflows / Internal tools / Decision support",
-    href: "/solutions/applied-ai",
-    linkLabel: "Applied AI for business workflows",
+    links: [{ href: "/services/ai-automation", label: "AI automation" }],
   },
 ];
 
@@ -125,27 +125,44 @@ export default function Solutions() {
                   {solution.examples}
                 </p>
 
-                {/* Crawlable link to the service page (no orphan pages, checklist #3). */}
-                <Link
-                  href={solution.href}
-                  className="group/link mt-5 inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline"
-                >
-                  {solution.linkLabel}
-                  <ArrowUpRight
-                    aria-hidden="true"
-                    size={15}
-                    className="transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
-                  />
-                </Link>
+                {/* Crawlable links to the service pages (no orphan pages, checklist #3). */}
+                <div className="mt-5 flex flex-wrap gap-x-6">
+                  {solution.links.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="group/link inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline"
+                    >
+                      {link.label}
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        size={15}
+                        className="transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                      />
+                    </Link>
+                  ))}
+                </div>
               </div>
             </motion.article>
           ))}
         </div>
 
-        <div className="flex justify-end pt-6">
+        <div className="flex flex-wrap justify-end gap-x-8 pt-6">
+          <Link
+            href="/services"
+            className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold"
+          >
+            All services
+
+            <ArrowUpRight
+              size={15}
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            />
+          </Link>
+
           <Link
             href="/solutions"
-            className="group inline-flex items-center gap-2 text-sm font-semibold"
+            className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold"
           >
             Explore what we do
 

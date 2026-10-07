@@ -2,12 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Container from "@/components/ui/Container";
-import { ENTITY, SERVICES } from "@/lib/discovery/entity";
+import { ENTITY, SERVICES, SERVICES_PATH } from "@/lib/discovery/entity";
 
 const links = [
   {
     label: "What We Do",
     href: "/solutions",
+  },
+  {
+    label: "Services",
+    href: SERVICES_PATH,
   },
   ...SERVICES.map((service) => ({ label: service.name, href: service.path })),
   {
@@ -17,6 +21,10 @@ const links = [
   {
     label: "About",
     href: "/about",
+  },
+  {
+    label: "Perth",
+    href: "/perth",
   },
   {
     label: "Contact",

@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-import { PRIVATE_PREFIXES } from "./lib/discovery/entity";
+import { LEGACY_SERVICE_REDIRECTS, PRIVATE_PREFIXES } from "./lib/discovery/entity";
 
 const NOINDEX_HEADER = { key: "X-Robots-Tag", value: "noindex, nofollow" };
 
@@ -34,6 +34,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+
+  // The original service pages moved from /solutions/* to /services/* (2026-10-07). 308s keep
+  // existing links and any indexed URLs working and pass their signals to the new pages.
+  async redirects() {
+    return LEGACY_SERVICE_REDIRECTS.map((redirect) => ({ ...redirect, permanent: true }));
+  },
 
   async headers() {
     return [

@@ -1,10 +1,6 @@
 "use client";
 
 import {
-  AnimatePresence,
-  motion,
-} from "motion/react";
-import {
   ArrowRight,
   Check,
 } from "lucide-react";
@@ -82,16 +78,23 @@ export default function Approach() {
           {stages.map((stage, index) => {
             const selected = active === index;
 
+            /*
+             * Each stage text is rendered ONCE. It used to exist twice (a desktop copy inside
+             * the button and a mobile accordion copy), so crawlers and text extraction saw the
+             * selected stage's sentence duplicated. Now one paragraph: always shown from lg up,
+             * shown on smaller screens only for the selected stage.
+             */
             return (
               <div
                 key={stage.number}
-                className="border-b border-black/10"
+                className="border-b border-black/10 lg:grid lg:grid-cols-[0.15fr_0.55fr_1fr] lg:items-center lg:gap-12"
               >
                 <button
                   type="button"
                   onClick={() => setActive(index)}
                   onMouseEnter={() => setActive(index)}
                   onFocus={() => setActive(index)}
+                  aria-controls={`approach-stage-${stage.number}`}
                   className="
                     group
                     grid
@@ -103,8 +106,8 @@ export default function Approach() {
                     text-left
                     sm:grid-cols-[70px_1fr_auto]
                     sm:py-6
-                    lg:grid-cols-[0.15fr_0.55fr_1fr]
-                    lg:gap-12
+                    lg:col-span-2
+                    lg:grid-cols-subgrid
                   "
                 >
                   <span
@@ -137,42 +140,14 @@ export default function Approach() {
                       }
                     />
                   </div>
-
-                  <p
-                    className={`
-                      hidden
-                      max-w-xl
-                      text-sm
-                      leading-6
-                      transition-colors
-                      lg:block
-                      ${
-                        selected
-                          ? "text-black/60"
-                          : "text-black/60"
-                      }
-                    `}
-                  >
-                    {stage.text}
-                  </p>
                 </button>
 
-                {/* Mobile description */}
-                <AnimatePresence initial={false}>
-                  {selected && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden lg:hidden"
-                    >
-                      <p className="pb-5 pl-[55px] pr-4 text-sm leading-6 text-black/60 sm:pl-[83px]">
-                        {stage.text}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <p
+                  id={`approach-stage-${stage.number}`}
+                  className={`${selected ? "block" : "hidden"} pb-5 pl-[55px] pr-4 text-sm leading-6 text-black/60 sm:pl-[83px] lg:block lg:max-w-xl lg:p-0`}
+                >
+                  {stage.text}
+                </p>
               </div>
             );
           })}

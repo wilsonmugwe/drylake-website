@@ -11,6 +11,7 @@ import Solutions from "@/components/sections/Solutions";
 import SmallThings from "@/components/sections/SmallThings";
 import Approach from "@/components/sections/Approach";
 import ContactCTA from "@/components/sections/ContactCTA";
+import ServiceIndex from "@/components/sections/ServiceIndex";
 
 export const metadata: Metadata = pageMetadata({
   title: "Software, Automation & AI Solutions | Drylake",
@@ -86,6 +87,11 @@ export default function SolutionsPage() {
 
         <Solutions />
         <SmallThings />
+        <ServiceIndex
+          heading="Five service lines"
+          intro="Each has its own page covering the problem it solves, what can be built and how the work is approached."
+          secondaryLink={{ href: "/perth", label: "Drylake in Perth" }}
+        />
         <Approach />
         <ContactCTA />
       </main>
