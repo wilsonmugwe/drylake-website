@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 /*
@@ -41,10 +42,9 @@ export default function GlobalError({
         }}
       >
         <main style={{ maxWidth: 520 }}>
-          <p style={{ fontSize: 12, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6 }}>
-            Drylake
-          </p>
-          <h1 style={{ fontSize: 28, margin: "12px 0" }}>Something went wrong.</h1>
+          {/* Inline SVG with inline sizing: renders with no stylesheet, as this screen must. */}
+          <DrylakeWordmark tone="dark" height={28} />
+          <h1 style={{ fontSize: 28, margin: "20px 0 12px" }}>Something went wrong.</h1>
           <p style={{ lineHeight: 1.6, opacity: 0.8 }}>
             This page could not be loaded. Please try again. If it keeps happening, email{" "}
             {CONTACT_EMAIL} and quote the reference below.

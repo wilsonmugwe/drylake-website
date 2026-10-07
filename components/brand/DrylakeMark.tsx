@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 /*
  * The Drylake mark: the cracked lake-bed tile (logo option 4, Wilson's choice, adopted by Ben
  * 2026-10-07, drylake-ops D27). Five plates; the ochre one is "the part we work on", and the
@@ -15,17 +17,26 @@ export const TILE_PLATES = [
   "M58 68 L92 68 V92 H46 Z",
 ] as const;
 
+/*
+ * The Drylake orange accent (Ben, 2026-10-07): the ochre plate of the tile AND the y of the
+ * wordmark. The ONLY place this hex is written in code (tests/brand-system.test.mjs fails if
+ * another .ts/.tsx/.css file hard-codes it). Import it, never retype it.
+ */
 export const TILE_OCHRE = "#C2703D";
 export const TILE_OCHRE_PLATE = 3;
 
-/* The y of the wordmark, still part of the logo (the closing CTA traces it). */
-export const MARK_Y_PATH =
-  "M141.63,-46.04 L158.84,-1.42 M176.05,-46.04 L156.71,4.10 C153.61,12.13 146.51,20.49 138.00,20.49 C132.29,20.49 126.54,7.44 122.97,6.27";
+/* Brand ink: the tile's light plates and the wordmark letters, per surface tone. */
+export const BRAND_INK = {
+  dark: "#ECEAE4", // on dark surfaces
+  light: "#17191E", // on light surfaces
+} as const;
+
+export type BrandTone = keyof typeof BRAND_INK;
 
 /* Plates only, for use inside another SVG (draw at 0..100; caller transforms). */
 export function TilePlates({
   surface = "#0f1013",
-  ink = "#ECEAE4",
+  ink = BRAND_INK.dark,
   small = false,
 }: {
   surface?: string;
@@ -50,17 +61,19 @@ export function TilePlates({
 
 export default function DrylakeMark({
   className,
+  style,
   surface = "#0f1013",
   tone = "dark",
 }: {
   className?: string;
+  style?: CSSProperties;
   surface?: string;
-  tone?: "dark" | "light";
+  tone?: BrandTone;
 }) {
-  const ink = tone === "dark" ? "#ECEAE4" : "#17191E";
+  const ink = BRAND_INK[tone];
 
   return (
-    <svg viewBox="4 4 92 92" aria-hidden="true" focusable="false" className={className}>
+    <svg viewBox="4 4 92 92" aria-hidden="true" focusable="false" className={className} style={style}>
       <defs>
         <clipPath id={`dl-tile-${tone}`}>
           <rect x="4" y="4" width="92" height="92" rx="18" />

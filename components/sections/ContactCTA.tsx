@@ -1,9 +1,9 @@
 import { ArrowUpRight, Mail, Phone } from "lucide-react";
 
-import { MARK_Y_PATH } from "@/components/brand/DrylakeMark";
+import { WordmarkY } from "@/components/brand/DrylakeWordmark";
 import InView from "@/components/motion/InView";
-import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 
 /*
  * The close. Strong type, one unmissable action, and the end of the Drylake Line: it crosses
@@ -12,7 +12,7 @@ import Container from "@/components/ui/Container";
  * Used on every public page, so the motif closes every page the same way.
  */
 
-/* MARK_Y_PATH under translate(201.85 168) scale(3), traced from the tail back to the arm. */
+/* WORDMARK_Y_TRACE_PATH (components/brand/DrylakeWordmark.tsx) under translate(201.85 168) scale(3), traced from the tail back to the arm. */
 const LINE_INTO_Y =
   "M -640 186.81 H 540 C 556 186.81 566 185.4 570.76 186.81 C 581.47 190.32 598.72 229.47 615.85 229.47 C 641.38 229.47 662.68 204.39 671.98 180.3 L 730 29.88";
 const Y_ARM = "M 626.74 29.88 L 678.37 163.74";
@@ -39,10 +39,9 @@ export default function ContactCTA() {
               disconnected or taking too much time.
             </p>
 
-            <SiteLink href="/contact" className="btn-signal mt-10 w-full !min-h-[58px] !text-base sm:w-auto sm:min-w-[280px]">
-              <span>Start a conversation</span>
-              <ArrowUpRight aria-hidden="true" size={18} />
-            </SiteLink>
+            <PrimaryCta href="/contact" size="large" className="mt-10 w-full sm:w-auto sm:min-w-[280px]">
+              Start a conversation
+            </PrimaryCta>
           </div>
 
           <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
@@ -76,7 +75,7 @@ export default function ContactCTA() {
         <svg aria-hidden="true" viewBox="-640 0 1460 290" preserveAspectRatio="xMaxYMax slice" className="block h-[166px] w-full sm:h-[232px] lg:h-[290px]">
           <g className="dl-fade-view" style={{ ["--d" as string]: "1.5s" }}>
             <g transform="translate(201.85 168) scale(3)">
-              <path d={MARK_Y_PATH} fill="none" stroke="#C2703D" strokeWidth="14.18" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+              <WordmarkY variant="trace" opacity={0.9} />
             </g>
           </g>
 

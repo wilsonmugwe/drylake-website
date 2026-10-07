@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
@@ -9,6 +8,7 @@ import ServiceIndex from "@/components/sections/ServiceIndex";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
 import Container from "@/components/ui/Container";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 import { ENTITY, PERTH_PATH } from "@/lib/discovery/entity";
 import { breadcrumbNode, faqNode, webPageNode } from "@/lib/discovery/structured-data";
 import { pageMetadata } from "@/lib/seo";
@@ -107,13 +107,9 @@ export default function PerthPage() {
             websites for businesses in Perth, across WA and around Australia.
           </p>
 
-          <Link
-            href="/contact"
-            className="btn-signal mt-8"
-          >
-            <span>Start a Conversation</span>
-            <ArrowUpRight aria-hidden="true" size={15} />
-          </Link>
+          <PrimaryCta href="/contact" surface="light" className="mt-8">
+            Start a Conversation
+          </PrimaryCta>
         </Container>
 
         <section aria-labelledby="local-heading" className="mineral-texture bg-[#f2f0e9] py-16 lg:py-24">

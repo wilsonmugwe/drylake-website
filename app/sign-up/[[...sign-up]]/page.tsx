@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 import SiteLink from "@/components/navigation/SiteLink";
 import { SignUp } from "@clerk/nextjs";
 
@@ -70,18 +71,18 @@ export default function SignUpPage() {
           <div className="relative z-10 flex items-center justify-between px-10 py-9 xl:px-14">
             <SiteLink
               href="/"
+              aria-label="Drylake home"
               className="group inline-flex min-h-[44px] items-center gap-3"
             >
               <span className="flex h-9 w-9 items-center justify-center border border-white/[0.12] transition-colors group-hover:border-white/30">
                 <ArrowLeft
+                  aria-hidden="true"
                   size={14}
                   className="text-white/55 transition-transform group-hover:-translate-x-0.5 group-hover:text-white"
                 />
               </span>
 
-              <span className="text-sm font-semibold tracking-[-0.02em]">
-                DRYLAKE
-              </span>
+              <DrylakeWordmark tone="dark" height={22} label={null} />
             </SiteLink>
 
             <span className="flex items-center gap-2 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/55">
@@ -179,18 +180,18 @@ export default function SignUpPage() {
           <header className="relative z-10 flex h-[78px] items-center justify-between border-b border-black/[0.08] px-5 sm:px-8 lg:hidden">
             <SiteLink
               href="/"
-              className="group flex items-center gap-3"
+              aria-label="Drylake home"
+              className="group flex min-h-[44px] items-center gap-3"
             >
               <span className="flex h-9 w-9 items-center justify-center border border-black/10">
                 <ArrowLeft
+                  aria-hidden="true"
                   size={14}
                   className="transition-transform group-hover:-translate-x-0.5"
                 />
               </span>
 
-              <span className="text-sm font-semibold tracking-[-0.02em]">
-                DRYLAKE
-              </span>
+              <DrylakeWordmark tone="light" height={22} label={null} />
             </SiteLink>
 
             <span className="flex items-center gap-2 text-[0.58rem] font-medium uppercase tracking-[0.14em] text-black/60">

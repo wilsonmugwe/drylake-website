@@ -22,7 +22,7 @@
   --signal: #f26a2e;
 
   --nav-h: 68px;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* --ease-out and the --duration-* motion primitives live in globals.css. */
 }
 
 @media (min-width: 1024px) {
@@ -188,6 +188,92 @@ main [tabindex="-1"]:focus {
    BUTTONS (public)
    ========================================================= */
 
+/*
+ * PRIMARY CTA (components/ui/PrimaryCta.tsx). White, dark text, on every public surface.
+ * Contrast (WCAG, tests/brand-system.test.mjs recomputes these): ink #0b0b0a on white 19.7:1,
+ * on the hover bone #ecebe6 16.5:1 (mineral hover on light 17.3:1), on the active stone
+ * #dedbd2 14.2:1. The button edge is 19.7:1 against ink; on light sections the ink hairline carries the edge instead. Focus uses
+ * the shared --focus-ring (globals.css: >= 3:1 on white, mineral, canvas and ink).
+ */
+.btn-primary,
+.btn-primary:link,
+.btn-primary:visited {
+  --cta-bg: #ffffff;
+  --cta-bg-hover: #ecebe6;
+  --cta-bg-active: #dedbd2;
+  --cta-edge: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 48px;
+  padding: 0 1.15rem 0 1.25rem;
+  background: var(--cta-bg);
+  box-shadow: inset 0 0 0 1px var(--cta-edge);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  touch-action: manipulation;
+  transition:
+    background-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    transform var(--duration-base) var(--ease-out);
+}
+
+.btn-primary[data-surface="light"] {
+  --cta-edge: var(--ink);
+  --cta-bg-hover: #f2f0e9;
+}
+
+.btn-primary[data-size="compact"] {
+  min-height: 44px;
+  padding: 0 1rem 0 1.1rem;
+  font-size: 0.85rem;
+}
+
+.btn-primary[data-size="large"] {
+  min-height: 58px;
+  padding: 0 1.35rem 0 1.5rem;
+  font-size: 1rem;
+}
+
+.btn-primary svg {
+  flex-shrink: 0;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+/* Hover only where hover exists, so a tap never leaves a stuck hover state on touch. */
+@media (hover: hover) {
+  .btn-primary:hover {
+    background: var(--cta-bg-hover);
+    box-shadow:
+      inset 0 0 0 1px var(--cta-edge),
+      0 0 0 4px rgba(255, 255, 255, 0.12);
+  }
+
+  .btn-primary[data-surface="light"]:hover {
+    box-shadow:
+      inset 0 0 0 1px var(--cta-edge),
+      0 0 0 4px rgba(11, 11, 10, 0.06);
+  }
+
+  .btn-primary:hover svg {
+    transform: translate(2px, -2px);
+  }
+}
+
+.btn-primary:active {
+  background: var(--cta-bg-active);
+  transform: translateY(1px);
+}
+
+.btn-primary:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Secondary orange action (no longer used for "Start a conversation"). */
 .btn-signal,
 .btn-signal:link,
 .btn-signal:visited {
@@ -545,6 +631,15 @@ main [tabindex="-1"]:focus {
   .mobile-menu,
   .mobile-menu-item {
     animation: none !important;
+  }
+
+  /* Buttons keep their colour change but never move. */
+  .btn-primary:active,
+  .btn-signal:active,
+  .btn-ink:active,
+  .btn-primary:hover svg,
+  .btn-signal:hover svg {
+    transform: none;
   }
 
   .dl-fade-out-load,
