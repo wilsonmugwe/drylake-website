@@ -1,12 +1,9 @@
-import { TILE_PLATES } from "@/components/brand/DrylakeMark";
 import Container from "@/components/ui/Container";
 
 const founders = [
   {
     number: "01",
     name: "Benedict Wambugu",
-    initials: "BW",
-    plate: 0,
     role: "Co-founder & CEO",
     focus:
       "Business leadership, strategy and making sure the solution addresses the problem the business actually needs solved.",
@@ -16,8 +13,6 @@ const founders = [
   {
     number: "02",
     name: "Wilson Mugwe",
-    initials: "WM",
-    plate: 1,
     role: "Co-founder & Head of Technology",
     focus:
       "Software engineering, technical architecture and taking systems from idea through to reliable delivery.",
@@ -27,32 +22,10 @@ const founders = [
 ];
 
 /*
- * A typographic portrait, not a photo (none are approved, and none are generated): the
- * founder's initials set in one plate of the Drylake tile. Decorative.
- */
-function PlatePortrait({ plate, initials }: { plate: number; initials: string }) {
-  return (
-    <svg aria-hidden="true" viewBox={plate === 0 ? "5 5 42 44" : "43 5 52 38"} className="h-16 w-20 shrink-0 sm:h-20 sm:w-24">
-      <path d={TILE_PLATES[plate]} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-      <text
-        x={plate === 0 ? 25 : 71}
-        y={plate === 0 ? 31 : 27}
-        textAnchor="middle"
-        fontSize="14"
-        fontWeight="600"
-        letterSpacing="-0.5"
-        fill="currentColor"
-      >
-        {initials}
-      </text>
-    </svg>
-  );
-}
-
-/*
  * Founder-led (experience polish, 2026-10-07). Two founders side by side as one editorial spread
- * (each column: plate portrait, role, name, what they own, credential, what to talk to them
- * about), instead of two stacked full-width rows. Facts unchanged.
+ * (each column: role, name, what they own, credential, what to talk to them about), instead of
+ * two stacked full-width rows. Facts unchanged. No portrait or initials mark (mobile refinement
+ * 2026-10-07): no photos are approved, and a placeholder treatment is not a substitute.
  *
  * variant "home": the homepage chapter (id="about", the header's About target), h2.
  * variant "page": the top of /about (each article carries the Person @id fragment from
@@ -100,20 +73,15 @@ export default function Founders({ variant = "home" }: { variant?: "home" | "pag
                 i === 0 ? "lg:border-r lg:border-black/12 lg:pr-10" : "border-t border-black/12 lg:border-t-0 lg:pl-10"
               }`}
             >
-              <div className="flex items-start justify-between gap-6">
-                <div>
-                  <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
-                    <span className="text-(--orange-ink)">{founder.number}</span>
-                    <span aria-hidden="true" className="h-px w-5 bg-black/20" />
-                    <span>{founder.role}</span>
-                  </p>
-                  <NameTag className="mt-3 text-[clamp(2.1rem,8.4vw,3.7rem)] font-semibold leading-[0.92] tracking-[-0.055em]">
-                    {founder.name}
-                  </NameTag>
-                </div>
-                <span className="text-black/70">
-                  <PlatePortrait plate={founder.plate} initials={founder.initials} />
-                </span>
+              <div>
+                <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
+                  <span className="text-(--orange-ink)">{founder.number}</span>
+                  <span aria-hidden="true" className="h-px w-5 bg-black/20" />
+                  <span>{founder.role}</span>
+                </p>
+                <NameTag className="mt-3 text-[clamp(2.1rem,8.4vw,3.7rem)] font-semibold leading-[0.92] tracking-[-0.055em]">
+                  {founder.name}
+                </NameTag>
               </div>
 
               <p className="type-body max-w-md text-black/70">{founder.focus}</p>

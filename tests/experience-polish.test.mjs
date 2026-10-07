@@ -244,7 +244,9 @@ describe("MOTION", () => {
   it("both scroll stories resolve early and hold (finish < 1)", () => {
     const finish = (src) => Number(src.match(/finish=\{([\d.]+)\}/)?.[1]);
     assert.ok(finish(problems) <= 0.5, "problems finish");
-    assert.ok(finish(integrations) <= 0.65, "systems finish");
+    // Mobile refinement 2026-10-07: the systems story was resolving too fast (finish 0.6); it now
+    // resolves at 0.8 with a rest between its two movements (tests/mobile-hero-refinement).
+    assert.ok(finish(integrations) <= 0.85, "systems finish");
     assert.match(code("components/motion/ScrollProgress.tsx"), /raw \/ finish/);
   });
 
@@ -254,9 +256,10 @@ describe("MOTION", () => {
     assert.ok(!/min-h-\[58vh\]/.test(problems));
   });
 
-  it("the pinned systems track is shorter and only exists when motion is allowed", () => {
+  it("the pinned systems track is shorter than the original and only exists when motion is allowed", () => {
     assert.ok(!/lg:h-\[250vh\]/.test(integrations));
-    assert.match(CSS, /@media \(min-width: 1024px\) and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.hz-sys-track\s*\{\s*height:\s*175vh;/);
+    // 175vh (experience polish) to 230vh (mobile refinement: room for the slower second movement).
+    assert.match(CSS, /@media \(min-width: 1024px\) and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.hz-sys-track\s*\{\s*height:\s*230vh;/);
   });
 
   it("reduced motion stops every new animation and keeps readable resting states", () => {
