@@ -1,14 +1,14 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
-
 import SiteLink from "@/components/navigation/SiteLink";
-import { CLIENT_LOGIN, PORTAL_PATH } from "@/lib/navigation/site-nav";
+import { CLIENT_LOGIN } from "@/lib/navigation/site-nav";
 
 /*
- * The existing-client utility link. Always rendered as Client Login (so the header never
- * shifts while Clerk loads), and switched to Client Portal once Clerk confirms a session.
- * Clerk's <Show> rendered nothing until it loaded, which made the header jump.
+ * The existing-client utility link. A plain link with no Clerk hook: public pages carry no
+ * Clerk client code (components/auth/ClerkScope.tsx). It points at /portal, which is right
+ * whether or not the visitor is signed in: proxy.ts sends a signed-out request to
+ * /sign-in?redirect_url=/portal, and /portal routes a signed-in one to /admin or /client.
+ * The label stays Client Login in both states, so the header never shifts.
  */
 export default function ClientAccessLink({
   className,
@@ -19,13 +19,9 @@ export default function ClientAccessLink({
   onNavigate?: () => void;
   children?: (label: string) => React.ReactNode;
 }) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const signedIn = isLoaded && isSignedIn;
-  const label = signedIn ? "Client Portal" : CLIENT_LOGIN.label;
-
   return (
-    <SiteLink href={signedIn ? PORTAL_PATH : CLIENT_LOGIN.href} onNavigate={onNavigate} className={className}>
-      {children ? children(label) : label}
+    <SiteLink href={CLIENT_LOGIN.href} onNavigate={onNavigate} className={className}>
+      {children ? children(CLIENT_LOGIN.label) : CLIENT_LOGIN.label}
     </SiteLink>
   );
 }

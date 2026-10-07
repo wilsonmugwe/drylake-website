@@ -93,7 +93,7 @@ describe("navigation labels and destinations", () => {
         ["Contact", "/contact"],
       ]
     );
-    assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/sign-in"]);
+    assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/portal"]);
     assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Start a Conversation", "/contact"]);
   });
 
@@ -149,7 +149,7 @@ describe("scroll and sign-out root causes", () => {
 
   it("Bug 4: sign-out always lands on / (provider default and every explicit call)", () => {
     assert.equal(SIGN_OUT_REDIRECT_URL, "/");
-    assert.match(code("app/layout.tsx"), /<ClerkProvider afterSignOutUrl=\{SIGN_OUT_REDIRECT_URL\}>/);
+    assert.match(code("components/auth/ClerkScope.tsx"), /<ClerkProvider afterSignOutUrl=\{SIGN_OUT_REDIRECT_URL\}>/);
 
     const calls = walk(join(ROOT, "components"))
       .concat(walk(join(ROOT, "app")))

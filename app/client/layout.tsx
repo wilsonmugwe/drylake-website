@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import ClerkScope from "@/components/auth/ClerkScope";
 import ClientShell from "@/components/client/ClientShell";
 import WorkspaceSwitchLink from "@/components/client/WorkspaceSwitchLink";
 import { getClientWorkspace } from "@/lib/auth/client-context";
@@ -25,6 +26,7 @@ export default async function ClientLayout({ children }: { children: React.React
       : null;
 
   return (
+    <ClerkScope>
     <ClientShell
       organizationName={organizationName}
       showNav={ready}
@@ -38,5 +40,6 @@ export default async function ClientLayout({ children }: { children: React.React
     >
       {children}
     </ClientShell>
+    </ClerkScope>
   );
 }
