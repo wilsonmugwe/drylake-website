@@ -12,11 +12,13 @@ export type ClientSection = "overview" | "billing";
 export const NAV_ITEMS: Array<{
   key: ClientSection;
   label: string;
+  /* Short description shown in the drawer, where there is room for it. */
+  hint: string;
   href: string;
   icon: LucideIcon;
 }> = [
-  { key: "overview", label: "Overview", href: "/client", icon: LayoutDashboard },
-  { key: "billing", label: "Billing", href: "/client/billing", icon: Receipt },
+  { key: "overview", label: "Overview", hint: "Projects, activity and documents", href: "/client", icon: LayoutDashboard },
+  { key: "billing", label: "Billing", hint: "Invoices and payments", href: "/client/billing", icon: Receipt },
 ];
 
 /* Project pages belong to Overview; invoice pages to Billing. */
@@ -40,13 +42,13 @@ function PendingMark({ selected }: { selected: boolean }) {
       <LoaderCircle
         aria-hidden="true"
         size={14}
-        className="ml-auto shrink-0 animate-spin text-[#f26a2e]"
+        className="ml-auto shrink-0 animate-spin text-signal"
       />
     );
   }
 
   return selected ? (
-    <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+    <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-signal" />
   ) : null;
 }
 
@@ -69,7 +71,7 @@ export function ClientNavLinks({
   const active = sectionFromPath(usePathname()) ?? fallback ?? null;
 
   return (
-    <nav aria-label="Client portal" className="space-y-1">
+    <nav aria-label="Workspace" className="space-y-1">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const selected = item.key === active;
@@ -80,27 +82,29 @@ export function ClientNavLinks({
             href={item.href}
             onClick={onNavigate}
             aria-current={selected ? "page" : undefined}
-            className={`group flex items-center gap-3 rounded-xl px-3 text-sm transition ${
-              size === "drawer" ? "py-3" : "py-2.5"
+            className={`group relative flex min-h-11 items-center gap-3 rounded-app px-3 text-sm transition ${
+              size === "drawer" ? "py-3" : "py-2"
             } ${
               selected
-                ? "bg-white/10 text-white"
-                : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                ? "bg-white/[0.08] font-medium text-white"
+                : "text-white/70 hover:bg-white/[0.05] hover:text-white"
             }`}
           >
-            <span
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                selected ? "bg-[#f26a2e]/15" : "bg-white/[0.04]"
-              }`}
-            >
-              <Icon
-                aria-hidden="true"
-                size={16}
-                className={selected ? "text-[#f26a2e]" : "text-white/45 group-hover:text-white/75"}
-              />
-            </span>
+            {selected ? (
+              <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-signal" />
+            ) : null}
+            <Icon
+              aria-hidden="true"
+              size={17}
+              className={selected ? "shrink-0 text-white" : "shrink-0 text-white/60 group-hover:text-white/85"}
+            />
 
-            {item.label}
+            <span className="min-w-0">
+              <span className="block">{item.label}</span>
+              {size === "drawer" ? (
+                <span className="block text-xs font-normal text-white/60">{item.hint}</span>
+              ) : null}
+            </span>
             <PendingAnnouncement />
             <PendingMark selected={selected} />
           </Link>

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 const accessItems = [
   "Secure account access",
-  "Protected Drylake workspace",
+  "Protected Drylake Workspace",
   "One place for project access",
 ];
 
@@ -39,7 +39,7 @@ export default function SignUpPage() {
             DRYLAKE BRAND PANEL
         ====================================================== */}
         <aside
-          aria-label="Drylake client workspace"
+          aria-label="Drylake Workspace"
           className="relative hidden overflow-hidden border-r border-white/[0.08] lg:flex lg:flex-col">
           {/* Background grid */}
           <div
@@ -221,8 +221,8 @@ export default function SignUpPage() {
                 </p>
 
                 <p className="mt-4 max-w-sm text-sm leading-6 text-black/60">
-                  Create an account for secure access to your
-                  Drylake workspace.
+                  Create an account for secure access to
+                  Drylake Workspace.
                 </p>
               </div>
 

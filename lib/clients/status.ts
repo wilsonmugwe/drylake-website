@@ -135,7 +135,7 @@ export function availableStatusActions(current: unknown): StatusAction[] {
           to,
           label: currentUpper === "ARCHIVED" ? "Restore client" : "Reactivate client",
           description:
-            "Portal access returns for existing members, and new projects and invoices can be created.",
+            "Workspace access returns for existing members, and new projects and invoices can be created.",
           requiresConfirmation: false,
         };
       case "INACTIVE":
@@ -143,7 +143,7 @@ export function availableStatusActions(current: unknown): StatusAction[] {
           to,
           label: "Mark inactive",
           description:
-            "Pauses the engagement. Client users lose portal access and no new projects or invoices can be created. Nothing is deleted.",
+            "Pauses the engagement. Client users lose Workspace access and no new projects or invoices can be created. Nothing is deleted.",
           requiresConfirmation: false,
         };
       case "ARCHIVED":
@@ -151,7 +151,7 @@ export function availableStatusActions(current: unknown): StatusAction[] {
           to,
           label: "Archive client",
           description:
-            "Ends the engagement. Client users lose portal access, pending invitations are revoked, and the client is hidden from the default client list. Records are kept and the client can be restored.",
+            "Ends the engagement. Client users lose Workspace access, pending invitations are revoked, and the client is hidden from the default client list. Records are kept and the client can be restored.",
           requiresConfirmation: true,
         };
     }

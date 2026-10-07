@@ -33,7 +33,7 @@ export default async function NewClientPage() {
         <AdminPageHeader
           eyebrow="Drylake Administration"
           title="Create Client"
-          description="Create the client organisation, record its primary contact and invite them to the client portal."
+          description="Create the client organisation, record its primary contact and invite them to Drylake Workspace."
         />
 
         <AdminClientCreateForm />

@@ -52,17 +52,17 @@ function createdBanner(created: unknown, invite: unknown) {
   if (created !== "1") return null;
 
   if (invite === "sent") {
-    return { tone: "ok" as const, text: "Client created and the portal invitation was sent." };
+    return { tone: "ok" as const, text: "Client created and the Workspace invitation was sent." };
   }
 
   if (invite === "failed") {
     return {
       tone: "warn" as const,
-      text: "Client created, but the invitation could not be sent. Send it again from Portal access below.",
+      text: "Client created, but the invitation could not be sent. Send it again from Workspace access below.",
     };
   }
 
-  return { tone: "ok" as const, text: "Client created. Invite the client contact from Portal access below." };
+  return { tone: "ok" as const, text: "Client created. Invite the client contact from Workspace access below." };
 }
 
 function formatMoney(cents: number, currency: string) {
@@ -279,7 +279,7 @@ export default async function AdminClientPage({
       ]);
     } catch (error) {
       portalError = true;
-      console.error("Admin client portal access lookup failed:", {
+      console.error("Admin Workspace access lookup failed:", {
         message: error instanceof Error ? error.message : "Unknown Clerk error",
       });
     }
@@ -379,7 +379,7 @@ export default async function AdminClientPage({
         {!active ? (
           <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
             This client is {statusLabel(organization.status).toLowerCase()}. Client users
-            cannot open the portal, and new projects, invoices and invitations are blocked
+            cannot open Drylake Workspace, and new projects, invoices and invitations are blocked
             until the client is reactivated.
           </p>
         ) : null}
@@ -896,7 +896,7 @@ export default async function AdminClientPage({
           <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-base font-semibold text-neutral-950">Portal access</h2>
+                <h2 className="text-base font-semibold text-neutral-950">Workspace access</h2>
                 <p className="mt-1 text-sm text-neutral-500">
                   Client users reach this workspace through membership of its Clerk
                   organisation. An email address alone never grants access.

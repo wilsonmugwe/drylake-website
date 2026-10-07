@@ -34,12 +34,15 @@ import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
  * /api/contact through submitEnquiry() with a Turnstile token (same action, same
  * single-use replay protection, same Resend delivery to the Drylake inbox). Field
  * mapping keeps the API's existing names: company = the client's organisation,
- * projectType = "Client portal: <topic>" so the inbox shows where it came from.
+ * projectType = "Drylake Workspace: <topic>" so the inbox shows where it came from.
  * Success is shown ONLY after the server confirms delivery.
  */
 
-/* card: inside a white card. cta: primary action on a page. rail: the dark navigation rail. */
-type Variant = "card" | "rail" | "cta";
+/*
+ * card: inside a white card. cta: primary action on a page. rail: the dark navigation rail.
+ * inline: a quiet text action inside an empty state (the empty state's one next step).
+ */
+type Variant = "card" | "rail" | "cta" | "inline";
 
 /* The portal's one support action label; every contact entry point uses it. */
 export const START_CONVERSATION = "Start a conversation";
@@ -110,13 +113,18 @@ export default function MessageDrylake({
             className="shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
           />
         </button>
+      ) : variant === "inline" ? (
+        <button type="button" onClick={openDialog} className="cp-text-link -ml-2">
+          <MessageSquare aria-hidden="true" size={14} />
+          {START_CONVERSATION}
+        </button>
       ) : (
         <button
           type="button"
           onClick={openDialog}
           className="cp-rail-item"
         >
-          <LifeBuoy aria-hidden="true" size={16} className="text-[#f26a2e]" />
+          <LifeBuoy aria-hidden="true" size={16} className="text-signal" />
           <span className="whitespace-nowrap">{START_CONVERSATION}</span>
         </button>
       )}
@@ -210,7 +218,7 @@ function MessageForm({
       name: String(formData.get("name") || ""),
       email: String(formData.get("email") || ""),
       company,
-      projectType: `Client portal: ${topic}`,
+      projectType: `Drylake Workspace: ${topic}`,
       budget: "",
       message: String(formData.get("message") || ""),
       turnstileToken: token,

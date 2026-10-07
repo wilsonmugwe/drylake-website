@@ -99,7 +99,7 @@ export default function AdminClientCreateForm() {
         <div className="border-t border-neutral-200 pt-6">
           <h2 className="text-sm font-semibold text-neutral-900">Primary contact</h2>
           <p className="mt-1 text-sm text-neutral-500">
-            The person who signs in to the client portal. Also used as the billing contact
+            The person who signs in to Drylake Workspace. Also used as the billing contact
             until you change it.
           </p>
 
@@ -148,7 +148,7 @@ export default function AdminClientCreateForm() {
           </div>
 
           <p className="mt-5 rounded-xl border border-neutral-200 bg-neutral-50/70 p-4 text-xs leading-5 text-neutral-600">
-            Creating the client sends the portal invitation to this email automatically. The
+            Creating the client sends the Workspace invitation to this email automatically. The
             contact accepts it, signs in, and lands in their workspace. Projects and issued
             invoices for this client appear there without any further linking. Access is
             granted by workspace membership, never by the email address alone.

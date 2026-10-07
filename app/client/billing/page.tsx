@@ -12,7 +12,7 @@ import {
 } from "@/lib/perf/request-timing";
 
 export const metadata = {
-  title: "Billing | Client Portal",
+  title: { absolute: "Billing | Drylake Workspace" },
   robots: {
     index: false,
     follow: false,

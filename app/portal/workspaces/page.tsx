@@ -13,7 +13,7 @@ import { logRouteTiming, startRequestTiming } from "@/lib/perf/request-timing";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Switch Workspace | Client Portal",
+  title: { absolute: "Switch workspace | Drylake Workspace" },
   robots: {
     index: false,
     follow: false,

@@ -24,8 +24,7 @@ import {
 import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
-  title:
-    "Invoice | Client Portal",
+  title: { absolute: "Invoice | Drylake Workspace" },
 
   robots: {
     index: false,
