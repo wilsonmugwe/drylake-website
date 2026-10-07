@@ -1,7 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { isPlatformAdmin } from "@/lib/auth/platform-admin";
+import { authorizeAdminApi } from "@/lib/auth/admin-api";
 import {
   deliverInvoiceEmail,
   INVOICE_EMAIL_SELECT,
@@ -47,17 +46,19 @@ function backToInvoice(request: Request, invoiceId: string, notice: string) {
  * update that issues it. Once OPEN, amounts never change again.
  */
 export async function POST(request: Request, context: RouteContext) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return noStore("Unauthorized", 401);
-  }
-
-  if (!(await isPlatformAdmin())) {
-    return noStore("Forbidden", 403);
-  }
-
   const { invoiceId } = await context.params;
+
+  // Shared admin gate (QA PR 7): this is a native form post, so an expired session goes to
+  // sign-in and back to this invoice instead of a bare "Unauthorized" page; a programmatic
+  // caller gets 401 JSON; a signed-in non-admin 403 JSON. Nothing is read before this.
+  const returnTo = isUuid(invoiceId) ? `/admin/invoices/${invoiceId}` : "/admin/invoices";
+  const gate = await authorizeAdminApi(request, returnTo);
+
+  if (!gate.ok) {
+    return gate.response;
+  }
+
+  const { userId } = gate;
 
   // A malformed ID can never match a row: 404 before the query, not a database error.
   if (!isUuid(invoiceId)) {
