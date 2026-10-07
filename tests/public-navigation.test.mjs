@@ -106,9 +106,15 @@ describe("navigation labels and destinations", () => {
       .map((name) => code(`components/sections/${name}.tsx`))
       .join("\n");
 
-    for (const id of ["solutions", "approach", "about"]) {
+    for (const id of ["solutions", "approach", "faq"]) {
       assert.equal((home.match(new RegExp(`id="${id}"`, "g")) ?? []).length, 1, id);
     }
+    // Experience polish: Founders is shared with /about, so its id is chosen per variant
+    // ("about" on the homepage, "founders" on /about); the homepage renders the default variant.
+    const founders = code("components/sections/Founders.tsx");
+    assert.match(founders, /id=\{page \? "founders" : "about"\}/);
+    assert.match(founders, /variant = "home"/);
+    assert.match(read("app/page.tsx"), /<Founders \/>/);
   });
 
   it("the header: one brand control, all links through SiteLink, Start a conversation kept", () => {
@@ -205,7 +211,9 @@ describe("the redesign kept the approved homepage copy", () => {
   const APPROVED = [
     // Hero
     "Perth / Western Australia", "Software Engineering", "Your business", "shouldn't run", "on workarounds.",
-    "Drylake builds practical software, automation and connected systems for Australian businesses that have outgrown manual processes.",
+    // Experience polish language pass (brief section 7): outcomes in an owner's words.
+    "Drylake builds practical software and automation for Australian businesses that have outgrown spreadsheets, email and double handling.",
+    "Quotes, customers, jobs, invoices: held together by copy, paste and email.", "Until they are one system.",
     "Start a conversation", "How we work", "Australian company", "Founder-led", "Perth, WA",
     // Problems
     "01 / The Problem", "Growth makes the", "cracks visible.",
@@ -217,11 +225,11 @@ describe("the redesign kept the approved homepage copy", () => {
     "You don't need to know the technical solution.", "Tell us what is slowing the business down. We'll work backwards from the problem.",
     // What We Do
     "02 / What We Do", "Less workaround.", "More workflow.",
-    "We build and connect technology that helps growing Australian businesses operate more effectively.",
-    "Software that fits the business.", "Make the systems talk.", "AI where it earns its place.",
-    "Internal platforms / Client & staff portals / Workflow systems / Web & mobile applications",
-    "Workflow automation / System integrations / Approvals / Notifications / Data synchronisation",
-    "Document processing / AI-assisted workflows / Internal tools / Decision support",
+    "We build software, automate the repetitive work and join up the systems you already use, so your team spends less time on admin.",
+    "Software that fits the business.", "Fewer manual steps.", "Make the systems talk.", "AI where it earns its place.",
+    "Internal platforms / Client & staff portals / Job and workflow systems / Web & mobile applications",
+    "Approvals / Reminders & follow-ups / Notifications / Keeping records in sync",
+    "Document processing / Sorting & routing enquiries / Drafting & summaries / Decision support",
     // Integrations
     "Work With What You Have", "Don't replace", "what already works.",
     "We can connect, extend and build around the systems your business already depends on.",
@@ -231,17 +239,19 @@ describe("the redesign kept the approved homepage copy", () => {
     "03 / Founder-Led", "Small team.", "Direct access.",
     "Work directly with the people responsible for understanding the problem and delivering the solution.",
     "Benedict Wambugu", "Wilson Mugwe", "Master of Project Management",
-    "Bachelor of Computer Science, majoring in Software Engineering", "What founder-led means",
-    "Direct communication. Clear accountability. The people discussing the problem with you are the same people responsible for making sure it gets solved properly.",
+    "Bachelor of Computer Science, majoring in Software Engineering",
+    // "What founder-led means" + its statement now close the founders block on /about (variant="page").
     // Approach + production
     "04 / How We Work", "Understand first.", "Build second.",
     "No technical specification required. We start with the business problem and work forward from there.",
     "We learn how the business works today, where time is being lost and what actually needs to improve.",
     "Production Matters", "The boring part", "is the hard part.",
     "We engineer the less visible parts that make software dependable when the business starts relying on it.",
-    "Authentication", "Permissions", "Data validation", "Monitoring", "Backups & recovery",
+    "Authentication", "Permissions", "Data validation", "Integrations", "Monitoring", "Backups & recovery",
+    "What your team sees",
     // FAQ + close
-    "05 / FAQ", "A few things you", "might be wondering.",
+    // The FAQ moved into the closing conversation (brief section 9): same five answers.
+    "Before you ask",
     // PR 2: the closing headline is now Ben's "Have a problem worth fixing?" (brief, 7 Oct 2026);
     // "Tell us what's slowing you down." was retired with it.
     "Have a problem", "worth fixing?",

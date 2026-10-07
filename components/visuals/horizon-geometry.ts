@@ -1,65 +1,10 @@
 /*
- * Deterministic geometry for the Drylake Horizon visuals. Computed at module load from a fixed
- * seed, so the server and the browser render identical markup (no hydration mismatch) and the
- * page looks the same on every visit. Pure data: no React, no DOM; tests import it.
+ * Deterministic geometry for the Drylake Horizon visuals (problem field, systems stage), so the
+ * server and the browser render identical markup (no hydration mismatch) and the page looks the
+ * same on every visit. Pure data: no React, no DOM; tests import it. The hero's seeded noise
+ * ruler went with the old hero (experience polish); the hero's lake bed lives in
+ * lakebed-geometry.ts.
  */
-
-function seeded(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = s;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const round = (n: number, d = 1) => Math.round(n * 10 ** d) / 10 ** d;
-
-/* ---------------------------------------------------------------- hero field ---- */
-
-export type Tick = { x: number; h: number; dx: number; dy: number; r: number; o: number };
-
-/* Where noise ends and the ruler starts (% of the field width). */
-export const HERO_SIGNAL_X = 46;
-
-/** Left of the signal node: irregular, rotated, floating ticks (the workarounds). */
-export const HERO_NOISE: readonly Tick[] = (() => {
-  const rand = seeded(20261007);
-  const ticks: Tick[] = [];
-  let x = 0.8;
-  while (x < HERO_SIGNAL_X - 2.5) {
-    ticks.push({
-      x: round(x, 2),
-      h: Math.round(6 + rand() * 34),
-      dx: Math.round((rand() - 0.5) * 14),
-      dy: Math.round((rand() - 0.62) * 34),
-      r: Math.round((rand() - 0.5) * 34),
-      o: round(0.22 + rand() * 0.4, 2),
-    });
-    x += 0.55 + rand() * 1.6;
-  }
-  return ticks;
-})();
-
-/** Right of the signal node: an even ruler (the system). */
-export const HERO_SIGNAL: readonly { x: number; h: number }[] = (() => {
-  const ticks: { x: number; h: number }[] = [];
-  for (let i = 0, x = HERO_SIGNAL_X + 2; x <= 99.6; i += 1, x += 1.35) {
-    ticks.push({ x: round(x, 2), h: i % 8 === 0 ? 30 : i % 4 === 0 ? 20 : 10 });
-  }
-  return ticks;
-})();
-
-/** A few work fragments floating among the noise (desktop shows all, phones the first two). */
-export const HERO_FRAGMENTS: readonly { label: string; x: number; y: number; r: number }[] = [
-  { label: "final_v3.xlsx", x: 4, y: 46, r: -5 },
-  { label: "copy → paste", x: 21, y: -30, r: 4 },
-  { label: "re: re: fwd", x: 31, y: 58, r: -3 },
-  { label: "manual check", x: 12, y: 84, r: 3 },
-  { label: "TODO", x: 38, y: -24, r: -6 },
-];
 
 /* ----------------------------------------------------------- problem field ---- */
 
@@ -92,16 +37,18 @@ const FRAGMENT_LABELS: readonly [string, 0 | 1 | 2][] = [
   ["website", 2],
 ];
 
-/* Hand-placed scatter: overlapping a little, never piled up, readable at rest. */
+/* Hand-placed scatter: never piled up, readable at rest. Phones (SCATTER_M) have no overlapping
+   chips at 320-430 px, which is the picture reduced-motion visitors keep (experience polish fixed
+   PR 3's deferred overlaps: "customer data" / "website" and "copy → paste" / "follow-up"). */
 const SCATTER_L: readonly [number, number, number][] = [
   [24, 18, -9], [68, 12, 6], [44, 34, 12], [85, 40, -14],
   [18, 52, 7], [58, 56, -6], [36, 76, -11], [80, 70, 9],
   [12, 86, 5], [62, 86, -8], [86, 92, 13], [40, 8, -4],
 ];
 const SCATTER_M: readonly [number, number][] = [
-  [30, 10], [72, 16], [52, 30], [22, 38],
-  [76, 44], [40, 54], [64, 64], [26, 72],
-  [70, 80], [34, 90], [80, 94], [76, 5],
+  [30, 10], [74, 23], [44, 35], [20, 40],
+  [76, 48], [34, 56], [68, 67], [26, 73],
+  [70, 81], [34, 91], [80, 95], [80, 4],
 ];
 
 export const PROBLEM_FRAGMENTS: readonly Fragment[] = FRAGMENT_LABELS.map(([label, lane], i) => {

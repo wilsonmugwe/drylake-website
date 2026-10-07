@@ -1,9 +1,12 @@
+import { TILE_PLATES } from "@/components/brand/DrylakeMark";
 import Container from "@/components/ui/Container";
 
 const founders = [
   {
     number: "01",
     name: "Benedict Wambugu",
+    initials: "BW",
+    plate: 0,
     role: "Co-founder & CEO",
     focus:
       "Business leadership, strategy and making sure the solution addresses the problem the business actually needs solved.",
@@ -13,6 +16,8 @@ const founders = [
   {
     number: "02",
     name: "Wilson Mugwe",
+    initials: "WM",
+    plate: 1,
     role: "Co-founder & Head of Technology",
     focus:
       "Software engineering, technical architecture and taking systems from idea through to reliable delivery.",
@@ -22,72 +27,122 @@ const founders = [
 ];
 
 /*
- * The human moment: quiet paper, large names, restrained rules, lots of air. No photos are
- * approved, so none are shown (and none are generated). Copy unchanged; id="about" is the
- * About navigation target.
+ * A typographic portrait, not a photo (none are approved, and none are generated): the
+ * founder's initials set in one plate of the Drylake tile. Decorative.
  */
-export default function Founders() {
+function PlatePortrait({ plate, initials }: { plate: number; initials: string }) {
   return (
-    <section id="about" className="surface-paper relative overflow-hidden">
-      <Container className="py-(--section-y)">
-        <div className="grid gap-6 lg:grid-cols-12">
-          <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">03 / Founder-Led</p>
+    <svg aria-hidden="true" viewBox={plate === 0 ? "5 5 42 44" : "43 5 52 38"} className="h-16 w-20 shrink-0 sm:h-20 sm:w-24">
+      <path d={TILE_PLATES[plate]} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <text
+        x={plate === 0 ? 25 : 71}
+        y={plate === 0 ? 31 : 27}
+        textAnchor="middle"
+        fontSize="14"
+        fontWeight="600"
+        letterSpacing="-0.5"
+        fill="currentColor"
+      >
+        {initials}
+      </text>
+    </svg>
+  );
+}
+
+/*
+ * Founder-led (experience polish, 2026-10-07). Two founders side by side as one editorial spread
+ * (each column: plate portrait, role, name, what they own, credential, what to talk to them
+ * about), instead of two stacked full-width rows. Facts unchanged.
+ *
+ * variant "home": the homepage chapter (id="about", the header's About target), h2.
+ * variant "page": the top of /about (each article carries the Person @id fragment from
+ * lib/discovery/entity.ts, e.g. /about#benedict-wambugu), where "Small team. Direct access." is the page's h1 and the
+ * founders sit inside the first desktop viewport.
+ */
+export default function Founders({ variant = "home" }: { variant?: "home" | "page" }) {
+  const page = variant === "page";
+  const Heading = page ? "h1" : "h2";
+  // Names sit one level under the section heading: h2 on /about (under the h1), h3 on the homepage.
+  const NameTag = page ? "h2" : "h3";
+
+  return (
+    <section
+      id={page ? "founders" : "about"}
+      className={`surface-paper relative overflow-hidden ${page ? "pb-(--section-y) pt-(--page-top) lg:pt-[calc(var(--nav-h)+3.5rem)]" : "py-(--section-y)"}`}
+    >
+      <Container>
+        <div className="grid gap-5 lg:grid-cols-12 lg:gap-8">
+          <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">
+            {page ? "About / Founder-Led" : "03 / Founder-Led"}
+          </p>
 
           <div className="lg:col-span-9">
-            <h2 className="type-section">
+            <Heading className="type-section">
               Small team.
               <br />
               <span className="text-black/50">Direct access.</span>
-            </h2>
+            </Heading>
 
-            <p className="type-lede mt-5 sm:mt-7 max-w-xl text-black/62">
-              Work directly with the people responsible for understanding the
-              problem and delivering the solution.
+            <p className="type-lede mt-4 max-w-xl text-black/62 sm:mt-6">
+              {page
+                ? "Drylake is a founder-led Perth technology company. Work directly with the people responsible for understanding the problem and delivering the solution."
+                : "Work directly with the people responsible for understanding the problem and delivering the solution."}
             </p>
           </div>
         </div>
 
-        <div className="mt-(--block-gap)">
-          {founders.map((founder) => (
+        <div className={`grid border-t border-black/12 lg:grid-cols-2 ${page ? "mt-8 sm:mt-10" : "mt-(--block-gap)"}`}>
+          {founders.map((founder, i) => (
             <article
               key={founder.name}
-              className="grid gap-6 border-t border-black/12 py-8 sm:py-12 lg:grid-cols-12 lg:gap-8 lg:py-16"
+              id={page ? founder.name.toLowerCase().replace(/\s+/g, "-") : undefined}
+              className={`grid content-start gap-4 py-7 sm:py-9 lg:py-10 ${
+                i === 0 ? "lg:border-r lg:border-black/12 lg:pr-10" : "border-t border-black/12 lg:border-t-0 lg:pl-10"
+              }`}
             >
-              <span className="font-mono text-xs text-(--orange-ink) lg:col-span-1 lg:pt-3">{founder.number}</span>
-
-              <div className="lg:col-span-6">
-                <p className="tech-label text-black/62">{founder.role}</p>
-                <h3 className="mt-4 text-[clamp(2.4rem,10vw,5.4rem)] font-semibold leading-[0.9] tracking-[-0.06em]">
-                  {founder.name}
-                </h3>
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
+                    <span className="text-(--orange-ink)">{founder.number}</span>
+                    <span aria-hidden="true" className="h-px w-5 bg-black/20" />
+                    <span>{founder.role}</span>
+                  </p>
+                  <NameTag className="mt-3 text-[clamp(2.1rem,8.4vw,3.7rem)] font-semibold leading-[0.92] tracking-[-0.055em]">
+                    {founder.name}
+                  </NameTag>
+                </div>
+                <span className="text-black/70">
+                  <PlatePortrait plate={founder.plate} initials={founder.initials} />
+                </span>
               </div>
 
-              <div className="lg:col-span-4 lg:col-start-9 lg:pt-8">
-                <p className="type-body text-black/70">{founder.focus}</p>
+              <p className="type-body max-w-md text-black/70">{founder.focus}</p>
 
-                {founder.credential && (
-                  <p className="mt-4 text-sm leading-6 text-black/75">{founder.credential}</p>
-                )}
-
-                <p className="tech-label mt-6 border-t border-black/10 pt-4 text-black/62">
-                  {founder.disciplines}
-                </p>
-              </div>
+              <dl className="grid gap-3 border-t border-black/10 pt-4 text-sm leading-6 sm:grid-cols-2 sm:gap-6">
+                <div>
+                  <dt className="tech-label text-black/55">Qualification</dt>
+                  <dd className="mt-1 text-black/78">{founder.credential}</dd>
+                </div>
+                <div>
+                  <dt className="tech-label text-black/55">Talk to {founder.name.split(" ")[0]} about</dt>
+                  <dd className="mt-1 text-black/78">{founder.disciplines}</dd>
+                </div>
+              </dl>
             </article>
           ))}
         </div>
 
-        <div className="grid gap-5 border-t border-black/12 pt-8 sm:pt-10 lg:grid-cols-12 lg:pt-14">
-          <span className="tech-label text-black/62 lg:col-span-3 lg:pt-2">
-            What founder-led means
-          </span>
+        {page && (
+          <div className="grid gap-4 border-t border-black/12 pt-7 sm:pt-9 lg:grid-cols-12 lg:gap-8">
+            <span className="tech-label text-black/62 lg:col-span-3 lg:pt-2">What founder-led means</span>
 
-          <p className="text-pretty text-[clamp(1.45rem,4.4vw,2.6rem)] font-medium leading-[1.12] tracking-[-0.035em] lg:col-span-8">
-            Direct communication. Clear accountability. The people discussing
-            the problem with you are the same people responsible for making
-            sure it gets solved properly.
-          </p>
-        </div>
+            <p className="text-pretty text-[clamp(1.3rem,4vw,2.2rem)] font-medium leading-[1.15] tracking-[-0.03em] lg:col-span-8">
+              Direct communication. Clear accountability. The people discussing
+              the problem with you are the same people responsible for making
+              sure it gets solved properly.
+            </p>
+          </div>
+        )}
       </Container>
     </section>
   );

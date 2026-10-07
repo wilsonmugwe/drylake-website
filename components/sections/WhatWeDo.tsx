@@ -3,8 +3,6 @@ import { ArrowUpRight } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 
-type Glyph = "software" | "automation" | "ai" | "connected";
-
 type Service = {
   number: string;
   name: string;
@@ -12,94 +10,54 @@ type Service = {
   text: string;
   examples: string;
   href: string;
-  glyph: Glyph;
 };
 
-/* Each row links to its service page (lib/discovery/services.ts slugs). */
+/*
+ * Each row links to its service page (lib/discovery/services.ts slugs). Experience polish: the
+ * outcome leads and the capability name follows, in words an owner uses. AI is one row among four
+ * (the standalone AI chapter is gone, brief section 6): what it does for the work, with a person
+ * checking what matters.
+ */
 const services: Service[] = [
   {
     number: "01",
     name: "Custom Software",
     statement: "Software that fits the business.",
-    text: "Internal systems, portals and applications designed around the workflows your business actually depends on.",
-    examples: "Internal platforms / Client & staff portals / Workflow systems / Web & mobile applications",
+    text: "Internal systems, portals and apps built around how your business actually works, instead of bending the business around a product.",
+    examples: "Internal platforms / Client & staff portals / Job and workflow systems / Web & mobile applications",
     href: "/services/custom-software-development",
-    glyph: "software",
   },
   {
     number: "02",
     name: "Automation",
     statement: "Fewer manual steps.",
-    text: "Remove duplicate handling and automate the routine steps that slow teams down.",
-    examples: "Workflow automation / System integrations / Approvals / Notifications / Data synchronisation",
+    text: "The routine steps your team repeats every day, done automatically: less double handling, fewer reminders, fewer mistakes.",
+    examples: "Approvals / Reminders & follow-ups / Notifications / Keeping records in sync",
     href: "/services/business-automation",
-    glyph: "automation",
   },
   {
     number: "03",
-    name: "AI",
-    statement: "AI where it earns its place.",
-    text: "Use AI where it can improve a real workflow, reduce work or create genuinely useful functionality.",
-    examples: "Document processing / AI-assisted workflows / Internal tools / Decision support",
-    href: "/services/ai-automation",
-    glyph: "ai",
-  },
-  {
-    number: "04",
     name: "Connected Systems",
     statement: "Make the systems talk.",
     text: "Connect the platforms you already use, so information moves between them instead of being typed in twice.",
-    examples: "Integrations / Shared data / Existing platforms / Reporting",
+    examples: "Accounting & CRM / Shared customer data / Existing platforms / Reporting",
     href: "/services/systems-integration",
-    glyph: "connected",
+  },
+  {
+    number: "04",
+    name: "AI",
+    statement: "AI where it earns its place.",
+    text: "Reading documents, sorting enquiries, drafting replies: AI where it genuinely saves work, with a person checking what matters.",
+    examples: "Document processing / Sorting & routing enquiries / Drafting & summaries / Decision support",
+    href: "/services/ai-automation",
   },
 ];
 
-/* A small system fragment per service, drawn on the row's hover/focus (desktop). Decorative. */
-function ServiceGlyph({ glyph }: { glyph: Glyph }) {
-  const stroke = { stroke: "currentColor", strokeWidth: 1.25, fill: "none", vectorEffect: "non-scaling-stroke" as const };
-  return (
-    <svg aria-hidden="true" viewBox="0 0 64 40" className="hz-glyph h-10 w-16">
-      {glyph === "software" && (
-        <>
-          <rect x="2" y="4" width="60" height="32" {...stroke} />
-          <path d="M2 12 H62 M20 12 V36" {...stroke} />
-          <path d="M26 20 H52 M26 27 H44" {...stroke} />
-        </>
-      )}
-      {glyph === "automation" && (
-        <>
-          <circle cx="8" cy="20" r="4" {...stroke} />
-          <circle cx="32" cy="20" r="4" {...stroke} />
-          <circle cx="56" cy="20" r="4" {...stroke} />
-          <path d="M12 20 H28 M36 20 H52 M24 16 L28 20 L24 24 M48 16 L52 20 L48 24" {...stroke} />
-        </>
-      )}
-      {glyph === "ai" && (
-        <>
-          <rect x="2" y="8" width="18" height="24" {...stroke} />
-          <path d="M20 20 H40" {...stroke} />
-          <path d="M44 14 H62 M44 20 H58 M44 26 H62" {...stroke} />
-        </>
-      )}
-      {glyph === "connected" && (
-        <>
-          <path d="M2 20 H62" {...stroke} />
-          <path d="M14 6 V20 M32 34 V20 M50 6 V20" {...stroke} />
-          <rect x="9" y="2" width="10" height="6" {...stroke} />
-          <rect x="27" y="32" width="10" height="6" {...stroke} />
-          <rect x="45" y="2" width="10" height="6" {...stroke} />
-        </>
-      )}
-    </svg>
-  );
-}
-
 /*
  * Chapter 3, What We Do (light, nav target #solutions). Not cards: four editorial rows on
- * hairlines, each one link to its service page. Desktop: hovering or focusing a row moves the
- * name, draws a horizon under it and reveals a small system fragment; everything the row says is
- * visible without hover, so touch and keyboard users lose nothing. Phones: rows stack.
+ * hairlines, each one link to its service page. The outcome is the headline of each row; the
+ * service name is its label. Desktop: hovering or focusing a row draws a rule under it and nudges
+ * the arrow; everything is visible without hover. Phones: one compact column per row.
  */
 export default function WhatWeDo() {
   return (
@@ -115,9 +73,9 @@ export default function WhatWeDo() {
               <span className="text-black/50">More workflow.</span>
             </h2>
 
-            <p className="type-lede mt-5 sm:mt-7 max-w-2xl text-black/62">
-              We build and connect technology that helps growing Australian
-              businesses operate more effectively.
+            <p className="type-lede mt-5 max-w-2xl text-black/62 sm:mt-6">
+              We build software, automate the repetitive work and join up the
+              systems you already use, so your team spends less time on admin.
             </p>
           </div>
         </div>
@@ -125,33 +83,30 @@ export default function WhatWeDo() {
         <ol className="mt-(--block-gap) border-b border-black/12">
           {services.map((service) => (
             <li key={service.number} className="border-t border-black/12">
-              <Link href={service.href} className="hz-row group relative grid gap-x-8 gap-y-3 py-7 sm:gap-y-4 sm:py-10 lg:grid-cols-12 lg:items-center lg:py-12">
+              <Link href={service.href} className="hz-row group relative grid gap-x-8 gap-y-2 py-6 sm:py-8 lg:grid-cols-12 lg:items-baseline lg:py-8">
                 <span className="hz-row-line" aria-hidden="true" />
 
-                <span className="font-mono text-sm text-(--orange-ink) lg:col-span-1">{service.number}</span>
+                <span className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62 lg:col-span-2 lg:block">
+                  <span className="text-(--orange-ink)">{service.number}</span>
+                  <span aria-hidden="true" className="h-px w-5 bg-black/20 lg:hidden" />
+                  <span className="lg:mt-2 lg:block">{service.name}</span>
+                </span>
 
-                <div className="lg:col-span-5">
-                  <h3 className="hz-row-name text-[clamp(2.5rem,11vw,5.4rem)] font-semibold leading-[0.9] tracking-[-0.06em]">
-                    {service.name}
-                  </h3>
-                </div>
+                <h3 className="hz-row-name text-[clamp(1.85rem,7.4vw,3.3rem)] font-semibold leading-[0.95] tracking-[-0.05em] lg:col-span-5">
+                  {service.statement}
+                </h3>
 
-                <span className="block lg:col-span-5">
-                  <span className="block text-lg font-semibold tracking-[-0.02em] sm:text-xl">{service.statement}</span>
-                  <span className="type-body mt-2 block max-w-md text-black/66">{service.text}</span>
-                  <span className="mt-4 block max-w-md font-mono text-[0.64rem] uppercase leading-5 tracking-[0.09em] text-black/62">
+                <span className="block lg:col-span-4">
+                  <span className="type-body block max-w-md text-black/68">{service.text}</span>
+                  <span className="mt-3 block max-w-md font-mono text-[0.62rem] uppercase leading-5 tracking-[0.09em] text-black/62">
                     {service.examples}
                   </span>
                 </span>
 
-                <span className="flex items-center justify-between gap-4 lg:col-span-1 lg:flex-col lg:items-end">
-                  <span className="hidden text-black/45 lg:block">
-                    <ServiceGlyph glyph={service.glyph} />
-                  </span>
-                  <span className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold lg:min-h-0">
-                    <span className="lg:sr-only">Explore {service.name}</span>
-                    <ArrowUpRight aria-hidden="true" size={22} className="hz-row-arrow text-(--orange-ink)" />
-                  </span>
+                {/* Phones: the arrow sits at the top right of the row (the whole row is the link). */}
+                <span className="absolute right-0 top-5 sm:top-7 lg:static lg:col-span-1 lg:flex lg:justify-end">
+                  <span className="sr-only">Explore {service.name}</span>
+                  <ArrowUpRight aria-hidden="true" size={22} className="hz-row-arrow text-(--orange-ink)" />
                 </span>
               </Link>
             </li>
@@ -159,8 +114,8 @@ export default function WhatWeDo() {
         </ol>
       </Container>
 
-      <Container className="relative pb-12 sm:pb-16 lg:pb-24">
-        <div className="flex flex-wrap gap-x-8 pt-4 sm:justify-end">
+      <Container className="relative pb-(--section-y)">
+        <div className="flex flex-wrap gap-x-8 pt-3 sm:justify-end">
           <Link href="/services/web-development" className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold">
             <span className="link-underline">Web development</span>
             <ArrowUpRight aria-hidden="true" size={15} />

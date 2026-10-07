@@ -7,15 +7,15 @@ import { SYSTEM_NODES, SYSTEM_WORKAROUNDS } from "@/components/visuals/horizon-g
  * The signature moment: the systems a business runs, first scattered and held together by dashed
  * workarounds ("copy → paste", "export.csv"), then resolved onto one spine with the Drylake
  * lockup at the junction. Driven by --p from the surrounding ScrollProgress:
- *   p 0.00-0.50  nodes travel from scattered to their place; workarounds fade out
- *   p 0.45-0.85  the spine draws, then each system's drop connects
- *   p 0.70-1.00  the hub settles and status dots turn on
+ *   p 0.00-0.45  nodes travel (eased) from scattered to their place; workarounds fade by 0.40
+ *   p 0.38-0.75  the spine draws, then each system's drop connects
+ *   p 0.62-0.88  the hub settles and status dots turn on (experience polish: earlier phases)
  * Desktop: horizontal spine, four systems above, four below. Phones: vertical spine, two columns.
  * Pure markup + CSS (app/public-site.css, DRYLAKE HORIZON); decorative, the caption below says it in words.
  */
 export default function SystemsStage() {
   return (
-    <div aria-hidden="true" className="hz-sys relative h-[540px] sm:h-[560px] lg:h-[min(64vh,600px)]">
+    <div aria-hidden="true" className="hz-sys relative h-[470px] sm:h-[520px] lg:h-[min(64vh,600px)]">
       {/* Workarounds between scattered systems (desktop only). */}
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="hz-workarounds absolute inset-0 hidden h-full w-full lg:block">
         {SYSTEM_WORKAROUNDS.map(({ from, to }) => {

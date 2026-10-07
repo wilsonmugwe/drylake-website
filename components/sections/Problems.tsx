@@ -66,9 +66,10 @@ export default function Problems() {
         </div>
       </Container>
 
-      {/* Phones (PR 3): the sort runs while the field enters and is finished by the time the field
-          is centred, so the visitor never stops on chips mid-crossing. Desktop pinning unchanged. */}
-      <ScrollProgress rest={0} start={0.4} passStart={0.9} end={0.3} className="mt-10 sm:mt-16 lg:mt-20">
+      {/* Experience polish: both layouts start sorting as the field enters, finish early (finish)
+          and hold the sorted lanes on screen. Desktop: sorted by the second statement; phones: sorted
+          by the time the whole field is on screen. */}
+      <ScrollProgress rest={0} start={0.9} finish={0.42} passStart={0.98} end={-0.28} className="mt-8 sm:mt-12 lg:mt-14">
         <Container>
           <div className="grid gap-8 sm:gap-14 lg:grid-cols-12 lg:gap-8">
             <div className="lg:sticky lg:top-[calc(var(--nav-h)+7vh)] lg:col-span-6 lg:self-start">
@@ -79,7 +80,7 @@ export default function Problems() {
               {problems.map((problem) => (
                 <li
                   key={problem.number}
-                  className="border-t border-black/12 py-8 sm:py-12 lg:flex lg:min-h-[58vh] lg:flex-col lg:justify-center lg:py-16"
+                  className="border-t border-black/12 py-7 sm:py-10 lg:flex lg:min-h-[36vh] lg:flex-col lg:justify-center lg:py-10"
                 >
                   <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
                     <span className="text-(--orange-ink)">{problem.number}</span>
@@ -87,7 +88,7 @@ export default function Problems() {
                     <span>{problem.label}</span>
                   </p>
 
-                  <h3 className="mt-4 max-w-[15ch] sm:mt-5 text-balance text-[clamp(2rem,8.6vw,3.6rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
+                  <h3 className="mt-4 max-w-[15ch] sm:mt-5 text-balance text-[clamp(1.9rem,8.2vw,3.2rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
                     {problem.title}
                   </h3>
 
@@ -100,7 +101,7 @@ export default function Problems() {
       </ScrollProgress>
 
       <Container>
-        <div className="grid gap-3 border-t border-black/12 py-10 sm:py-12 lg:grid-cols-12 lg:py-16">
+        <div className="grid gap-3 border-t border-black/12 py-8 sm:py-10 lg:grid-cols-12 lg:py-12">
           <span className="tech-label text-black/62 lg:col-span-3">NEXT</span>
 
           <div className="lg:col-span-9">

@@ -54,25 +54,29 @@ export default function AboutPage() {
       />
       <Navbar />
 
+      {/* Experience polish (2026-10-07, brief sections 11-12): the founders open the page. The h1 is
+          "Small team. Direct access." (Founders variant="page"), Benedict and Wilson start inside the
+          first desktop viewport, and the company story follows. No drama-only spacing. */}
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <Container className="pb-(--section-y) pt-(--page-top) sm:pt-44 lg:pb-28">
-          <p className="section-label text-black/60">About Drylake</p>
+        <Founders variant="page" />
 
-          <h1 className="type-section mt-6 max-w-5xl">
-            Built close to
-            <br />
-            <span className="text-black/45">the problem.</span>
-          </h1>
-        </Container>
-
-        <section className="mineral-texture bg-[#f2f0e9] py-(--section-y) lg:py-28">
+        <section className="mineral-texture bg-[#f2f0e9] py-(--section-y)">
           <Container>
             <div className="grid gap-8 sm:gap-12 lg:grid-cols-2">
-              <h2 className="text-4xl font-semibold tracking-[-0.055em] sm:text-5xl lg:text-6xl">
-                Tomorrow Starts Here.
-              </h2>
+              <div>
+                <p className="section-label text-black/60">About Drylake</p>
+                <h2 className="type-section mt-5">
+                  Built close to
+                  <br />
+                  <span className="text-black/45">the problem.</span>
+                </h2>
+              </div>
 
               <div className="space-y-6 text-base leading-7 text-black/60">
+                <p className="text-2xl font-semibold leading-tight tracking-[-0.04em] text-black sm:text-3xl">
+                  Tomorrow Starts Here.
+                </p>
+
                 <p>
                   Drylake is a Perth-based technology company building practical
                   software and technical systems for Australian businesses.
@@ -91,7 +95,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="mt-10 grid border-t border-black/10 sm:mt-16 md:grid-cols-3">
+            <div className="mt-10 grid border-t border-black/10 sm:mt-14 md:grid-cols-3">
               {values.map((value) => (
                 <div
                   key={value.title}
@@ -110,7 +114,6 @@ export default function AboutPage() {
           </Container>
         </section>
 
-        <Founders />
         <ServiceIndex
           id="about-services"
           label="What we build"
