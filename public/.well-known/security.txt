@@ -1,0 +1,8 @@
+# RFC 9116 security.txt for Drylake Pty Ltd (drylake.com.au)
+# Last reviewed 2026-10-08. Renew Expires before it lapses (tests/security-txt.test.mjs warns at 60 days).
+# Contact is the monitored company inbox; please put "Security" in the subject.
+
+Contact: mailto:hello@drylake.com.au
+Expires: 2027-10-08T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://drylake.com.au/.well-known/security.txt
