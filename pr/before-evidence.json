@@ -1,0 +1,80 @@
+{
+  "trackHeight-1440": 2070,
+  "systems-1440": {
+    "scrollPxFromFirstMoveToResolved": 1200,
+    "viewportHeights": 1.33
+  },
+  "trackHeight-390": 883,
+  "systems-390": {
+    "scrollPxFromFirstMoveToResolved": 600,
+    "viewportHeights": 0.71
+  },
+  "contact-landing-scrollY-390": 0,
+  "contact-success-390": {
+    "top": -723,
+    "inView": false,
+    "focused": false
+  },
+  "contact-landing-scrollY-1440": 0,
+  "contact-success-1440": {
+    "top": -486,
+    "inView": false,
+    "focused": false
+  },
+  "page /solutions 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /solutions 1440": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /services 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /services 1440": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /services/custom-software-development 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /services/custom-software-development 1440": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /about 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /about 1440": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /perth 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /perth 1440": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /privacy 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /privacy 1440": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /contact 390": {
+    "status": 200,
+    "overflowX": 0
+  },
+  "page /contact 1440": {
+    "status": 200,
+    "overflowX": 0
+  }
+}
