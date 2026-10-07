@@ -2,7 +2,8 @@
 #
 # After every successful PRODUCTION deploy (Vercel posts a GitHub deployment status):
 #   1. check the live site is still crawlable, indexable and consistent (fails loudly if not)
-#   2. notify IndexNow (Bing, Yandex, Seznam, Naver, Yep, ...) that the public URLs changed
+#   2. check the live domain is serving main's HEAD, not an older build that finished last
+#   3. notify IndexNow (Bing, Yandex, Seznam, Naver, Yep, ...) that the public URLs changed
 # Weekly, the check runs again so drift that is not caused by a deploy is caught too
 # (a firewall rule, a Vercel setting, an expired domain).
 #
@@ -33,6 +34,26 @@ jobs:
           node-version: 22
       - name: Live crawler and indexing check
         run: node scripts/discoverability-check.mjs
+
+  live-matches-main:
+    # Two production builds can race (PRs #25 and #26, 2026-10-07): the older one finished last,
+    # took the domain, and every status stayed green while #26's assets 404'd. This checks out
+    # main's HEAD, not the deployment's sha, and fails if the live domain does not serve it.
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Live domain serves main's public files
+        run: node scripts/live-matches-main.mjs
 
   indexnow:
     needs: check
