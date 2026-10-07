@@ -1,172 +1,88 @@
-"use client";
-
-import { motion, useReducedMotion } from "motion/react";
-
+import DrylakeMark from "@/components/brand/DrylakeMark";
+import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 
-const systems = [
-  {
-    label: "Microsoft 365",
-    desktop: "left-[3%] top-[14%]",
-  },
-  {
-    label: "Xero",
-    desktop: "right-[6%] top-[12%]",
-  },
-  {
-    label: "MYOB",
-    desktop: "left-[1%] bottom-[16%]",
-  },
-  {
-    label: "Payments",
-    desktop: "right-[1%] bottom-[17%]",
-  },
-  {
-    label: "CRM",
-    desktop: "left-[12%] top-1/2",
-  },
-  {
-    label: "APIs",
-    desktop: "right-[13%] top-1/2",
-  },
-];
+const systems = ["Microsoft 365", "Xero", "MYOB", "Payments", "CRM", "APIs"];
 
+/*
+ * Contrast moment: a full-bleed dark band. The systems a business already runs sit as
+ * stations on one Drylake Line that ends at the Drylake mark: nothing replaced, everything
+ * connected. Horizontal rail on wide screens, vertical rail on phones. Copy unchanged.
+ */
 export default function Integrations() {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section className="relative overflow-hidden bg-black py-12 text-white sm:py-20 lg:py-24">
-      <div
-        aria-hidden="true"
-        className="signal-grid-dark pointer-events-none absolute inset-0 opacity-25"
-      />
+    <section className="surface-ink relative overflow-hidden">
+      <div aria-hidden="true" className="grid-ink pointer-events-none absolute inset-0 opacity-70" />
 
-      <Container className="relative z-10">
-        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-16">
-          <div>
-            <p className="section-label flex items-center gap-2.5 text-white/55">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+      <Container className="relative py-20 sm:py-28 lg:py-36">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <p className="section-label flex items-center gap-2.5 self-start text-white/60 lg:col-span-3 lg:pt-4">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+            Work With What You Have
+          </p>
 
-              Work With What You Have
-            </p>
-
-            <h2 className="mt-5 max-w-2xl text-[clamp(2.5rem,11vw,4rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[clamp(3.8rem,5.5vw,5.7rem)]">
+          <div className="lg:col-span-9">
+            <h2 className="type-section">
               Don&apos;t replace
               <br />
-
-              <span className="text-white/45">
-                what already works.
-              </span>
+              <span className="text-white/40">what already works.</span>
             </h2>
 
-            <p className="mt-4 max-w-lg text-sm leading-6 text-white/55 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="type-lede mt-7 max-w-xl text-white/62">
               We can connect, extend and build around the systems your
               business already depends on.
             </p>
           </div>
-
-          {/* Desktop network */}
-          <div className="relative hidden h-[430px] lg:block">
-            {/* horizontal routing */}
-            <div className="absolute left-[10%] right-[10%] top-1/2 h-px bg-white/10" />
-
-            {/* vertical routing */}
-            <div className="absolute bottom-[12%] left-1/2 top-[12%] w-px bg-white/10" />
-
-            {/* branch lines */}
-            <div className="absolute left-[10%] top-[14%] h-[36%] w-px bg-white/10" />
-            <div className="absolute right-[10%] top-[12%] h-[38%] w-px bg-white/10" />
-            <div className="absolute bottom-[16%] left-[10%] h-[34%] w-px bg-white/10" />
-            <div className="absolute bottom-[17%] right-[10%] h-[33%] w-px bg-white/10" />
-
-            <div className="absolute left-[10%] top-[14%] h-px w-[40%] bg-white/10" />
-            <div className="absolute right-[10%] top-[12%] h-px w-[40%] bg-white/10" />
-            <div className="absolute bottom-[16%] left-[10%] h-px w-[40%] bg-white/10" />
-            <div className="absolute bottom-[17%] right-[10%] h-px w-[40%] bg-white/10" />
-
-            {/* Core */}
-            <div className="absolute left-1/2 top-1/2 z-10 flex h-[132px] w-[180px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center border border-[#f26a2e]/35 bg-black">
-              <span className="signal-dot h-2 w-2 rounded-full bg-[#f26a2e]" />
-
-              <span className="mt-4 text-sm font-semibold">
-                DRYLAKE
-              </span>
-
-              <span className="tech-label mt-1 text-white/55">
-                Connected workflow
-              </span>
-            </div>
-
-            {systems.map((system) => (
-              <div
-                key={system.label}
-                className={`absolute ${system.desktop}`}
-              >
-                <div className="flex items-center gap-2 border border-white/10 bg-black px-3 py-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-
-                  <span className="tech-label whitespace-nowrap text-white/55">
-                    {system.label}
-                  </span>
-                </div>
-              </div>
-            ))}
-
-            {/* moving data signal */}
-            <motion.span
-              animate={
-                reduceMotion
-                  ? undefined
-                  : {
-                      left: ["10%", "50%", "90%"],
-                      opacity: [0, 1, 0],
-                    }
-              }
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className="absolute top-[calc(50%-3px)] h-1.5 w-1.5 rounded-full bg-[#f26a2e]"
-            />
-          </div>
-
-          {/* Mobile network */}
-          <div className="lg:hidden">
-            <div className="grid grid-cols-2 border-l border-t border-white/10">
-              {systems.map((system) => (
-                <div
-                  key={system.label}
-                  className="flex min-h-[48px] items-center gap-2 border-b border-r border-white/10 px-3"
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
-
-                  <span className="tech-label text-white/55">
-                    {system.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mx-auto h-6 w-px bg-[#f26a2e]/40" />
-
-            <div className="flex min-h-[64px] items-center justify-between border border-[#f26a2e]/30 bg-[#f26a2e]/[0.04] px-4">
-              <div>
-                <span className="tech-label text-[#f26a2e]">
-                  DRYLAKE
-                </span>
-
-                <p className="mt-1 text-sm font-medium text-white/70">
-                  One connected workflow
-                </p>
-              </div>
-
-              <span className="signal-dot h-2 w-2 rounded-full bg-[#f26a2e]" />
-            </div>
-          </div>
         </div>
 
-        <p className="mt-6 border-t border-white/[0.08] pt-4 text-[0.65rem] leading-5 text-white/55 sm:text-xs">
+        <InView className="mt-16 lg:mt-24" threshold={0.3}>
+          {/* Wide: one horizontal line, stations alternating above and below. */}
+          <div aria-hidden="true" className="relative hidden h-[190px] lg:block">
+            <span className="dl-grow-x absolute left-0 right-[84px] top-1/2 h-px bg-white/30" />
+            <span className="dl-grow-x absolute left-[70%] right-[84px] top-1/2 h-px bg-[#f26a2e]" style={{ ["--d" as string]: "0.7s" }} />
+
+            {systems.map((system, index) => {
+              const left = `${4 + index * 13}%`;
+              const above = index % 2 === 0;
+              return (
+                <div key={system} className="dl-fade-view absolute top-1/2" style={{ left, ["--d" as string]: `${0.2 + index * 0.1}s` }}>
+                  <span className="absolute -left-[4px] -top-[4px] h-[9px] w-[9px] rounded-full bg-[#0b0b0a] shadow-[0_0_0_1.5px_rgba(255,255,255,0.55)]" />
+                  <span className={`absolute left-0 w-px bg-white/20 ${above ? "bottom-2 h-12" : "top-2 h-12"}`} />
+                  <span
+                    className={`absolute -translate-x-1/2 whitespace-nowrap rounded-[3px] bg-[#121210] px-3 py-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-white/75 shadow-[0_0_0_1px_rgba(255,255,255,0.14)] ${above ? "bottom-14" : "top-14"}`}
+                  >
+                    {system}
+                  </span>
+                </div>
+              );
+            })}
+
+            <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-3">
+              <DrylakeMark className="h-[60px] w-[60px]" />
+            </div>
+          </div>
+
+          {/* Phones and tablets: a vertical rail. */}
+          <ol aria-label="Systems Drylake can connect" className="relative lg:hidden">
+            <span aria-hidden="true" className="dl-grow-y absolute bottom-7 left-[5px] top-2 w-px bg-white/30" />
+            {systems.map((system, index) => (
+              <li key={system} className="dl-fade-view relative flex min-h-[48px] items-center gap-5 pl-0" style={{ ["--d" as string]: `${0.1 + index * 0.08}s` }}>
+                <span aria-hidden="true" className="relative z-10 h-[11px] w-[11px] shrink-0 rounded-full bg-[#0b0b0a] shadow-[0_0_0_1.5px_rgba(255,255,255,0.55)]" />
+                <span className="font-mono text-[0.78rem] uppercase tracking-[0.12em] text-white/75">{system}</span>
+              </li>
+            ))}
+            <li className="relative mt-3 flex items-center gap-4">
+              <span aria-hidden="true" className="absolute -top-3 left-[5px] h-3 w-px bg-[#f26a2e]" />
+              <DrylakeMark className="relative z-10 -ml-[14px] h-10 w-10" />
+              <span className="text-lg font-semibold tracking-[-0.03em]">Drylake</span>
+            </li>
+          </ol>
+
+          {/* The wide rail is decorative; keep the system names available to assistive tech. */}
+          <p className="sr-only hidden lg:block">{systems.join(", ")}</p>
+        </InView>
+
+        <p className="mt-14 border-t border-white/10 pt-5 text-xs leading-5 text-white/55">
           Integrations depend on the capabilities and access provided by each
           platform.
         </p>

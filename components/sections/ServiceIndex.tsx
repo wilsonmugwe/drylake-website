@@ -70,7 +70,7 @@ export default function ServiceIndex({
                 <ArrowUpRight
                   aria-hidden="true"
                   size={18}
-                  className="hidden shrink-0 text-black/40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#c2531f] sm:block"
+                  className="hidden shrink-0 text-black/50 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-(--orange-ink) sm:block"
                 />
               </Link>
             </li>

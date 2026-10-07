@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
+import { SIGN_OUT_REDIRECT_URL } from "@/lib/navigation/site-nav";
 import {
   Building2,
   CreditCard,
@@ -142,7 +143,7 @@ export default function AdminSidebar() {
 
         <button
           type="button"
-          onClick={() => signOut({ redirectUrl: "/" })}
+          onClick={() => signOut({ redirectUrl: SIGN_OUT_REDIRECT_URL })}
           className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/55 transition hover:bg-white/[0.06] hover:text-white"
         >
           <LogOut size={16} />

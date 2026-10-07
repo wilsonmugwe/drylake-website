@@ -51,7 +51,7 @@ export default function ServicesPage() {
         <Container className="pb-10 pt-32 sm:pt-40">
           <Breadcrumbs crumbs={CRUMBS} />
 
-          <h1 className="mt-10 max-w-5xl text-[clamp(2.8rem,7vw,6rem)] font-semibold leading-[0.92] tracking-[-0.065em]">
+          <h1 className="type-section mt-10 max-w-5xl">
             Services
           </h1>
 

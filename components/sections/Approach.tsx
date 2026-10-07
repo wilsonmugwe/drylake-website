@@ -1,11 +1,4 @@
-"use client";
-
-import {
-  ArrowRight,
-  Check,
-} from "lucide-react";
-import { useState } from "react";
-
+import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 
 const stages = [
@@ -31,170 +24,64 @@ const stages = [
   },
 ];
 
-const productionDetails = [
-  "Authentication",
-  "Permissions",
-  "Integrations",
-  "Data validation",
-  "Monitoring",
-  "Backups & recovery",
-];
-
+/*
+ * Our Approach (nav target id="approach"). The four existing stages as one journey along the
+ * Drylake Line: a horizontal rail with stations on wide screens, a vertical sequence on
+ * phones (designed for the narrow screen, not a squeezed timeline). Every stage text is
+ * visible and rendered exactly once. The production-engineering half that used to share
+ * this section is now its own dark section (Production.tsx).
+ */
 export default function Approach() {
-  const [active, setActive] = useState(0);
-
   return (
-    <section
-      id="approach"
-      className="relative overflow-hidden bg-[#f2f0e9] py-12 text-black sm:py-20 lg:py-24"
-    >
-      <Container>
-        <div className="grid gap-5 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
-          <div>
-            <p className="section-label text-black/60">
-              04 / How We Work
-            </p>
-          </div>
+    <section id="approach" className="surface-mineral relative overflow-hidden">
+      <Container className="py-20 sm:py-28 lg:py-36">
+        <div className="grid gap-6 lg:grid-cols-12">
+          <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">04 / How We Work</p>
 
-          <div>
-            <h2 className="max-w-5xl text-[clamp(2.55rem,11vw,4rem)] font-semibold leading-[0.92] tracking-[-0.06em] sm:text-[clamp(4rem,6.5vw,6.5rem)]">
+          <div className="lg:col-span-9">
+            <h2 className="type-section">
               Understand first.
               <br />
-
-              <span className="text-black/45">
-                Build second.
-              </span>
+              <span className="text-black/50">Build second.</span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="type-lede mt-7 max-w-xl text-black/62">
               No technical specification required. We start with the business
               problem and work forward from there.
             </p>
           </div>
         </div>
 
-        {/* Process */}
-        <div className="mt-9 border-t border-black/10 sm:mt-12">
-          {stages.map((stage, index) => {
-            const selected = active === index;
+        <InView className="relative mt-16 lg:mt-24" threshold={0.2}>
+          {/* The rail: horizontal from lg, vertical below. */}
+          <span aria-hidden="true" className="dl-grow-x absolute left-0 right-0 top-[7px] hidden h-px bg-black/25 lg:block" />
+          <span aria-hidden="true" className="dl-grow-y absolute bottom-6 left-[7px] top-2 w-px bg-black/25 lg:hidden" />
 
-            /*
-             * Each stage text is rendered ONCE. It used to exist twice (a desktop copy inside
-             * the button and a mobile accordion copy), so crawlers and text extraction saw the
-             * selected stage's sentence duplicated. Now one paragraph: always shown from lg up,
-             * shown on smaller screens only for the selected stage.
-             */
-            return (
-              <div
+          <ol className="relative grid gap-12 lg:grid-cols-4 lg:gap-8">
+            {stages.map((stage, index) => (
+              <li
                 key={stage.number}
-                className="border-b border-black/10 lg:grid lg:grid-cols-[0.15fr_0.55fr_1fr] lg:items-center lg:gap-12"
+                className="dl-fade-view relative pl-10 lg:pl-0 lg:pt-12"
+                style={{ ["--d" as string]: `${0.2 + index * 0.18}s` }}
               >
-                <button
-                  type="button"
-                  onClick={() => setActive(index)}
-                  onMouseEnter={() => setActive(index)}
-                  onFocus={() => setActive(index)}
-                  aria-controls={`approach-stage-${stage.number}`}
-                  className="
-                    group
-                    grid
-                    w-full
-                    grid-cols-[42px_1fr_auto]
-                    items-center
-                    gap-3
-                    py-4
-                    text-left
-                    sm:grid-cols-[70px_1fr_auto]
-                    sm:py-6
-                    lg:col-span-2
-                    lg:grid-cols-subgrid
-                  "
-                >
-                  <span
-                    className={`font-mono text-[0.62rem] sm:text-xs ${
-                      selected
-                        ? "text-(--orange-ink)"
-                        : "text-black/60"
-                    }`}
-                  >
-                    {stage.number}
-                  </span>
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-0 top-0 h-[15px] w-[15px] rounded-full ${
+                    index === 0 ? "bg-[#f26a2e]" : "bg-[#f2f0e9] shadow-[0_0_0_1.5px_rgba(11,11,10,0.55)]"
+                  }`}
+                />
 
-                  <h3
-                    className={`text-xl font-semibold tracking-[-0.04em] transition-colors sm:text-2xl lg:text-[2.5rem] ${
-                      selected
-                        ? "text-black"
-                        : "text-black/60"
-                    }`}
-                  >
-                    {stage.title}
-                  </h3>
+                <span className="block font-mono text-sm text-(--orange-ink)">{stage.number}</span>
 
-                  <div className="lg:hidden">
-                    <ArrowRight
-                      size={15}
-                      className={
-                        selected
-                          ? "text-[#f26a2e]"
-                          : "text-black/20"
-                      }
-                    />
-                  </div>
-                </button>
+                <h3 className="mt-3 text-[clamp(2rem,7vw,3.2rem)] font-semibold leading-none tracking-[-0.055em]">
+                  {stage.title}
+                </h3>
 
-                <p
-                  id={`approach-stage-${stage.number}`}
-                  className={`${selected ? "block" : "hidden"} pb-5 pl-[55px] pr-4 text-sm leading-6 text-black/60 sm:pl-[83px] lg:block lg:max-w-xl lg:p-0`}
-                >
-                  {stage.text}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Production */}
-        <div className="mt-10 grid gap-5 border-t border-black/10 pt-8 sm:mt-14 sm:pt-10 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
-          <div>
-            <p className="section-label text-black/60">
-              Production Matters
-            </p>
-          </div>
-
-          <div>
-            <h3 className="max-w-4xl text-[2.2rem] font-semibold leading-[0.95] tracking-[-0.055em] sm:text-[clamp(3rem,5vw,5rem)]">
-              The boring part
-              <br />
-
-              <span className="text-black/45">
-                is the hard part.
-              </span>
-            </h3>
-
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/60 sm:text-base">
-              We engineer the less visible parts that make software dependable
-              when the business starts relying on it.
-            </p>
-
-            <div className="mt-6 grid grid-cols-2 border-l border-t border-black/10 sm:grid-cols-3">
-              {productionDetails.map((item) => (
-                <div
-                  key={item}
-                  className="flex min-h-[48px] items-center gap-2 border-b border-r border-black/10 px-3"
-                >
-                  <Check
-                    size={12}
-                    className="shrink-0 text-[#f26a2e]"
-                  />
-
-                  <span className="text-xs text-black/60 sm:text-sm">
-                    {item}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+                <p className="type-body mt-4 max-w-sm text-black/65">{stage.text}</p>
+              </li>
+            ))}
+          </ol>
+        </InView>
       </Container>
     </section>
   );

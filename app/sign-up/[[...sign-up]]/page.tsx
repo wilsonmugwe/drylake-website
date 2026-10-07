@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+
+import SiteLink from "@/components/navigation/SiteLink";
 import { SignUp } from "@clerk/nextjs";
 
 import SkipLink from "@/components/layout/SkipLink";
@@ -67,9 +68,9 @@ export default function SignUpPage() {
               Top
           -------------------------------------------------- */}
           <div className="relative z-10 flex items-center justify-between px-10 py-9 xl:px-14">
-            <Link
+            <SiteLink
               href="/"
-              className="group inline-flex items-center gap-3"
+              className="group inline-flex min-h-[44px] items-center gap-3"
             >
               <span className="flex h-9 w-9 items-center justify-center border border-white/[0.12] transition-colors group-hover:border-white/30">
                 <ArrowLeft
@@ -81,7 +82,7 @@ export default function SignUpPage() {
               <span className="text-sm font-semibold tracking-[-0.02em]">
                 DRYLAKE
               </span>
-            </Link>
+            </SiteLink>
 
             <span className="flex items-center gap-2 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/55">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
@@ -176,7 +177,7 @@ export default function SignUpPage() {
               Mobile header
           -------------------------------------------------- */}
           <header className="relative z-10 flex h-[78px] items-center justify-between border-b border-black/[0.08] px-5 sm:px-8 lg:hidden">
-            <Link
+            <SiteLink
               href="/"
               className="group flex items-center gap-3"
             >
@@ -190,7 +191,7 @@ export default function SignUpPage() {
               <span className="text-sm font-semibold tracking-[-0.02em]">
                 DRYLAKE
               </span>
-            </Link>
+            </SiteLink>
 
             <span className="flex items-center gap-2 text-[0.58rem] font-medium uppercase tracking-[0.14em] text-black/60">
               <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
@@ -281,9 +282,9 @@ export default function SignUpPage() {
                   Secure access
                 </span>
 
-                <Link
+                <SiteLink
                   href="/"
-                  className="group flex items-center gap-1.5 text-xs font-medium text-black/35 transition-colors hover:text-black"
+                  className="group flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-black/55 transition-colors hover:text-black"
                 >
                   Back to Drylake
 
@@ -291,7 +292,7 @@ export default function SignUpPage() {
                     size={11}
                     className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                   />
-                </Link>
+                </SiteLink>
               </div>
             </div>
           </div>

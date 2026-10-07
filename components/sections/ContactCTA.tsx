@@ -1,128 +1,89 @@
-import Link from "next/link";
-import {
-  ArrowUpRight,
-  Mail,
-  Phone,
-} from "lucide-react";
+import { ArrowUpRight, Mail, Phone } from "lucide-react";
 
+import { MARK_Y_PATH } from "@/components/brand/DrylakeMark";
+import InView from "@/components/motion/InView";
+import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
+
+/*
+ * The close. Strong type, one unmissable action, and the end of the Drylake Line: it crosses
+ * the section and becomes the y of the Drylake mark (the same geometry as the logo, scaled
+ * x3 and traced as a line), then the solid mark settles in behind it. Copy unchanged.
+ * Used on every public page, so the motif closes every page the same way.
+ */
+
+/* MARK_Y_PATH under translate(201.85 168) scale(3), traced from the tail back to the arm. */
+const LINE_INTO_Y =
+  "M -640 186.81 H 540 C 556 186.81 566 185.4 570.76 186.81 C 581.47 190.32 598.72 229.47 615.85 229.47 C 641.38 229.47 662.68 204.39 671.98 180.3 L 730 29.88";
+const Y_ARM = "M 626.74 29.88 L 678.37 163.74";
 
 export default function ContactCTA() {
   return (
-    <section className="relative overflow-hidden bg-black py-12 text-white sm:py-20 lg:py-24">
-      {/* Network geometry */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-      >
-        <div className="absolute right-[12%] top-0 h-[38%] w-px bg-white/[0.05]" />
-
-        <div className="absolute right-[12%] top-[38%] h-px w-[22%] bg-white/[0.05]" />
-
-        <div className="absolute right-[34%] top-[38%] h-[32%] w-px bg-white/[0.05]" />
-
-        <div className="absolute right-[34%] top-[70%] h-px w-[18%] bg-white/[0.05]" />
-
-        <span className="signal-dot absolute right-[11.8%] top-[37.6%] h-2 w-2 rounded-full bg-[#f26a2e]" />
-
-        <span className="absolute right-[33.8%] top-[69.6%] h-1.5 w-1.5 rounded-full bg-white/20" />
-      </div>
-
-      <Container className="relative z-10">
-        <p className="section-label flex items-center gap-2.5 text-white/55">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-
+    <section className="surface-ink relative overflow-hidden">
+      <Container className="relative pt-20 sm:pt-28 lg:pt-36">
+        <p className="section-label flex items-center gap-2.5 text-white/60">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
           Start a Conversation
         </p>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-end lg:gap-16">
-          <div>
-            <h2 className="max-w-5xl text-[clamp(2.9rem,13vw,4.5rem)] font-semibold leading-[0.88] tracking-[-0.065em] sm:text-[clamp(4.5rem,8vw,8rem)]">
+        <div className="mt-8 grid gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
+          <div className="lg:col-span-8">
+            <h2 className="type-display">
               Tell us what&apos;s
               <br />
-
-              <span className="text-white/45">
-                slowing you down.
-              </span>
+              <span className="text-white/40">slowing you down.</span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/55 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="type-lede mt-8 max-w-xl text-white/62">
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>
 
-            <Link
-              href="/contact"
-              className="
-                button-light
-                group
-                mt-6
-                flex
-                min-h-[52px]
-                w-full
-                items-center
-                justify-between
-                bg-white
-                px-5
-                text-sm
-                font-semibold
-                sm:mt-8
-                sm:w-fit
-                sm:min-w-[240px]
-              "
-            >
+            <SiteLink href="/contact" className="btn-signal mt-10 w-full !min-h-[58px] !text-base sm:w-auto sm:min-w-[280px]">
               <span>Start a conversation</span>
-
-              <ArrowUpRight
-                size={17}
-                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              />
-            </Link>
+              <ArrowUpRight aria-hidden="true" size={18} />
+            </SiteLink>
           </div>
 
-          <div className="border-t border-white/10 pt-5 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-            <p className="tech-label text-[#f26a2e]">
-              TALK TO A PERSON, NOT A SALES QUEUE
-            </p>
+          <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <p className="tech-label text-[#f26a2e]">TALK TO A PERSON, NOT A SALES QUEUE</p>
 
             <a
               href="tel:+61420565457"
-              className="group mt-4 flex items-center justify-between border-b border-white/10 py-3"
+              className="group mt-5 flex min-h-[52px] items-center justify-between border-b border-white/10"
             >
-              <div className="flex items-center gap-3">
-                <Phone size={14} className="text-white/28" />
-
-                <span className="text-sm text-white/62">
-                  +61 420 565 457
-                </span>
-              </div>
-
-              <ArrowUpRight
-                size={14}
-                className="text-white/20 transition-colors group-hover:text-white"
-              />
+              <span className="flex items-center gap-3">
+                <Phone aria-hidden="true" size={15} className="text-white/40" />
+                <span className="text-[0.95rem] text-white/75">+61 420 565 457</span>
+              </span>
+              <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
             </a>
 
-            <a
-              href="mailto:hello@drylake.com.au"
-              className="group flex items-center justify-between py-3"
-            >
-              <div className="flex items-center gap-3">
-                <Mail size={14} className="text-white/28" />
-
-                <span className="text-sm text-white/62">
-                  hello@drylake.com.au
-                </span>
-              </div>
-
-              <ArrowUpRight
-                size={14}
-                className="text-white/20 transition-colors group-hover:text-white"
-              />
+            <a href="mailto:hello@drylake.com.au" className="group flex min-h-[52px] items-center justify-between">
+              <span className="flex items-center gap-3">
+                <Mail aria-hidden="true" size={15} className="text-white/40" />
+                <span className="text-[0.95rem] text-white/75">hello@drylake.com.au</span>
+              </span>
+              <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
             </a>
           </div>
         </div>
       </Container>
+
+      {/* The Drylake Line resolves into the mark. */}
+      <InView className="relative mt-12 sm:mt-16" threshold={0.4}>
+        {/* Full-bleed, cropped from the left on narrow screens so the line always enters at the edge. */}
+        <svg aria-hidden="true" viewBox="-640 0 1460 290" preserveAspectRatio="xMaxYMax slice" className="block h-[166px] w-full sm:h-[232px] lg:h-[290px]">
+          <g className="dl-fade-view" style={{ ["--d" as string]: "1.5s" }}>
+            <g transform="translate(201.85 168) scale(3)">
+              <path d={MARK_Y_PATH} fill="none" stroke="#C2703D" strokeWidth="14.18" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+            </g>
+          </g>
+
+          <path d={LINE_INTO_Y} pathLength={1} className="dl-path dl-draw-view" stroke="#f26a2e" strokeWidth="1.5" style={{ ["--d" as string]: "0.1s" }} />
+          <path d={Y_ARM} pathLength={1} className="dl-path dl-draw-view" stroke="#f26a2e" strokeWidth="1.5" style={{ ["--d" as string]: "1.05s" }} />
+        </svg>
+      </InView>
     </section>
   );
 }

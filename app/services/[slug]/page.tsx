@@ -84,7 +84,7 @@ export default async function ServicePage({ params }: Props) {
 
           <p className="section-label mt-10 text-black/60">{service.name}</p>
 
-          <h1 className="mt-5 max-w-4xl text-[clamp(2.6rem,6vw,5.2rem)] font-semibold leading-[0.95] tracking-[-0.06em]">
+          <h1 className="type-section text-balance mt-5 max-w-5xl">
             {service.headline}
           </h1>
 
@@ -94,10 +94,9 @@ export default async function ServicePage({ params }: Props) {
 
           <Link
             href="/contact"
-            className="group mt-8 inline-flex min-h-[48px] items-center gap-3 bg-black px-5 text-sm font-semibold !text-white transition-transform hover:-translate-y-0.5"
+            className="btn-signal mt-8"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-            Start a Conversation
+            <span>Start a Conversation</span>
             <ArrowUpRight aria-hidden="true" size={15} />
           </Link>
         </Container>
@@ -158,7 +157,7 @@ export default async function ServicePage({ params }: Props) {
             <ol className="mt-10 grid gap-8 md:grid-cols-3">
               {service.approach.map((step, index) => (
                 <li key={step.title} className="border-t border-black/15 pt-6">
-                  <span className="font-mono text-xs text-[#c2531f]">0{index + 1}</span>
+                  <span className="font-mono text-xs text-(--orange-ink)">0{index + 1}</span>
                   <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em]">{step.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-black/65">{step.text}</p>
                 </li>

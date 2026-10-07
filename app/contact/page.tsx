@@ -75,7 +75,7 @@ export default function ContactPage() {
           />
 
           <Container className="relative z-10">
-            <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-20">
               {/* Introduction */}
               <div className="lg:sticky lg:top-36 lg:self-start">
                 <p className="section-label flex items-center gap-2.5 text-black/60">
@@ -83,7 +83,7 @@ export default function ContactPage() {
                   Let&apos;s Talk
                 </p>
 
-                <h1 className="mt-6 max-w-3xl text-[clamp(3.5rem,7vw,7rem)] font-semibold leading-[0.88] tracking-[-0.07em]">
+                <h1 className="type-section mt-6 max-w-3xl">
                   Tell us what&apos;s
                   <br />
 

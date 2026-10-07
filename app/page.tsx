@@ -9,6 +9,7 @@ import Solutions from "@/components/sections/Solutions";
 import Integrations from "@/components/sections/Integrations";
 import Founders from "@/components/sections/Founders";
 import Approach from "@/components/sections/Approach";
+import Production from "@/components/sections/Production";
 import FAQ from "@/components/sections/FAQ";
 import ContactCTA from "@/components/sections/ContactCTA";
 import JsonLd from "@/components/seo/JsonLd";
@@ -48,6 +49,7 @@ export default function Home() {
         <Integrations />
         <Founders />
         <Approach />
+        <Production />
         <FAQ />
         <ContactCTA />
       </main>

@@ -63,7 +63,7 @@ export default function AboutPage() {
         <Container className="pb-20 pt-36 sm:pb-24 sm:pt-44 lg:pb-28">
           <p className="section-label text-black/60">About Drylake</p>
 
-          <h1 className="mt-6 max-w-5xl text-[clamp(3.4rem,8vw,7.5rem)] font-semibold leading-[0.88] tracking-[-0.07em]">
+          <h1 className="type-section mt-6 max-w-5xl">
             Built close to
             <br />
             <span className="text-black/45">the problem.</span>

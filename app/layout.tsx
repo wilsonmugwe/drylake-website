@@ -4,9 +4,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
+import "./public-site.css";
 
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import { ENTITY } from "@/lib/discovery/entity";
+import { SIGN_OUT_REDIRECT_URL } from "@/lib/navigation/site-nav";
 import { SHARE_IMAGE, SITE_NAME } from "@/lib/seo";
 
 const geist = Geist({
@@ -107,9 +109,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-AU">
+    /*
+     * data-scroll-behavior="smooth": globals.css sets html { scroll-behavior: smooth } for
+     * in-page anchors. Since Next 16 the router only switches smooth scrolling off while it
+     * positions a NEW page when this attribute is present. Without it the route-change
+     * scrollIntoView() chain ran smoothly and pages opened at the bottom (Start a
+     * Conversation -> /contact, Back to Drylake -> /, sign-out -> /). Do not remove.
+     */
+    <html lang="en-AU" data-scroll-behavior="smooth">
       <body className={`${geist.variable} ${geistMono.variable}`}>
-        <ClerkProvider>
+        <ClerkProvider afterSignOutUrl={SIGN_OUT_REDIRECT_URL}>
           <OrganizationSchema />
 
           {children}

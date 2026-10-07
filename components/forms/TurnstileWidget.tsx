@@ -128,7 +128,9 @@ const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
           widgetIdRef.current = turnstile.render(containerRef.current, {
             sitekey: siteKey,
             theme: "light",
-            size: "flexible",
+            // "flexible" has a 300 px minimum, wider than the form on a 320 px phone,
+            // which pushed the whole contact page past its gutter. Compact (150 px) there.
+            size: containerRef.current.offsetWidth < 300 ? "compact" : "flexible",
             action: CONTACT_ACTION,
             callback: (token: string) => callbacks.current.onToken(token),
             "expired-callback": () => callbacks.current.onTokenCleared(),
