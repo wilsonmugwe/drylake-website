@@ -47,7 +47,7 @@ export default function ClientInvitationCompleter({ returnTo }: Props) {
           return;
         }
 
-        // One workspace: open it. Several: the portal offers the choice on reload.
+        // One workspace: open it. Several: the Workspace offers the choice on reload.
         if (ids.length === 1) {
           await setActive({ organization: ids[0] });
         }
@@ -60,12 +60,12 @@ export default function ClientInvitationCompleter({ returnTo }: Props) {
   }, [loaded, returnTo, setActive]);
 
   return (
-    <p aria-live="polite" className="flex items-center gap-2.5 rounded-xl border border-neutral-200 bg-[#fafaf8] px-4 py-3 text-sm text-neutral-600">
+    <p aria-live="polite" className="flex items-center gap-2.5 rounded-app border border-neutral-200 bg-canvas px-4 py-3 text-sm text-neutral-700">
       {failed ? (
         "We could not finish connecting your account. Reload the page, or start a conversation and we will sort it out."
       ) : (
         <>
-          <Loader2 aria-hidden="true" size={16} className="animate-spin text-[#f26a2e]" />
+          <Loader2 aria-hidden="true" size={16} className="animate-spin text-signal-ink" />
           Connecting your account to your workspace...
         </>
       )}

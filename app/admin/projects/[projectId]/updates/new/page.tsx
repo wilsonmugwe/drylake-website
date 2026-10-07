@@ -101,7 +101,7 @@ export default async function NewProjectUpdatePage({
         <AdminPageHeader
           eyebrow={organization.name}
           title="New project update"
-          description={`Publish an update for ${project.name}. Client-visible updates will later appear in the client portal.`}
+          description={`Publish an update for ${project.name}. Client-visible updates will later appear in Drylake Workspace.`}
         />
 
         <form

@@ -8,7 +8,7 @@ import { logRouteTiming, startRequestTiming, timed } from "@/lib/perf/request-ti
 import { isUuid } from "@/lib/validation/uuid";
 
 export const metadata = {
-  title: "Project | Client Portal",
+  title: { absolute: "Project | Drylake Workspace" },
   robots: {
     index: false,
     follow: false,

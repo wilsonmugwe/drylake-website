@@ -70,16 +70,16 @@ export default function ClientOrganizationPicker({ options, autoActivate, return
               type="button"
               disabled={!loaded || activating !== null}
               onClick={() => activate(option.clerkOrgId)}
-              className="group flex min-h-[56px] w-full items-center justify-between gap-4 rounded-xl border border-neutral-200 bg-white px-5 text-left text-sm font-semibold text-neutral-950 transition hover:border-[#f26a2e]/50 hover:bg-[#fafaf8] disabled:cursor-wait disabled:opacity-70"
+              className="group flex min-h-[56px] w-full items-center justify-between gap-4 rounded-app border border-neutral-200 bg-white px-5 text-left text-sm font-semibold text-neutral-950 transition hover:border-neutral-400 hover:bg-canvas disabled:cursor-wait disabled:opacity-70"
             >
               <span className="truncate">{option.name}</span>
               {activating === option.clerkOrgId ? (
-                <Loader2 aria-hidden="true" size={16} className="shrink-0 animate-spin text-[#f26a2e]" />
+                <Loader2 aria-hidden="true" size={16} className="shrink-0 animate-spin text-signal-ink" />
               ) : (
                 <ArrowRight
                   aria-hidden="true"
                   size={16}
-                  className="shrink-0 text-neutral-400 transition group-hover:translate-x-0.5 group-hover:text-[#f26a2e]"
+                  className="shrink-0 text-neutral-400 transition group-hover:translate-x-0.5 group-hover:text-neutral-950"
                 />
               )}
             </button>
@@ -87,7 +87,7 @@ export default function ClientOrganizationPicker({ options, autoActivate, return
         ))}
       </ul>
 
-      <p aria-live="polite" className="mt-3 text-sm text-neutral-500">
+      <p aria-live="polite" className="mt-3 text-sm text-neutral-600">
         {activating ? "Opening your workspace..." : null}
       </p>
     </div>

@@ -163,7 +163,7 @@ export default async function BillingPage({
                 This address is used when Drylake issues or
                 resends an invoice. Clients can then review
                 the invoice and complete payment through
-                their secure client portal.
+                Drylake Workspace.
               </p>
             </div>
           </aside>

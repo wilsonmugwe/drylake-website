@@ -1,22 +1,26 @@
 import Link from "next/link";
 import {
+  AlertTriangle,
   ArrowRight,
   CalendarClock,
+  CheckCircle2,
   FileText,
   FolderKanban,
   MessageSquareText,
   ReceiptText,
 } from "lucide-react";
 
-import { formatDate, formatMoney, isOpenProject, sumByCurrency } from "./format";
+import { formatDate, formatMoney } from "./format";
+import MessageDrylake from "./MessageDrylake";
 import { DocumentList, SupportCard } from "./portal-sections";
 import {
   EmptyState,
   ErrorState,
+  FigureBand,
   PageHeader,
   Panel,
   ProgressBar,
-  StatTile,
+  SectionLink,
   StatusPill,
   UNAVAILABLE,
 } from "./portal-ui";
@@ -27,6 +31,17 @@ import type {
   ClientUpdateSummary,
   Loadable,
 } from "./types";
+import {
+  type ActivityItem,
+  type AttentionItem,
+  activityFeed,
+  attentionItems,
+  balanceByCurrency,
+  briefingSentence,
+  isOpenProjectStatus,
+  orderProjects,
+  perthToday,
+} from "./workspace-derive";
 
 export type ClientDashboardViewProps = {
   organizationName: string;
@@ -36,166 +51,289 @@ export type ClientDashboardViewProps = {
   documents: Loadable<{ items: ClientDocumentSummary[]; total: number }>;
   /** Every non-draft invoice for the organisation; the view picks out what needs attention. */
   invoices: Loadable<ClientInvoiceSummary[]>;
+  /** Perth calendar date (YYYY-MM-DD) used to derive overdue. Defaults to now. */
+  today?: string;
 };
 
-function formatBalance(balances: Array<{ currency: string; cents: number }>) {
-  return balances.map((b) => formatMoney(b.cents, b.currency)).join(" + ");
+function formatBalance(balances: Array<{ currency: string; cents: number }>, fallbackCurrency: string) {
+  return balances.length === 0
+    ? formatMoney(0, fallbackCurrency)
+    : balances.map((b) => formatMoney(b.cents, b.currency)).join(" + ");
 }
 
+/*
+ * The overview answers four questions in order:
+ *   1. What is happening?        the briefing line and key figures
+ *   2. What needs my attention?  invoices to pay, overdue first
+ *   3. What changed?             one timeline of updates, documents and invoices
+ *   4. What can I do?            open a project, pay, download, start a conversation
+ */
 export default function ClientDashboardView({
   organizationName,
   projects,
   updates,
   documents,
   invoices,
+  today = perthToday(),
 }: ClientDashboardViewProps) {
-  const openProjects = projects.ok ? projects.data.filter((p) => isOpenProject(p.status)) : [];
+  const openProjects = projects.ok ? projects.data.filter((p) => isOpenProjectStatus(p.status)) : [];
+  const attention = invoices.ok ? attentionItems(invoices.data, today) : [];
+  const overdue = attention.filter((item) => item.status === "OVERDUE").length;
+  const balance = formatBalance(
+    balanceByCurrency(attention.map((item) => item.invoice)),
+    invoices.ok ? (invoices.data[0]?.currency ?? "AUD") : "AUD"
+  );
+  const nextDue = attention.find((item) => item.invoice.dueDate)?.invoice.dueDate ?? null;
 
-  const attention = invoices.ok
-    ? invoices.data
-        .filter((i) => i.status === "OPEN" || i.status === "OVERDUE")
-        .sort((a, b) => {
-          if (a.status !== b.status) return a.status === "OVERDUE" ? -1 : 1;
-          return (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999");
-        })
-    : [];
+  const feed =
+    updates.ok && documents.ok && invoices.ok
+      ? activityFeed({ updates: updates.data, documents: documents.data.items, invoices: invoices.data })
+      : null;
 
-  const amountDue = sumByCurrency(attention);
-  const overdue = attention.filter((invoice) => invoice.status === "OVERDUE").length;
+  const brandNew =
+    projects.ok &&
+    projects.data.length === 0 &&
+    invoices.ok &&
+    invoices.data.length === 0 &&
+    documents.ok &&
+    documents.data.total === 0 &&
+    updates.ok &&
+    updates.data.length === 0;
 
   return (
     <>
       <PageHeader
         eyebrow="Overview"
         title={organizationName}
-        description="Project progress, updates, deliverables and billing from Drylake, in one place."
+        description={briefingSentence({
+          openProjects: projects.ok ? openProjects.length : null,
+          overdue: invoices.ok ? overdue : null,
+          awaitingPayment: invoices.ok ? attention.length : null,
+        })}
       />
 
-      {attention.length > 0 ? (
-        <AttentionBanner
-          count={attention.length}
-          overdue={overdue}
-          balance={formatBalance(amountDue)}
-          first={attention[0]}
-        />
-      ) : null}
+      {brandNew ? (
+        <WelcomePanel organizationName={organizationName} />
+      ) : (
+        <>
+          <FigureBand
+            label="Workspace at a glance"
+            figures={[
+              {
+                label: "Balance due",
+                value: invoices.ok ? balance : UNAVAILABLE,
+                detail: !invoices.ok
+                  ? "Refresh to try again"
+                  : attention.length > 0
+                    ? `${attention.length} ${attention.length === 1 ? "invoice" : "invoices"} to pay`
+                    : "Nothing to pay right now",
+              },
+              {
+                label: "Next due",
+                value: invoices.ok ? (nextDue ? formatDate(nextDue) : "None") : UNAVAILABLE,
+                detail: overdue > 0 ? `${overdue} overdue` : undefined,
+              },
+              {
+                label: "Active projects",
+                value: projects.ok ? openProjects.length : UNAVAILABLE,
+                detail: projects.ok ? `${projects.data.length} in total` : undefined,
+              },
+              {
+                label: "Documents",
+                value: documents.ok ? documents.data.total : UNAVAILABLE,
+                detail: documents.ok ? "Shared with your team" : undefined,
+              },
+            ]}
+          />
 
-      <section aria-label="Summary" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        <StatTile
-          label="Active projects"
-          icon={<FolderKanban size={16} />}
-          value={projects.ok ? openProjects.length : UNAVAILABLE}
-          detail={
-            projects.ok
-              ? `${projects.data.length} ${projects.data.length === 1 ? "project" : "projects"} in total`
-              : "Refresh to try again"
-          }
-        />
-        <StatTile
-          label="Open invoices"
-          icon={<ReceiptText size={16} />}
-          value={invoices.ok ? attention.length : UNAVAILABLE}
-          detail={
-            !invoices.ok
-              ? "Refresh to try again"
-              : attention.length > 0
-                ? `${formatBalance(amountDue)} due`
-                : "Nothing due"
-          }
-        />
-        <StatTile
-          className="col-span-2 lg:col-span-1"
-          label="Documents"
-          icon={<FileText size={16} />}
-          value={documents.ok ? documents.data.total : UNAVAILABLE}
-          detail={documents.ok ? "Shared with your team" : "Refresh to try again"}
-        />
-      </section>
+          <AttentionSection invoices={invoices} items={attention} />
 
-      <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
-          <ProjectsPanel projects={projects} />
-          <ActivityPanel updates={updates} />
-        </div>
+          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+            <div className="flex min-w-0 flex-col gap-6">
+              <ProjectsPanel projects={projects} />
+              <ActivityPanel feed={feed} />
+            </div>
 
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
-          <InvoicesPanel invoices={invoices} attention={attention} />
-          <DocumentsPanel documents={documents} />
-          <SupportCard />
-        </div>
-      </div>
+            <div className="flex min-w-0 flex-col gap-6">
+              <DocumentsPanel documents={documents} />
+              <SupportCard />
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
 
-/* The one thing a client may need to act on, above everything else. */
-function AttentionBanner({
-  count,
-  overdue,
-  balance,
-  first,
-}: {
-  count: number;
-  overdue: number;
-  balance: string;
-  first: ClientInvoiceSummary;
-}) {
-  const single = count === 1;
+/* A ready workspace with nothing in it yet: honest about what will appear, one next step. */
+function WelcomePanel({ organizationName }: { organizationName: string }) {
+  const steps = [
+    { icon: <FolderKanban size={16} />, title: "Projects", text: "Each engagement, its status and its progress." },
+    { icon: <MessageSquareText size={16} />, title: "Updates", text: "Progress notes Drylake publishes as work moves." },
+    { icon: <FileText size={16} />, title: "Documents", text: "Specifications, handover notes and deliverables to download." },
+    { icon: <ReceiptText size={16} />, title: "Invoices", text: "Every invoice, with secure online payment." },
+  ];
 
   return (
-    <section
-      aria-label="Invoices needing attention"
-      className="cp-card mb-4 flex flex-col gap-4 border-l-4 border-l-[#f26a2e] p-5 sm:mb-6 sm:flex-row sm:items-center sm:justify-between"
-    >
-      <div className="flex min-w-0 items-start gap-3">
-        <span
-          aria-hidden="true"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg cp-tint text-[#f26a2e]"
-        >
-          <CalendarClock size={17} />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-neutral-950">
-            {single ? "1 invoice needs attention" : `${count} invoices need attention`}
-            {overdue > 0 ? <span className="text-red-700"> ({overdue} overdue)</span> : null}
-          </p>
-          <p className="mt-0.5 text-sm text-neutral-500">
-            {balance} due{single ? `, ${formatDate(first.dueDate, "no due date set")}` : ""}
-          </p>
-        </div>
+    <section aria-labelledby="welcome-heading" className="cp-card overflow-hidden">
+      <div className="px-5 pb-6 pt-6 sm:px-8 sm:pt-8">
+        <p className="cp-label">Workspace ready</p>
+        <h2 id="welcome-heading" className="cp-section-title mt-3 text-xl sm:text-2xl">
+          Nothing is in progress yet.
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
+          This is where {organizationName} will follow its work with Drylake. As soon as Drylake shares
+          something with you, it appears here.
+        </p>
       </div>
 
-      <Link
-        href={single ? `/client/billing/${first.id}` : "/client/billing"}
-        className="cp-button-primary shrink-0"
+      <ul className="grid border-t border-neutral-200/80 sm:grid-cols-2">
+        {steps.map((step) => (
+          <li key={step.title} className="cp-welcome-step flex gap-3 px-5 py-5 sm:px-8">
+            <span
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-app border border-neutral-200 bg-canvas text-neutral-600"
+            >
+              {step.icon}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-neutral-900">{step.title}</span>
+              <span className="mt-0.5 block text-sm leading-6 text-neutral-600">{step.text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex flex-col gap-3 border-t border-neutral-200/80 bg-canvas/60 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <p className="text-sm text-neutral-600">Expecting to see something already? Tell us and we will check.</p>
+        <MessageDrylake variant="cta" organizationName={organizationName} />
+      </div>
+    </section>
+  );
+}
+
+/* "What needs my attention?": the only section that can ask the client to act. */
+function AttentionSection({
+  invoices,
+  items,
+}: {
+  invoices: Loadable<ClientInvoiceSummary[]>;
+  items: AttentionItem[];
+}) {
+  if (!invoices.ok) {
+    return (
+      <section aria-labelledby="attention-heading" className="cp-card mt-6 overflow-hidden">
+        <h2 id="attention-heading" className="cp-section-title px-5 pt-5 sm:px-6">
+          Needs your attention
+        </h2>
+        <ErrorState subject="your invoices" />
+      </section>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <section
+        aria-labelledby="attention-heading"
+        className="cp-calm mt-6 flex items-center gap-3 px-5 py-4 sm:px-6"
       >
-        {single ? "View and pay" : "Review invoices"}
-        <ArrowRight aria-hidden="true" size={15} />
-      </Link>
+        <CheckCircle2 aria-hidden="true" size={18} className="shrink-0 text-emerald-700" />
+        <h2 id="attention-heading" className="text-sm font-semibold text-neutral-900">
+          Nothing needs your attention.
+          <span className="ml-1 font-normal text-neutral-600">No invoices are waiting on you.</span>
+        </h2>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-labelledby="attention-heading" className="cp-card cp-attention mt-6 overflow-hidden">
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 px-5 pb-3 pt-5 sm:px-6">
+        <h2 id="attention-heading" className="cp-section-title">
+          Needs your attention
+          <span className="ml-2 font-mono text-xs font-medium tabular-nums text-neutral-500">
+            {items.length}
+          </span>
+        </h2>
+        <SectionLink href="/client/billing">
+          All billing
+          <ArrowRight aria-hidden="true" size={13} />
+        </SectionLink>
+      </div>
+
+      <ul className="border-t border-neutral-200/80">
+        {items.slice(0, 4).map(({ invoice, status }) => {
+          const late = status === "OVERDUE";
+
+          return (
+            <li key={invoice.id} className="cp-row">
+              <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-5 sm:px-6">
+                <span
+                  className={`flex shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] sm:w-28 ${late ? "text-red-700" : "text-signal-ink"}`}
+                >
+                  {late ? (
+                    <AlertTriangle aria-hidden="true" size={14} />
+                  ) : (
+                    <CalendarClock aria-hidden="true" size={14} />
+                  )}
+                  {late ? "Overdue" : "To pay"}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-neutral-950">
+                    Invoice <span className="font-mono">{invoice.invoiceNumber}</span>
+                  </p>
+                  <p className="mt-0.5 text-sm text-neutral-600">
+                    {late ? "Was due" : "Due"} {formatDate(invoice.dueDate, "date not set")}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 sm:justify-end">
+                  <span className="text-base font-semibold tabular-nums text-neutral-950">
+                    {formatMoney(invoice.totalCents, invoice.currency)}
+                  </span>
+                  <Link
+                    href={`/client/billing/${invoice.id}`}
+                    className="cp-button-primary shrink-0"
+                    aria-label={`View and pay invoice ${invoice.invoiceNumber}`}
+                  >
+                    View and pay
+                    <ArrowRight aria-hidden="true" size={15} />
+                  </Link>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {items.length > 4 ? (
+        <p className="border-t border-neutral-200/80 px-5 py-3 text-sm text-neutral-600 sm:px-6">
+          {items.length - 4} more on the <Link href="/client/billing" className="cp-inline-link">billing page</Link>.
+        </p>
+      ) : null}
     </section>
   );
 }
 
 function ProjectsPanel({ projects }: { projects: Loadable<ClientProjectSummary[]> }) {
-  // Open work first, then closed, each keeping the loader's newest-first order.
-  const ordered = projects.ok
-    ? [
-        ...projects.data.filter((p) => isOpenProject(p.status)),
-        ...projects.data.filter((p) => !isOpenProject(p.status)),
-      ]
-    : [];
+  const ordered = projects.ok ? orderProjects(projects.data) : [];
 
   return (
     <Panel
       labelledBy="projects-heading"
       title="Projects"
-      description="Delivery progress across your organisation"
-      icon={<FolderKanban size={16} />}
+      count={projects.ok ? projects.data.length : undefined}
+      description="Open work first. Select a project for milestones, updates and files."
     >
       {!projects.ok ? (
         <ErrorState subject="your projects" />
       ) : ordered.length === 0 ? (
-        <EmptyState icon={<FolderKanban size={17} />} title="No active projects yet.">
+        <EmptyState
+          icon={<FolderKanban size={17} />}
+          title="No active projects yet."
+          action={<MessageDrylake variant="inline" />}
+        >
           When Drylake starts work with you, each project and its progress will appear here.
         </EmptyState>
       ) : (
@@ -208,13 +346,13 @@ function ProjectsPanel({ projects }: { projects: Loadable<ClientProjectSummary[]
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <h3 className="break-words text-sm font-semibold leading-6 text-neutral-950">
+                    <h3 className="break-words text-[0.95rem] font-semibold leading-6 text-neutral-950">
                       {project.name}
                     </h3>
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                       <StatusPill status={project.status} />
                       {project.targetEndDate ? (
-                        <span className="text-xs text-neutral-500">
+                        <span className="text-xs text-neutral-600">
                           Target {formatDate(project.targetEndDate)}
                         </span>
                       ) : null}
@@ -223,15 +361,15 @@ function ProjectsPanel({ projects }: { projects: Loadable<ClientProjectSummary[]
                   <ArrowRight
                     aria-hidden="true"
                     size={16}
-                    className="mt-1 shrink-0 text-neutral-300 transition group-hover:translate-x-0.5 group-hover:text-[#f26a2e]"
+                    className="cp-nudge mt-1 shrink-0 text-neutral-400 group-hover:text-neutral-950"
                   />
                 </div>
 
-                <div className="mt-3.5 flex items-center gap-3">
+                <div className="mt-4 flex items-center gap-3">
                   <div className="flex-1">
                     <ProgressBar value={project.progress} label={`${project.name} progress`} />
                   </div>
-                  <span className="w-10 text-right text-xs font-semibold tabular-nums text-neutral-700">
+                  <span className="w-11 text-right font-mono text-xs font-semibold tabular-nums text-neutral-700">
                     {project.progress}%
                   </span>
                 </div>
@@ -244,105 +382,78 @@ function ProjectsPanel({ projects }: { projects: Loadable<ClientProjectSummary[]
   );
 }
 
-function ActivityPanel({ updates }: { updates: Loadable<ClientUpdateSummary[]> }) {
+const ACTIVITY_LABEL: Record<ActivityItem["kind"], string> = {
+  update: "Update",
+  document: "Document",
+  invoice: "Invoice",
+};
+
+const ACTIVITY_ICON: Record<ActivityItem["kind"], typeof FileText> = {
+  update: MessageSquareText,
+  document: FileText,
+  invoice: ReceiptText,
+};
+
+/* "What changed?": one timeline, newest first. */
+function ActivityPanel({ feed }: { feed: ActivityItem[] | null }) {
   return (
     <Panel
       labelledBy="activity-heading"
       title="Recent activity"
-      description="The latest updates Drylake has published"
-      icon={<MessageSquareText size={16} />}
+      description="Updates, documents and invoices from Drylake, newest first"
     >
-      {!updates.ok ? (
-        <ErrorState subject="recent updates" />
-      ) : updates.data.length === 0 ? (
-        <EmptyState icon={<MessageSquareText size={17} />} title="No updates yet.">
-          Drylake will post progress here as your work moves forward.
+      {feed === null ? (
+        <ErrorState subject="recent activity" />
+      ) : feed.length === 0 ? (
+        <EmptyState icon={<MessageSquareText size={17} />} title="No activity yet.">
+          Drylake will post progress, share files and issue invoices here as your work moves forward.
         </EmptyState>
       ) : (
-        <ol>
-          {updates.data.map((update) => (
-            <li key={update.id} className="cp-row">
-              <Link
-                href={`/client/projects/${update.projectId}`}
-                className="cp-row-link group flex gap-3.5 px-5 py-3.5 sm:px-6"
-              >
-                <span
-                  aria-hidden="true"
-                  className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#f26a2e] ring-4 ring-[#f26a2e]/15"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="break-words text-sm font-medium leading-6 text-neutral-900">
-                    {update.title}
-                  </p>
-                  <p className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-neutral-500">
-                    <span className="min-w-0 truncate">{update.projectName}</span>
-                    <span aria-hidden="true" className="text-neutral-300">·</span>
-                    <span className="whitespace-nowrap">{formatDate(update.publishedAt, "")}</span>
-                  </p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ol>
-      )}
-    </Panel>
-  );
-}
-
-function InvoicesPanel({
-  invoices,
-  attention,
-}: {
-  invoices: Loadable<ClientInvoiceSummary[]>;
-  attention: ClientInvoiceSummary[];
-}) {
-  return (
-    <Panel
-      labelledBy="invoices-heading"
-      title="Invoices needing attention"
-      icon={<ReceiptText size={16} />}
-      action={
-        <Link
-          href="/client/billing"
-          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-950"
-        >
-          All billing
-          <ArrowRight aria-hidden="true" size={13} />
-        </Link>
-      }
-    >
-      {!invoices.ok ? (
-        <ErrorState subject="your invoices" />
-      ) : attention.length === 0 ? (
-        <EmptyState icon={<ReceiptText size={17} />} title="Nothing to pay right now.">
-          Open invoices from Drylake will appear here with a link to pay online.
-        </EmptyState>
-      ) : (
-        <ul>
-          {attention.slice(0, 4).map((invoice) => (
-            <li key={invoice.id} className="cp-row">
-              <Link
-                href={`/client/billing/${invoice.id}`}
-                className="cp-row-link group flex items-center justify-between gap-4 px-5 py-3.5 sm:px-6"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-mono text-sm font-medium text-neutral-900">
-                    {invoice.invoiceNumber}
-                  </p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                    <StatusPill status={invoice.status} />
-                    <span className="text-xs text-neutral-500">
-                      Due {formatDate(invoice.dueDate, "not set")}
-                    </span>
-                  </div>
-                </div>
-                <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-neutral-950">
-                  {formatMoney(invoice.totalCents, invoice.currency)}
+        <ol className="cp-timeline px-5 py-3 sm:px-6">
+          {feed.map((item) => {
+            const Icon = ACTIVITY_ICON[item.kind];
+            const body = (
+              <>
+                <span aria-hidden="true" className="cp-timeline-node">
+                  <Icon size={13} />
                 </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <span className="min-w-0 flex-1">
+                  <span className="block break-words text-sm font-medium leading-6 text-neutral-900">
+                    {item.title}
+                  </span>
+                  <span className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-neutral-600">
+                    <span className="font-semibold uppercase tracking-[0.1em]">{ACTIVITY_LABEL[item.kind]}</span>
+                    {item.context ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span className="min-w-0 truncate">{item.context}</span>
+                      </>
+                    ) : null}
+                    <span aria-hidden="true">·</span>
+                    <time dateTime={item.date.slice(0, 10)} className="whitespace-nowrap">
+                      {formatDate(item.date, "")}
+                    </time>
+                  </span>
+                </span>
+              </>
+            );
+
+            return (
+              <li key={item.key} className="cp-timeline-item">
+                {item.kind === "document" ? (
+                  // Plain anchor: the download route redirects to a short-lived signed URL.
+                  <a href={item.href} className="cp-timeline-link">
+                    {body}
+                  </a>
+                ) : (
+                  <Link href={item.href} className="cp-timeline-link">
+                    {body}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ol>
       )}
     </Panel>
   );
@@ -357,8 +468,8 @@ function DocumentsPanel({
     <Panel
       labelledBy="documents-heading"
       title="Documents"
-      description="Latest deliverables and files"
-      icon={<FileText size={16} />}
+      count={documents.ok ? documents.data.total : undefined}
+      description="Latest files shared with you"
     >
       {!documents.ok ? (
         <ErrorState subject="your documents" />

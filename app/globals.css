@@ -653,12 +653,14 @@ summary:focus-visible,
 }
 
 /* =========================================================
-   DRYLAKE CLIENT PORTAL
+   DRYLAKE CLIENT PORTAL (user-facing name: Drylake Workspace)
 
    The client-facing side of the same product as Admin: the Admin canvas (#f4f4f1),
-   white cards, dark ink, muted grey secondary text, hairline grey borders, and Drylake
-   orange (#f26a2e) only for primary actions, progress, active states and intentional
-   accents. The navigation rail uses the Admin sidebar treatment.
+   white surfaces, dark ink, grey secondary text, hairline borders. Hierarchy comes from
+   type and spacing, not from equal cards. The primary action is ink with white text
+   (19:1 on every light surface); signal orange (#f26a2e) marks status, progress and the
+   active nav item only. The rail carries the canonical wordmark (components/brand).
+   Design notes: docs/design/2026-10-07-drylake-workspace.md
 
    Every selector is prefixed cp- or scoped under .client-portal, so nothing here touches
    the public site or Admin.
@@ -686,7 +688,7 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     --cp-surface: #ffffff;
     --cp-ink: #171716;
     --cp-ink-soft: #5f5d58;
-    --cp-ink-muted: #8a8780;
+    --cp-ink-muted: #6b6963; /* 5.3:1 on white, 4.9:1 on the canvas */
     --cp-border: rgba(17, 17, 15, 0.1);
     --cp-border-strong: rgba(17, 17, 15, 0.18);
     --cp-orange: #f26a2e;
@@ -822,11 +824,30 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
   }
 
   .cp-eyebrow {
-    color: var(--cp-orange-ink);
-    font-size: 0.68rem;
-    font-weight: 650;
-    letter-spacing: 0.18em;
+    color: var(--cp-ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
+  }
+
+  /* Page title: display weight, tight tracking, sized for a product (not a hero). */
+  .cp-title {
+    color: #0b0b0a;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.45rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.08;
+  }
+
+  .cp-section-title {
+    color: #0b0b0a;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.018em;
+    line-height: 1.35;
   }
 
   .cp-pill {
@@ -923,14 +944,15 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
       box-shadow 150ms ease;
   }
 
+  /* Ink with white text: 19:1. White on signal orange was about 3:1 and failed AA here. */
   .cp-button-primary {
-    background: var(--cp-orange);
+    background: #0b0b0a;
     color: #ffffff !important;
   }
 
   .cp-button-primary:hover {
-    background: var(--cp-orange-hover);
-    box-shadow: 0 8px 22px rgba(242, 106, 46, 0.22);
+    background: #2a2a27;
+    box-shadow: 0 8px 22px rgba(11, 11, 10, 0.16);
   }
 
   .cp-button-secondary {
@@ -1005,6 +1027,242 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
     animation: cp-shimmer 1.3s infinite;
   }
 
+
+  /* Quiet text action (section headers, empty-state next steps). 44px for touch. */
+  .cp-text-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: var(--radius-app);
+    padding-inline: 0.5rem;
+    color: var(--cp-ink);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(17, 17, 15, 0.25);
+    text-underline-offset: 4px;
+    transition:
+      background 150ms ease,
+      text-decoration-color 150ms ease;
+  }
+
+  .cp-text-link:hover {
+    background: rgba(17, 17, 15, 0.05);
+    text-decoration-color: currentColor;
+  }
+
+  .cp-inline-link {
+    color: var(--cp-ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* One band of key figures; the first one leads. 1 + 3 on phones, 4 across from md. */
+  .cp-figures {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cp-figure {
+    min-width: 0;
+    padding: 1rem 1rem 1.1rem;
+    border-top: 1px solid var(--cp-border);
+    border-left: 1px solid var(--cp-border);
+  }
+
+  .cp-figure[data-lead="true"] {
+    grid-column: 1 / -1;
+    border-top: 0;
+    border-left: 0;
+    padding: 1.15rem 1.25rem;
+  }
+
+  .cp-figure[data-lead="true"] + .cp-figure {
+    border-left: 0;
+  }
+
+  .cp-figure-value {
+    margin-top: 0.55rem;
+    color: #0b0b0a;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .cp-figure[data-lead="true"] .cp-figure-value {
+    font-size: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .cp-figures {
+      grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+    }
+
+    .cp-figures .cp-figure,
+    .cp-figures .cp-figure[data-lead="true"] + .cp-figure {
+      grid-column: auto;
+      border-top: 0;
+      border-left: 1px solid var(--cp-border);
+      padding: 1.35rem 1.5rem;
+    }
+
+    .cp-figures .cp-figure:first-child {
+      border-left: 0;
+    }
+
+    .cp-figure-value {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* "Nothing needs your attention": a calm confirmation line. */
+  .cp-calm {
+    border: 1px solid rgba(4, 120, 87, 0.18);
+    border-radius: var(--radius-app-card);
+    background: #f1f8f4;
+  }
+
+  /* Attention list: a signal edge so it reads first, with text labels (not colour alone). */
+  .cp-attention {
+    box-shadow:
+      inset 3px 0 0 var(--cp-orange),
+      0 1px 1px rgba(0, 0, 0, 0.02),
+      0 10px 30px rgba(22, 18, 12, 0.04);
+  }
+
+  .cp-amount[data-state="due"] {
+    box-shadow: inset 0 3px 0 var(--cp-orange);
+  }
+
+  .cp-amount[data-state="overdue"] {
+    box-shadow: inset 0 3px 0 #b91c1c;
+  }
+
+  .cp-amount[data-state="paid"] {
+    box-shadow: inset 0 3px 0 #059669;
+  }
+
+  .cp-state[data-tone="alert"] {
+    box-shadow:
+      inset 0 3px 0 #b91c1c,
+      0 10px 30px rgba(22, 18, 12, 0.04);
+  }
+
+  .cp-state[data-tone="signal"] {
+    box-shadow:
+      inset 0 3px 0 var(--cp-orange),
+      0 10px 30px rgba(22, 18, 12, 0.04);
+  }
+
+  .cp-welcome-step {
+    border-top: 1px solid var(--cp-border);
+  }
+
+  .cp-welcome-step:first-child {
+    border-top: 0;
+  }
+
+  @media (min-width: 640px) {
+    .cp-welcome-step:nth-child(2) {
+      border-top: 0;
+    }
+
+    .cp-welcome-step:nth-child(2n) {
+      border-left: 1px solid var(--cp-border);
+    }
+  }
+
+  /* Activity timeline: nodes on a hairline spine. */
+  .cp-timeline {
+    position: relative;
+  }
+
+  .cp-timeline-item {
+    position: relative;
+  }
+
+  .cp-timeline-item:not(:last-child)::before {
+    position: absolute;
+    top: 2.6rem;
+    bottom: -0.35rem;
+    left: 0.97rem;
+    width: 1px;
+    background: var(--cp-border-strong);
+    content: "";
+  }
+
+  .cp-timeline-link {
+    display: flex;
+    gap: 0.9rem;
+    margin-inline: -0.5rem;
+    border-radius: var(--radius-app);
+    padding: 0.7rem 0.5rem;
+    transition: background-color 150ms ease;
+  }
+
+  a.cp-timeline-link:hover {
+    background: #fafaf8;
+  }
+
+  .cp-timeline-node {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 1.95rem;
+    height: 1.95rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--cp-border-strong);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--cp-ink-soft);
+  }
+
+  .cp-timeline-item:first-child .cp-timeline-node {
+    border-color: rgba(242, 106, 46, 0.45);
+    color: var(--cp-orange-ink);
+  }
+
+  /* Arrow that nudges on hover (stops under reduced motion). */
+  .cp-nudge {
+    transition:
+      transform 150ms var(--ease-out),
+      color 150ms ease;
+  }
+
+  .group:hover .cp-nudge {
+    transform: translateX(2px);
+  }
+
+  /* Mobile drawer. */
+  .cp-scrim {
+    animation: cp-fade 200ms ease both;
+  }
+
+  .cp-drawer {
+    animation: cp-slide-in 260ms var(--ease-out) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cp-drawer,
+    .cp-scrim {
+      animation: none;
+    }
+
+    .cp-nudge,
+    .group:hover .cp-nudge {
+      transition: none;
+      transform: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cp-skeleton::after {
       animation: none;
@@ -1031,6 +1289,19 @@ html:has(.client-portal)::-webkit-scrollbar-thumb {
 @keyframes cp-shimmer {
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes cp-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes cp-slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
   }
 }
 

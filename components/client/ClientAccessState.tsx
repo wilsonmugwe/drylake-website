@@ -36,7 +36,7 @@ type Copy = {
 
 /*
  * Access states only. A ready workspace with no projects, invoices, documents or updates
- * never renders here; those are empty states inside the normal portal.
+ * never renders here; those are empty states inside the normal Workspace.
  *
  * Copy never reveals why a record is missing (other tenant, hidden, draft or nonexistent):
  * the invoice state reads the same in every case, matching the loader's behaviour.
@@ -57,7 +57,7 @@ const COPY: Record<ClientAccessVariant, Copy> = {
   },
   "access-pending": {
     code: "Access pending",
-    title: "We are finishing your portal access.",
+    title: "We are finishing your Workspace access.",
     body: "Your account is linked to a Drylake client workspace, but its access is not complete yet. Nothing is wrong on your side. Start a conversation if you were expecting to see your projects here.",
     icon: <Hourglass size={20} />,
     tone: "signal",
@@ -88,7 +88,7 @@ const COPY: Record<ClientAccessVariant, Copy> = {
   "client-archived": {
     code: "Workspace closed",
     title: "This workspace has been closed.",
-    body: "Drylake has archived this client workspace, so it is no longer available in the portal. Start a conversation if you need a copy of your records or believe this is a mistake.",
+    body: "Drylake has archived this client workspace, so it is no longer available in Drylake Workspace. Start a conversation if you need a copy of your records or believe this is a mistake.",
     icon: <Archive size={20} />,
     tone: "neutral",
   },
@@ -134,9 +134,9 @@ export default function ClientAccessState({
       }
     >
       <p>{copy.body}</p>
-      <p className="text-neutral-500">
+      <p className="text-neutral-600">
         We reply within {RESPONSE_TIME}. You can also reach us at{" "}
-        <span className="font-medium text-neutral-800">{CONTACT_EMAIL}</span>.
+        <span className="font-medium text-neutral-900">{CONTACT_EMAIL}</span>.
       </p>
     </ClientStateCard>
   );

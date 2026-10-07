@@ -20,7 +20,7 @@ import {
 } from "@/lib/perf/request-timing";
 
 export const metadata = {
-  title: "Client Portal",
+  title: { absolute: "Overview | Drylake Workspace" },
   robots: {
     index: false,
     follow: false,

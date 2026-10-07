@@ -41,7 +41,7 @@ export default function ClientWorkspaceGate({
               <p>
                 {single
                   ? "One moment while we connect your account to your Drylake client workspace. If nothing happens, select it below."
-                  : "Your account has access to more than one Drylake client workspace. You can switch at any time from the portal."}
+                  : "Your account has access to more than one Drylake client workspace. You can switch at any time from the Workspace menu."}
               </p>
               <ClientOrganizationPicker
                 options={workspace.options.map(({ clerkOrgId, name }) => ({ clerkOrgId, name }))}

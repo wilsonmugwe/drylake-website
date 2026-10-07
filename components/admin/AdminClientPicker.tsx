@@ -95,7 +95,7 @@ export default function AdminClientPicker({
       </label>
 
       <p className="mt-1 text-sm text-neutral-500">
-        Search by client name or primary contact email. The project appears in that client&apos;s portal automatically.
+        Search by client name or primary contact email. The project appears in that client&apos;s Workspace automatically.
       </p>
 
       {selected && !open ? (

@@ -23,7 +23,7 @@ export default function ClientPortalError({
 
   useEffect(() => {
     // The server already logged the detail; this marks it in the browser console only.
-    console.error("Client portal render failed", { digest: error.digest ?? null });
+    console.error("Workspace render failed", { digest: error.digest ?? null });
   }, [error]);
 
   return (
@@ -59,7 +59,7 @@ export default function ClientPortalError({
         look into it.
       </p>
       {error.digest ? (
-        <p className="text-xs text-neutral-500">
+        <p className="text-xs text-neutral-600">
           Reference: <span className="font-mono text-neutral-700">{error.digest}</span>
         </p>
       ) : null}

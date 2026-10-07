@@ -6,7 +6,7 @@
  *     the same function the admin and client views use,
  *   - business identity (legal name, ABN) comes from lib/business.ts,
  *   - no em dashes in client-facing copy,
- *   - the email links to the invoice in the client portal, where payment happens. The
+ *   - the email links to the invoice in Drylake Workspace, where payment happens. The
  *     button and the plain link are the SAME string (portalUrl), built by
  *     lib/invoices/invoice-url.ts.
  */
@@ -115,7 +115,7 @@ export function renderInvoiceEmail(input: InvoiceEmailInput): RenderedEmail {
   const greeting = input.contactName ? `Hi ${input.contactName},` : "Hello,";
   const intro = introLine(input);
   const payLine =
-    "You can review the invoice and pay securely online through the Drylake client portal.";
+    "You can review the invoice and pay securely online in Drylake Workspace.";
 
   const subject =
     input.kind === "REMINDER" && input.overdue

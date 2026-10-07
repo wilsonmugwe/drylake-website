@@ -13,7 +13,7 @@ import {
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Secure access to your Drylake workspace.",
+  description: "Secure access to Drylake Workspace.",
   robots: {
     index: false,
     follow: false,
@@ -223,7 +223,7 @@ export default function SignInPage() {
                 </p>
 
                 <p className="mt-4 max-w-sm text-sm leading-6 text-black/60">
-                  Sign in to continue to your Drylake workspace.
+                  Sign in to continue to Drylake Workspace.
                 </p>
               </div>
 
