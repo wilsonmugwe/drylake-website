@@ -3,16 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, Building2, Menu, X } from "lucide-react";
-import {
-  type KeyboardEvent as ReactKeyboardEvent,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import type { ReactNode } from "react";
 
 import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
+import { useModalDrawer } from "@/components/shell/useModalDrawer";
 
 import {
   ClientAccountButton,
@@ -145,94 +139,21 @@ export function ClientSidebar({ organizationName, showNav, switcher, fallback }:
   );
 }
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 /*
- * Mobile and tablet (below lg): a slim top bar and a modal drawer with the rail's contents.
+ * Mobile and tablet (below lg): a slim top bar and a modal sheet with the rail's contents.
  *
- * Dialog contract (PR 1 deferred this here): role="dialog" + aria-modal, focus moves into the
- * drawer on open, Tab and Shift+Tab stay inside it, Escape and the scrim close it, focus
- * returns to the menu button on close, and the page scroll lock is always released (close,
- * navigation or unmount).
+ * The sheet rises from the bottom edge, so the navigation sits in the thumb's reach and the
+ * groups open in place (polish brief 19). Dialog contract (components/shell/useModalDrawer):
+ * role="dialog" + aria-modal, focus moves into the sheet on open, Tab and Shift+Tab stay
+ * inside it, Escape and the scrim close it, focus returns to the menu button on close, the
+ * page scroll lock is always released (close, navigation or unmount), and a section link on
+ * the current page closes the sheet before it moves focus to that section.
  */
 export function ClientMobileNav({ organizationName, showNav, switcher, fallback }: RailProps) {
   const pathname = usePathname();
-  // The drawer is open FOR a path: navigating anywhere (a link inside it, or browser back)
-  // closes it without an effect.
-  const [openAt, setOpenAt] = useState<string | null>(null);
-  const open = openAt !== null && openAt === pathname;
-  const toggleRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const wasOpen = useRef(false);
+  const { open, openDrawer, close, toggleRef, panelRef, onKeyDown } = useModalDrawer();
   const section = sectionFromPath(pathname) ?? fallback ?? null;
   const sectionLabel = showNav ? NAV_ITEMS.find((item) => item.key === section)?.label : null;
-
-  const close = useCallback(() => setOpenAt(null), []);
-
-  // Scroll lock + initial focus while open; release + focus return when it closes.
-  useEffect(() => {
-    if (!open) {
-      if (wasOpen.current) {
-        wasOpen.current = false;
-        toggleRef.current?.focus();
-      }
-
-      return;
-    }
-
-    wasOpen.current = true;
-    const root = document.documentElement;
-    const previousOverflow = root.style.overflow;
-    root.style.overflow = "hidden";
-
-    const frame = requestAnimationFrame(() => {
-      panelRef.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
-    });
-
-    return () => {
-      cancelAnimationFrame(frame);
-      root.style.overflow = previousOverflow;
-    };
-  }, [open]);
-
-  function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
-    // The "Start a conversation" form is a native modal <dialog> nested in the drawer: it owns
-    // its own keyboard (Escape closes the form only, Tab stays in the form).
-    if ((event.target as HTMLElement).closest("dialog[open]")) {
-      return;
-    }
-
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      close();
-      return;
-    }
-
-    if (event.key !== "Tab" || !panelRef.current) {
-      return;
-    }
-
-    const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-      (element) => element.offsetParent !== null || element === document.activeElement
-    );
-
-    if (focusable.length === 0) {
-      event.preventDefault();
-      return;
-    }
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
 
   return (
     <>
@@ -251,7 +172,7 @@ export function ClientMobileNav({ organizationName, showNav, switcher, fallback 
             aria-haspopup="dialog"
             aria-expanded={open}
             aria-controls="workspace-drawer"
-            onClick={() => setOpenAt(pathname)}
+            onClick={openDrawer}
             className="flex h-11 w-11 items-center justify-center rounded-app border border-white/15 text-white/85 transition hover:bg-white/10 hover:text-white"
           >
             <Menu aria-hidden="true" size={18} />
@@ -270,9 +191,12 @@ export function ClientMobileNav({ organizationName, showNav, switcher, fallback 
             aria-modal="true"
             aria-label="Workspace menu"
             onKeyDown={onKeyDown}
-            className="cp-drawer absolute right-0 top-0 flex h-full w-[88%] max-w-sm flex-col bg-rail text-white shadow-2xl"
+            className="cp-drawer absolute inset-x-0 bottom-0 flex max-h-[88svh] flex-col rounded-t-[1.25rem] border-t border-white/10 bg-rail text-white shadow-2xl sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-[24rem] sm:rounded-[1.25rem] sm:border"
           >
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+            {/* Grab handle: decoration that says "sheet"; closing is the button, Escape or the scrim. */}
+            <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-white/20 sm:hidden" />
+
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-2 pt-1 sm:py-3">
               <span className="flex items-center gap-3">
                 <DrylakeWordmark lockup tone="dark" surface={RAIL_SURFACE} height={18} label={null} />
                 <span className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/70">
@@ -291,13 +215,16 @@ export function ClientMobileNav({ organizationName, showNav, switcher, fallback 
               </button>
             </div>
 
-            <div className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-              <WorkspaceCard organizationName={organizationName} switcher={switcher} />
-              {/* Closing on click hands feedback straight to the route's loading skeleton. */}
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 py-4">
+              {/* Navigation first: it is why the sheet was opened. Closing on click hands
+                  feedback straight to the route's loading skeleton (or to the section). */}
               <NavGroup showNav={showNav} fallback={fallback} size="drawer" onNavigate={close} />
+              <WorkspaceCard organizationName={organizationName} switcher={switcher} />
             </div>
 
-            <RailFooter organizationName={organizationName} />
+            <div className="shrink-0 pb-[env(safe-area-inset-bottom)]">
+              <RailFooter organizationName={organizationName} />
+            </div>
           </div>
         </div>
       ) : null}

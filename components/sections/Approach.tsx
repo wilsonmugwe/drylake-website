@@ -55,13 +55,13 @@ export default function Approach() {
         <InView className="relative mt-(--block-gap)" threshold={0.2}>
           {/* The rail: horizontal from lg, vertical below. */}
           <span aria-hidden="true" className="dl-grow-x absolute left-0 right-0 top-[7px] hidden h-px bg-black/25 lg:block" />
-          <span aria-hidden="true" className="dl-grow-y absolute bottom-6 left-[7px] top-2 w-px bg-black/25 lg:hidden" />
+          <span aria-hidden="true" className="dl-grow-y absolute bottom-6 left-[7px] top-2 w-px bg-black/25 sm:hidden" />
 
-          <ol className="relative grid gap-9 sm:gap-12 lg:grid-cols-4 lg:gap-8">
+          <ol className="relative grid gap-7 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-9 lg:grid-cols-4 lg:gap-8">
             {stages.map((stage, index) => (
               <li
                 key={stage.number}
-                className="dl-fade-view relative pl-10 lg:pl-0 lg:pt-12"
+                className="dl-fade-view relative pl-10 sm:pl-0 sm:pt-10"
                 style={{ ["--d" as string]: `${0.2 + index * 0.18}s` }}
               >
                 <span
@@ -73,11 +73,11 @@ export default function Approach() {
 
                 <span className="block font-mono text-sm text-(--orange-ink)">{stage.number}</span>
 
-                <h3 className="mt-3 text-[clamp(2rem,7vw,3.2rem)] font-semibold leading-none tracking-[-0.055em]">
+                <h3 className="mt-2 text-[clamp(1.75rem,6vw,2.6rem)] font-semibold leading-none tracking-[-0.05em]">
                   {stage.title}
                 </h3>
 
-                <p className="type-body mt-4 max-w-sm text-black/65">{stage.text}</p>
+                <p className="type-body mt-3 max-w-sm text-black/65">{stage.text}</p>
               </li>
             ))}
           </ol>

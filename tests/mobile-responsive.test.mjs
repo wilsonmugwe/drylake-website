@@ -70,8 +70,10 @@ describe("vertical rhythm tokens", () => {
     const sm = CSS.match(/@media \(min-width: 640px\)\s*\{\s*:root\s*\{([^}]*)\}/)?.[1] ?? "";
     const lg = CSS.match(/@media \(min-width: 1024px\)\s*\{\s*:root\s*\{([^}]*)\}/)?.[1] ?? "";
     assert.match(sm, /--section-y:/);
-    // Desktop keeps the exact previous chapter padding (lg:py-36 = 9rem, lg:py-24 = 6rem).
-    assert.match(lg, /--section-y:\s*9rem/);
+    // Experience polish: desktop chapters 9rem to 6rem, intro-to-content 6rem to 3.5rem
+    // (the ~290 px seams were the "slide" feeling); inner-page sections keep 6rem.
+    assert.match(lg, /--section-y:\s*6rem/);
+    assert.match(lg, /--block-gap:\s*3\.5rem/);
     assert.match(lg, /--section-y-compact:\s*6rem/);
   });
 
@@ -81,7 +83,8 @@ describe("vertical rhythm tokens", () => {
   });
 
   it("every homepage chapter takes its padding from --section-y", () => {
-    const sections = ["Problems", "Integrations", "WhatWeDo", "AppliedAI", "Founders", "Approach", "Production", "FAQ", "ContactCTA", "Solutions"];
+    // Experience polish: AppliedAI is gone; the FAQ is a block inside ContactCTA, not a chapter.
+    const sections = ["Problems", "Integrations", "WhatWeDo", "Founders", "Approach", "Production", "ContactCTA", "Solutions"];
     for (const name of sections) {
       const source = code(`components/sections/${name}.tsx`);
       assert.match(source, /p[ty]-\(--section-y\)/, `${name} uses --section-y`);
@@ -90,7 +93,10 @@ describe("vertical rhythm tokens", () => {
   });
 
   it("inner pages start under the header from --page-top", () => {
-    for (const file of ["app/about/page.tsx", "app/contact/page.tsx", "app/perth/page.tsx", "app/privacy/page.tsx", "app/services/page.tsx", "app/services/[slug]/page.tsx", "app/solutions/page.tsx"]) {
+    // /about opens with Founders variant="page", which carries the --page-top offset.
+    assert.match(code("app/about/page.tsx"), /<Founders variant="page" \/>/);
+    assert.match(code("components/sections/Founders.tsx"), /pt-\(--page-top\)/);
+    for (const file of ["app/contact/page.tsx", "app/perth/page.tsx", "app/privacy/page.tsx", "app/services/page.tsx", "app/services/[slug]/page.tsx", "app/solutions/page.tsx"]) {
       assert.match(code(file), /pt-\(--page-top\)/, file);
     }
   });
@@ -143,9 +149,10 @@ describe("no viewport-height traps", () => {
     assert.deepEqual(offenders, []);
   });
 
-  it("the hero gives up its full-height minimum on a landscape phone", () => {
+  it("the hero is as tall as its content: no full-screen slide (experience polish)", () => {
+    assert.ok(!/min-h-\[100svh\]|min-h-\[100dvh\]|h-\[100svh\]/.test(code("components/sections/Hero.tsx")));
+    // The landscape-phone rule from PR 3 stays as a guard.
     assert.match(CSS, /@media \(max-height: 500px\) and \(orientation: landscape\)\s*\{\s*\.hz-hero > div\s*\{\s*min-height:\s*0;/);
-    assert.match(code("components/sections/Hero.tsx"), /min-h-\[100svh\]/);
   });
 
   it("body copy is not inflated by Safari on rotation", () => {

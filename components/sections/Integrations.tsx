@@ -19,8 +19,10 @@ export default function Integrations() {
     <section className="surface-ink relative overflow-clip">
       <div aria-hidden="true" className="grid-ink pointer-events-none absolute inset-0 opacity-60" />
 
-      {/* Phones (PR 3): the stage starts resolving as it enters and is connected when centred. */}
-      <ScrollProgress rest={1} start={0} passStart={0.4} end={-0.15} className="hz-sys-track relative lg:h-[250vh]">
+      {/* Experience polish: the stage starts resolving while it scrolls into view (before it pins),
+          is connected 60% of the way through a shorter track, and holds. Phones: resolving from the
+          moment the stage enters, connected with most of it on screen. */}
+      <ScrollProgress rest={1} start={0.35} finish={0.6} passStart={0.5} end={-0.25} className="hz-sys-track relative">
         <div className="lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:items-center">
           <Container className="relative w-full pt-(--section-y) lg:pb-6 lg:pt-[calc(var(--nav-h)+12px)]">
             <div className="grid gap-8 sm:gap-12 lg:grid-cols-12 lg:items-center lg:gap-8">
@@ -63,7 +65,7 @@ export default function Integrations() {
         </div>
       </ScrollProgress>
 
-      <Container className="relative pb-(--section-y) pt-10 sm:pt-14 lg:pb-28 lg:pt-10">
+      <Container className="relative pb-(--section-y) pt-8 sm:pt-12 lg:pt-8">
         <div className="grid gap-5 border-t border-white/12 pt-6 lg:grid-cols-12">
           <p className="tech-label text-white/60 lg:col-span-3">Works alongside</p>
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ArrowUpRight, Mail, Phone } from "lucide-react";
 
 import InView from "@/components/motion/InView";
@@ -7,55 +8,66 @@ import PrimaryCta from "@/components/ui/PrimaryCta";
 /*
  * The ending (every public page): one question, one action, two direct lines to a person. It
  * closes on the horizon, a full-bleed rule that draws in and runs straight into the footer,
- * where the large cropped wordmark sits on it (components/layout/Footer.tsx).
+ * where the cropped wordmark sits as the full stop (components/layout/Footer.tsx).
+ *
+ * `aside` (homepage): the questions block (FAQ) takes the right-hand column and the direct lines
+ * move under the call to action, so "conversation" is one place: the ask, the answers to what an
+ * owner would wonder first, and the phone number. Other pages keep the direct lines on the right.
  */
-export default function ContactCTA() {
+export default function ContactCTA({ aside }: { aside?: ReactNode }) {
+  const lines = (
+    <>
+      <p className="tech-label text-signal">TALK TO A PERSON, NOT A SALES QUEUE</p>
+
+      <a href="tel:+61420565457" className="group mt-4 flex min-h-[52px] items-center justify-between border-b border-white/10">
+        <span className="flex items-center gap-3">
+          <Phone aria-hidden="true" size={15} className="text-white/40" />
+          <span className="text-[0.95rem] text-white/75">+61 420 565 457</span>
+        </span>
+        <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
+      </a>
+
+      <a href="mailto:hello@drylake.com.au" className="group flex min-h-[52px] items-center justify-between">
+        <span className="flex items-center gap-3">
+          <Mail aria-hidden="true" size={15} className="text-white/40" />
+          <span className="text-[0.95rem] text-white/75">hello@drylake.com.au</span>
+        </span>
+        <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
+      </a>
+    </>
+  );
+
   return (
     <section className="surface-ink relative overflow-hidden">
-      <Container className="relative pb-12 pt-(--section-y) sm:pb-20 lg:pb-24">
+      <Container className="relative pb-10 pt-(--section-y) sm:pb-14 lg:pb-16">
         <p className="section-label flex items-center gap-2.5 text-white/60">
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
           Start a conversation
         </p>
 
-        <div className="mt-6 grid gap-10 sm:mt-8 sm:gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
-          <div className="lg:col-span-8">
+        <div className={`mt-6 grid gap-10 sm:mt-8 sm:gap-12 lg:grid-cols-12 lg:gap-8 ${aside ? "lg:items-start" : "lg:items-end"}`}>
+          <div className={aside ? "lg:col-span-6" : "lg:col-span-8"}>
             <h2 className="type-display max-w-[11ch] text-balance">
               Have a problem <span className="text-white/45">worth fixing?</span>
             </h2>
 
-            <p className="type-lede mt-5 max-w-xl text-white/66 sm:mt-8">
+            <p className="type-lede mt-5 max-w-xl text-white/66 sm:mt-7">
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>
 
-            <PrimaryCta href="/contact" size="large" className="mt-8 w-full sm:mt-10 sm:w-auto sm:min-w-[280px]">
+            <PrimaryCta href="/contact" size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
               Start a conversation
             </PrimaryCta>
+
+            {aside && <div className="mt-8 max-w-md sm:mt-10">{lines}</div>}
           </div>
 
-          <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-            <p className="tech-label text-signal">TALK TO A PERSON, NOT A SALES QUEUE</p>
-
-            <a
-              href="tel:+61420565457"
-              className="group mt-5 flex min-h-[52px] items-center justify-between border-b border-white/10"
-            >
-              <span className="flex items-center gap-3">
-                <Phone aria-hidden="true" size={15} className="text-white/40" />
-                <span className="text-[0.95rem] text-white/75">+61 420 565 457</span>
-              </span>
-              <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
-            </a>
-
-            <a href="mailto:hello@drylake.com.au" className="group flex min-h-[52px] items-center justify-between">
-              <span className="flex items-center gap-3">
-                <Mail aria-hidden="true" size={15} className="text-white/40" />
-                <span className="text-[0.95rem] text-white/75">hello@drylake.com.au</span>
-              </span>
-              <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
-            </a>
-          </div>
+          {aside ? (
+            <div className="border-t border-white/12 pt-7 lg:col-span-5 lg:col-start-8 lg:border-t-0 lg:pt-2">{aside}</div>
+          ) : (
+            <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">{lines}</div>
+          )}
         </div>
       </Container>
 

@@ -4,148 +4,103 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { SIGN_OUT_REDIRECT_URL } from "@/lib/navigation/site-nav";
-import {
-  Building2,
-  CreditCard,
-  FileText,
-  FolderKanban,
-  Globe2,
-  LayoutDashboard,
-  LogOut,
-  Receipt,
-} from "lucide-react";
+import { ArrowUpRight, Globe2, LogOut } from "lucide-react";
 
 import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 
-const navigation = [
-  {
-    label: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Clients",
-    href: "/admin/clients",
-    icon: Building2,
-  },
-  {
-    label: "Projects",
-    href: "/admin/projects",
-    icon: FolderKanban,
-  },
-  {
-    label: "Documents",
-    href: "/admin/documents",
-    icon: FileText,
-  },
-  {
-    label: "Invoices",
-    href: "/admin/invoices",
-    icon: Receipt,
-  },
-  {
-    label: "Payments",
-    href: "/admin/payments",
-    icon: CreditCard,
-  },
-];
+import { ADMIN_NAV_GROUPS, isAdminNavActive } from "./admin-nav";
 
-function isActive(pathname: string, href: string) {
-  if (href === "/admin") {
-    return pathname === "/admin";
-  }
-
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
+/*
+ * Desktop admin rail (lg and up). Same family as the Workspace rail (dark surface, canonical
+ * wordmark, signal edge on the current item), arranged for operations: grouped by job.
+ * Presentation only (polish brief 16): routes, data and permissions are untouched.
+ */
 export default function AdminSidebar() {
   const pathname = usePathname();
   const { signOut } = useClerk();
 
   return (
-    <aside className="hidden h-screen w-[268px] shrink-0 flex-col border-r border-white/10 bg-[#10100f] text-white lg:sticky lg:top-0 lg:flex">
-      <div className="border-b border-white/10 px-5 py-6">
-        <Link href="/admin" className="flex min-h-11 flex-col justify-center gap-1.5">
+    <aside
+      aria-label="Drylake Admin"
+      className="hidden h-screen w-[268px] shrink-0 flex-col border-r border-white/10 bg-[#10100f] text-white lg:sticky lg:top-0 lg:flex"
+    >
+      <div className="border-b border-white/10 px-5 py-5">
+        <Link href="/admin" className="flex min-h-11 items-center gap-3">
           {/* Canonical wordmark (brand slot swap only, D13). */}
-          <DrylakeWordmark lockup tone="dark" surface="#10100f" height={22} />
-
-          <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">
-            Administration
-          </p>
+          <DrylakeWordmark lockup tone="dark" surface="#10100f" height={22} label={null} />
+          <span aria-hidden="true" className="h-5 w-px bg-white/15" />
+          <span aria-hidden="true" className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.16em] text-white/70">
+            Admin
+          </span>
+          <span className="sr-only">Drylake Admin, dashboard</span>
         </Link>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
-        <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25">
-          Workspace
-        </p>
+      <nav aria-label="Admin" className="flex-1 space-y-5 overflow-y-auto px-3 py-5">
+        {ADMIN_NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <p className="px-3 pb-2 font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/55">
+              {group.label}
+            </p>
 
-        <div className="space-y-1">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const selected = isActive(pathname, item.href);
+            <ul className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const selected = isAdminNavActive(pathname, item.href);
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
-                  selected
-                    ? "bg-white/10 text-white"
-                    : "text-white/55 hover:bg-white/[0.06] hover:text-white"
-                }`}
-              >
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                    selected
-                      ? "bg-[#f26a2e]/12"
-                      : "bg-white/[0.03]"
-                  }`}
-                >
-                  <Icon
-                    size={16}
-                    className={
-                      selected
-                        ? "text-[#f26a2e]"
-                        : "text-white/40 group-hover:text-white/70"
-                    }
-                  />
-                </span>
-
-                {item.label}
-
-                {selected ? (
-                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-                ) : null}
-              </Link>
-            );
-          })}
-        </div>
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={selected ? "page" : undefined}
+                      className={`group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
+                        selected
+                          ? "bg-white/10 font-medium text-white"
+                          : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      {selected ? (
+                        <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-[#f26a2e]" />
+                      ) : null}
+                      <Icon
+                        aria-hidden="true"
+                        size={17}
+                        className={selected ? "shrink-0 text-white" : "shrink-0 text-white/60 group-hover:text-white/85"}
+                      />
+                      {item.label}
+                      {selected ? (
+                        <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-white/10 p-3">
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/55 transition hover:bg-white/[0.06] hover:text-white"
+          className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm text-white/70 transition hover:bg-white/[0.06] hover:text-white"
         >
-          <Globe2 size={16} className="text-[#f26a2e]" />
-
+          <Globe2 aria-hidden="true" size={16} className="text-white/60" />
           Drylake website
-
-          <span className="ml-auto text-white/25">↗</span>
+          <ArrowUpRight aria-hidden="true" size={14} className="ml-auto text-white/55" />
         </Link>
 
         <button
           type="button"
           onClick={() => signOut({ redirectUrl: SIGN_OUT_REDIRECT_URL })}
-          className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/55 transition hover:bg-white/[0.06] hover:text-white"
+          className="mt-1 flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-white/70 transition hover:bg-white/[0.06] hover:text-white"
         >
-          <LogOut size={16} />
+          <LogOut aria-hidden="true" size={16} />
           Sign out
         </button>
 
-        <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] px-3 pt-4 text-[10px] uppercase tracking-[0.14em] text-white/25">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        <div className="mt-3 flex items-center gap-2 border-t border-white/[0.07] px-3 pt-4 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/55">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           Secure admin session
         </div>
       </div>

@@ -28,46 +28,47 @@ const columns = [
 ];
 
 /*
- * Shared footer, composed as the page's ending: the site map (every service page, Perth,
- * legal) and direct contact first, then the canonical wordmark at full width, cropped where it
- * meets the horizon (its y tail dips below the line and is cut there), then the corporate line
- * beneath. The large wordmark is decorative (the home link above carries the name), and it
- * scales with the width, so the footer stays compact on phones.
- * Links use SiteLink so "home" and section links behave exactly like the header's.
+ * Shared footer, composed as the page's full stop (experience polish, 2026-10-07): the site map
+ * (every service page, Perth, legal) and direct contact, then one closing line: the canonical
+ * wordmark, cropped where it sits on the horizon (its y tail dips below the line and is cut),
+ * with the corporate details beside it. Desktop: the wordmark takes two thirds of the row instead
+ * of a full-width band; phones: full width, about 60 px tall. Link rows are 44 px tap targets on
+ * touch sizes and 34 px on desktop. The large wordmark is decorative (the home link above carries
+ * the name). Links use SiteLink so "home" and section links behave exactly like the header's.
  */
 export default function Footer() {
   return (
     <footer className="surface-ink overflow-hidden">
-      <Container className="pt-12 sm:pt-20">
+      <Container className="pt-10 sm:pt-14 lg:pt-16">
         <div className="grid gap-8 sm:gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-4">
             <BrandHomeLink size="footer" />
 
-            <p className="mt-5 flex items-center gap-2 text-sm text-white/60">
+            <p className="mt-4 flex items-center gap-2 text-sm text-white/60">
               <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
               Perth, Western Australia
             </p>
 
-            <div className="mt-4 flex flex-col text-sm text-white/70 sm:mt-6">
-              <a href="mailto:hello@drylake.com.au" className="inline-flex min-h-[44px] w-fit items-center hover:text-white">
+            <div className="mt-3 flex flex-wrap gap-x-6 text-sm text-white/70 lg:flex-col">
+              <a href="mailto:hello@drylake.com.au" className="inline-flex min-h-[44px] w-fit items-center hover:text-white lg:min-h-[34px]">
                 hello@drylake.com.au
               </a>
-              <a href="tel:+61420565457" className="inline-flex min-h-[44px] w-fit items-center hover:text-white">
+              <a href="tel:+61420565457" className="inline-flex min-h-[44px] w-fit items-center hover:text-white lg:min-h-[34px]">
                 +61 420 565 457
               </a>
             </div>
           </div>
 
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 lg:col-span-6 lg:col-start-7">
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 lg:col-span-7 lg:col-start-6">
             {columns.map((column) => (
               <div key={column.title}>
                 <p className="tech-label text-white/58">{column.title}</p>
-                <ul className="mt-2 sm:mt-3">
+                <ul className="mt-2">
                   {column.links.map((link) => (
                     <li key={link.href}>
                       <SiteLink
                         href={link.href}
-                        className="inline-flex min-h-[44px] items-center text-sm text-white/68 transition-colors hover:text-white"
+                        className="inline-flex min-h-[44px] items-center text-sm text-white/68 transition-colors hover:text-white lg:min-h-[34px]"
                       >
                         {link.label}
                       </SiteLink>
@@ -79,26 +80,27 @@ export default function Footer() {
           </nav>
         </div>
 
-        {/* The ending: the wordmark sits on the horizon and is cropped by it. */}
-        <div aria-hidden="true" className="hz-footer-mark mt-10 sm:mt-20">
-          <DrylakeWordmark tone="dark" label={null} height={120} className="hz-footer-word" />
-        </div>
-      </Container>
+        {/* The full stop: the wordmark sits on the horizon and is cropped by it. */}
+        <div className="mt-10 grid items-end gap-x-8 gap-y-5 sm:mt-14 lg:grid-cols-12">
+          <div aria-hidden="true" className="hz-footer-mark lg:col-span-8">
+            <DrylakeWordmark tone="dark" label={null} height={120} className="hz-footer-word" />
+          </div>
 
-      <div className="border-t border-white/22">
-        <Container>
-          <div className="flex flex-col gap-2 py-6 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1.5 pb-4 text-xs leading-5 text-white/60 lg:col-span-4 lg:items-end lg:pb-5 lg:text-right">
             <p>
-              {ENTITY.brand} is the trading name of {ENTITY.legalName} · ABN {ENTITY.abn} ·{" "}
-              {ENTITY.locality}, {ENTITY.region}
+              {ENTITY.brand} is the trading name of {ENTITY.legalName}
             </p>
-
+            <p>
+              ABN {ENTITY.abn} · {ENTITY.locality}, {ENTITY.region}
+            </p>
             <p>
               © {new Date().getFullYear()} {ENTITY.legalName}.
             </p>
           </div>
-        </Container>
-      </div>
+        </div>
+      </Container>
+
+      <div className="hz-footer-horizon border-t border-white/22 pb-[max(1.25rem,var(--safe-bottom))]" />
     </footer>
   );
 }
