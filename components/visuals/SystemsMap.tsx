@@ -1,4 +1,4 @@
-import { MARK_Y_PATH } from "@/components/brand/DrylakeMark";
+import { TilePlates } from "@/components/brand/DrylakeMark";
 
 /*
  * Hero visual: "disconnected business systems becoming one working system".
@@ -99,9 +99,9 @@ function Hub({ x, y, w, h, delay }: { x: number; y: number; w: number; h: number
   return (
     <g className="dl-fade-load" style={{ ["--d" as string]: `${delay}s` }}>
       <rect x={x} y={y} width={w} height={h} rx="6" fill="#0b0b0a" stroke="rgba(242,106,46,0.55)" />
-      <rect x={x + 12} y={y + h / 2 - 15} width="30" height="30" rx="7" fill="#17191E" stroke="rgba(255,255,255,0.14)" />
-      <g transform={`translate(${x + 12 - 20.57} ${y + h / 2 - 15 + 18.04}) scale(0.2379)`}>
-        <path d={MARK_Y_PATH} fill="none" stroke="#C2703D" strokeWidth="14.18" strokeLinecap="round" strokeLinejoin="round" />
+      <g transform={`translate(${x + 12 - 1.3} ${y + h / 2 - 15 - 1.3}) scale(0.326)`}>
+        <rect x="4" y="4" width="92" height="92" rx="18" fill="#0f1013" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
+        <TilePlates surface="#0f1013" small />
       </g>
       <text x={x + 52} y={y + h / 2 + 5} fill="#fff" fontSize="15" fontWeight="600" letterSpacing="-0.03em">
         Drylake

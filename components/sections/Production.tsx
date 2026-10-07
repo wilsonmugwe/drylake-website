@@ -1,4 +1,4 @@
-import { MARK_Y_PATH } from "@/components/brand/DrylakeMark";
+import { TilePlates } from "@/components/brand/DrylakeMark";
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 
@@ -106,12 +106,12 @@ export default function Production() {
               </g>
             ))}
 
-            {/* The system being protected: the Drylake mark at the end of the line. */}
+            {/* The system being protected: the Drylake tile at the end of the line. */}
             <g className="dl-fade-view" style={{ ["--d" as string]: "0.7s" }}>
               <rect x="770" y="168" width="124" height="108" rx="8" fill="#0b0b0a" stroke="rgba(242,106,46,0.55)" />
-              <rect x="808" y="198" width="48" height="48" rx="11" fill="#17191E" stroke="rgba(255,255,255,0.14)" />
-              <g transform="translate(775.09 226.86) scale(0.3806)">
-                <path d={MARK_Y_PATH} fill="none" stroke="#C2703D" strokeWidth="14.18" strokeLinecap="round" strokeLinejoin="round" />
+              <g transform="translate(806.04 196.04) scale(0.5217)">
+                <rect x="4" y="4" width="92" height="92" rx="18" fill="#0f1013" stroke="rgba(255,255,255,0.18)" strokeWidth="2" />
+                <TilePlates surface="#0f1013" />
               </g>
             </g>
 
