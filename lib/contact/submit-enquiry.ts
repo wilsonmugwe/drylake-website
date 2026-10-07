@@ -5,7 +5,7 @@ export interface EnquiryPayload {
   email: string;
   company: string;
   projectType: string;
-  budget: string;
+  helpType: string;
   message: string;
   turnstileToken: string;
 }

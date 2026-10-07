@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seo-pages";
@@ -132,9 +133,26 @@ export default function PrivacyPage() {
 
               <PolicySection title="10. Privacy enquiries">
                 <p>
-                  Privacy enquiries may be directed to Drylake Pty Ltd. A
-                  dedicated privacy contact email will be published once
-                  Drylake&apos;s business email service is activated.
+                  Privacy enquiries, including requests for access or
+                  correction, can be sent to Drylake Pty Ltd at{" "}
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="font-medium text-black underline underline-offset-4"
+                  >
+                    {CONTACT_EMAIL}
+                  </a>
+                  . Please mention &quot;Privacy&quot; in the subject line.
+                </p>
+                <p className="mt-3">
+                  If you are not satisfied with our response, you can contact
+                  the Office of the Australian Information Commissioner at{" "}
+                  <a
+                    href="https://www.oaic.gov.au"
+                    className="font-medium text-black underline underline-offset-4"
+                  >
+                    oaic.gov.au
+                  </a>
+                  .
                 </p>
               </PolicySection>
 
@@ -147,7 +165,7 @@ export default function PrivacyPage() {
               </PolicySection>
 
               <p className="border-t border-black/10 pt-8 text-sm text-black/60">
-                Last updated: 28 September 2026
+                Last updated: 8 October 2026
               </p>
             </div>
           </Container>

@@ -145,7 +145,7 @@ describe("contact enquiry validation", () => {
     email: "Jane@Example.com",
     company: "Acme Pty Ltd",
     projectType: "Automation",
-    budget: "A$5k",
+    helpType: "Build a new system",
     message: "Line one\nLine two",
     turnstileToken: "token",
   };
@@ -157,8 +157,18 @@ describe("contact enquiry validation", () => {
     assert.equal(result.fields.message, "Line one\nLine two");
   });
 
+  it("reads the kind of help from helpType, and from the legacy budget key sent by stale tabs", () => {
+    assert.equal(validateEnquiry(good).fields.helpType, "Build a new system");
+
+    const { helpType, ...legacy } = good;
+    assert.equal(validateEnquiry({ ...legacy, budget: helpType }).fields.helpType, "Build a new system");
+    assert.equal("budget" in validateEnquiry({ ...legacy, budget: helpType }).fields, false);
+    assert.equal(validateEnquiry({ ...legacy, budget: "x".repeat(101) }).ok, false);
+    assert.equal(validateEnquiry({ ...legacy, budget: "A\nBcc: x@evil.example" }).ok, false);
+  });
+
   it("refuses line breaks in fields that reach the email Subject (header injection)", () => {
-    for (const field of ["name", "company", "projectType", "budget"]) {
+    for (const field of ["name", "company", "projectType", "helpType"]) {
       for (const lineBreak of ["\r\nBcc: x@evil.example", "\nX", "\u2028X"]) {
         const result = validateEnquiry({ ...good, [field]: `Jane${lineBreak}` });
         assert.equal(result.ok, false, `${field} ${JSON.stringify(lineBreak)}`);

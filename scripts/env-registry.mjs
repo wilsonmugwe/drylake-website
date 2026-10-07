@@ -36,6 +36,7 @@ export const ENV_REGISTRY = [
   // Email (Resend)
   { name: "RESEND_API_KEY", exposure: "secret", required: true, readBy: "lib/email/resend.ts", purpose: "Invoice and contact email delivery" },
   { name: "EMAIL_FROM", exposure: "server", required: true, readBy: "lib/email/resend.ts", purpose: "Verified sender on a Resend-authenticated drylake.com.au subdomain" },
+  { name: "CONTACT_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/email/contact-enquiry.ts", purpose: "Optional sender for website enquiries; defaults to EMAIL_FROM's address as \"Drylake website enquiries\"" },
   { name: "CONTACT_TO_EMAIL", exposure: "server", required: true, readBy: "lib/email/contact-enquiry.ts", purpose: "Inbox that receives website and portal enquiries" },
 
   // Cloudflare Turnstile

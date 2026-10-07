@@ -6,7 +6,7 @@ import {
   RotateCcw,
   Send,
 } from "lucide-react";
-import { FormEvent, useCallback, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import TurnstileWidget, {
   type TurnstileHandle,
@@ -27,6 +27,23 @@ export default function ProjectForm() {
   const inFlight = useRef(false);
   const turnstileRef = useRef<TurnstileHandle>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const successRef = useRef<HTMLDivElement>(null);
+
+  /*
+   * The confirmation replaces a tall form, so after a send the visitor would otherwise be left
+   * looking at whatever slid up under the viewport (on phones, the footer). Bring
+   * "Thanks for reaching out" into view and move focus to it so screen readers announce it.
+   * Instant under reduced motion; preventScroll on focus so the two calls never fight.
+   */
+  useEffect(() => {
+    if (status !== "success") return;
+    const panel = successRef.current;
+    if (!panel) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panel.scrollIntoView({ behavior: reduce ? "instant" : "smooth", block: "start" });
+    panel.focus({ preventScroll: true });
+  }, [status]);
 
   const turnstileSiteKey =
     process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -70,15 +87,15 @@ export default function ProjectForm() {
     const formData = new FormData(event.currentTarget);
 
     /*
-     * Keep the existing API property names so the /api/contact contract is unchanged.
-     * projectType represents the area of the problem; budget the likely engagement type.
+     * projectType is the area of the problem; helpType the kind of help wanted. (helpType was
+     * sent as "budget" until 2026-10-08; the server still reads the old key from stale tabs.)
      */
     const payload = {
       name: String(formData.get("name") || ""),
       email: String(formData.get("email") || ""),
       company: String(formData.get("company") || ""),
       projectType: String(formData.get("projectType") || ""),
-      budget: String(formData.get("budget") || ""),
+      helpType: String(formData.get("helpType") || ""),
       message: String(formData.get("message") || ""),
       turnstileToken: token,
     };
@@ -113,8 +130,10 @@ export default function ProjectForm() {
   if (status === "success") {
     return (
       <div
+        ref={successRef}
         role="status"
-        className="flex min-h-[440px] flex-col justify-center border border-black/10 bg-[#f4f2ec] p-7 sm:p-10"
+        tabIndex={-1}
+        className="flex min-h-[440px] scroll-mt-[calc(var(--nav-h,72px)+16px)] outline-none flex-col justify-center border border-black/10 bg-[#f4f2ec] p-7 sm:p-10"
       >
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
           <Check size={20} />
@@ -231,15 +250,15 @@ export default function ProjectForm() {
       {/* Engagement */}
       <div>
         <label
-          htmlFor="budget"
+          htmlFor="helpType"
           className="section-label text-black/60"
         >
           What kind of help are you looking for?
         </label>
 
         <select
-          id="budget"
-          name="budget"
+          id="helpType"
+          name="helpType"
           defaultValue=""
           className="mt-2 w-full border-b border-black/15 bg-transparent py-4 text-base outline-none transition-colors focus:border-black"
         >

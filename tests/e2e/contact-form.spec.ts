@@ -122,6 +122,22 @@ test.describe("contact form @local", () => {
     expect(sent).toMatchObject({ ...VALID, projectType: "Manual processes", turnstileToken: "XXXX.DUMMY.TOKEN.XXXX" });
   });
 
+  test("success: the confirmation is focused and in view, and no budget is sent", async ({ page }) => {
+    const posts = await interceptContact(page, { status: 200, body: { success: true } });
+
+    await fillForm(page);
+    await page.getByLabel("What kind of help are you looking for?").selectOption("Build a new system");
+    await submitButton(page).click();
+
+    const confirmation = page.getByRole("status").filter({ hasText: "Thanks for reaching out." });
+    await expect(confirmation).toBeFocused();
+    await expect(confirmation).toBeInViewport();
+
+    const sent = posts[0].postDataJSON();
+    expect(sent.helpType).toBe("Build a new system");
+    expect(sent).not.toHaveProperty("budget");
+  });
+
   test("unusual characters are sent exactly as typed", async ({ page }) => {
     const posts = await interceptContact(page, { status: 200, body: { success: true } });
     const unusual = {
