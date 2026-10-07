@@ -35,6 +35,7 @@ const CARDS = [
   { image: PAGE_SEO.about.image, headline: "Built close to the problem.", line: "About Drylake, a Perth technology company" },
   { image: PAGE_SEO.contact.image, headline: "Tell us what's getting in the way.", line: `A founder replies within ${RESPONSE_TIME}` },
   { image: PAGE_SEO.privacy.image, headline: "Privacy Policy", line: "How Drylake Pty Ltd handles personal information" },
+  { image: PAGE_SEO.terms.image, headline: "Terms of Use", line: "The terms for the Drylake website and Drylake Workspace" },
   ...SERVICES.map((service) => ({ image: serviceShareImage(service.slug), headline: service.name, line: service.summary })),
 ];
 

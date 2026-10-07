@@ -23,6 +23,7 @@ export const PUBLIC_PATHS = [
   "/about",
   "/contact",
   "/privacy",
+  "/terms",
 ] as const;
 
 export const PRODUCTION_ORIGIN = "https://drylake.com.au";

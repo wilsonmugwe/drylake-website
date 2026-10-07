@@ -173,10 +173,10 @@ describe("sitemap and page registry", () => {
   const paths = PUBLIC_PAGES.map((page) => page.path);
 
   it("lists /services, every service, /perth and the core pages exactly once", () => {
-    for (const path of ["/", "/solutions", "/services", ...SERVICES.map((s) => s.path), "/perth", "/about", "/contact", "/privacy"]) {
+    for (const path of ["/", "/solutions", "/services", ...SERVICES.map((s) => s.path), "/perth", "/about", "/contact", "/privacy", "/terms"]) {
       assert.equal(paths.filter((p) => p === path).length, 1, path);
     }
-    assert.equal(paths.length, 12);
+    assert.equal(paths.length, 13); // /terms added 2026-10-08
   });
 
   it("lists nothing private, no auth route and no trailing slash", () => {

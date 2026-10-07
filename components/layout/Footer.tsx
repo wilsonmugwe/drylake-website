@@ -22,6 +22,7 @@ const columns = [
       { label: "Perth", href: "/perth" },
       { label: "Contact", href: "/contact" },
       { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
       { label: CLIENT_LOGIN.label, href: CLIENT_LOGIN.href },
     ],
   },
