@@ -71,9 +71,8 @@ export async function POST(request: Request) {
       return jsonError(validation.message, validation.status);
     }
 
-    const { name, email, company, projectType, budget, message, turnstileToken } =
+    const { name, email, company, projectType, helpType, message, turnstileToken } =
       validation.fields;
-
 
     /*
      * Server-side Turnstile verification, after the cheap field checks and before any
@@ -110,7 +109,7 @@ export async function POST(request: Request) {
       email,
       company,
       projectType,
-      budget,
+      helpType,
       message,
       receivedAt: new Date().toISOString(),
       // Signed-in senders (the portal's "Start a conversation") carry server-verified

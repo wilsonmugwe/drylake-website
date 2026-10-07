@@ -26,6 +26,27 @@ export const LAKEBED_PLATES: readonly { label: string; lx: number; ly: number; d
 ];
 
 /*
+ * Phones (final refinement, 2026-10-08): the same five plates and labels, composed for a narrow
+ * column under the proposition instead of the desktop tile shrunk. The fragmented state sits
+ * further out (each plate pushed along the line from the tile's centre to its own centroid), so
+ * at phone size the break reads as deliberate separation rather than a hairline wobble. The view
+ * box is padded just enough to hold that state, so nothing leaves the reserved square.
+ */
+export const LAKEBED_PHONE_VIEW = { min: -11, size: 122 } as const;
+
+export const LAKEBED_PHONE_OFFSETS: readonly { dx: number; dy: number; r: number }[] = [
+  { dx: -10, dy: -8, r: -5 },
+  { dx: 7, dy: -11, r: 4 },
+  { dx: -10, dy: 8, r: 4 },
+  { dx: 11, dy: 1, r: -3 },
+  { dx: 6, dy: 10, r: -4 },
+];
+
+/** A tile coordinate as a percentage of a padded view box (min, size). */
+export const viewPct = (v: number, view: { min: number; size: number }) =>
+  Math.round(((v - view.min) / view.size) * 10000) / 100;
+
+/*
  * The workarounds living in the cracks today (struck through as the plates lock). Each one is
  * set along its crack (rot, degrees), so it reads as written into the gap and never sits on a
  * plate's label.

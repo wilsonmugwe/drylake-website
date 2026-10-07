@@ -2,8 +2,8 @@ import { ArrowDown } from "lucide-react";
 
 import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
+import InView from "@/components/motion/InView";
 import PrimaryCta from "@/components/ui/PrimaryCta";
-import ConvergeMark from "@/components/visuals/ConvergeMark";
 import LakeBed from "@/components/visuals/LakeBed";
 import LakeField from "@/components/visuals/LakeField";
 
@@ -15,11 +15,13 @@ import LakeField from "@/components/visuals/LakeField";
  * cracks light up as connections with it, running under the headline. The hero ends on a cracked
  * edge, and the next chapter opens with "Growth makes the cracks visible."
  *
- * Phones (under 640 px, mobile refinement 2026-10-07): composed for the phone, not the desktop
- * picture compressed. The first screen (.hz-first) is location, headline, one still picture
- * (ConvergeMark: fragments converging on the assembled tile) and the proposition; the actions
- * start just below it, so the opening reads as a complete composition. Tablet and desktop keep
- * the approved lake-bed tile and caption unchanged (.lb-figure is hidden only on phones).
+ * Phones (under 640 px, final refinement 2026-10-08): MESSAGE -> EXPLANATION -> the five plates
+ * ASSEMBLE -> CTA, in document order. The headline and the proposition paint first and never
+ * animate; below them the five lake-bed plates (the same plates and labels as desktop, a phone
+ * composition, LakeBed variant="phone") start apart and lock into the Drylake tile once, then
+ * stay. InView holds that timeline until the tiles are on screen; without JavaScript or under
+ * reduced motion the finished composition renders immediately. The CTA follows in normal flow,
+ * never delayed by script. Tablet and desktop keep the approved lake-bed tile and caption.
  *
  * LCP: the <h1> is server-rendered with no entrance animation, so its lines paint at full
  * opacity, in place, on the first frame (PR 3 rule, test-pinned). Whole hero = server components;
@@ -48,7 +50,7 @@ export default function Hero() {
             <h1 className="hz-display relative z-10 mt-6 sm:mt-10 lg:mt-14">
               <span className="block">Your business</span>
               <span className="block pl-[0.82em]">shouldn&apos;t run</span>
-              <span className="block text-white/78 lg:text-white/45">on workarounds.</span>
+              <span className="block text-white/78 lg:text-white/62">on workarounds.</span>
             </h1>
 
             <figure className="lb-figure hidden sm:block">
@@ -61,16 +63,16 @@ export default function Hero() {
               </figcaption>
             </figure>
 
-            <div className="hz-first-art sm:hidden">
-              <ConvergeMark />
-            </div>
-
             <div className="relative z-10 mt-6 sm:mt-10 lg:mt-12 lg:max-w-[38rem]">
               <p className="type-lede max-w-[34rem] text-white/72">
                 Drylake builds practical software and automation for Australian
                 businesses that have outgrown spreadsheets, email and double handling.
               </p>
             </div>
+
+            <InView className="hz-assemble sm:hidden" threshold={0.4}>
+              <LakeBed variant="phone" />
+            </InView>
           </div>
 
           {/* Not positioned on purpose: a new stacking context here re-rasterised the CTA label on

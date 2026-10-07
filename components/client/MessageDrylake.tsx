@@ -219,7 +219,7 @@ function MessageForm({
       email: String(formData.get("email") || ""),
       company,
       projectType: `Drylake Workspace: ${topic}`,
-      budget: "",
+      helpType: "",
       message: String(formData.get("message") || ""),
       turnstileToken: token,
     });

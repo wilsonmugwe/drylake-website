@@ -1,13 +1,15 @@
 import "server-only";
 
-import { getEmailFromAddress, getResendClient } from "@/lib/email/resend";
+import { enquiryFromAddress } from "@/lib/email/contact-enquiry-sender";
+import { getResendClient } from "@/lib/email/resend";
 
 export interface ContactEnquiry {
   name: string;
   email: string;
   company: string;
   projectType: string;
-  budget: string;
+  /* "What kind of help are you looking for?" (was sent as `budget`; it never held money). */
+  helpType: string;
   message: string;
   receivedAt: string;
   /* Present only when sent by a signed-in user; values are server-verified. */
@@ -50,8 +52,8 @@ export async function deliverContactEnquiry(enquiry: ContactEnquiry) {
     ["Name", enquiry.name],
     ["Email", enquiry.email],
     ["Company", enquiry.company || "Not provided"],
-    ["Project type", enquiry.projectType || "Not provided"],
-    ["Budget", enquiry.budget || "Not provided"],
+    ["Topic", enquiry.projectType || "Not provided"],
+    ["Help wanted", enquiry.helpType || "Not provided"],
     ["Received", enquiry.receivedAt],
     ...(enquiry.portal
       ? ([
@@ -87,10 +89,11 @@ export async function deliverContactEnquiry(enquiry: ContactEnquiry) {
   ].join("\n");
 
   const { error } = await getResendClient().emails.send({
-    from: getEmailFromAddress(),
+    // Own display name on the shared verified sender: never labelled as billing mail.
+    from: enquiryFromAddress({ CONTACT_EMAIL_FROM: process.env.CONTACT_EMAIL_FROM, EMAIL_FROM: process.env.EMAIL_FROM }),
     to: getEnquiryInbox(),
     replyTo: enquiry.email,
-    subject: `${enquiry.portal ? "Client message" : "Website enquiry"}: ${enquiry.name}${
+    subject: `${enquiry.portal ? "Client message" : "New website enquiry"}: ${enquiry.name}${
       enquiry.company ? ` (${enquiry.company})` : ""
     }`,
     html,

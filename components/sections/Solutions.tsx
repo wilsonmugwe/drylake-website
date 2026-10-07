@@ -57,6 +57,11 @@ const solutions: Solution[] = [
  * (an operational workspace, a connected workflow, an AI step with a human check), laid out
  * as an alternating editorial spread rather than three equal cards. Copy and service links
  * unchanged.
+ *
+ * Only rendered on /solutions (the homepage has WhatWeDo). Final refinement PR, 2026-10-08: the
+ * label no longer repeats the homepage's "02 / What We Do", since on /solutions this section
+ * follows the problem list and explains how the capabilities fit together; the "Explore what we
+ * do" link pointed at the page it sits on and was removed.
  */
 export default function Solutions() {
   return (
@@ -65,7 +70,7 @@ export default function Solutions() {
 
       <Container className="relative pb-10 pt-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
-          <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">02 / What We Do</p>
+          <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">How it fits together</p>
 
           <div className="lg:col-span-9">
             <h2 className="type-section">
@@ -142,17 +147,7 @@ export default function Solutions() {
           >
             All services
             <ArrowUpRight
-              size={15}
-              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-            />
-          </Link>
-
-          <Link
-            href="/solutions"
-            className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold"
-          >
-            Explore what we do
-            <ArrowUpRight
+              aria-hidden="true"
               size={15}
               className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             />

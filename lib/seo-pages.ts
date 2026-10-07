@@ -38,11 +38,13 @@ export const PAGE_SEO = {
   },
   solutions: {
     path: "/solutions",
-    title: "Software, Automation & AI Solutions | Drylake",
+    /* Problem intent (final refinement PR, 2026-10-08): /services owns "what Drylake provides",
+       so this page no longer competes with it for the same service queries. */
+    title: "Business Problems We Solve: Software, Automation & AI | Drylake",
     description:
-      "Drylake builds custom software, automation, AI and connected systems for Australian businesses, from small technical fixes to complete platforms.",
+      "The operational problems Drylake solves for Australian businesses, from double entry and lost enquiries to email approvals, and the service that fixes each.",
     shareDescription:
-      "Custom software, automation, AI and connected systems built around real business problems.",
+      "Common operational problems, how software, automation and AI fit together to fix them, and which Drylake service fits each.",
     image: "/og/solutions.png",
     imageAlt: "Drylake: what we do, from small technical fixes to complete platforms",
   },

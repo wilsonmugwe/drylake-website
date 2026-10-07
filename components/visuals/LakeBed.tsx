@@ -4,10 +4,13 @@ import { BRAND_INK, TILE_OCHRE, TILE_OCHRE_PLATE, TILE_PLATES } from "@/componen
 import {
   LAKEBED_CONNECTIONS,
   LAKEBED_JUNCTIONS,
+  LAKEBED_PHONE_OFFSETS,
+  LAKEBED_PHONE_VIEW,
   LAKEBED_PLATES,
   LAKEBED_VIEW,
   LAKEBED_WORKAROUNDS,
   lakebedPct,
+  viewPct,
 } from "@/components/visuals/lakebed-geometry";
 
 /*
@@ -21,13 +24,34 @@ import {
  * zero offsets); the broken state exists only inside the keyframes' "from", so reduced motion
  * and no-CSS-animation browsers show the finished, readable mark. Decorative: the figcaption
  * beside it carries the meaning in words. Never the LCP element: the h1 is larger and static.
+ *
+ * variant="phone" (final refinement, 2026-10-08): the same plates, labels and resolved mark, with
+ * a wider fragmented state, its own padded view box, no workaround notes (one meaningful motion
+ * on a small screen, not two) and a slower, calmer timeline (.lb-phone in app/public-site.css).
+ * The page renders both variants (one hidden per breakpoint), so the clip-path id is per variant.
  */
-export default function LakeBed({ surface = "#0b0b0a", backing = "#141412" }: { surface?: string; backing?: string }) {
+type Variant = "tile" | "phone";
+
+export default function LakeBed({
+  surface = "#0b0b0a",
+  backing = "#141412",
+  variant = "tile",
+}: {
+  surface?: string;
+  backing?: string;
+  variant?: Variant;
+}) {
+  const phone = variant === "phone";
+  const view = phone ? LAKEBED_PHONE_VIEW : null;
+  const pct = (v: number) => (view ? viewPct(v, view) : lakebedPct(v));
+  const clipId = phone ? "lb-tile-phone" : "lb-tile";
+  const offsets = phone ? LAKEBED_PHONE_OFFSETS : LAKEBED_PLATES;
+
   return (
-    <div aria-hidden="true" className="lb relative aspect-square w-full">
-      <svg viewBox={LAKEBED_VIEW} className="absolute inset-0 h-full w-full overflow-visible">
+    <div aria-hidden="true" className={phone ? "lb lb-phone relative aspect-square w-full" : "lb relative aspect-square w-full"}>
+      <svg viewBox={view ? `${view.min} ${view.min} ${view.size} ${view.size}` : LAKEBED_VIEW} className="absolute inset-0 h-full w-full overflow-visible">
         <defs>
-          <clipPath id="lb-tile" clipPathUnits="userSpaceOnUse">
+          <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
             <rect x="4" y="4" width="92" height="92" rx="18" />
           </clipPath>
         </defs>
@@ -37,12 +61,12 @@ export default function LakeBed({ surface = "#0b0b0a", backing = "#141412" }: { 
         <rect x="4" y="4" width="92" height="92" rx="18" fill={backing} />
 
         {TILE_PLATES.map((d, i) => {
-          const plate = LAKEBED_PLATES[i];
+          const plate = offsets[i];
           return (
             <g key={d} className="lb-plate" style={{ "--dx": `${plate.dx}px`, "--dy": `${plate.dy}px`, "--r": `${plate.r}deg`, "--i": i } as CSSProperties}>
               <path
                 d={d}
-                clipPath="url(#lb-tile)"
+                clipPath={`url(#${clipId})`}
                 className={i === TILE_OCHRE_PLATE ? "lb-fill lb-fill-ochre" : "lb-fill"}
                 fill={i === TILE_OCHRE_PLATE ? TILE_OCHRE : BRAND_INK.dark}
                 stroke={surface}
@@ -53,7 +77,7 @@ export default function LakeBed({ surface = "#0b0b0a", backing = "#141412" }: { 
           );
         })}
 
-        <g clipPath="url(#lb-tile)">
+        <g clipPath={`url(#${clipId})`}>
           {LAKEBED_CONNECTIONS.map((d, i) => (
             <path
               key={d}
@@ -85,10 +109,10 @@ export default function LakeBed({ surface = "#0b0b0a", backing = "#141412" }: { 
             className={i === TILE_OCHRE_PLATE ? "lb-label lb-label-ochre" : "lb-label"}
             style={
               {
-                left: `${lakebedPct(plate.lx)}%`,
-                top: `${lakebedPct(plate.ly)}%`,
-                "--dx": plate.dx,
-                "--dy": plate.dy,
+                left: `${pct(plate.lx)}%`,
+                top: `${pct(plate.ly)}%`,
+                "--dx": offsets[i].dx,
+                "--dy": offsets[i].dy,
                 "--i": i,
               } as CSSProperties
             }
@@ -98,7 +122,7 @@ export default function LakeBed({ surface = "#0b0b0a", backing = "#141412" }: { 
           </span>
         ))}
 
-        {LAKEBED_WORKAROUNDS.map((note, i) => (
+        {!phone && LAKEBED_WORKAROUNDS.map((note, i) => (
           <span
             key={note.text}
             className="lb-note"

@@ -1,9 +1,14 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import Container from "@/components/ui/Container";
 import FragmentField from "@/components/visuals/FragmentField";
 
 type Problem = {
   number: string;
+  /* Its fuller entry on /solutions (lib/discovery/problems.ts): problem -> solution -> service. */
+  anchor: string;
   label: string;
   title: string;
   text: string;
@@ -12,24 +17,28 @@ type Problem = {
 const problems: Problem[] = [
   {
     number: "01",
+    anchor: "critical-spreadsheet",
     label: "SPREADSHEETS",
     title: "The spreadsheet has become the system.",
     text: "Important processes depend on files that are becoming difficult to manage, share or scale.",
   },
   {
     number: "02",
+    anchor: "double-entry",
     label: "DOUBLE HANDLING",
     title: "We're entering the same information more than once.",
     text: "Your team is copying information between systems instead of doing useful work.",
   },
   {
     number: "03",
+    anchor: "disconnected-systems",
     label: "DISCONNECTED",
     title: "Our systems don't talk to each other.",
     text: "Information is spread across platforms, creating gaps, delays and manual work.",
   },
   {
     number: "04",
+    anchor: "email-approvals",
     label: "MANUAL",
     title: "Too much depends on manual follow-up.",
     text: "Routine work still relies on emails, reminders and somebody remembering what happens next.",
@@ -93,6 +102,14 @@ export default function Problems() {
                   </h3>
 
                   <p className="type-body mt-4 max-w-md text-black/62 sm:mt-5">{problem.text}</p>
+
+                  <Link
+                    href={`/solutions#${problem.anchor}`}
+                    className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black sm:mt-5"
+                  >
+                    How this gets fixed
+                    <ArrowRight aria-hidden="true" size={14} />
+                  </Link>
                 </li>
               ))}
             </ol>
@@ -105,14 +122,17 @@ export default function Problems() {
           <span className="tech-label text-black/62 lg:col-span-3">NEXT</span>
 
           <div className="lg:col-span-9">
-            <p className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">
-              You don&apos;t need to know the technical solution.
-            </p>
-
-            <p className="type-body mt-2 max-w-xl text-black/62">
-              Tell us what is slowing the business down. We&apos;ll work
-              backwards from the problem.
-            </p>
+            {/* Final refinement 2026-10-08: this block repeated the closing reassurance ("No technical
+                brief required", ContactCTA and the FAQ). It now carries the problem-led path instead. */}
+            <Link
+              href="/solutions"
+              className="group inline-flex min-h-11 items-center gap-3 text-xl font-semibold tracking-[-0.03em] sm:text-2xl"
+            >
+              <span className="underline decoration-black/20 underline-offset-[6px] transition-colors group-hover:decoration-black">
+                See every business problem we solve
+              </span>
+              <ArrowRight aria-hidden="true" size={20} />
+            </Link>
           </div>
         </div>
       </Container>

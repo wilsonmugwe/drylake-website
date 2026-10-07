@@ -90,7 +90,7 @@ test("keyboard: the contact form can be completed without a mouse", async ({ pag
     await page.keyboard.press("Tab");
   }
 
-  expect(order).toEqual(["name", "email", "company", "projectType", "budget", "message"]);
+  expect(order).toEqual(["name", "email", "company", "projectType", "helpType", "message"]);
 });
 
 test("mobile menu dialog passes axe and labels its regions", async ({ page }, testInfo) => {

@@ -100,19 +100,19 @@ export type PublicPage = {
 };
 
 export const PUBLIC_PAGES: readonly PublicPage[] = [
-  { path: "/", lastModified: "2026-10-07", changeFrequency: "weekly", priority: 1 },
-  { path: "/solutions", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.9 },
-  { path: SERVICES_PATH, lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.9 },
+  { path: "/", lastModified: "2026-10-08", changeFrequency: "weekly", priority: 1 },
+  { path: "/solutions", lastModified: "2026-10-08", changeFrequency: "monthly", priority: 0.9 },
+  { path: SERVICES_PATH, lastModified: "2026-10-08", changeFrequency: "monthly", priority: 0.9 },
   ...SERVICES.map((service) => ({
     path: service.path,
-    lastModified: "2026-10-07",
+    lastModified: "2026-10-08",
     changeFrequency: "monthly" as const,
     priority: 0.8,
   })),
   { path: "/perth", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.8 },
   { path: "/contact", lastModified: "2026-10-05", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/privacy", lastModified: "2026-09-28", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/privacy", lastModified: "2026-10-08", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 /* Path prefixes that are never public: robots Disallow + X-Robots-Tag noindex. */

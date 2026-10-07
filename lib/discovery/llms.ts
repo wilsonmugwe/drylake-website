@@ -4,7 +4,32 @@
  * structured data. PURE (tests import it directly).
  */
 
-import { ENTITY, FOUNDERS, PERTH_PATH, SERVICES, SERVICES_PATH, absoluteUrl } from "./entity.ts";
+import { ENTITY, FOUNDERS, PERTH_PATH, SERVICES, SERVICES_PATH, absoluteUrl, findService } from "./entity.ts";
+import { BUSINESS_PROBLEMS, problemPath } from "./problems.ts";
+
+/*
+ * How Drylake approaches work, stated once for machines. Each line restates what the service
+ * pages and FAQs already say (map the workflow first, keep and connect what works, a person
+ * checks AI results, no technical brief needed), so it adds no new claim.
+ */
+export const APPROACH_FACTS: readonly string[] = [
+  "Drylake starts with the business problem and maps the workflow before deciding what to build.",
+  "Where existing software still does its job, Drylake connects to it or builds around it rather than replacing it.",
+  "Custom software is delivered in stages, most useful part first.",
+  "Where an AI result affects a customer, money or a decision, a person reviews it.",
+  "A technical specification is not needed to start a conversation.",
+];
+
+function problemLines(): string[] {
+  return BUSINESS_PROBLEMS.map((item) => {
+    const services = item.services
+      .map((slug) => findService(slug))
+      .filter((service) => service !== null)
+      .map((service) => `[${service.name}](${absoluteUrl(service.path)})`)
+      .join(", ");
+    return `- [${item.problem}](${absoluteUrl(problemPath(item))}) ${item.outcome} Services: ${services}.`;
+  });
+}
 
 export function llmsText(): string {
   const lines = [
@@ -33,10 +58,18 @@ export function llmsText(): string {
     "",
     ...SERVICES.map((service) => `- [${service.name}](${absoluteUrl(service.path)}): ${service.description}`),
     "",
+    "## Problems we solve",
+    "",
+    ...problemLines(),
+    "",
+    "## Approach",
+    "",
+    ...APPROACH_FACTS.map((fact) => `- ${fact}`),
+    "",
     "## Pages",
     "",
     `- [Home](${absoluteUrl("/")}): what Drylake does and who it works with`,
-    `- [What we do](${absoluteUrl("/solutions")}): how the service lines fit together`,
+    `- [Solutions](${absoluteUrl("/solutions")}): common business problems, how the capabilities fit together and which service solves each`,
     `- [Services](${absoluteUrl(SERVICES_PATH)}): the five service lines`,
     `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company`,
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
@@ -68,6 +101,14 @@ export function llmsFullText(): string {
     `> ${ENTITY.summary}`,
     "",
     `${ENTITY.legalSummary} Based in ${ENTITY.locality}, ${ENTITY.region}. Works with businesses in ${ENTITY.locality} and across ${ENTITY.country}. Contact: ${ENTITY.email}. Website: ${ENTITY.url}.`,
+    "",
+    "## Problems we solve",
+    "",
+    ...problemLines(),
+    "",
+    "## Approach",
+    "",
+    ...APPROACH_FACTS.map((fact) => `- ${fact}`),
     "",
   ];
 

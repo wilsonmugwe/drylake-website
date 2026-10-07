@@ -13,7 +13,7 @@ export const LIMITS = {
   email: 200,
   company: 160,
   projectType: 100,
-  budget: 100,
+  helpType: 100,
   message: 5000,
 } as const;
 
@@ -22,7 +22,7 @@ export type EnquiryFields = {
   email: string;
   company: string;
   projectType: string;
-  budget: string;
+  helpType: string;
   message: string;
   turnstileToken: string;
 };
@@ -58,7 +58,9 @@ export function validateEnquiry(body: unknown): EnquiryValidation {
     email: getString(raw.email).toLowerCase(),
     company: getString(raw.company),
     projectType: getString(raw.projectType),
-    budget: getString(raw.budget),
+    // "What kind of help". Sent as `budget` before 2026-10-08; a tab opened before that deploy
+    // still posts the old key, so read it as a fallback rather than drop the answer.
+    helpType: getString(raw.helpType) || getString(raw.budget),
     message: getString(raw.message),
     turnstileToken: getString(raw.turnstileToken),
   };
@@ -79,7 +81,7 @@ export function validateEnquiry(body: unknown): EnquiryValidation {
     return { ok: false, status: 400, message: "Please enter a valid email address." };
   }
 
-  const singleLine = [fields.name, fields.email, fields.company, fields.projectType, fields.budget];
+  const singleLine = [fields.name, fields.email, fields.company, fields.projectType, fields.helpType];
 
   if (
     [...singleLine, fields.message].some((value) => CONTROL.test(value)) ||
