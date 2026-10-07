@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seo-pages";
-import { SERVICES } from "@/lib/discovery/entity";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
-import { breadcrumbNode, serviceNode, webPageNode } from "@/lib/discovery/structured-data";
+import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -14,6 +15,7 @@ import Approach from "@/components/sections/Approach";
 import Production from "@/components/sections/Production";
 import ContactCTA from "@/components/sections/ContactCTA";
 import ServiceIndex from "@/components/sections/ServiceIndex";
+import ProblemIndex from "@/components/sections/ProblemIndex";
 
 const SEO = PAGE_SEO.solutions;
 
@@ -24,6 +26,12 @@ const SOLUTIONS_CRUMBS = [
   { name: "Solutions", path: "/solutions" },
 ];
 
+/*
+ * /solutions vs /services (final refinement PR, 2026-10-08): /services lists WHAT Drylake
+ * provides; this page starts from the business problem (ProblemIndex), shows how the
+ * capabilities fit together (Solutions), then hands off to the service pages and contact.
+ * The Service nodes live on /services and on each service page; they are not repeated here.
+ */
 export default function SolutionsPage() {
   return (
     <>
@@ -33,11 +41,9 @@ export default function SolutionsPage() {
             path: SEO.path,
             name: SEO.title,
             description: SEO.description,
-            type: "CollectionPage",
             breadcrumb: SOLUTIONS_CRUMBS,
           }),
           breadcrumbNode("/solutions", SOLUTIONS_CRUMBS),
-          ...SERVICES.map(serviceNode),
         ]}
       />
       <Navbar />
@@ -51,10 +57,12 @@ export default function SolutionsPage() {
           </div>
 
           <div className="relative z-10 mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16">
-            <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
+            <Breadcrumbs crumbs={SOLUTIONS_CRUMBS} />
+
+            <div className="mt-6 grid gap-8 sm:mt-10 lg:grid-cols-[0.7fr_1.3fr]">
               <div>
                 <p className="section-label text-black/60">
-                  What We Do
+                  Solutions
                 </p>
 
                 <div className="mt-5 flex items-center gap-2">
@@ -76,11 +84,21 @@ export default function SolutionsPage() {
                   systems, Drylake starts with what needs to work and builds from
                   there.
                 </p>
+
+                <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60">
+                  Below: the problems we are asked about most, how the capabilities fit together to
+                  solve them, and the{" "}
+                  <Link href="/services" className="underline underline-offset-4">
+                    five services
+                  </Link>{" "}
+                  behind them.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
+        <ProblemIndex />
         <Solutions />
         <SmallThings />
         <ServiceIndex

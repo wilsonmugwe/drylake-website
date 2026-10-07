@@ -6,8 +6,9 @@
  * Drylake is GST registered: every NEW invoice carries 10% GST on top
  * (lib/invoices/gst.ts). This is a constant on purpose, not an env flag: GST treatment is
  * a fact about the business, and a per-deployment switch could silently mis-tax invoices.
- * Assumes the ATO GST registration is effective before the first invoice is issued from
- * this build.
+ * ATO GST registration: date of effect 24 September 2026, annual GST reporting (voluntary,
+ * turnover under A$75k; drylake-ops D31). Invoices dated on or after that date carry GST.
+ * Annual reporting ends once turnover is projected over A$75k: quarterly BAS from then on.
  *
  * Never hard-code the ABN or legal name in a component: import DRYLAKE_BUSINESS.
  */

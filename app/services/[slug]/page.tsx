@@ -23,6 +23,7 @@ import {
   serviceNode,
   webPageNode,
 } from "@/lib/discovery/structured-data";
+import { problemPath, problemsForService } from "@/lib/discovery/problems";
 import { pageMetadata } from "@/lib/seo";
 import { serviceShareImage } from "@/lib/seo-pages";
 
@@ -115,6 +116,25 @@ export default async function ServicePage({ params }: Props) {
                 {service.problem.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
+
+                {/* PROBLEM -> SERVICE, both ways: the problems on /solutions that this service fixes. */}
+                <div className="border-t border-black/10 pt-5">
+                  <h3 className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-black/60">
+                    Problems this solves
+                  </h3>
+                  <ul className="mt-2">
+                    {problemsForService(service.slug).map((item) => (
+                      <li key={item.id}>
+                        <Link
+                          href={problemPath(item)}
+                          className="inline-flex min-h-[44px] items-center text-base font-medium text-black underline decoration-black/30 underline-offset-4 hover:decoration-black"
+                        >
+                          {item.problem}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </Container>

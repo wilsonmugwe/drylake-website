@@ -28,6 +28,7 @@ import {
   FOUNDERS,
   ORGANIZATION_ID,
   PUBLIC_PAGES,
+  SERVICES,
   type Service,
   SITE_URL,
   WEBSITE_ID,
@@ -39,11 +40,25 @@ type Node = Record<string, unknown>;
 /** Square brand mark served from /public; tests assert the file exists. */
 export const LOGO_PATH = "/brand/drylake-mark-512.png";
 
+const AUSTRALIA = { "@type": "Country", name: ENTITY.country };
+
+const WESTERN_AUSTRALIA = {
+  "@type": "State",
+  name: ENTITY.region,
+  containedInPlace: AUSTRALIA,
+};
+
 const PERTH = {
   "@type": "City",
-  name: "Perth",
-  containedInPlace: { "@type": "State", name: "Western Australia" },
+  name: ENTITY.locality,
+  containedInPlace: WESTERN_AUSTRALIA,
 };
+
+/*
+ * Where Drylake works, broadest last: Perth -> Western Australia -> Australia (final refinement
+ * PR, 2026-10-08). Based in Perth, not Perth-only; the State was missing between the two.
+ */
+const AREA_SERVED = [PERTH, WESTERN_AUSTRALIA, AUSTRALIA];
 
 export function organizationNode(): Node {
   return {
@@ -74,7 +89,7 @@ export function organizationNode(): Node {
       addressCountry: ENTITY.countryCode,
     },
     location: PERTH,
-    areaServed: [PERTH, { "@type": "Country", name: ENTITY.country }],
+    areaServed: AREA_SERVED,
     founder: FOUNDERS.map((founder) => ({ "@id": founder.id })),
     contactPoint: {
       "@type": "ContactPoint",
@@ -89,8 +104,21 @@ export function organizationNode(): Node {
       "Business process automation",
       "Systems integration",
       "Applied artificial intelligence",
-      "Web application development",
+      "Website and web application development",
     ],
+    /*
+     * Organization -> Service, by @id: the five service lines are what this organisation offers.
+     * The Service nodes themselves are emitted on /services and each service page. No prices or
+     * availability: there is nothing to quote, so none is claimed.
+     */
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: `${ENTITY.brand} services`,
+      itemListElement: SERVICES.map((service) => ({
+        "@type": "Offer",
+        itemOffered: { "@id": `${absoluteUrl(service.path)}#service` },
+      })),
+    },
     ...(ENTITY.sameAs.length > 0 ? { sameAs: [...ENTITY.sameAs] } : {}),
   };
 }
@@ -171,7 +199,7 @@ export function serviceNode(service: Service): Node {
     description: service.description,
     url,
     provider: { "@id": ORGANIZATION_ID },
-    areaServed: [PERTH, { "@type": "Country", name: ENTITY.country }],
+    areaServed: AREA_SERVED,
     mainEntityOfPage: { "@id": `${url}#webpage` },
   };
 }

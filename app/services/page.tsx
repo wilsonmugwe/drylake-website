@@ -52,17 +52,16 @@ export default function ServicesPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-7 text-black/65 sm:text-lg sm:leading-8">
-            Drylake builds and connects technology that helps growing Australian businesses operate
-            more effectively. Most work combines more than one of these. Start with the problem and
-            we will work out which fits.
+            The five things Drylake provides to growing Australian businesses. Most work combines
+            more than one of these. Start with the problem and we will work out which fits.
           </p>
 
           <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60">
-            For how the pieces fit together, see{" "}
+            Starting from a problem rather than a service? See{" "}
             <Link href="/solutions" className="underline underline-offset-4">
-              what we do
-            </Link>
-            . Based in Perth?{" "}
+              the business problems we solve
+            </Link>{" "}
+            and which service fits each. Based in Perth?{" "}
             <Link href="/perth" className="underline underline-offset-4">
               Drylake in Perth
             </Link>
