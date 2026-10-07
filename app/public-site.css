@@ -683,3 +683,454 @@ main [tabindex="-1"]:focus {
 .faq-panel > div {
   overflow: hidden;
 }
+
+/* =========================================================
+   DRYLAKE HORIZON (homepage creative direction, PR 2, 2026-10-07). Kept in this file, not a
+   component-imported sheet, so it adds no extra render-blocking stylesheet request.
+   docs/design/2026-10-07-homepage-creative-direction.md
+
+   One fine line that information resolves onto. Unlayered, like public-site.css.
+   Motion: transform / translate / rotate / scale / opacity only. The two scroll stories read
+   one custom property, --p (0..1), written by components/motion/ScrollProgress.tsx; at rest
+   (no JavaScript, reduced motion) --p is the server value and every state is readable.
+   ========================================================= */
+
+/* ---------------------------------------------------------------- surfaces ---- */
+
+.hz-surface-ink-3 {
+  background: var(--ink-3);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------------ hero ---- */
+
+/* Phones: sized so "on workarounds." (the longest line, ~7.3em) holds one line down to 320 px. */
+.hz-display {
+  font-size: clamp(2.1rem, 11.5vw, 4.8rem);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.068em;
+}
+
+@media (min-width: 640px) {
+  .hz-display {
+    font-size: clamp(4.6rem, 11.6vw, 7.4rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hz-display {
+    font-size: clamp(5.4rem, 8.3vw, 10.4rem);
+    line-height: 0.86;
+  }
+}
+
+/* Fine grid, strongest just under the horizon, fading up into the headline. */
+.hz-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent 18%, #000 62%, transparent 96%);
+}
+
+.hz-field {
+  pointer-events: none;
+}
+
+/* The horizon runs edge to edge (the section clips it). */
+.hz-horizon {
+  position: absolute;
+  top: 0;
+  left: -50vw;
+  right: -50vw;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  transform-origin: left center;
+  animation: hz-draw 1.4s var(--ease-out) both;
+  animation-delay: 0.15s;
+}
+
+.hz-tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  transform-origin: top center;
+}
+
+.hz-tick-noise {
+  background: #fff;
+  transition: transform 0.55s var(--ease-out);
+}
+
+.hz-tick-signal {
+  background: rgba(255, 255, 255, 0.5);
+  animation: hz-tick-in 0.5s var(--ease-out) both;
+  animation-delay: var(--d, 0s);
+}
+
+.hz-fragment {
+  position: absolute;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.42);
+  white-space: nowrap;
+  transform-origin: left center;
+  transition: transform 0.55s var(--ease-out);
+}
+
+.hz-node {
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  border-radius: 999px;
+  background: var(--signal);
+  box-shadow: 0 0 0 5px rgba(242, 106, 46, 0.14);
+  animation: dl-fade 0.6s ease both;
+  animation-delay: 0.45s;
+}
+
+.hz-marker {
+  position: absolute;
+  bottom: 0;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes hz-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes hz-tick-in {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* --------------------------------------------------------- problem field ---- */
+
+.hz-frag-field {
+  container-type: size;
+}
+
+.hz-paper-grid {
+  background-image:
+    linear-gradient(rgba(11, 11, 10, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 11, 10, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 40%, transparent 80%);
+}
+
+.hz-chip {
+  --sx: var(--msx);
+  --sy: var(--msy);
+  --fx: var(--mfx);
+  --fy: var(--mfy);
+  --k: calc(1 - var(--p, 0));
+  position: absolute;
+  left: calc(var(--fx) * 1%);
+  top: calc(var(--fy) * 1%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0.65rem;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(11, 11, 10, 0.16);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.72rem;
+  color: rgba(11, 11, 10, 0.78);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  translate: calc((var(--sx) - var(--fx)) * var(--k) * 1cqw) calc((var(--sy) - var(--fy)) * var(--k) * 1cqh);
+  rotate: calc(var(--r) * var(--k) * 1deg);
+}
+
+.hz-chip-mark {
+  width: 7px;
+  height: 7px;
+  box-shadow: inset 0 0 0 1px rgba(11, 11, 10, 0.45);
+}
+
+/* Sorted chips get a filled mark: present, in order, still separate. */
+.hz-chip-mark {
+  background: rgba(11, 11, 10, calc(0.55 * clamp(0, (var(--p, 0) - 0.75) * 4, 1)));
+}
+
+.hz-lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(11, 11, 10, 0.18);
+  opacity: clamp(0, (var(--p, 0) - 0.6) * 2.5, 1);
+}
+
+.hz-lane-label {
+  position: absolute;
+  left: 0;
+  bottom: 22px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(11, 11, 10, 0.62);
+}
+
+@media (min-width: 1024px) {
+  .hz-chip {
+    --sx: var(--lsx);
+    --sy: var(--lsy);
+    --fx: var(--lfx);
+    --fy: var(--lfy);
+  }
+}
+
+/* --------------------------------------------------------- systems stage ---- */
+
+.hz-sys {
+  container-type: size;
+  /* k: nodes travel; w: workarounds fade; q: spine draws; c: drops connect; h: hub + status. */
+  --k: clamp(0, var(--p, 1) / 0.5, 1);
+  --w: clamp(0, 1 - var(--p, 1) / 0.45, 1);
+  --q: clamp(0, (var(--p, 1) - 0.45) / 0.22, 1);
+  --c: clamp(0, (var(--p, 1) - 0.6) / 0.25, 1);
+  --h: clamp(0, (var(--p, 1) - 0.7) / 0.25, 1);
+}
+
+.hz-workarounds,
+.hz-workaround-note {
+  opacity: var(--w);
+}
+
+.hz-workaround-note {
+  position: absolute;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.58);
+  white-space: nowrap;
+}
+
+.hz-spine {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hz-spine-x {
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 1px;
+  transform-origin: left center;
+  transform: scaleX(var(--q));
+}
+
+.hz-spine-y {
+  top: 3%;
+  bottom: 3%;
+  left: 50%;
+  width: 1px;
+  transform-origin: center top;
+  transform: scaleY(var(--q));
+}
+
+.hz-drop {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.hz-drop-v {
+  width: 1px;
+  transform: scaleY(var(--c));
+}
+
+.hz-drop-h {
+  height: 1px;
+  transform: scaleX(var(--c));
+}
+
+.hz-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: var(--ink-2);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22);
+  transform: translate(-50%, -50%);
+  scale: calc(0.9 + 0.1 * var(--h));
+  opacity: var(--h);
+}
+
+.hz-sys-node {
+  --sx: var(--msx);
+  --sy: var(--msy);
+  --fx: var(--mfx);
+  --fy: var(--mfy);
+  --r: var(--mr);
+  --m: calc(1 - var(--k));
+  position: absolute;
+  left: calc(var(--fx) * 1%);
+  top: calc(var(--fy) * 1%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 7.6rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, calc(0.16 + 0.12 * var(--c)));
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.86);
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  translate: calc((var(--sx) - var(--fx)) * var(--m) * 1cqw) calc((var(--sy) - var(--fy)) * var(--m) * 1cqh);
+  rotate: calc(var(--r) * var(--m) * 1deg);
+}
+
+/* A loose end on every unconnected system (phones show these instead of workaround arcs). */
+.hz-sys-node::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: 18px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.45);
+  opacity: var(--w);
+}
+
+.hz-status {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 0 0 7px rgba(242, 106, 46, var(--h));
+}
+
+@media (min-width: 1024px) {
+  .hz-sys-node {
+    --sx: var(--dsx);
+    --sy: var(--dsy);
+    --fx: var(--dfx);
+    --fy: var(--dfy);
+    --r: var(--dr);
+  }
+}
+
+/* The state readout beside the stage: one line at a time, in words. */
+.hz-readout > * {
+  grid-area: 1 / 1;
+}
+
+.hz-readout-0 {
+  opacity: clamp(0, (0.32 - var(--p, 1)) * 8, 1);
+}
+
+.hz-readout-1 {
+  opacity: clamp(0, min((var(--p, 1) - 0.3) * 8, (0.8 - var(--p, 1)) * 8), 1);
+}
+
+.hz-readout-2 {
+  opacity: clamp(0, (var(--p, 1) - 0.78) * 8, 1);
+}
+
+/* -------------------------------------------------------- service rows ---- */
+
+.hz-row {
+  isolation: isolate;
+}
+
+.hz-row-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.hz-row-name,
+.hz-row-arrow,
+.hz-glyph {
+  transition:
+    transform 0.45s var(--ease-out),
+    opacity var(--duration-slow) ease;
+}
+
+.hz-glyph {
+  opacity: 0.35;
+}
+
+.hz-row:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .hz-row:hover .hz-row-line {
+    transform: scaleX(1);
+  }
+
+  .hz-row:hover .hz-row-name {
+    transform: translateX(0.12em);
+  }
+
+  .hz-row:hover .hz-row-arrow {
+    transform: translate(3px, -3px);
+  }
+
+  .hz-row:hover .hz-glyph {
+    opacity: 1;
+  }
+}
+
+.hz-row:focus-visible .hz-row-line {
+  transform: scaleX(1);
+}
+
+.hz-row:focus-visible .hz-glyph {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------- footer ---- */
+
+/* Crop: keep the letters and the top of the y tail; the horizon (border below) cuts the rest. */
+.hz-footer-mark {
+  aspect-ratio: 414.22 / 100;
+  overflow: hidden;
+}
+
+.hz-footer-word {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* ------------------------------------------------------- reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hz-horizon,
+  .hz-tick-signal,
+  .hz-node {
+    animation: none !important;
+  }
+
+  .hz-row-name,
+  .hz-row-arrow {
+    transform: none !important;
+  }
+}
