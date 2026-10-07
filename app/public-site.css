@@ -27,7 +27,10 @@
   /*
    * Vertical rhythm tokens (PR 3, mobile polish, 2026-10-07). One source for section padding
    * so phones get a designed rhythm instead of desktop padding stacked down a narrow screen.
-   * Desktop values (lg) are exactly the previous ones; phones lose dead space, not structure.
+   * Phones lose dead space, not structure. Experience polish (2026-10-07): desktop chapters go
+   * from 9 rem to 6 rem and the intro-to-content gap from 6 rem to 3.5 rem. The content inside
+   * each chapter already breathes; ~290 px of air on both sides of every seam was the "slide"
+   * feeling Wilson flagged. --section-y-compact (inner pages) is unchanged.
    *   --section-y          chapter padding (homepage chapters, ContactCTA, About intro)
    *   --section-y-compact  content sections on inner pages (service, Perth, privacy)
    *   --page-top           first block under the fixed header on inner pages
@@ -47,7 +50,7 @@
 
 @media (min-width: 640px) {
   :root {
-    --section-y: 4.5rem;
+    --section-y: 4rem;
     --section-y-compact: 4rem;
     --page-top: 10rem;
     --block-gap: 3rem;
@@ -57,9 +60,9 @@
 @media (min-width: 1024px) {
   :root {
     --nav-h: 76px;
-    --section-y: 9rem;
+    --section-y: 6rem;
     --section-y-compact: 6rem;
-    --block-gap: 6rem;
+    --block-gap: 3.5rem;
   }
 }
 
@@ -755,100 +758,180 @@ main [tabindex="-1"]:focus {
   }
 }
 
+/* Desktop: the headline shares the row with the lake bed (7 of 12 columns). */
 @media (min-width: 1024px) {
   .hz-display {
-    font-size: clamp(5.4rem, 8.3vw, 10.4rem);
-    line-height: 0.86;
+    font-size: clamp(3.9rem, 6.3vw, 8.4rem);
+    line-height: 0.88;
   }
 }
 
-/* Fine grid, strongest just under the horizon, fading up into the headline. */
+/* Fine grid, strongest behind the headline row, fading out at the top and bottom. */
 .hz-grid {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, transparent 18%, #000 62%, transparent 96%);
+  mask-image: linear-gradient(to bottom, transparent 8%, #000 45%, transparent 98%);
 }
 
-.hz-field {
+/* ------------------------------------------------------------- lake bed ---- */
+
+/*
+ * The hero tile (components/visuals/LakeBed.tsx). One finite timeline, about 1.6 s:
+ *   0.00-0.20  broken: plates apart and dark, workarounds sitting in the cracks
+ *   0.20-1.15  plates lock together (ease-out), labels travel with them
+ *   0.55-0.85  each workaround is struck through, then fades
+ *   0.90-1.40  plates light (brand ink), the ochre plate turns on as "One system"
+ *   1.00-1.55  the cracks draw as connections, a node lands at each junction
+ * Markup and attributes are the resolved state, so reduced motion (and no animation support)
+ * shows the finished mark with every label in place. Transform / opacity / fill / dashoffset only.
+ */
+.lb {
+  --lb-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --lb-dark: #24241f;
+}
+
+.lb-plate {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lb-settle 0.95s var(--lb-ease) 0.2s both;
+}
+
+.lb-fill {
+  animation: lb-light 0.5s ease calc(0.9s + var(--i, 0) * 0.04s) both;
+}
+
+.lb-fill-ochre {
+  animation-delay: 1.15s;
+}
+
+.lb-link {
+  stroke: var(--signal);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: lb-draw 0.45s var(--lb-ease) calc(1s + var(--i, 0) * 0.05s) both;
+}
+
+.lb-node {
+  animation: dl-fade 0.3s ease 1.4s both;
+}
+
+.lb-node-dot {
+  fill: var(--signal);
+}
+
+.lb-labels {
+  container-type: size;
   pointer-events: none;
 }
 
-/* The horizon runs edge to edge (the section clips it). */
-.hz-horizon {
-  position: absolute;
-  top: 0;
-  left: -50vw;
-  right: -50vw;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.3);
-  transform-origin: left center;
-  animation: hz-draw 1.4s var(--ease-out) both;
-  animation-delay: 0.15s;
-}
-
-.hz-tick {
-  position: absolute;
-  top: 0;
-  width: 1px;
-  transform-origin: top center;
-}
-
-.hz-tick-noise {
-  background: #fff;
-  transition: transform 0.55s var(--ease-out);
-}
-
-.hz-tick-signal {
-  background: rgba(255, 255, 255, 0.5);
-  animation: hz-tick-in 0.5s var(--ease-out) both;
-  animation-delay: var(--d, 0s);
-}
-
-.hz-fragment {
-  position: absolute;
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.42);
-  white-space: nowrap;
-  transform-origin: left center;
-  transition: transform 0.55s var(--ease-out);
-}
-
-.hz-node {
-  position: absolute;
-  top: 0;
-  width: 9px;
-  height: 9px;
-  margin: -4px 0 0 -4px;
-  border-radius: 999px;
-  background: var(--signal);
-  box-shadow: 0 0 0 5px rgba(242, 106, 46, 0.14);
-  animation: dl-fade 0.6s ease both;
-  animation-delay: 0.45s;
-}
-
-.hz-marker {
-  position: absolute;
-  bottom: 0;
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-@keyframes hz-draw {
-  from {
-    transform: scaleX(0);
+/* Desktop: the caption starts where the tile starts (the tile is 92 of the 112-unit box). */
+@media (min-width: 1024px) {
+  .lb-caption {
+    padding-inline: 8.9%;
   }
 }
 
-@keyframes hz-tick-in {
+.lb-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: clamp(8.5px, 3.9cqw, 17px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  color: #17191e;
+  transform: translate(-50%, -50%);
+  animation: lb-label 0.95s var(--lb-ease) 0.2s both;
+}
+
+/* White on the ochre plate: 4.7:1 (ink on ochre would be 3.7:1). */
+.lb-label-ochre {
+  color: #fff;
+  animation: dl-fade 0.4s ease 1.25s both;
+}
+
+.lb-status {
+  width: 0.42em;
+  height: 0.42em;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.lb-note {
+  position: absolute;
+  padding: 0.2em 0.45em;
+  background: var(--ink);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(8.5px, 2.5cqw, 11.5px);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--signal);
+  transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+  opacity: 0;
+  animation: lb-note 1.15s ease 0.1s both;
+}
+
+/* The strike: drawn across the workaround just before it fades. */
+.lb-note::after {
+  content: "";
+  position: absolute;
+  left: 0.3em;
+  right: 0.3em;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: lb-strike 0.3s ease calc(0.55s + var(--i, 0) * 0.06s) both;
+}
+
+@keyframes lb-settle {
   from {
-    transform: scaleY(0);
+    transform: translate(var(--dx), var(--dy)) rotate(var(--r));
+  }
+}
+
+@keyframes lb-light {
+  from {
+    fill: var(--lb-dark);
+  }
+}
+
+@keyframes lb-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+/* Labels ride with their plate (dx, dy are tile units; the label box is 112 units wide). */
+@keyframes lb-label {
+  from {
+    translate: calc(var(--dx) * 0.893cqw) calc(var(--dy) * 0.893cqh);
+    color: rgba(255, 255, 255, 0.86);
+  }
+  75% {
+    color: rgba(255, 255, 255, 0.86);
+  }
+}
+
+@keyframes lb-note {
+  0%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lb-strike {
+  to {
+    transform: scaleX(1);
   }
 }
 
@@ -871,7 +954,9 @@ main [tabindex="-1"]:focus {
   --sy: var(--msy);
   --fx: var(--mfx);
   --fy: var(--mfy);
-  --k: calc(1 - var(--p, 0));
+  /* Eased (1 - p)^2: the chips move most at the start and land gently, so the sort reads as
+     deliberate rather than linear. */
+  --k: calc((1 - var(--p, 0)) * (1 - var(--p, 0)));
   position: absolute;
   left: calc(var(--fx) * 1%);
   top: calc(var(--fy) * 1%);
@@ -898,7 +983,7 @@ main [tabindex="-1"]:focus {
 
 /* Sorted chips get a filled mark: present, in order, still separate. */
 .hz-chip-mark {
-  background: rgba(11, 11, 10, calc(0.55 * clamp(0, (var(--p, 0) - 0.75) * 4, 1)));
+  background: rgba(11, 11, 10, calc(0.55 * clamp(0, (var(--p, 0) - 0.62) * 3.4, 1)));
 }
 
 .hz-lane {
@@ -907,7 +992,7 @@ main [tabindex="-1"]:focus {
   right: 0;
   height: 1px;
   background: rgba(11, 11, 10, 0.18);
-  opacity: clamp(0, (var(--p, 0) - 0.6) * 2.5, 1);
+  opacity: clamp(0, (var(--p, 0) - 0.45) * 2.2, 1);
 }
 
 .hz-lane-label {
@@ -945,11 +1030,11 @@ main [tabindex="-1"]:focus {
 .hz-sys {
   container-type: size;
   /* k: nodes travel; w: workarounds fade; q: spine draws; c: drops connect; h: hub + status. */
-  --k: clamp(0, var(--p, 1) / 0.5, 1);
-  --w: clamp(0, 1 - var(--p, 1) / 0.45, 1);
-  --q: clamp(0, (var(--p, 1) - 0.45) / 0.22, 1);
-  --c: clamp(0, (var(--p, 1) - 0.6) / 0.25, 1);
-  --h: clamp(0, (var(--p, 1) - 0.7) / 0.25, 1);
+  --k: clamp(0, var(--p, 1) / 0.45, 1);
+  --w: clamp(0, 1 - var(--p, 1) / 0.4, 1);
+  --q: clamp(0, (var(--p, 1) - 0.38) / 0.2, 1);
+  --c: clamp(0, (var(--p, 1) - 0.5) / 0.25, 1);
+  --h: clamp(0, (var(--p, 1) - 0.62) / 0.26, 1);
 }
 
 .hz-workarounds,
@@ -1024,7 +1109,7 @@ main [tabindex="-1"]:focus {
   --fx: var(--mfx);
   --fy: var(--mfy);
   --r: var(--mr);
-  --m: calc(1 - var(--k));
+  --m: calc((1 - var(--k)) * (1 - var(--k)));
   position: absolute;
   left: calc(var(--fx) * 1%);
   top: calc(var(--fy) * 1%);
@@ -1076,21 +1161,29 @@ main [tabindex="-1"]:focus {
   }
 }
 
+/* Desktop track for the pinned stage (experience polish: 250vh to 175vh). Motion only: under
+   reduced motion the stage rests connected and the track is just its content. */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .hz-sys-track {
+    height: 175vh;
+  }
+}
+
 /* The state readout beside the stage: one line at a time, in words. */
 .hz-readout > * {
   grid-area: 1 / 1;
 }
 
 .hz-readout-0 {
-  opacity: clamp(0, (0.32 - var(--p, 1)) * 8, 1);
+  opacity: clamp(0, (0.28 - var(--p, 1)) * 8, 1);
 }
 
 .hz-readout-1 {
-  opacity: clamp(0, min((var(--p, 1) - 0.3) * 8, (0.8 - var(--p, 1)) * 8), 1);
+  opacity: clamp(0, min((var(--p, 1) - 0.26) * 8, (0.72 - var(--p, 1)) * 8), 1);
 }
 
 .hz-readout-2 {
-  opacity: clamp(0, (var(--p, 1) - 0.78) * 8, 1);
+  opacity: clamp(0, (var(--p, 1) - 0.7) * 8, 1);
 }
 
 /* -------------------------------------------------------- service rows ---- */
@@ -1112,16 +1205,12 @@ main [tabindex="-1"]:focus {
 }
 
 .hz-row-name,
-.hz-row-arrow,
-.hz-glyph {
+.hz-row-arrow {
   transition:
     transform 0.45s var(--ease-out),
     opacity var(--duration-slow) ease;
 }
 
-.hz-glyph {
-  opacity: 0.35;
-}
 
 .hz-row:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
@@ -1141,17 +1230,122 @@ main [tabindex="-1"]:focus {
     transform: translate(3px, -3px);
   }
 
-  .hz-row:hover .hz-glyph {
-    opacity: 1;
-  }
 }
 
 .hz-row:focus-visible .hz-row-line {
   transform: scaleX(1);
 }
 
-.hz-row:focus-visible .hz-glyph {
+
+/* ---------------------------------------------------------- core sample ---- */
+
+/*
+ * Production (components/sections/Production.tsx): a cross-section under a finished product.
+ * The surface band is the product; each stratum below carries a texture that gets denser with
+ * depth. Textures sit on a ::before that fades out to the right, so the sentences never sit on
+ * a busy pattern. On arrival (InView) the probe runs down the core and each stratum's marker
+ * turns on in turn. Text is never hidden: only the probe, markers and textures animate.
+ */
+.core-surface {
+  border-bottom: 2px solid #eceae4;
+}
+
+.core-stratum {
+  position: relative;
+  isolation: isolate;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.core-stratum::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   opacity: 1;
+  mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.35) 38%, transparent 72%);
+  transition: opacity 0.6s ease calc(0.15s + var(--i, 0) * 0.09s);
+}
+
+.core-stratum:nth-child(1)::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.3px);
+  background-size: 14px 14px;
+}
+
+.core-stratum:nth-child(2)::before {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.11) 0 8px, transparent 8px 18px),
+    repeating-linear-gradient(90deg, transparent 0 4px, rgba(255, 255, 255, 0.08) 4px 10px, transparent 10px 18px);
+  background-size: 100% 1px, 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 35%, 0 70%;
+}
+
+.core-stratum:nth-child(3)::before {
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 9px);
+}
+
+.core-stratum:nth-child(4)::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.3px);
+  background-size: 7px 7px;
+}
+
+.core-stratum:nth-child(5)::before {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px);
+}
+
+.core-stratum:nth-child(6)::before {
+  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px 4px);
+}
+
+/* The probe: the core's axis, drawn top to bottom on arrival. */
+.core-probe {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.28);
+  transform-origin: center top;
+  transition: transform 0.9s var(--ease-out);
+}
+
+/* A marker on the probe per stratum: grey until the probe reaches it, then signal orange. */
+.core-stratum::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 999px;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px var(--ink-2);
+  transition: background-color 0.3s ease calc(0.2s + var(--i, 0) * 0.12s);
+}
+
+@media (min-width: 640px) {
+  .core-probe {
+    left: 14px;
+  }
+
+  .core-stratum::after {
+    left: 11px;
+  }
+}
+
+[data-inview="false"] .core-probe {
+  transform: scaleY(0);
+}
+
+[data-inview="false"] .core-stratum::before {
+  opacity: 0;
+}
+
+[data-inview="false"] .core-stratum::after {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* ---------------------------------------------------------------- footer ---- */
@@ -1170,9 +1364,13 @@ main [tabindex="-1"]:focus {
 /* ------------------------------------------------------- reduced motion ---- */
 
 @media (prefers-reduced-motion: reduce) {
-  .hz-horizon,
-  .hz-tick-signal,
-  .hz-node {
+  .lb-plate,
+  .lb-fill,
+  .lb-link,
+  .lb-node,
+  .lb-label,
+  .lb-note,
+  .lb-note::after {
     animation: none !important;
   }
 

@@ -17,12 +17,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { SERVICES } from "../lib/discovery/services.ts";
-import {
-  HERO_NOISE,
-  HERO_SIGNAL,
-  PROBLEM_FRAGMENTS,
-  SYSTEM_NODES,
-} from "../components/visuals/horizon-geometry.ts";
+import { PROBLEM_FRAGMENTS, SYSTEM_NODES } from "../components/visuals/horizon-geometry.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -37,10 +32,13 @@ const CHANGED = [
   "components/sections/Problems.tsx",
   "components/sections/Integrations.tsx",
   "components/sections/WhatWeDo.tsx",
-  "components/sections/AppliedAI.tsx",
+  "components/sections/Production.tsx",
+  "components/sections/Founders.tsx",
+  "components/sections/FAQ.tsx",
   "components/sections/ContactCTA.tsx",
   "components/layout/Footer.tsx",
-  "components/visuals/HorizonField.tsx",
+  "components/visuals/LakeBed.tsx",
+  "components/visuals/lakebed-geometry.ts",
   "components/visuals/FragmentField.tsx",
   "components/visuals/SystemsStage.tsx",
   "components/visuals/horizon-geometry.ts",
@@ -51,18 +49,22 @@ const CHANGED = [
 describe("homepage composition", () => {
   it("renders the chapters in the designed order", () => {
     const body = PAGE.slice(PAGE.indexOf("<main"), PAGE.indexOf("</main>"));
-    const order = [...body.matchAll(/<(\w+) \/>/g)].map((m) => m[1]);
+    const order = [...body.matchAll(/<([A-Z]\w+)\b/g)].map((m) => m[1]);
+    // Experience polish: no AI chapter; the FAQ sits inside the closing conversation.
     assert.deepEqual(order, [
-      "Hero", "Problems", "Integrations", "WhatWeDo", "AppliedAI",
-      "Founders", "Approach", "Production", "FAQ", "ContactCTA",
+      "Hero", "Problems", "Integrations", "WhatWeDo", "Production",
+      "Founders", "Approach", "ContactCTA", "FAQ",
     ]);
+    assert.match(body, /<ContactCTA aside=\{<FAQ \/>\} \/>/);
   });
 
   it("keeps every section id the navigation and the page use, exactly once", () => {
     const all = HOME_SECTIONS.map(code).join("\n");
-    for (const id of ["problems", "solutions", "about", "approach", "faq"]) {
+    for (const id of ["problems", "solutions", "approach", "faq"]) {
       assert.equal((all.match(new RegExp(`id="${id}"`, "g")) ?? []).length, 1, id);
     }
+    // Founders renders id="about" on the homepage and id="founders" at the top of /about.
+    assert.match(code("components/sections/Founders.tsx"), /id=\{page \? "founders" : "about"\}/);
   });
 
   it("main clips without becoming a scroll container (pinned chapters need sticky)", () => {
@@ -79,11 +81,11 @@ describe("homepage composition", () => {
   });
 });
 
-describe("the hero is typography, not imagery", () => {
-  const hero = ["components/sections/Hero.tsx", "components/visuals/HorizonField.tsx"].map(code).join("\n");
+describe("the hero is drawn, not photographed", () => {
+  const hero = ["components/sections/Hero.tsx", "components/visuals/LakeBed.tsx"].map(code).join("\n");
 
-  it("has no image of any kind", () => {
-    assert.ok(!/<img\b|<Image\b|<picture\b|next\/image|backgroundImage|url\(/.test(hero));
+  it("has no image of any kind (only in-document SVG references such as url(#lb-tile))", () => {
+    assert.ok(!/<img\b|<Image\b|<picture\b|next\/image|backgroundImage|url\((?!#)/.test(hero));
   });
 
   it("holds the headline as a server-rendered h1 that paints in place (no entrance animation)", () => {
@@ -119,7 +121,8 @@ describe("service rows", () => {
 
   it("are the four rows of the brief, in order, with no em dash in the labels", () => {
     const names = [...source.matchAll(/name: "([^"]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(names, ["Custom Software", "Automation", "AI", "Connected Systems"]);
+    // Experience polish: AI is the last of four rows (a capability, not the identity).
+    assert.deepEqual(names, ["Custom Software", "Automation", "Connected Systems", "AI"]);
   });
 
   it("link only to routes that exist", () => {
@@ -152,16 +155,17 @@ describe("motion has a readable resting state", () => {
     assert.match(code("components/sections/Integrations.tsx"), /<ScrollProgress rest=\{1\}/);
   });
 
-  it("the hero lens is desktop-only and off under reduced motion", () => {
-    const field = code("components/visuals/HorizonField.tsx");
-    assert.match(field, /\(hover: hover\) and \(pointer: fine\)/);
-    assert.match(field, /prefers-reduced-motion: reduce/);
+  it("the hero ships no client JavaScript (server components, CSS-only timeline)", () => {
+    for (const file of ["components/sections/Hero.tsx", "components/visuals/LakeBed.tsx"]) {
+      assert.ok(!read(file).startsWith('"use client"'), file);
+      assert.ok(!/useEffect|useState|addEventListener/.test(code(file)), file);
+    }
   });
 
   it("app/public-site.css stops its load animations under reduced motion", () => {
     const css = read("app/public-site.css");
     const rm = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
-    for (const name of [".hz-horizon", ".hz-tick-signal", ".hz-node", ".hz-row-name"]) {
+    for (const name of [".lb-plate", ".lb-fill", ".lb-link", ".lb-label", ".lb-note", ".hz-row-name"]) {
       assert.ok(rm.includes(name), name);
     }
   });
@@ -169,18 +173,14 @@ describe("motion has a readable resting state", () => {
   it("each story visual has a text caption, so nothing is conveyed only by motion", () => {
     assert.match(code("components/visuals/FragmentField.tsx"), /<figcaption/);
     assert.match(code("components/sections/Integrations.tsx"), /<figcaption/);
-    for (const file of ["components/visuals/FragmentField.tsx", "components/visuals/SystemsStage.tsx", "components/visuals/HorizonField.tsx"]) {
+    assert.match(code("components/sections/Hero.tsx"), /<figcaption/);
+    for (const file of ["components/visuals/FragmentField.tsx", "components/visuals/SystemsStage.tsx", "components/visuals/LakeBed.tsx"]) {
       assert.match(code(file), /aria-hidden="true"/, file);
     }
   });
 });
 
 describe("Horizon geometry", () => {
-  it("is deterministic data (same markup on server and client)", () => {
-    assert.ok(HERO_NOISE.length > 15 && HERO_SIGNAL.length > 25);
-    assert.ok(HERO_NOISE.every((t) => t.x < 46) && HERO_SIGNAL.every((t) => t.x > 46 && t.x <= 100));
-  });
-
   it("uses the fragments and systems named in the brief", () => {
     assert.deepEqual(
       PROBLEM_FRAGMENTS.map((f) => f.label).sort(),

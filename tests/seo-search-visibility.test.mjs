@@ -159,7 +159,6 @@ describe("legacy /solutions/* service URLs", () => {
       read("app/services/[slug]/page.tsx"),
       read("components/sections/Solutions.tsx"),
       read("components/sections/WhatWeDo.tsx"),
-      read("components/sections/AppliedAI.tsx"),
       read("components/layout/Footer.tsx"),
       read("components/layout/Navbar.tsx"),
       llmsText(),

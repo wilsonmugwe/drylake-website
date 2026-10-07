@@ -1,46 +1,29 @@
-import { TilePlates } from "@/components/brand/DrylakeMark";
+import type { CSSProperties } from "react";
+
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 
-const productionDetails = [
-  "Authentication",
-  "Permissions",
-  "Integrations",
-  "Data validation",
-  "Monitoring",
-  "Backups & recovery",
+/*
+ * The engineering under a finished product, in order of depth: what each layer does for the
+ * business, in one plain sentence. Descriptions of purpose, not claims of results.
+ */
+const strata = [
+  { name: "Authentication", text: "Only the right people get in." },
+  { name: "Permissions", text: "Each person sees and changes only what their role allows." },
+  { name: "Data validation", text: "Wrong or missing information is caught before it is saved." },
+  { name: "Integrations", text: "Information moves between your systems without retyping." },
+  { name: "Monitoring", text: "Errors and slowdowns are noticed early, not reported by customers." },
+  { name: "Backups & recovery", text: "Data is backed up, so a bad day stays recoverable." },
 ];
-
-type DiagramNode = { label: string; x: number; y: number; w: number; delay: number };
-
-const W = 196;
-const NODES: DiagramNode[] = [
-  { label: "Authentication", x: 36, y: 196, w: W, delay: 0.2 },
-  { label: "Permissions", x: 276, y: 196, w: W, delay: 0.35 },
-  { label: "Data validation", x: 516, y: 196, w: W, delay: 0.5 },
-  { label: "Integrations", x: 516, y: 52, w: W, delay: 0.75 },
-  { label: "Monitoring", x: 156, y: 52, w: W, delay: 0.9 },
-  { label: "Backups & recovery", x: 516, y: 340, w: W, delay: 1.05 },
-];
-
-const PATHS = [
-  { d: "M 0 222 H 36", delay: 0.1 },
-  { d: "M 232 222 H 276", delay: 0.3 },
-  { d: "M 472 222 H 516", delay: 0.45 },
-  { d: "M 712 222 H 770", delay: 0.6 },
-  { d: "M 712 78 H 822 Q 832 78 832 88 V 168", delay: 0.85 },
-  { d: "M 832 276 V 356 Q 832 366 822 366 H 712", delay: 1.15 },
-];
-
-/* Monitoring watches the request path (dashed: observation, not a step). */
-const WATCH = ["M 214 104 V 148 H 134 V 196", "M 294 104 V 148 H 374 V 196"];
 
 /*
- * Production engineering, the darkest and most technical section. The six existing items
- * are drawn as an engineered system: a request passes Authentication, Permissions and Data
- * validation into the system; Integrations feed it, Monitoring watches the path, Backups &
- * recovery sit behind it. Status indicators are the only orange. The diagram is decorative;
- * the same six items are a real list for screen readers and the phone layout.
+ * Production matters (experience polish, 2026-10-07). Not boxes feeding a logo: a core sample.
+ * The thin top band is the product your team sees; beneath it, six strata in order of depth,
+ * each one a real list item (name + sentence), so nothing lives only in the picture. The strata
+ * textures (app/public-site.css, CORE SAMPLE) get denser with depth, like the layers under a dry
+ * lake. Motion: on arrival the probe line runs down the core and each stratum settles in turn
+ * (InView, CSS only); without JavaScript or under reduced motion everything is simply there.
+ * Heading left, sample right on desktop, so the section is about half its old height.
  */
 export default function Production() {
   return (
@@ -48,93 +31,55 @@ export default function Production() {
       <div aria-hidden="true" className="grid-ink pointer-events-none absolute inset-0" />
 
       <Container className="relative py-(--section-y)">
-        <div className="grid gap-8 lg:grid-cols-12">
-          <p className="section-label flex items-center gap-2.5 self-start text-white/60 lg:col-span-3 lg:pt-4">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
-            Production Matters
-          </p>
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-5">
+            <p className="section-label flex items-center gap-2.5 text-white/60">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
+              Production Matters
+            </p>
 
-          <div className="lg:col-span-9">
-            <h2 className="type-statement">
+            <h2 className="type-statement mt-6">
               The boring part
               <br />
               <span className="text-white/40">is the hard part.</span>
             </h2>
 
-            <p className="type-lede mt-5 sm:mt-7 max-w-xl text-white/62">
+            <p className="type-lede mt-5 max-w-md text-white/66 sm:mt-6">
               We engineer the less visible parts that make software dependable
               when the business starts relying on it.
             </p>
           </div>
+
+          <InView className="core relative lg:col-span-7" threshold={0.2}>
+            <div className="core-surface flex items-baseline justify-between gap-4 pb-3">
+              <span className="text-sm font-semibold text-white">What your team sees</span>
+              <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-white/55">
+                The app / the portal / the website
+              </span>
+            </div>
+
+            <div className="relative">
+              <span aria-hidden="true" className="core-probe" />
+              <ol className="core-strata">
+              {strata.map((layer, i) => (
+                <li
+                  key={layer.name}
+                  className="core-stratum grid gap-x-6 gap-y-1 py-3.5 pl-7 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1.6fr)] sm:items-baseline sm:py-4 sm:pl-9"
+                  style={{ "--i": i } as CSSProperties}
+                >
+                  <span className="flex items-baseline gap-3">
+                    <span aria-hidden="true" className="font-mono text-[0.62rem] text-white/45">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-[1.02rem] font-semibold tracking-[-0.015em] text-white">{layer.name}</span>
+                  </span>
+                  <span className="text-sm leading-6 text-white/70">{layer.text}</span>
+                </li>
+              ))}
+              </ol>
+            </div>
+          </InView>
         </div>
-
-        <InView className="mt-(--block-gap)" threshold={0.25}>
-          {/* Wide: the system diagram. */}
-          <svg aria-hidden="true" viewBox="0 0 900 420" className="hidden h-auto w-full lg:block">
-            {PATHS.map((path) => (
-              <path
-                key={path.d}
-                d={path.d}
-                pathLength={1}
-                className="dl-path dl-draw-view"
-                stroke="rgba(255,255,255,0.45)"
-                strokeWidth="1.25"
-                style={{ ["--d" as string]: `${path.delay}s` }}
-              />
-            ))}
-
-            {WATCH.map((d) => (
-              <path
-                key={d}
-                d={d}
-                className="dl-path dl-fade-view"
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth="1"
-                strokeDasharray="3 5"
-                style={{ ["--d" as string]: "1.1s" }}
-              />
-            ))}
-
-            {NODES.map((node) => (
-              <g key={node.label} className="dl-fade-view" style={{ ["--d" as string]: `${node.delay}s` }}>
-                <rect x={node.x} y={node.y} width={node.w} height="52" rx="4" fill="#0b0b0a" stroke="rgba(255,255,255,0.18)" />
-                <circle cx={node.x + 18} cy={node.y + 26} r="3.5" fill="#f26a2e" />
-                <circle cx={node.x + 18} cy={node.y + 26} r="8" fill="none" stroke="rgba(242,106,46,0.3)" />
-                <text x={node.x + 36} y={node.y + 31} fill="rgba(255,255,255,0.86)" fontSize="15" fontWeight="500" letterSpacing="-0.01em">
-                  {node.label}
-                </text>
-              </g>
-            ))}
-
-            {/* The system being protected: the Drylake tile at the end of the line. */}
-            <g className="dl-fade-view" style={{ ["--d" as string]: "0.7s" }}>
-              <rect x="770" y="168" width="124" height="108" rx="8" fill="#0b0b0a" stroke="rgba(242,106,46,0.55)" />
-              <g transform="translate(806.04 196.04) scale(0.5217)">
-                <rect x="4" y="4" width="92" height="92" rx="18" fill="#0f1013" stroke="rgba(255,255,255,0.18)" strokeWidth="2" />
-                <TilePlates surface="#0f1013" />
-              </g>
-            </g>
-
-            <circle cx="0" cy="222" r="4" fill="#f26a2e" />
-          </svg>
-
-          {/* The same six, as a real list: the phone layout, and the diagram's text for screen readers. */}
-          <ul className="relative grid gap-px overflow-hidden rounded-[6px] bg-white/10 sm:grid-cols-2 lg:sr-only">
-            {productionDetails.map((item, index) => (
-              <li
-                key={item}
-                className="dl-fade-view flex min-h-[64px] items-center gap-4 bg-[#0b0b0a] px-5"
-                style={{ ["--d" as string]: `${0.1 + index * 0.08}s` }}
-              >
-                <span aria-hidden="true" className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-                  <span className="absolute h-4 w-4 rounded-full shadow-[0_0_0_1px_rgba(242,106,46,0.35)]" />
-                  <span className="h-[7px] w-[7px] rounded-full bg-[#f26a2e]" />
-                </span>
-                <span className="text-base font-medium tracking-[-0.01em] text-white/86">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </InView>
       </Container>
     </section>
   );

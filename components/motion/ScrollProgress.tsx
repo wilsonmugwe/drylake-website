@@ -13,6 +13,9 @@ import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode
  *   - pass (narrower screens): p = 0 when its top is at `passStart` of the viewport height
  *     (default 90%), 1 when its top reaches `end` (default 25%; negative = above the viewport).
  *
+ * `finish` (default 1) compresses either range: with finish 0.5 the story is resolved halfway
+ * through it and holds that state for the rest (experience polish: resolve early, stay resolved).
+ *
  * `rest` is the value rendered by the server, used without JavaScript and kept under
  * prefers-reduced-motion (the listener never attaches): each stage must read well at rest.
  * Listeners run only while the element is near the viewport (IntersectionObserver).
@@ -26,6 +29,7 @@ export default function ScrollProgress({
   start = 0.25,
   passStart = 0.9,
   end = 0.25,
+  finish = 1,
 }: {
   as?: ElementType;
   className?: string;
@@ -35,6 +39,8 @@ export default function ScrollProgress({
   start?: number;
   passStart?: number;
   end?: number;
+  /* Fraction of the range at which --p reaches 1 (then holds): a story resolves early and stays resolved. */
+  finish?: number;
 }) {
   const ref = useRef<HTMLElement>(null);
 
@@ -57,7 +63,7 @@ export default function ScrollProgress({
         ? (vh * start - rect.top) / (rect.height - vh + vh * start)
         : (vh * passStart - rect.top) / (vh * passStart - vh * end);
 
-      node.style.setProperty("--p", Math.min(1, Math.max(0, raw)).toFixed(4));
+      node.style.setProperty("--p", Math.min(1, Math.max(0, raw / finish)).toFixed(4));
     };
 
     const schedule = () => {
@@ -86,7 +92,7 @@ export default function ScrollProgress({
       listen(false);
       cancelAnimationFrame(frame);
     };
-  }, [pinFrom, start, passStart, end]);
+  }, [pinFrom, start, passStart, end, finish]);
 
   return (
     <Tag ref={ref} className={className} style={{ "--p": rest } as CSSProperties}>

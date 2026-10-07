@@ -7,7 +7,6 @@ import Hero from "@/components/sections/Hero";
 import Problems from "@/components/sections/Problems";
 import Integrations from "@/components/sections/Integrations";
 import WhatWeDo from "@/components/sections/WhatWeDo";
-import AppliedAI from "@/components/sections/AppliedAI";
 import Founders from "@/components/sections/Founders";
 import Approach from "@/components/sections/Approach";
 import Production from "@/components/sections/Production";
@@ -34,18 +33,19 @@ export default function Home() {
       />
       <Navbar />
 
-      {/* overflow-clip, not hidden: the pinned chapters (Problems, Integrations) need sticky. */}
+      {/* overflow-clip, not hidden: the pinned chapters (Problems, Integrations) need sticky.
+          Experience polish: the AI chapter is gone (AI is one row of What We Do and its own service
+          page); the final third runs credibility (Production, Founders), confidence (Approach),
+          conversation (the call to action with the FAQ beside it), then the footer's full stop. */}
       <main id="main-content" tabIndex={-1} className="overflow-clip outline-none">
         <Hero />
         <Problems />
         <Integrations />
         <WhatWeDo />
-        <AppliedAI />
+        <Production />
         <Founders />
         <Approach />
-        <Production />
-        <FAQ />
-        <ContactCTA />
+        <ContactCTA aside={<FAQ />} />
       </main>
 
       <Footer />
