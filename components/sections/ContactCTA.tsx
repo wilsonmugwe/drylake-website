@@ -12,24 +12,24 @@ import PrimaryCta from "@/components/ui/PrimaryCta";
 export default function ContactCTA() {
   return (
     <section className="surface-ink relative overflow-hidden">
-      <Container className="relative pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-24 lg:pt-36">
+      <Container className="relative pb-12 pt-(--section-y) sm:pb-20 lg:pb-24">
         <p className="section-label flex items-center gap-2.5 text-white/60">
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
-          Start a Conversation
+          Start a conversation
         </p>
 
-        <div className="mt-8 grid gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
+        <div className="mt-6 grid gap-10 sm:mt-8 sm:gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
           <div className="lg:col-span-8">
             <h2 className="type-display max-w-[11ch] text-balance">
               Have a problem <span className="text-white/45">worth fixing?</span>
             </h2>
 
-            <p className="type-lede mt-8 max-w-xl text-white/66">
+            <p className="type-lede mt-5 max-w-xl text-white/66 sm:mt-8">
               No technical brief required. Tell us what&apos;s manual,
               disconnected or taking too much time.
             </p>
 
-            <PrimaryCta href="/contact" size="large" className="mt-10 w-full sm:w-auto sm:min-w-[280px]">
+            <PrimaryCta href="/contact" size="large" className="mt-8 w-full sm:mt-10 sm:w-auto sm:min-w-[280px]">
               Start a conversation
             </PrimaryCta>
           </div>

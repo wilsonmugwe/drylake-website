@@ -152,7 +152,7 @@ describe("the canonical primary CTA (white, dark text)", () => {
   it("keeps the site's label wording", () => {
     assert.match(code("components/sections/Hero.tsx"), /Start a conversation\s*<\/PrimaryCta>/);
     assert.match(code("components/sections/ContactCTA.tsx"), /Start a conversation\s*<\/PrimaryCta>/);
-    assert.match(code("app/perth/page.tsx"), /Start a Conversation\s*<\/PrimaryCta>/);
+    assert.match(code("app/perth/page.tsx"), /Start a conversation\s*<\/PrimaryCta>/);
   });
 
   const css = read("app/public-site.css");

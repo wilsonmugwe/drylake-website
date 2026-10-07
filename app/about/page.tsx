@@ -55,7 +55,7 @@ export default function AboutPage() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <Container className="pb-20 pt-36 sm:pb-24 sm:pt-44 lg:pb-28">
+        <Container className="pb-(--section-y) pt-(--page-top) sm:pt-44 lg:pb-28">
           <p className="section-label text-black/60">About Drylake</p>
 
           <h1 className="type-section mt-6 max-w-5xl">
@@ -65,9 +65,9 @@ export default function AboutPage() {
           </h1>
         </Container>
 
-        <section className="mineral-texture bg-[#f2f0e9] py-20 lg:py-28">
+        <section className="mineral-texture bg-[#f2f0e9] py-(--section-y) lg:py-28">
           <Container>
-            <div className="grid gap-12 lg:grid-cols-2">
+            <div className="grid gap-8 sm:gap-12 lg:grid-cols-2">
               <h2 className="text-4xl font-semibold tracking-[-0.055em] sm:text-5xl lg:text-6xl">
                 Tomorrow Starts Here.
               </h2>
@@ -91,7 +91,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="mt-16 grid border-t border-black/10 md:grid-cols-3">
+            <div className="mt-10 grid border-t border-black/10 sm:mt-16 md:grid-cols-3">
               {values.map((value) => (
                 <div
                   key={value.title}

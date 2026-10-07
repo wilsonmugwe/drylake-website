@@ -29,7 +29,7 @@ const founders = [
 export default function Founders() {
   return (
     <section id="about" className="surface-paper relative overflow-hidden">
-      <Container className="py-20 sm:py-28 lg:py-36">
+      <Container className="py-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">03 / Founder-Led</p>
 
@@ -40,18 +40,18 @@ export default function Founders() {
               <span className="text-black/50">Direct access.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-xl text-black/62">
+            <p className="type-lede mt-5 sm:mt-7 max-w-xl text-black/62">
               Work directly with the people responsible for understanding the
               problem and delivering the solution.
             </p>
           </div>
         </div>
 
-        <div className="mt-16 lg:mt-24">
+        <div className="mt-(--block-gap)">
           {founders.map((founder) => (
             <article
               key={founder.name}
-              className="grid gap-6 border-t border-black/12 py-10 sm:py-12 lg:grid-cols-12 lg:gap-8 lg:py-16"
+              className="grid gap-6 border-t border-black/12 py-8 sm:py-12 lg:grid-cols-12 lg:gap-8 lg:py-16"
             >
               <span className="font-mono text-xs text-(--orange-ink) lg:col-span-1 lg:pt-3">{founder.number}</span>
 
@@ -77,7 +77,7 @@ export default function Founders() {
           ))}
         </div>
 
-        <div className="grid gap-5 border-t border-black/12 pt-10 lg:grid-cols-12 lg:pt-14">
+        <div className="grid gap-5 border-t border-black/12 pt-8 sm:pt-10 lg:grid-cols-12 lg:pt-14">
           <span className="tech-label text-black/62 lg:col-span-3 lg:pt-2">
             What founder-led means
           </span>

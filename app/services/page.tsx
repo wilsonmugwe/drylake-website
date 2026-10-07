@@ -44,10 +44,10 @@ export default function ServicesPage() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <Container className="pb-10 pt-32 sm:pt-40">
+        <Container className="pb-10 pt-(--page-top)">
           <Breadcrumbs crumbs={CRUMBS} />
 
-          <h1 className="type-section mt-10 max-w-5xl">
+          <h1 className="type-section mt-6 max-w-5xl sm:mt-10">
             Services
           </h1>
 

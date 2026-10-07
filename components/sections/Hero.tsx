@@ -11,8 +11,8 @@ import HorizonField from "@/components/visuals/HorizonField";
  * workarounds (irregular, floating ticks and stray file names) give way to an even ruler at one
  * orange node: clarity from complexity, before the visitor scrolls.
  *
- * LCP: the <h1> is server-rendered and only rises by transform (never opacity), so it paints on
- * the first frame. The field is a small client component; its server markup is the full static
+ * LCP: the <h1> is server-rendered with no entrance animation at all, so its lines paint at full
+ * opacity, in place, on the first frame (production LCP was the delayed third line, PR 3). The field is a small client component; its server markup is the full static
  * picture and its only script is the desktop pointer lens.
  */
 export default function Hero() {
@@ -35,16 +35,16 @@ export default function Hero() {
           </div>
         </Container>
 
-        <div className="flex flex-1 flex-col justify-center py-10 sm:py-12">
+        <div className="flex flex-1 flex-col justify-center py-8 sm:py-12">
           <Container>
             <h1 className="hz-display">
-              <span className="dl-rise-load block" style={{ ["--d" as string]: "0.02s" }}>
+              <span className="block">
                 Your business
               </span>
-              <span className="dl-rise-load block sm:pl-[0.82em]" style={{ ["--d" as string]: "0.08s" }}>
+              <span className="block sm:pl-[0.82em]">
                 shouldn&apos;t run
               </span>
-              <span className="dl-rise-load block text-white/45" style={{ ["--d" as string]: "0.14s" }}>
+              <span className="block text-white/45">
                 on workarounds.
               </span>
             </h1>
@@ -75,7 +75,7 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="mt-9 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/55 sm:mt-12">
+          <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/55 sm:mt-12">
             <span>Australian company</span>
             <span aria-hidden="true">/</span>
             <span>Founder-led</span>

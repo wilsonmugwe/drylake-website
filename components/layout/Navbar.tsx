@@ -19,7 +19,7 @@ import { HOME_PATH, PRIMARY_CTA, PRIMARY_NAV } from "@/lib/navigation/site-nav";
  * not a scroll listener.
  *
  * Hierarchy: Drylake (identity, home) / What We Do, Our Approach, About, Contact
- * (exploration) / Client Login (existing-client utility) / Start a Conversation (the one
+ * (exploration) / Client Login (existing-client utility) / Start a conversation (the one
  * primary action: the canonical white PrimaryCta).
  */
 export default function Navbar() {

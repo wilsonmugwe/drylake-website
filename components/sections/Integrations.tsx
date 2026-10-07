@@ -19,10 +19,11 @@ export default function Integrations() {
     <section className="surface-ink relative overflow-clip">
       <div aria-hidden="true" className="grid-ink pointer-events-none absolute inset-0 opacity-60" />
 
-      <ScrollProgress rest={1} start={0} passStart={0.1} end={-0.55} className="hz-sys-track relative lg:h-[250vh]">
+      {/* Phones (PR 3): the stage starts resolving as it enters and is connected when centred. */}
+      <ScrollProgress rest={1} start={0} passStart={0.4} end={-0.15} className="hz-sys-track relative lg:h-[250vh]">
         <div className="lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:items-center">
-          <Container className="relative w-full pt-20 sm:pt-28 lg:pb-6 lg:pt-[calc(var(--nav-h)+12px)]">
-            <div className="grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-8">
+          <Container className="relative w-full pt-(--section-y) lg:pb-6 lg:pt-[calc(var(--nav-h)+12px)]">
+            <div className="grid gap-8 sm:gap-12 lg:grid-cols-12 lg:items-center lg:gap-8">
               <div className="lg:col-span-5">
                 <p className="section-label flex items-center gap-2.5 text-white/60">
                   <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
@@ -35,7 +36,7 @@ export default function Integrations() {
                   <span className="text-white/45">what already works.</span>
                 </h2>
 
-                <p className="type-lede mt-7 max-w-md text-white/66">
+                <p className="type-lede mt-5 sm:mt-7 max-w-md text-white/66">
                   We can connect, extend and build around the systems your
                   business already depends on.
                 </p>
@@ -62,7 +63,7 @@ export default function Integrations() {
         </div>
       </ScrollProgress>
 
-      <Container className="relative pb-20 pt-14 sm:pb-24 lg:pb-28 lg:pt-10">
+      <Container className="relative pb-(--section-y) pt-10 sm:pt-14 lg:pb-28 lg:pt-10">
         <div className="grid gap-5 border-t border-white/12 pt-6 lg:grid-cols-12">
           <p className="tech-label text-white/60 lg:col-span-3">Works alongside</p>
 
@@ -75,7 +76,7 @@ export default function Integrations() {
           </ul>
         </div>
 
-        <p className="mt-8 text-xs leading-5 text-white/55">
+        <p className="mt-6 text-xs leading-5 text-white/55 sm:mt-8">
           Integrations depend on the capabilities and access provided by each
           platform.
         </p>

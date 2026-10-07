@@ -22,7 +22,7 @@ const verbs = [
 export default function AppliedAI() {
   return (
     <section className="hz-surface-ink-3 relative overflow-hidden">
-      <Container className="py-20 sm:py-28 lg:py-36">
+      <Container className="py-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label flex items-center gap-2.5 self-start text-white/60 lg:col-span-3 lg:pt-4">
             <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
@@ -36,18 +36,18 @@ export default function AppliedAI() {
               <span className="text-white/45">to the actual work.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-xl text-white/66">
+            <p className="type-lede mt-5 sm:mt-7 max-w-xl text-white/66">
               We use AI where it removes real effort from a workflow, with a
               person kept in the loop wherever judgement matters.
             </p>
           </div>
         </div>
 
-        <InView as="ol" className="mt-14 border-t border-white/12 lg:mt-20" threshold={0.2}>
+        <InView as="ol" className="mt-10 border-t border-white/12 sm:mt-14 lg:mt-20" threshold={0.2}>
           {verbs.map((row, index) => (
             <li
               key={row.verb}
-              className="grid gap-x-8 gap-y-2 border-b border-white/12 py-6 sm:grid-cols-12 sm:items-center sm:py-7"
+              className="grid gap-x-8 gap-y-2 border-b border-white/12 py-5 sm:grid-cols-12 sm:items-center sm:py-7"
             >
               <span className="text-[clamp(2rem,8vw,3.6rem)] font-semibold leading-none tracking-[-0.05em] sm:col-span-5 lg:col-span-4">
                 {row.verb}
@@ -69,7 +69,7 @@ export default function AppliedAI() {
           ))}
         </InView>
 
-        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-lg text-sm leading-6 text-white/62">
             Where AI does not earn its place, we leave it out. The right answer
             is sometimes a simpler workflow.

@@ -34,7 +34,7 @@ export default function ServiceIndex({
     <section
       id={id}
       aria-labelledby={headingId}
-      className={`${tone === "warm" ? "bg-[#f2f0e9]" : "bg-white"} py-16 text-black lg:py-24`}
+      className={`${tone === "warm" ? "bg-[#f2f0e9]" : "bg-white"} py-(--section-y-compact) text-black`}
     >
       <Container>
         <div className="grid gap-5 lg:grid-cols-[0.55fr_1.45fr] lg:gap-16">
@@ -54,7 +54,7 @@ export default function ServiceIndex({
           </div>
         </div>
 
-        <ul className="mt-10 border-t border-black/10">
+        <ul className="mt-8 border-t border-black/10 sm:mt-10">
           {services.map((service) => (
             <li key={service.slug} className="border-b border-black/10">
               <Link

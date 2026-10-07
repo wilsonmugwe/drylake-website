@@ -63,7 +63,7 @@ export default function Solutions() {
     <section id="solutions" className="surface-mineral relative overflow-hidden">
       <div aria-hidden="true" className="dots-mineral pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-60 [mask-image:linear-gradient(to_bottom,#000,transparent)]" />
 
-      <Container className="relative pb-10 pt-20 sm:pt-28 lg:pt-36">
+      <Container className="relative pb-10 pt-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">02 / What We Do</p>
 
@@ -74,7 +74,7 @@ export default function Solutions() {
               <span className="text-black/50">More workflow.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-2xl text-black/62">
+            <p className="type-lede mt-5 sm:mt-7 max-w-2xl text-black/62">
               We build and connect technology that helps growing Australian
               businesses operate more effectively.
             </p>
@@ -88,8 +88,8 @@ export default function Solutions() {
 
           return (
             <InView key={solution.number} as="article" threshold={0.2}>
-              <Container className="py-14 sm:py-20 lg:py-24">
-                <div className="grid items-center gap-10 border-t border-black/10 pt-10 lg:grid-cols-12 lg:gap-8 lg:pt-14">
+              <Container className="py-10 sm:py-16 lg:py-24">
+                <div className="grid items-center gap-8 border-t border-black/10 pt-8 sm:gap-10 sm:pt-10 lg:grid-cols-12 lg:gap-8 lg:pt-14">
                   <div className={`lg:row-start-1 lg:col-span-5 ${flip ? "lg:col-start-8" : "lg:col-start-1"}`}>
                     <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
                       <span className="text-(--orange-ink)">{solution.number}</span>
@@ -134,7 +134,7 @@ export default function Solutions() {
         })}
       </div>
 
-      <Container className="relative pb-16 lg:pb-24">
+      <Container className="relative pb-12 sm:pb-16 lg:pb-24">
         <div className="flex flex-wrap justify-end gap-x-8 border-t border-black/10 pt-6">
           <Link
             href="/services"

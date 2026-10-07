@@ -48,7 +48,7 @@ export default function SmallThings() {
   const [active, setActive] = useState<number | null>(0);
 
   return (
-    <section className="relative overflow-hidden bg-[#090909] py-16 text-white sm:py-20 lg:py-28">
+    <section className="relative overflow-hidden bg-[#090909] py-(--section-y-compact) text-white sm:py-20 lg:py-28">
       <div className="hero-grid pointer-events-none absolute inset-0 opacity-25" />
 
       <Container className="relative z-10">

@@ -47,7 +47,7 @@ const problems: Problem[] = [
 export default function Problems() {
   return (
     <section id="problems" className="surface-paper relative overflow-clip">
-      <Container className="pt-20 sm:pt-28 lg:pt-36">
+      <Container className="pt-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">01 / The Problem</p>
 
@@ -58,7 +58,7 @@ export default function Problems() {
               <span className="text-black/50"> cracks visible.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-2xl text-black/62">
+            <p className="type-lede mt-5 sm:mt-7 max-w-2xl text-black/62">
               The business grows. Manual steps multiply. Systems that once
               worked well enough start getting in the way.
             </p>
@@ -66,9 +66,11 @@ export default function Problems() {
         </div>
       </Container>
 
-      <ScrollProgress rest={0} start={0.4} passStart={0.7} end={0} className="mt-14 sm:mt-16 lg:mt-20">
+      {/* Phones (PR 3): the sort runs while the field enters and is finished by the time the field
+          is centred, so the visitor never stops on chips mid-crossing. Desktop pinning unchanged. */}
+      <ScrollProgress rest={0} start={0.4} passStart={0.9} end={0.3} className="mt-10 sm:mt-16 lg:mt-20">
         <Container>
-          <div className="grid gap-14 lg:grid-cols-12 lg:gap-8">
+          <div className="grid gap-8 sm:gap-14 lg:grid-cols-12 lg:gap-8">
             <div className="lg:sticky lg:top-[calc(var(--nav-h)+7vh)] lg:col-span-6 lg:self-start">
               <FragmentField />
             </div>
@@ -77,7 +79,7 @@ export default function Problems() {
               {problems.map((problem) => (
                 <li
                   key={problem.number}
-                  className="border-t border-black/12 py-10 sm:py-12 lg:flex lg:min-h-[58vh] lg:flex-col lg:justify-center lg:py-16"
+                  className="border-t border-black/12 py-8 sm:py-12 lg:flex lg:min-h-[58vh] lg:flex-col lg:justify-center lg:py-16"
                 >
                   <p className="flex items-center gap-3 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-black/62">
                     <span className="text-(--orange-ink)">{problem.number}</span>
@@ -85,11 +87,11 @@ export default function Problems() {
                     <span>{problem.label}</span>
                   </p>
 
-                  <h3 className="mt-5 max-w-[15ch] text-balance text-[clamp(2rem,8.6vw,3.6rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
+                  <h3 className="mt-4 max-w-[15ch] sm:mt-5 text-balance text-[clamp(2rem,8.6vw,3.6rem)] font-semibold leading-[0.95] tracking-[-0.055em]">
                     {problem.title}
                   </h3>
 
-                  <p className="type-body mt-5 max-w-md text-black/62">{problem.text}</p>
+                  <p className="type-body mt-4 max-w-md text-black/62 sm:mt-5">{problem.text}</p>
                 </li>
               ))}
             </ol>
@@ -98,7 +100,7 @@ export default function Problems() {
       </ScrollProgress>
 
       <Container>
-        <div className="grid gap-3 border-t border-black/12 py-12 lg:grid-cols-12 lg:py-16">
+        <div className="grid gap-3 border-t border-black/12 py-10 sm:py-12 lg:grid-cols-12 lg:py-16">
           <span className="tech-label text-black/62 lg:col-span-3">NEXT</span>
 
           <div className="lg:col-span-9">

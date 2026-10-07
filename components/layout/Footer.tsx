@@ -38,8 +38,8 @@ const columns = [
 export default function Footer() {
   return (
     <footer className="surface-ink overflow-hidden">
-      <Container className="pt-14 sm:pt-20">
-        <div className="grid gap-10 lg:grid-cols-12">
+      <Container className="pt-12 sm:pt-20">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <BrandHomeLink size="footer" />
 
@@ -48,7 +48,7 @@ export default function Footer() {
               Perth, Western Australia
             </p>
 
-            <div className="mt-6 flex flex-col text-sm text-white/70">
+            <div className="mt-4 flex flex-col text-sm text-white/70 sm:mt-6">
               <a href="mailto:hello@drylake.com.au" className="inline-flex min-h-[44px] w-fit items-center hover:text-white">
                 hello@drylake.com.au
               </a>
@@ -58,11 +58,11 @@ export default function Footer() {
             </div>
           </div>
 
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-10 lg:col-span-6 lg:col-start-7">
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 lg:col-span-6 lg:col-start-7">
             {columns.map((column) => (
               <div key={column.title}>
                 <p className="tech-label text-white/58">{column.title}</p>
-                <ul className="mt-3">
+                <ul className="mt-2 sm:mt-3">
                   {column.links.map((link) => (
                     <li key={link.href}>
                       <SiteLink
@@ -80,7 +80,7 @@ export default function Footer() {
         </div>
 
         {/* The ending: the wordmark sits on the horizon and is cropped by it. */}
-        <div aria-hidden="true" className="hz-footer-mark mt-14 sm:mt-20">
+        <div aria-hidden="true" className="hz-footer-mark mt-10 sm:mt-20">
           <DrylakeWordmark tone="dark" label={null} height={120} className="hz-footer-word" />
         </div>
       </Container>

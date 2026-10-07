@@ -47,7 +47,7 @@ export default function Production() {
     <section className="surface-ink-2 relative overflow-hidden">
       <div aria-hidden="true" className="grid-ink pointer-events-none absolute inset-0" />
 
-      <Container className="relative py-20 sm:py-28 lg:py-36">
+      <Container className="relative py-(--section-y)">
         <div className="grid gap-8 lg:grid-cols-12">
           <p className="section-label flex items-center gap-2.5 self-start text-white/60 lg:col-span-3 lg:pt-4">
             <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
@@ -61,14 +61,14 @@ export default function Production() {
               <span className="text-white/40">is the hard part.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-xl text-white/62">
+            <p className="type-lede mt-5 sm:mt-7 max-w-xl text-white/62">
               We engineer the less visible parts that make software dependable
               when the business starts relying on it.
             </p>
           </div>
         </div>
 
-        <InView className="mt-16 lg:mt-24" threshold={0.25}>
+        <InView className="mt-(--block-gap)" threshold={0.25}>
           {/* Wide: the system diagram. */}
           <svg aria-hidden="true" viewBox="0 0 900 420" className="hidden h-auto w-full lg:block">
             {PATHS.map((path) => (

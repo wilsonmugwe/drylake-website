@@ -86,10 +86,10 @@ export default async function ServicePage({ params }: Props) {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <Container className="pb-16 pt-32 sm:pb-20 sm:pt-40">
+        <Container className="pb-(--section-y-compact) pt-(--page-top) sm:pb-20">
           <Breadcrumbs crumbs={crumbs} />
 
-          <p className="section-label mt-10 text-black/60">{service.name}</p>
+          <p className="section-label mt-6 text-black/60 sm:mt-10">{service.name}</p>
 
           <h1 className="type-section text-balance mt-5 max-w-5xl">
             {service.headline}
@@ -100,11 +100,11 @@ export default async function ServicePage({ params }: Props) {
           </p>
 
           <PrimaryCta href="/contact" surface="light" className="mt-8">
-            Start a Conversation
+            Start a conversation
           </PrimaryCta>
         </Container>
 
-        <section aria-labelledby="problem-heading" className="mineral-texture bg-[#f2f0e9] py-16 lg:py-24">
+        <section aria-labelledby="problem-heading" className="mineral-texture bg-[#f2f0e9] py-(--section-y-compact)">
           <Container>
             <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
               <h2 id="problem-heading" className="text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
@@ -120,9 +120,9 @@ export default async function ServicePage({ params }: Props) {
           </Container>
         </section>
 
-        <section aria-labelledby="builds-heading" className="py-16 lg:py-24">
+        <section aria-labelledby="builds-heading" className="py-(--section-y-compact)">
           <Container>
-            <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+            <div className="grid gap-6 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
               <h2 id="builds-heading" className="text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
                 What Drylake can build
               </h2>
@@ -136,7 +136,7 @@ export default async function ServicePage({ params }: Props) {
               </ul>
             </div>
 
-            <h2 id="use-cases-heading" className="mt-20 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
+            <h2 id="use-cases-heading" className="mt-14 text-3xl font-semibold sm:mt-20 tracking-[-0.05em] sm:text-4xl">
               Where it fits
             </h2>
 
@@ -151,7 +151,7 @@ export default async function ServicePage({ params }: Props) {
           </Container>
         </section>
 
-        <section aria-labelledby="approach-heading" className="bg-[#f2f0e9] py-16 lg:py-24">
+        <section aria-labelledby="approach-heading" className="bg-[#f2f0e9] py-(--section-y-compact)">
           <Container>
             <h2 id="approach-heading" className="text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
               How we approach it
@@ -169,9 +169,9 @@ export default async function ServicePage({ params }: Props) {
           </Container>
         </section>
 
-        <section aria-labelledby="production-heading" className="bg-black py-16 text-white lg:py-24">
+        <section aria-labelledby="production-heading" className="bg-black py-(--section-y-compact) text-white">
           <Container>
-            <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+            <div className="grid gap-6 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
               <div>
                 <p className="section-label text-white/55">Production matters</p>
                 <h2 id="production-heading" className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
@@ -191,7 +191,7 @@ export default async function ServicePage({ params }: Props) {
           </Container>
         </section>
 
-        <section aria-labelledby="faq-heading" className="py-16 lg:py-24">
+        <section aria-labelledby="faq-heading" className="py-(--section-y-compact)">
           <Container>
             <h2 id="faq-heading" className="text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
               Questions
@@ -200,11 +200,11 @@ export default async function ServicePage({ params }: Props) {
             {/* <details> stays server-rendered, so the answers are in the initial HTML. */}
             <div className="mt-8 divide-y divide-black/10 border-y border-black/10">
               {service.faqs.map((faq) => (
-                <details key={faq.question} className="group py-5">
-                  <summary className="cursor-pointer list-none text-lg font-medium tracking-[-0.02em]">
+                <details key={faq.question} className="group py-3">
+                  <summary className="flex min-h-[44px] cursor-pointer list-none items-center text-lg font-medium tracking-[-0.02em]">
                     {faq.question}
                   </summary>
-                  <p className="mt-3 max-w-3xl text-base leading-7 text-black/65">{faq.answer}</p>
+                  <p className="mt-1 max-w-3xl pb-2 text-base leading-7 text-black/65">{faq.answer}</p>
                 </details>
               ))}
             </div>

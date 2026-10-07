@@ -104,7 +104,7 @@ function ServiceGlyph({ glyph }: { glyph: Glyph }) {
 export default function WhatWeDo() {
   return (
     <section id="solutions" className="surface-mineral relative overflow-hidden">
-      <Container className="relative pb-6 pt-20 sm:pt-28 lg:pt-36">
+      <Container className="relative pb-6 pt-(--section-y)">
         <div className="grid gap-6 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">02 / What We Do</p>
 
@@ -115,17 +115,17 @@ export default function WhatWeDo() {
               <span className="text-black/50">More workflow.</span>
             </h2>
 
-            <p className="type-lede mt-7 max-w-2xl text-black/62">
+            <p className="type-lede mt-5 sm:mt-7 max-w-2xl text-black/62">
               We build and connect technology that helps growing Australian
               businesses operate more effectively.
             </p>
           </div>
         </div>
 
-        <ol className="mt-16 border-b border-black/12 lg:mt-24">
+        <ol className="mt-(--block-gap) border-b border-black/12">
           {services.map((service) => (
             <li key={service.number} className="border-t border-black/12">
-              <Link href={service.href} className="hz-row group relative grid gap-x-8 gap-y-4 py-9 sm:py-11 lg:grid-cols-12 lg:items-center lg:py-12">
+              <Link href={service.href} className="hz-row group relative grid gap-x-8 gap-y-3 py-7 sm:gap-y-4 sm:py-10 lg:grid-cols-12 lg:items-center lg:py-12">
                 <span className="hz-row-line" aria-hidden="true" />
 
                 <span className="font-mono text-sm text-(--orange-ink) lg:col-span-1">{service.number}</span>
@@ -159,7 +159,7 @@ export default function WhatWeDo() {
         </ol>
       </Container>
 
-      <Container className="relative pb-16 lg:pb-24">
+      <Container className="relative pb-12 sm:pb-16 lg:pb-24">
         <div className="flex flex-wrap gap-x-8 pt-4 sm:justify-end">
           <Link href="/services/web-development" className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold">
             <span className="link-underline">Web development</span>

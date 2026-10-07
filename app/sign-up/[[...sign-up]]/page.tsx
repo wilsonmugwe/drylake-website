@@ -203,7 +203,7 @@ export default function SignUpPage() {
           {/* -------------------------------------------------
               Form
           -------------------------------------------------- */}
-          <div className="relative z-10 flex flex-1 items-center justify-center px-5 py-10 sm:px-8 sm:py-14 lg:px-12 xl:px-20">
+          <div className="relative z-10 flex flex-1 items-start justify-center px-5 py-8 sm:items-center sm:px-8 sm:py-14 lg:px-12 xl:px-20">
             <div className="w-full max-w-[460px]">
               {/* Mobile intro */}
               <div className="mb-7 lg:hidden">

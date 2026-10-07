@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -18,6 +18,18 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+/*
+ * Mobile viewport (PR 3). viewport-fit=cover lets the fixed header, the mobile menu and the body
+ * read env(safe-area-inset-*) (app/public-site.css), so nothing sits under a notch or the home
+ * indicator. themeColor tints the mobile browser chrome to the site's ink.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0b0b0a",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(ENTITY.url),

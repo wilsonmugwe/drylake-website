@@ -23,11 +23,43 @@
 
   --nav-h: 68px;
   /* --ease-out and the --duration-* motion primitives live in globals.css. */
+
+  /*
+   * Vertical rhythm tokens (PR 3, mobile polish, 2026-10-07). One source for section padding
+   * so phones get a designed rhythm instead of desktop padding stacked down a narrow screen.
+   * Desktop values (lg) are exactly the previous ones; phones lose dead space, not structure.
+   *   --section-y          chapter padding (homepage chapters, ContactCTA, About intro)
+   *   --section-y-compact  content sections on inner pages (service, Perth, privacy)
+   *   --page-top           first block under the fixed header on inner pages
+   *   --block-gap          intro (heading + lede) to the section's content
+   */
+  --section-y: 3.5rem;
+  --section-y-compact: 3rem;
+  --page-top: calc(var(--nav-h) + 2.25rem);
+  --block-gap: 2.5rem;
+
+  /* iPhone safe areas (viewport-fit=cover in app/layout.tsx). 0 everywhere else. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --section-y: 4.5rem;
+    --section-y-compact: 4rem;
+    --page-top: 10rem;
+    --block-gap: 3rem;
+  }
 }
 
 @media (min-width: 1024px) {
   :root {
     --nav-h: 76px;
+    --section-y: 9rem;
+    --section-y-compact: 6rem;
+    --block-gap: 6rem;
   }
 }
 
@@ -371,7 +403,10 @@ main [tabindex="-1"]:focus {
   inset-inline: 0;
   top: 0;
   z-index: 60;
-  height: var(--nav-h);
+  /* Safe areas: the bar grows by the top inset and keeps its content clear of side notches. */
+  height: calc(var(--nav-h) + var(--safe-top));
+  padding-top: var(--safe-top);
+  padding-inline: var(--safe-left) var(--safe-right);
   color: #fff;
   transition:
     background-color 300ms ease,
@@ -437,7 +472,7 @@ main [tabindex="-1"]:focus {
 
 /* Spacer that keeps page content clear of the fixed header on non-hero pages. */
 .header-offset {
-  height: var(--nav-h);
+  height: calc(var(--nav-h) + var(--safe-top));
 }
 
 /* Mobile menu panel */
@@ -447,6 +482,8 @@ main [tabindex="-1"]:focus {
   z-index: 70;
   display: flex;
   flex-direction: column;
+  /* Safe areas: clear the notch, the side insets in landscape, and the home indicator. */
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   background: var(--ink);
   color: #fff;
   animation: menu-in 260ms var(--ease-out) both;
@@ -884,6 +921,16 @@ main [tabindex="-1"]:focus {
   color: rgba(11, 11, 10, 0.62);
 }
 
+/* Narrow phones (320-374 px): the sorted lanes put two chips side by side; a slightly smaller
+   chip keeps "spreadsheet.xlsx" and "customer data" from touching at 320 (PR 3). */
+@media (max-width: 374px) {
+  .hz-chip {
+    gap: 0.4rem;
+    padding: 0.38rem 0.5rem;
+    font-size: 0.66rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .hz-chip {
     --sx: var(--lsx);
@@ -1132,5 +1179,38 @@ main [tabindex="-1"]:focus {
   .hz-row-name,
   .hz-row-arrow {
     transform: none !important;
+  }
+}
+
+/* ------------------------------------------------- mobile polish (PR 3) ---- */
+
+/*
+ * Body copy keeps its size when an iPhone rotates to landscape (Safari otherwise inflates it),
+ * and the page stays clear of the side notches in landscape (viewport-fit=cover): the body is
+ * inset and the html background fills the notch strip, which is what Safari does by itself
+ * without viewport-fit=cover. The insets are 0 on every other device, so nothing moves.
+ * Fixed layers (.site-header, .mobile-menu) carry their own insets above.
+ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+/* Hero on a landscape phone: the headline, field and actions need the whole short screen, so the
+   100svh minimum gives way to content height instead of leaving the actions below the fold. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hz-hero > div {
+    min-height: 0;
+    padding-top: calc(var(--nav-h) + var(--safe-top) + 1.25rem);
+  }
+
+  /* Sized by the short side, so the three lines take under half the screen instead of all of it. */
+  .hz-display {
+    font-size: clamp(2.1rem, 14svh, 4.6rem);
   }
 }

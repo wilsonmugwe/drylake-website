@@ -63,7 +63,7 @@ export default function ContactPage() {
       <Navbar />
 
       <main id="main-content" tabIndex={-1} className="bg-white text-black outline-none">
-        <section className="relative overflow-hidden pb-12 pt-36 sm:pb-18 sm:pt-44 lg:pb-20 lg:pt-48">
+        <section className="relative overflow-hidden pb-12 pt-(--page-top) sm:pb-18 sm:pt-44 lg:pb-20 lg:pt-48">
           <div
             aria-hidden="true"
             className="micro-grid pointer-events-none absolute inset-0 opacity-25"
@@ -201,7 +201,7 @@ export default function ContactPage() {
         </section>
 
         {/* What happens next */}
-        <section className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-12 sm:py-20 lg:py-24">
+        <section className="mineral-texture relative overflow-hidden bg-[#f2f0e9] py-(--section-y-compact) sm:py-20 lg:py-24">
           <Container>
             <div className="grid gap-6 border-b border-black/10 pb-7 lg:grid-cols-[0.65fr_1.35fr] lg:gap-12">
               <div>
@@ -244,7 +244,7 @@ export default function ContactPage() {
                     md:first:pl-0 md:last:border-r-0 md:last:pr-0
                   "
                 >
-                  <div className="flex h-full flex-col justify-between gap-8 md:gap-14">
+                  <div className="flex h-full flex-col justify-between gap-3 md:gap-14">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs text-black/60">
                         {step.number}

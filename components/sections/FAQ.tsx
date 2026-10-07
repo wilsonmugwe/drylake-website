@@ -16,7 +16,7 @@ export default function FAQ() {
 
   return (
     <section id="faq" className="surface-paper">
-      <Container className="py-20 sm:py-28 lg:py-36">
+      <Container className="py-(--section-y)">
         <div className="grid gap-8 lg:grid-cols-12">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-3">05 / FAQ</p>
 
@@ -27,7 +27,7 @@ export default function FAQ() {
               <span className="text-black/50">might be wondering.</span>
             </h2>
 
-            <div className="mt-12 border-t border-black/12 sm:mt-16">
+            <div className="mt-8 border-t border-black/12 sm:mt-16">
               {faqs.map((faq, index) => {
                 const isOpen = active === index;
 
@@ -40,7 +40,7 @@ export default function FAQ() {
                         onClick={() => setActive(isOpen ? null : index)}
                         aria-expanded={isOpen}
                         aria-controls={`faq-answer-${index}`}
-                        className="group flex min-h-[72px] w-full items-center gap-5 py-5 text-left"
+                        className="group flex min-h-[64px] w-full items-center gap-5 py-4 text-left sm:min-h-[72px] sm:py-5"
                       >
                         <span className="flex-1">{faq.question}</span>
 

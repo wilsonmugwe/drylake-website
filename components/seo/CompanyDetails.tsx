@@ -19,9 +19,9 @@ export default function CompanyDetails() {
   ];
 
   return (
-    <section aria-labelledby="company-details-heading" className="bg-white py-16 lg:py-24">
+    <section aria-labelledby="company-details-heading" className="bg-white py-(--section-y-compact)">
       <Container>
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <h2 id="company-details-heading" className="text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
               Company details
