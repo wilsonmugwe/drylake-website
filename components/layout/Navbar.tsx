@@ -166,20 +166,19 @@ export default function Navbar() {
             onClick={closeMenu}
             className="flex shrink-0 items-center"
           >
+            {/* Vector wordmark: served as-is (unoptimized), crisp at every size. */}
             <Image
-              src="/brand/drylake-logo-black.png"
+              src="/brand/drylake-wordmark-dark-bg.svg"
               alt="Drylake"
-              width={1536}
-              height={1024}
+              width={1657}
+              height={516}
               priority
+              unoptimized
               className="
-                h-[70px]
-                w-[108px]
-                object-contain
-                sm:h-[78px]
-                sm:w-[122px]
-                lg:h-[90px]
-                lg:w-[140px]
+                h-[30px]
+                w-auto
+                sm:h-[34px]
+                lg:h-[40px]
               "
             />
           </Link>
