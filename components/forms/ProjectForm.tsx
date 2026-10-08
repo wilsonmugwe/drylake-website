@@ -14,6 +14,22 @@ import TurnstileWidget, {
 import { submitEnquiry } from "@/lib/contact/submit-enquiry";
 import { CONTACT_EMAIL, RESPONSE_TIME } from "@/lib/site";
 
+/*
+ * Declarative WebMCP: lets a browser agent discover this form as a tool and fill it with the
+ * user's consent. Attributes only; the form behaves exactly as before. Spread from typed
+ * records because React's JSX types do not know these attributes yet.
+ */
+type ToolAttributes = Record<string, string>;
+
+const FORM_TOOL: ToolAttributes = {
+  toolname: "request_conversation",
+  tooldescription: `Ask Drylake about a software, automation or integration problem. A person at Drylake replies within ${RESPONSE_TIME}.`,
+};
+
+function toolParam(description: string): ToolAttributes {
+  return { toolparamdescription: description };
+}
+
 type Status = "idle" | "sending" | "success" | "error";
 
 export default function ProjectForm() {
@@ -170,6 +186,7 @@ export default function ProjectForm() {
 
   return (
     <form
+      {...FORM_TOOL}
       onSubmit={handleSubmit}
       aria-busy={sending}
       className="space-y-8"
@@ -183,6 +200,7 @@ export default function ProjectForm() {
           maxLength={120}
           autoComplete="name"
           placeholder="Your name"
+          toolParamDescription="The full name of the person asking."
         />
 
         <Field
@@ -193,6 +211,7 @@ export default function ProjectForm() {
           maxLength={200}
           autoComplete="email"
           placeholder="you@company.com"
+          toolParamDescription="Work email address Drylake should reply to."
         />
       </div>
 
@@ -203,6 +222,7 @@ export default function ProjectForm() {
         maxLength={160}
         autoComplete="organization"
         placeholder="Company name"
+        toolParamDescription="Business or organisation name. Optional."
       />
 
       {/* Problem category */}
@@ -217,6 +237,7 @@ export default function ProjectForm() {
         <select
           id="projectType"
           name="projectType"
+          {...toolParam("Where the friction is, chosen from the listed options. Optional.")}
           defaultValue=""
           className="mt-2 w-full border-b border-black/15 bg-transparent py-4 text-base outline-none transition-colors focus:border-black"
         >
@@ -259,6 +280,7 @@ export default function ProjectForm() {
         <select
           id="helpType"
           name="helpType"
+          {...toolParam("The kind of help wanted, chosen from the listed options. Optional.")}
           defaultValue=""
           className="mt-2 w-full border-b border-black/15 bg-transparent py-4 text-base outline-none transition-colors focus:border-black"
         >
@@ -294,6 +316,7 @@ export default function ProjectForm() {
         <textarea
           id="message"
           name="message"
+          {...toolParam("What is happening today and what should work better, in plain language. 10 to 5000 characters.")}
           required
           minLength={10}
           maxLength={5000}
@@ -383,6 +406,7 @@ interface FieldProps {
   required?: boolean;
   maxLength?: number;
   autoComplete?: string;
+  toolParamDescription?: string;
 }
 
 function Field({
@@ -393,6 +417,7 @@ function Field({
   required = false,
   maxLength,
   autoComplete,
+  toolParamDescription,
 }: FieldProps) {
   return (
     <div>
@@ -406,6 +431,7 @@ function Field({
       <input
         id={name}
         name={name}
+        {...(toolParamDescription ? toolParam(toolParamDescription) : {})}
         type={type}
         required={required}
         maxLength={maxLength}
