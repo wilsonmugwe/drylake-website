@@ -19,7 +19,7 @@ export async function logClientOrganizationRlsMiss(params: {
   supabase: SupabaseClient;
   outcome: Exclude<OrganizationLookupOutcome, "found">;
   error: { code?: string | null } | null;
-}) {
+}): Promise<void> {
   const { orgId, getToken } = await auth();
 
   let shape = describeClerkSupabaseToken(null, orgId);

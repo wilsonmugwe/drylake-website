@@ -112,8 +112,10 @@ export async function POST(request: Request) {
     const created = await clerk.organizations.createOrganization({ name: name.value });
     clerkOrgId = created.id;
   } catch (error) {
+    // Code and error class only: Clerk messages can echo submitted identifiers.
     console.error("Clerk client organisation creation failed.", {
-      message: error instanceof Error ? error.message : "Unknown Clerk error",
+      code: clerkErrorCode(error),
+      name: error instanceof Error ? error.name : "Unknown Clerk error",
     });
 
     return jsonError("Unable to create client organisation.", 502);
@@ -145,7 +147,8 @@ export async function POST(request: Request) {
       await clerk.organizations.deleteOrganization(clerkOrgId);
     } catch (rollbackError) {
       console.error("CRITICAL: Clerk organisation rollback failed after Supabase failure.", {
-        message: rollbackError instanceof Error ? rollbackError.message : "Unknown",
+        code: clerkErrorCode(rollbackError),
+        name: rollbackError instanceof Error ? rollbackError.name : "Unknown",
       });
     }
 
@@ -159,7 +162,8 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Clerk organisation metadata update failed:", {
-      message: error instanceof Error ? error.message : "Unknown Clerk error",
+      code: clerkErrorCode(error),
+      name: error instanceof Error ? error.name : "Unknown Clerk error",
     });
   }
 
@@ -207,7 +211,7 @@ export async function POST(request: Request) {
     invite = "failed";
     console.error("Initial client invitation failed:", {
       code: clerkErrorCode(error),
-      message: error instanceof Error ? error.message : "Unknown Clerk error",
+      name: error instanceof Error ? error.name : "Unknown Clerk error",
     });
   }
 

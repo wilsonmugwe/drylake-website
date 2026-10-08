@@ -10,6 +10,8 @@ export const dynamic = "force-dynamic";
 
 const BUCKET = "client-documents";
 
+// Application cap only. The hosting platform's own request-body limit for functions may be
+// lower; verify against the Vercel function body limit before relying on uploads near 10 MB.
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 const MAX_NAME_LENGTH = 160;
@@ -71,6 +73,13 @@ function getExtension(value: string) {
   return value.slice(index + 1).toLowerCase();
 }
 
+/*
+ * POST: upload a client document to the PRIVATE bucket. Admin only. The storage key is
+ * server generated (organisation, project, random id, extension), never the visitor's file
+ * name; the MIME type, extension and leading bytes must all agree; a failed metadata insert
+ * removes the stored object. Clients only ever get a short-lived signed URL from the download
+ * route.
+ */
 export async function POST(
   request: Request,
   { params }: RouteContext
@@ -103,10 +112,6 @@ export async function POST(
       { error: "Not found" },
       { status: 404, headers: { "Cache-Control": "no-store" } }
     );
-  }
-
-  if (!projectId) {
-    return errorResponse("Invalid project.", 400);
   }
 
   const supabase = createAdminSupabaseClient();

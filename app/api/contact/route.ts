@@ -145,7 +145,14 @@ export async function POST(request: Request) {
         },
       }
     );
-  } catch {
+  } catch (error) {
+    // Generic by design: nothing about the failure reaches the visitor. Log the error class
+    // only, never its message, which could echo enquiry content.
+    console.error(
+      "Contact route failed:",
+      error instanceof Error ? error.name : typeof error
+    );
+
     return jsonError(
       "Unable to process your enquiry.",
       500

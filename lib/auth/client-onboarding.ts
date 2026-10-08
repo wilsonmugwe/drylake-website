@@ -6,6 +6,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   CLIENT_INVITATION_EXPIRY_DAYS,
   CLIENT_INVITATION_ROLE,
+  clerkErrorCode,
+  type InvitationStatus,
   type InvitationSummary,
   effectiveInvitationStatus,
   sortInvitations,
@@ -73,7 +75,8 @@ export async function ensureClerkOrganization(
     await clerk.organizations.deleteOrganization(created.id);
   } catch (rollbackError) {
     console.error("CRITICAL: orphan Clerk organisation could not be deleted.", {
-      message: rollbackError instanceof Error ? rollbackError.message : "Unknown",
+      code: clerkErrorCode(rollbackError),
+      name: rollbackError instanceof Error ? rollbackError.name : "Unknown",
     });
   }
 
@@ -99,6 +102,7 @@ export async function ensureClerkOrganization(
   return current.clerk_org_id;
 }
 
+/* First page only (up to 100, no pagination): a client org has a handful of contacts. */
 export async function listClientInvitations(
   clerkOrgId: string
 ): Promise<InvitationSummary[]> {
@@ -120,6 +124,7 @@ export async function listClientInvitations(
   );
 }
 
+/* First page only (up to 100, no pagination), same reasoning as the invitation list. */
 export async function listClientMembers(clerkOrgId: string): Promise<ClientMember[]> {
   const clerk = await clerkClient();
   const response = await clerk.organizations.getOrganizationMembershipList({
@@ -141,6 +146,12 @@ export async function listClientMembers(clerkOrgId: string): Promise<ClientMembe
   });
 }
 
+/**
+ * Invites an email address to the client's Clerk org as a plain member, with the short
+ * client expiry. redirectUrl must be built from the invitation origin helper so production
+ * links always use the canonical domain.
+ * @throws Clerk API errors; callers map the Clerk error code to an admin message.
+ */
 export async function createClientInvitation(params: {
   clerkOrgId: string;
   emailAddress: string;
@@ -158,7 +169,15 @@ export async function createClientInvitation(params: {
   return { id: invitation.id };
 }
 
-export async function getClientInvitation(clerkOrgId: string, invitationId: string) {
+/**
+ * Fetches the invitation through the client's own Clerk org id, so an invitation id that
+ * belongs to another org is not found. A pending invitation past its expiry reads as expired.
+ * @throws Clerk API errors, including resource_not_found.
+ */
+export async function getClientInvitation(
+  clerkOrgId: string,
+  invitationId: string
+): Promise<{ id: string; emailAddress: string; organizationId: string; status: InvitationStatus }> {
   const clerk = await clerkClient();
   const invitation = await clerk.organizations.getOrganizationInvitation({
     organizationId: clerkOrgId,
@@ -173,6 +192,7 @@ export async function getClientInvitation(clerkOrgId: string, invitationId: stri
   };
 }
 
+/** @throws Clerk API errors; callers decide whether a failure is fatal. */
 export async function revokeClientInvitation(
   clerkOrgId: string,
   invitationId: string
@@ -199,8 +219,10 @@ export async function revokePendingClientInvitations(clerkOrgId: string): Promis
       await revokeClientInvitation(clerkOrgId, invitation.id);
       revoked += 1;
     } catch (error) {
+      // Code and error class only: Clerk messages can echo the invited email address.
       console.error("Revoking a pending invitation failed:", {
-        message: error instanceof Error ? error.message : "Unknown Clerk error",
+        code: clerkErrorCode(error),
+        name: error instanceof Error ? error.name : "Unknown Clerk error",
       });
     }
   }

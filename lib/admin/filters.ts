@@ -59,6 +59,6 @@ export function statusLabel(value: string): string {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
-export function toOptions(values: readonly string[]) {
+export function toOptions(values: readonly string[]): Array<{ value: string; label: string }> {
   return values.map((value) => ({ value, label: statusLabel(value) }));
 }
