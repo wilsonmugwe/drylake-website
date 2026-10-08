@@ -220,7 +220,9 @@ export function serviceNode(service: Service): Node {
     url,
     provider: { "@id": ORGANIZATION_ID },
     areaServed: AREA_SERVED,
-    mainEntityOfPage: { "@id": nodeId(service.path, "webpage") },
+    // Typed inline so the reference also resolves on /services, which lists every Service but
+    // not each service page's WebPage node.
+    mainEntityOfPage: { "@type": "WebPage", "@id": nodeId(service.path, "webpage"), url },
   };
 }
 

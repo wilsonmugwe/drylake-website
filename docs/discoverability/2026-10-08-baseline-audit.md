@@ -45,7 +45,7 @@ Classification: **IMPLEMENTED**, **NEEDS IMPROVEMENT**, **MISSING**, **NOT RECOM
 | Type | `Organization`. No LocalBusiness and no street address, per decision D-8 |
 | BreadcrumbList, FAQPage, Service | Required properties present. Every FAQ question and answer (23) is visible on its page |
 | Invented claims | None. No rating, review, award or client logo |
-| Offer references | NEEDS IMPROVEMENT, **fixed here**. Each Offer pointed at a Service id defined only on that service's own page. Now each Offer names its Service inline (type, id, name, url) |
+| Offer references | NEEDS IMPROVEMENT, **fixed here**. Each Offer pointed at a Service id defined only on that service's own page. Now each Offer names its Service inline (type, id, name, url). Likewise, each Service's `mainEntityOfPage` now names its WebPage inline, which fixes 5 dangling references on `/services`. Checked on the rendered build: 0 unresolved references on all 13 pages |
 | Homepage ids | NEEDS IMPROVEMENT, **fixed here**. `https://drylake.com.au#webpage` vs site-wide `https://drylake.com.au/#organization`. Now one base, built by `nodeId()` |
 | Vocabulary | NEEDS IMPROVEMENT, **fixed here** (structured data only). `knowsAbout` gains "AI integration". The AI service's `serviceType` is now "AI integration and automation". Both are backed by the visible AI automation page and its FAQ |
 | BreadcrumbList on one-level pages (/about, /contact, /privacy, /terms) with no visible trail | Low. Left as is and recorded in section 5 |

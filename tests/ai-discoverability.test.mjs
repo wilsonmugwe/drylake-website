@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 import { PUBLIC_PAGES, SERVICES, SITE_URL, absoluteUrl } from "../lib/discovery/entity.ts";
 import { lastUpdated, llmsText } from "../lib/discovery/llms.ts";
-import { faqNode, nodeId, organizationNode, webPageNode } from "../lib/discovery/structured-data.ts";
+import { faqNode, nodeId, organizationNode, serviceNode, webPageNode } from "../lib/discovery/structured-data.ts";
 import {
   ENQUIRY_EVENT,
   enquiryEventProperties,
@@ -83,6 +83,16 @@ describe("page-scoped JSON-LD ids", () => {
         url: absoluteUrl(service.path),
       });
     });
+  });
+
+  it("every Service names its page inline so /services carries no dangling reference", () => {
+    for (const service of SERVICES) {
+      assert.deepEqual(serviceNode(service).mainEntityOfPage, {
+        "@type": "WebPage",
+        "@id": `${absoluteUrl(service.path)}#webpage`,
+        url: absoluteUrl(service.path),
+      });
+    }
   });
 
   it("knowsAbout carries the buyer phrase for the AI service line, and that line exists", () => {
