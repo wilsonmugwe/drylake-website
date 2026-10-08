@@ -357,7 +357,18 @@ describe("crawler policy: search and AI search in, training out, private closed"
     assert.match(source, /robotsText\(robotsGroups\(PRIVATE_PREFIXES\),/);
     assert.deepEqual(robotsGroups(PRIVATE_PREFIXES), [
       { userAgent: blockedTokens(), allow: [], disallow: ["/"] },
-      { userAgent: ["*"], allow: ["/"], disallow: [...PRIVATE_PREFIXES] },
+      {
+        userAgent: ["Google-Extended"],
+        contentSignals: { search: "yes", "ai-input": "yes", "ai-train": "yes" },
+        allow: ["/"],
+        disallow: [...PRIVATE_PREFIXES],
+      },
+      {
+        userAgent: ["*"],
+        contentSignals: { search: "yes", "ai-input": "yes", "ai-train": "no" },
+        allow: ["/"],
+        disallow: [...PRIVATE_PREFIXES],
+      },
     ]);
     assert.match(source, /`\$\{SITE_URL\}\/sitemap\.xml`/);
   });
@@ -440,7 +451,9 @@ describe("pre-merge review (2026-10-06)", () => {
 
   it("computed crawler matrix: every allowed crawler reaches every public page and no private path", () => {
     for (const crawler of CRAWLERS.filter((c) => c.access === "allow")) {
-      assert.deepEqual(groupFor(groups, crawler.token).userAgent, ["*"], crawler.token);
+      // Google-Extended has its own group only to signal ai-train=yes (D-1); same rules as *.
+      const expectedGroup = crawler.token === "Google-Extended" ? ["Google-Extended"] : ["*"];
+      assert.deepEqual(groupFor(groups, crawler.token).userAgent, expectedGroup, crawler.token);
       for (const path of publicPaths) assert.ok(isAllowed(groups, crawler.token, path), `${crawler.token} ${path}`);
       for (const path of privatePaths) assert.ok(!isAllowed(groups, crawler.token, path), `${crawler.token} ${path}`);
     }
@@ -455,7 +468,7 @@ describe("pre-merge review (2026-10-06)", () => {
   it("an undocumented bot is neither whitelisted nor named: it gets the * rules", () => {
     assert.ok(isAllowed(groups, "SomeUnknownBot", "/about"));
     assert.ok(!isAllowed(groups, "SomeUnknownBot", "/admin"));
-    assert.equal(groups.flatMap((g) => g.userAgent).filter((ua) => ua !== "*").length, blockedTokens().length);
+    assert.equal(groups.flatMap((g) => g.userAgent).filter((ua) => ua !== "*").length, blockedTokens().length + 1);
   });
 
   it("structured data carries only allowlisted public business properties", () => {
