@@ -92,6 +92,14 @@ export const PAGE_SEO = {
     image: "/og/privacy.png",
     imageAlt: "Drylake privacy policy",
   },
+  terms: {
+    path: "/terms",
+    title: "Terms of Use | Drylake",
+    description:
+      "The terms for using the Drylake website and Drylake Workspace: project work under signed agreements, Workspace access, invoices, payments and consumer rights.",
+    image: "/og/terms.png",
+    imageAlt: "Drylake terms of use",
+  },
 } as const satisfies Record<string, PageSeo>;
 
 export type PageSeoKey = keyof typeof PAGE_SEO;

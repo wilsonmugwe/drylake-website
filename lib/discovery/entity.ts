@@ -113,6 +113,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/about", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.8 },
   { path: "/contact", lastModified: "2026-10-05", changeFrequency: "monthly", priority: 0.7 },
   { path: "/privacy", lastModified: "2026-10-08", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/terms", lastModified: "2026-10-08", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 /* Path prefixes that are never public: robots Disallow + X-Robots-Tag noindex. */
