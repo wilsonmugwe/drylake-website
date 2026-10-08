@@ -47,5 +47,9 @@ Verified by test: `status: "PAID"` appears in exactly one file under `app/`
 ## Residual items
 
 - Stripe test events are refused in production because they are signed with the test-mode
-  secret. A wrong-mode session is additionally refused by `evaluateSettlement`.
+  secret. That signature check is the only test-versus-live guard: `evaluateSettlement` rejects a
+  Checkout Session whose Checkout `mode` is not `payment` (`UNEXPECTED_MODE`), which is a different
+  thing, and no code compares `event.livemode` with the environment (anomaly rows record it).
+  Corrected 2026-10-08; an explicit livemode check is listed as deferred in
+  `docs/code-quality/2026-10-08-review.md`.
 - Webhook endpoint events and secret are dashboard configuration (Wilson, acceptance S6).

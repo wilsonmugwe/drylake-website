@@ -1,5 +1,10 @@
 # Drylake search and AI discoverability
 
+> **Updated 2026-10-08** (AI discoverability PR): service URLs, logo and LinkedIn status brought up
+> to date. Companion documents in this folder: `2026-10-08-baseline-audit.md` (what exists and the
+> scanner result), `measurement.md`, `content-recommendations.md`, `external-actions.md`,
+> `agent-enquiry-design.md`.
+
 Universal search and AI-retrieval infrastructure for drylake.com.au. It is a system, not a page:
 the facts live in one module, every machine-readable surface is generated from them, and
 tests plus a live check fail when a deploy breaks discoverability.
@@ -27,7 +32,7 @@ evidence to work from.
 | Website | https://drylake.com.au | Organization `url`, WebSite, canonicals |
 | Location | Perth, Western Australia, Australia | Organization `address` (locality only) and `areaServed`, footer, every service page |
 | Category | Australian technology and software company | llms.txt, About, page copy |
-| Services | Custom software and client portals; business automation and systems integration; applied AI | Service nodes, `/solutions/*`, llms.txt |
+| Services | Custom software development; business automation; systems integration; AI automation; web development | Service nodes, `/services` and the five `/services/*` pages, llms.txt |
 
 One source: `lib/discovery/entity.ts` (legal name, ABN and ACN come from `lib/business.ts`,
 the same module invoices use). Every page emits a JSON-LD `@graph` whose nodes reference
@@ -36,7 +41,7 @@ the same module invoices use). Every page emits a JSON-LD `@graph` whose nodes r
 Privacy (reviewed 2026-10-06): structured data carries only public business facts. No telephone (the site number is a founder's personal mobile), founders as name + role + employer only.
 
 Deliberately not published: street address (no public premises), ratings or reviews (none
-exist), logo (the current artwork reads "DRYLAKE TECHNOLOGIES"; see manual action M9).
+exist). The logo IS published (`brand/drylake-mark-512.png` as an ImageObject, M9 done).
 
 ---
 
@@ -98,7 +103,7 @@ robots.txt is a crawl hint, never access control.
 | D-4 | User-triggered fetchers allowed | They fetch because a person asked about Drylake; blocking them hides Drylake from that person | n/a |
 | D-5 | No per-agent allow groups | A named group replaces the `*` group for that bot; duplicating private Disallows per bot invites drift. Allowed bots use `*` (tested) | n/a |
 | D-6 | IndexNow on every production deploy, from the live sitemap | Bing powers Copilot, DuckDuckGo, Yahoo and Ecosia results; push indexing is free and needs no account | Bing deprecates IndexNow |
-| D-7 | Three service pages, no location pages | Real service lines the site already offers; answers "who builds client portals / automation / AI in Perth" from first-party evidence. Location pages would be thin and are out of scope | A new service line launches |
+| D-7 | Five service pages (`/services/*`, was three `/solutions/*` until PR #28), no location pages | Real service lines the site already offers; answers "who builds client portals / automation / AI in Perth" from first-party evidence. Location pages would be thin and are out of scope | A new service line launches |
 | D-8 | Locality only, no street address, no LocalBusiness type | No public premises (pre-launch checklist #14, #17) | Drylake opens an office |
 
 ---
@@ -107,15 +112,15 @@ robots.txt is a crawl hint, never access control.
 
 | # | Action | Owner | Notes |
 |---|---|---|---|
-| M1 | **Google Search Console**: add domain property `drylake.com.au` (DNS TXT at Synergy Wholesale, or URL-prefix with `GOOGLE_SITE_VERIFICATION` env var), submit `https://drylake.com.au/sitemap.xml`, request indexing for the 3 service pages | Ben | Domain property via DNS covers http/https/www |
+| M1 | **Google Search Console**: add domain property `drylake.com.au` (DNS TXT at Synergy Wholesale, or URL-prefix with `GOOGLE_SITE_VERIFICATION` env var), submit `https://drylake.com.au/sitemap.xml`, request indexing for `/services` and the five service pages | Ben | Domain property via DNS covers http/https/www |
 | M2 | **Bing Webmaster Tools**: sign in, "Import from Google Search Console" (fastest) or verify with `BING_SITE_VERIFICATION` env var / DNS; submit sitemap; check the AI Performance report monthly | Ben | Bing feeds Copilot, DuckDuckGo, Yahoo, Ecosia |
 | M3 | **IndexNow**: nothing to configure. After the first production deploy, check the workflow run "Discoverability" shows IndexNow `200`/`202`; Bing Webmaster Tools > IndexNow shows received URLs | Wilson | Key file `/81ebccabf60ea274ff01b3265b24c197.txt` is public by design |
 | M4 | **Apple Business Connect**: claim Drylake (brand + location card, Perth, website, ABN-matched legal name) | Ben | Feeds Apple Maps, Siri, Spotlight |
 | M5 | **Google Business Profile**: create as a **service-area business** (Perth + WA, address hidden), category "Software company", website drylake.com.au | Ben | Verification needs a real address that stays hidden; never a fake address |
 | M6 | **Bing Places**: import from Google Business Profile once M5 is verified | Ben | |
-| M7 | **LinkedIn company page** "Drylake" with legal name DRYLAKE PTY LTD in About, website, Perth; founders list Drylake as employer | Ben, Wilson | Then add its URL to `ENTITY.sameAs` |
+| M7 | **LinkedIn company page** exists (linkedin.com/company/drylake, in `ENTITY.sameAs`). Complete About with legal name DRYLAKE PTY LTD, ABN, website, Perth; founders list Drylake as employer | Ben, Wilson | |
 | M8 | **Vercel Firewall**: confirm Bot Protection is not in challenge mode for public pages and the "AI bots" managed ruleset is **not** in deny mode (it blocks AI search crawlers too). Keep the `/api/contact` rate limit | Wilson | Vercel docs: verified bots bypass Bot Protection; Brave and Mojeek may not be in the verified list |
-| M9 | **Logo**: export a "Drylake" logo without "TECHNOLOGIES" (already on Wilson's list), then add `logo` to the Organization node | Wilson | Logo artwork must match the brand |
+| M9 | **Logo**: done (tile mark, Organization `logo` live) | Wilson | |
 | M10 | Review the new service-page copy and FAQ answers (`lib/discovery/entity.ts` SERVICES) for accuracy | Ben | Only claims Drylake stands behind |
 
 ---
@@ -132,7 +137,7 @@ reviews, links or press.
 | Google Business Profile | Not created | M5 |
 | Bing Places | Not created | M6 |
 | Apple Business Connect | Not created | M4 |
-| LinkedIn company page + founder profiles | Unknown | M7, then add to `sameAs` |
+| LinkedIn company page + founder profiles | Company page exists, in `sameAs` | M7: complete the About section |
 | GitHub organisation "drylake" | Optional | Only if real public code or docs exist; add to `sameAs` |
 | Australian directories with editorial or verification standards (e.g. AusTender supplier registration if tendering, industry association membership such as AIIA or a local chamber of commerce) | Not started | Only where Drylake genuinely qualifies; one consistent listing each |
 | Technology partner directories (Vercel, Clerk, Stripe, Supabase partner programmes) | Not eligible yet | Apply only when partner criteria are actually met |
@@ -154,9 +159,9 @@ Drylake technology, Drylake AI, Drylake automation.
 |---|---|---|
 | Drylake / Drylake Pty Ltd | Titles, Organization `name` + `legalName` + `alternateName`, footer entity line, About company details | ABN Lookup, ASIC, LinkedIn, GBP |
 | Drylake Perth / Australia | Organization address + areaServed, every service page states Perth, Western Australia | GBP service area, Apple Business Connect, Bing Places |
-| Drylake software / technology | /solutions/custom-software, Organization `knowsAbout`, About | LinkedIn industry, partner directories |
-| Drylake AI | /solutions/applied-ai | LinkedIn posts, any earned coverage |
-| Drylake automation | /solutions/automation-integration | Same |
+| Drylake software / technology | /services/custom-software-development, Organization `knowsAbout`, About | LinkedIn industry, partner directories |
+| Drylake AI | /services/ai-automation | LinkedIn posts, any earned coverage |
+| Drylake automation | /services/business-automation, /services/systems-integration | Same |
 
 Name-collision note: "Drylake" also appears in unrelated contexts (place names, other
 businesses). The legal name, ABN and Perth location are the disambiguators; they appear
@@ -173,10 +178,10 @@ together on every page.
 | Where is Drylake based? | Organization address/location, service-page FAQ "Where is Drylake based?", footer |
 | What does Drylake do? | /solutions, three Service nodes, llms.txt services |
 | Is Drylake an Australian company? | ABN/ACN identifiers, "Australian proprietary company" in About, ABN Lookup |
-| Who provides custom software development in Perth? | /solutions/custom-software (Perth stated), Service areaServed Perth |
-| Who provides business automation in Perth? | /solutions/automation-integration + FAQ |
-| What companies build AI solutions for Perth businesses? | /solutions/applied-ai + FAQ |
-| Who builds custom client portals in Perth? | /solutions/custom-software FAQ "Does Drylake build custom client portals?" |
+| Who provides custom software development in Perth? | /services/custom-software-development, /perth, Service areaServed Perth |
+| Who provides business automation in Perth? | /services/business-automation + FAQ |
+| What companies build AI solutions for Perth businesses? | /services/ai-automation + FAQ, Organization `knowsAbout` "AI integration" |
+| Who builds custom client portals in Perth? | /services/custom-software-development FAQ "Does Drylake build custom client portals?" |
 
 The non-branded questions depend on external corroboration (section 5) as much as on the site.
 
