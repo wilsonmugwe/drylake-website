@@ -49,6 +49,8 @@ export function classifyWebhookEvent(
       return "ASYNC_FAILED";
     case "checkout.session.expired":
       return "EXPIRED";
+    // The webhook route logs and returns on this event type before classifying, so the route
+    // never reaches this branch; it is kept so the classifier stays total (and is unit tested).
     case "payment_intent.payment_failed":
       return "PAYMENT_FAILED";
     default:

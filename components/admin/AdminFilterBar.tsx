@@ -63,6 +63,8 @@ export default function AdminFilterBar({
     }
   }
 
+  // Unmount only: drop a pending debounced URL write so leaving the page cannot rewrite the
+  // next page's URL.
   useEffect(
     () => () => {
       if (debounceRef.current) {

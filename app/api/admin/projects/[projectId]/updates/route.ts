@@ -15,6 +15,11 @@ type RouteContext = {
 const MAX_TITLE_LENGTH = 120;
 const MAX_BODY_LENGTH = 5000;
 
+/*
+ * POST: create a project update for an ACTIVE client (form fields title, body,
+ * visibleToClient). Admin only. A client-visible update is published at once; an internal
+ * one stays unpublished and is never shown in the client portal.
+ */
 export async function POST(
   request: Request,
   context: RouteContext

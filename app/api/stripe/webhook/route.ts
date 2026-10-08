@@ -110,6 +110,8 @@ async function handleEvent(event: Stripe.Event) {
 
   if (reference.kind === "MALFORMED") {
     // We created every Drylake session, so this is not retryable. Flag loudly.
+    // Not written to the audit log: without a valid invoice id there is no entity to attach
+    // an anomaly row to. Money may have moved, so this log line is the only trace; alert on it.
     console.error("Checkout Session has malformed Drylake metadata:", {
       eventId: event.id,
       sessionId: session.id,

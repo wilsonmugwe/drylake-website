@@ -203,6 +203,9 @@ export async function POST(request: Request, context: RouteContext) {
               .maybeSingle()
           : Promise.resolve({ data: null, error: null }),
 
+        // Idempotency is check-then-insert, not atomic: two concurrent submits carrying the
+        // same request id can both pass this lookup. The form disables its button; closing
+        // the gap needs a unique index on the request id (schema change, deferred).
         input.requestId
           ? supabase
               .from("audit_logs")

@@ -75,6 +75,7 @@ async function membershipOrgIds(userId: string): Promise<string[]> {
  * Service role maps Clerk-verified org ids to client rows (id, name, status) ONLY. The ids
  * come from Clerk (signed session + Backend API), never from the browser. Client DATA is
  * always read through the RLS-scoped client.
+ * @throws LookupError on any Supabase error, so callers fail closed.
  */
 export async function organizationsForClerkIds(
   clerkOrgIds: readonly string[]
@@ -103,6 +104,7 @@ export async function organizationsForClerkIds(
 /*
  * Pending Drylake invitations this account can complete (see
  * lib/clients/invitation-completion.ts). Used only when the user has no usable membership.
+ * @throws on a Clerk or Supabase failure.
  */
 export async function pendingClientInvitations(
   userId: string
@@ -252,6 +254,8 @@ async function fullResolution(userId: string, orgId: string | null | undefined):
           state: "ready",
           userId,
           organization: decision.organization,
+          // Non-null by construction: a ready decision needs the RLS outcome "found", which is
+          // only ever set together with this client above.
           supabase: supabase as SupabaseClient,
           path: "full",
         };

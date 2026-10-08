@@ -9,6 +9,7 @@ import { signInUrl } from "@/lib/auth/guards";
 
 const NO_STORE = { "Cache-Control": "private, no-store, max-age=0" };
 
+/* Private, no-store JSON: admin responses must never be cached by a browser or CDN. */
 export function jsonResponse(body: Record<string, unknown>, status = 200) {
   return NextResponse.json(body, { status, headers: NO_STORE });
 }

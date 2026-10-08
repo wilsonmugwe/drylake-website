@@ -15,7 +15,11 @@ function json(body: Record<string, unknown>, status = 200) {
   return NextResponse.json(body, { status, headers: NO_STORE });
 }
 
-/* Browser POSTs from our own pages only. */
+/*
+ * Browser POSTs from our own pages only. Stricter than the proxy check: an absent Origin
+ * header is refused too, because this route creates an organisation membership, the most
+ * sensitive self-service action.
+ */
 function isSameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
   return origin !== null && origin === new URL(request.url).origin;

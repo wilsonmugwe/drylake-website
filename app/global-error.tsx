@@ -6,9 +6,11 @@ import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 /*
- * Last-resort boundary for errors thrown by the ROOT layout itself (for example ClerkProvider
- * failing because a production key is missing). app/error.tsx cannot catch those: it renders
- * inside the root layout. Without this file Next shows its unbranded default ("Application
+ * Last-resort boundary for errors thrown by the ROOT layout itself (for example the site
+ * metadata or the Organization JSON-LD failing to build from lib/discovery/entity.ts). Clerk is
+ * no longer mounted in the root layout (see components/auth/ClerkScope.tsx, 2026-10-07), so a
+ * missing Clerk key now surfaces in a segment error boundary instead. app/error.tsx cannot
+ * catch root-layout errors: it renders inside the root layout. Without this file Next shows its unbranded default ("Application
  * error: a client-side exception has occurred"). This replaces the whole document, so it owns
  * <html>/<body> and uses inline styles only: nothing from the failed layout can be assumed.
  *

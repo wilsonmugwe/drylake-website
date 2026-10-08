@@ -18,6 +18,11 @@ export const metadata = {
   },
 };
 
+/*
+ * Admin frame. The redirects below are a convenience, not the security boundary: layouts do not
+ * re-run on client-side navigation, so every admin page re-checks platform admin itself before it
+ * creates the service-role (RLS-bypassing) Supabase client. proxy.ts also requires a session here.
+ */
 export default async function AdminLayout({
   children,
 }: Readonly<{

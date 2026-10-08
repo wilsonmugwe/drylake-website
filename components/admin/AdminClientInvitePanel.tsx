@@ -22,6 +22,11 @@ const STATUS_STYLES: Record<InvitationSummary["status"], string> = {
   expired: "bg-neutral-100 text-neutral-600",
 };
 
+// TODO(2026-10-08): pin the time zone to Australia/Perth. This client component is rendered on
+// the server (UTC on Vercel) and then hydrated in the admin's browser (AWST, UTC+8), so any
+// timestamp between 16:00 and 24:00 UTC formats to a different day on each side: a hydration
+// mismatch warning and a brief flash of the wrong date. Fix deferred (C2 review R2, with the
+// shared admin date formatter) because it changes rendered output; formatting left as is.
 function formatDate(epochMs: number) {
   return new Intl.DateTimeFormat("en-AU", {
     day: "numeric",

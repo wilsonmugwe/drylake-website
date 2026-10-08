@@ -18,6 +18,12 @@ type RouteContext = {
   }>;
 };
 
+/*
+ * POST: change a milestone's status (form field status). Admin only, ACTIVE clients only.
+ * The update is not conditional on the status that was read, so the last admin to submit
+ * wins; acceptable for a single-operator admin. The completion time is set on COMPLETED and
+ * cleared for any other status.
+ */
 export async function POST(
   request: Request,
   context: RouteContext
