@@ -78,7 +78,7 @@ export function blockedTokens(): string[] {
 export type RobotsGroup = { userAgent: string[]; allow: string[]; disallow: string[] };
 
 /*
- * The complete robots.txt policy as data: app/robots.ts renders it, and the tests evaluate
+ * The complete robots.txt policy as data: app/robots.txt/route.ts renders it (robotsText), and the tests evaluate
  * it with an RFC 9309 matcher (lib/discovery/robots-eval.ts), so the crawler matrix is
  * computed from the shipped configuration rather than asserted by hand.
  */
@@ -87,4 +87,47 @@ export function robotsGroups(privatePrefixes: readonly string[]): RobotsGroup[] 
     { userAgent: blockedTokens(), allow: [], disallow: ["/"] },
     { userAgent: ["*"], allow: ["/"], disallow: [...privatePrefixes] },
   ];
+}
+
+/*
+ * Content Signals (contentsignals.org) for the "*" group: how content may be USED once it has
+ * been fetched, as opposed to whether it may be fetched at all. Matches the policy above:
+ * search and AI search/answers allowed, model training opted out.
+ *
+ * DECISION PENDING (Ben): ai-train is "no" to match the training-token opt-outs above. Ben may
+ * flip it to "yes" later; change it here and the rendered robots.txt and its tests follow.
+ */
+export const CONTENT_SIGNALS = {
+  search: "yes",
+  "ai-input": "yes",
+  "ai-train": "no",
+} as const satisfies Record<string, "yes" | "no">;
+
+export function contentSignalLine(): string {
+  const pairs = Object.entries(CONTENT_SIGNALS).map(([key, value]) => `${key}=${value}`);
+
+  return `Content-Signal: ${pairs.join(", ")}`;
+}
+
+/*
+ * Renders robots.txt in the same format Next's MetadataRoute.Robots produced (User-Agent lines,
+ * then Allow, then Disallow, a blank line between groups, Sitemap last), plus the Content-Signal
+ * line in the "*" group. MetadataRoute.Robots cannot emit custom directives, which is why
+ * app/robots.txt/route.ts renders this text instead.
+ */
+export function robotsText(groups: readonly RobotsGroup[], sitemapUrl: string): string {
+  const blocks = groups.map((group) => {
+    const lines = group.userAgent.map((agent) => `User-Agent: ${agent}`);
+
+    if (group.userAgent.includes("*")) {
+      lines.push(contentSignalLine());
+    }
+
+    lines.push(...group.allow.map((rule) => `Allow: ${rule}`));
+    lines.push(...group.disallow.map((rule) => `Disallow: ${rule}`));
+
+    return `${lines.join("\n")}\n`;
+  });
+
+  return `${blocks.join("\n")}\nSitemap: ${sitemapUrl}\n`;
 }

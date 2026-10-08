@@ -299,6 +299,10 @@ describe("dependency and script hygiene", () => {
       "lucide-react",
       "motion",
       "next",
+      // Reviewed 2026-10-08 (agent-readable PR): server-only HTML to Markdown for the
+      // text/markdown negotiation route (app/api/markdown). Never shipped to the browser.
+      "node-html-markdown",
+      "node-html-parser",
       "react",
       "react-dom",
       "resend",

@@ -351,15 +351,15 @@ describe("crawler policy: search and AI search in, training out, private closed"
     assert.equal(new Set(CRAWLERS.map((c) => c.token)).size, CRAWLERS.length, "duplicate token");
   });
 
-  it("robots.ts opts training out and keeps the public site open and private surfaces closed", () => {
-    const source = code("app/robots.ts");
+  it("robots.txt opts training out and keeps the public site open and private surfaces closed", () => {
+    const source = code("app/robots.txt/route.ts");
 
-    assert.match(source, /robotsGroups\(PRIVATE_PREFIXES\)\.map\(/);
+    assert.match(source, /robotsText\(robotsGroups\(PRIVATE_PREFIXES\),/);
     assert.deepEqual(robotsGroups(PRIVATE_PREFIXES), [
       { userAgent: blockedTokens(), allow: [], disallow: ["/"] },
       { userAgent: ["*"], allow: ["/"], disallow: [...PRIVATE_PREFIXES] },
     ]);
-    assert.match(source, /sitemap: `\$\{SITE_URL\}\/sitemap\.xml`/);
+    assert.match(source, /`\$\{SITE_URL\}\/sitemap\.xml`/);
   });
 
   it("private prefixes cover every private application surface", () => {

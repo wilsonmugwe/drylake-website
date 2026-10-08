@@ -19,6 +19,8 @@
     "lucide-react": "^1.47.0",
     "motion": "^13.4.0",
     "next": "^16.3.8",
+    "node-html-markdown": "^2.0.0",
+    "node-html-parser": "^6.1.13",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "resend": "^6.31.0",

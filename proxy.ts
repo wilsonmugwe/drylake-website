@@ -1,6 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import {
+  MARKDOWN_FETCH_HEADER,
+  isMarkdownPath,
+  shouldServeMarkdown,
+} from "./lib/discovery/markdown-negotiation";
 import { CSP_DIRECTIVES } from "./lib/security/csp";
 import { isCrossSiteMutation } from "./lib/security/same-origin";
 
@@ -43,6 +48,36 @@ export default clerkMiddleware(
         { success: false, error: "Forbidden" },
         { status: 403, headers: { "Cache-Control": "private, no-store, max-age=0" } }
       );
+    }
+
+    // Markdown for agents: a PUBLIC page requested with Accept: text/markdown is rewritten to
+    // the Markdown route (rules in lib/discovery/markdown-negotiation.ts). Private pages are never in the
+    // public list, so they always fall through to the checks below.
+    if (
+      shouldServeMarkdown({
+        method: request.method,
+        pathname: request.nextUrl.pathname,
+        accept: request.headers.get("accept"),
+        internalFetch: request.headers.has(MARKDOWN_FETCH_HEADER),
+      })
+    ) {
+      const target = new URL("/api/markdown", request.url);
+
+      target.searchParams.set("path", request.nextUrl.pathname);
+
+      return NextResponse.rewrite(target);
+    }
+
+    // The HTML copy of a public page also varies by Accept, so a cache never hands a browser the
+    // Markdown copy or an agent the HTML one. Set here because Next overwrites a Vary header
+    // configured in next.config.ts on prerendered pages. Public pages are never private, so
+    // returning early skips nothing.
+    if (isMarkdownPath(request.nextUrl.pathname)) {
+      const response = NextResponse.next();
+
+      response.headers.set("Vary", "Accept");
+
+      return response;
     }
 
     if (!isPrivatePage(request) || isPublicPortalPage(request)) {

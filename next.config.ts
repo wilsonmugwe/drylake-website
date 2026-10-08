@@ -4,6 +4,20 @@ import { LEGACY_SERVICE_REDIRECTS, PRIVATE_PREFIXES } from "./lib/discovery/enti
 
 const NOINDEX_HEADER = { key: "X-Robots-Tag", value: "noindex, nofollow" };
 
+/*
+ * RFC 8288 Link header on the homepage, for agents that discover a site from its root: the
+ * llms.txt summary, the RFC 9727 API catalogue, and the Markdown version of the page (served to
+ * "Accept: text/markdown" by proxy.ts).
+ */
+const HOMEPAGE_LINK_HEADER = {
+  key: "Link",
+  value: [
+    '</llms.txt>; rel="describedby"; type="text/plain"',
+    '</.well-known/api-catalog>; rel="api-catalog"',
+    '</>; rel="alternate"; type="text/markdown"',
+  ].join(", "),
+};
+
 const securityHeaders = [
   {
     key: "Referrer-Policy",
@@ -47,6 +61,7 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      { source: "/", headers: [HOMEPAGE_LINK_HEADER] },
       // Private application surfaces are never indexed, even if a crawler ignores robots.txt
       // or follows a leaked link. Must match PRIVATE_PREFIXES in lib/discovery/entity.ts
       // (tests/discoverability.test.mjs checks they agree).
