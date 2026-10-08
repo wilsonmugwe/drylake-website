@@ -308,7 +308,8 @@ export const SERVICES: readonly Service[] = [
     slug: "ai-automation",
     path: path("ai-automation"),
     name: "AI automation",
-    serviceType: "Artificial intelligence solutions for business",
+    // Structured data only (not visible copy): the phrase buyers search, backed by this page's FAQ.
+    serviceType: "AI integration and automation",
     title: "AI Automation for Real Business Workflows | Drylake",
     description:
       "Drylake builds practical AI into Australian business workflows: document processing, drafting, summarising and internal tools, with people checking the results.",

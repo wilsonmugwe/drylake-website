@@ -104,19 +104,28 @@ export function organizationNode(): Node {
       "Business process automation",
       "Systems integration",
       "Applied artificial intelligence",
+      // Buyer wording for the ai-automation service line (its page and FAQ back it).
+      "AI integration",
       "Website and web application development",
     ],
     /*
      * Organization -> Service, by @id: the five service lines are what this organisation offers.
-     * The Service nodes themselves are emitted on /services and each service page. No prices or
-     * availability: there is nothing to quote, so none is claimed.
+     * The full Service nodes are emitted on /services and each service page; each Offer also
+     * names its Service inline (type, name, url) so the reference resolves on pages that do not
+     * carry the full node. No prices or availability: there is nothing to quote, so none is
+     * claimed.
      */
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: `${ENTITY.brand} services`,
       itemListElement: SERVICES.map((service) => ({
         "@type": "Offer",
-        itemOffered: { "@id": `${absoluteUrl(service.path)}#service` },
+        itemOffered: {
+          "@type": "Service",
+          "@id": nodeId(service.path, "service"),
+          name: service.name,
+          url: absoluteUrl(service.path),
+        },
       })),
     },
     ...(ENTITY.sameAs.length > 0 ? { sameAs: [...ENTITY.sameAs] } : {}),
@@ -149,6 +158,17 @@ export type PageType = "WebPage" | "AboutPage" | "ContactPage" | "CollectionPage
 
 export type Crumb = { name: string; path: string };
 
+/**
+ * The JSON-LD `@id` for a node that belongs to one page, e.g. `https://drylake.com.au/about#webpage`.
+ *
+ * The homepage uses the trailing-slash form (`https://drylake.com.au/#webpage`) so its page nodes
+ * share one base with the site-wide `/#organization` and `/#website` ids. `absoluteUrl("/")`
+ * deliberately has no slash (it is the canonical URL), which is why ids are not built from it.
+ */
+export function nodeId(path: string, fragment: string): string {
+  return `${path === "/" ? `${SITE_URL}/` : absoluteUrl(path)}#${fragment}`;
+}
+
 export function webPageNode(input: {
   path: string;
   name: string;
@@ -162,7 +182,7 @@ export function webPageNode(input: {
 
   return {
     "@type": input.type ?? "WebPage",
-    "@id": `${url}#webpage`,
+    "@id": nodeId(input.path, "webpage"),
     url,
     name: input.name,
     description: input.description,
@@ -171,14 +191,14 @@ export function webPageNode(input: {
     isPartOf: { "@id": WEBSITE_ID },
     about: { "@id": ORGANIZATION_ID },
     publisher: { "@id": ORGANIZATION_ID },
-    ...(input.breadcrumb ? { breadcrumb: { "@id": `${url}#breadcrumb` } } : {}),
+    ...(input.breadcrumb ? { breadcrumb: { "@id": nodeId(input.path, "breadcrumb") } } : {}),
   };
 }
 
 export function breadcrumbNode(path: string, crumbs: readonly Crumb[]): Node {
   return {
     "@type": "BreadcrumbList",
-    "@id": `${absoluteUrl(path)}#breadcrumb`,
+    "@id": nodeId(path, "breadcrumb"),
     itemListElement: crumbs.map((crumb, index) => ({
       "@type": "ListItem",
       position: index + 1,
@@ -193,21 +213,21 @@ export function serviceNode(service: Service): Node {
 
   return {
     "@type": "Service",
-    "@id": `${url}#service`,
+    "@id": nodeId(service.path, "service"),
     name: service.name,
     serviceType: service.serviceType,
     description: service.description,
     url,
     provider: { "@id": ORGANIZATION_ID },
     areaServed: AREA_SERVED,
-    mainEntityOfPage: { "@id": `${url}#webpage` },
+    mainEntityOfPage: { "@id": nodeId(service.path, "webpage") },
   };
 }
 
 export function faqNode(path: string, faqs: readonly { question: string; answer: string }[]): Node {
   return {
     "@type": "FAQPage",
-    "@id": `${absoluteUrl(path)}#faq`,
+    "@id": nodeId(path, "faq"),
     mainEntity: faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,
