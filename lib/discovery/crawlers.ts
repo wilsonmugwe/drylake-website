@@ -75,7 +75,23 @@ export function blockedTokens(): string[] {
   return CRAWLERS.filter((crawler) => crawler.access === "disallow").map((crawler) => crawler.token);
 }
 
-export type RobotsGroup = { userAgent: string[]; allow: string[]; disallow: string[] };
+export type ContentSignals = Readonly<Record<"search" | "ai-input" | "ai-train", "yes" | "no">>;
+
+export type RobotsGroup = {
+  userAgent: string[];
+  allow: string[];
+  disallow: string[];
+  /* Rendered as a Content-Signal line inside the group when present. */
+  contentSignals?: ContentSignals;
+};
+
+/*
+ * Tokens that may use the public site for model training (Ben, 2026-10-08: "Google Gemini can
+ * train on our website"; decision D-1). They get their own group ONLY so that its Content-Signal
+ * can say ai-train=yes; their fetch rules are generated from the same private prefixes as the
+ * "*" group, so access is identical and cannot drift.
+ */
+export const TRAINING_ALLOWED_TOKENS = ["Google-Extended"] as const;
 
 /*
  * The complete robots.txt policy as data: app/robots.txt/route.ts renders it (robotsText), and the tests evaluate
@@ -85,42 +101,53 @@ export type RobotsGroup = { userAgent: string[]; allow: string[]; disallow: stri
 export function robotsGroups(privatePrefixes: readonly string[]): RobotsGroup[] {
   return [
     { userAgent: blockedTokens(), allow: [], disallow: ["/"] },
-    { userAgent: ["*"], allow: ["/"], disallow: [...privatePrefixes] },
+    {
+      userAgent: [...TRAINING_ALLOWED_TOKENS],
+      contentSignals: TRAINING_ALLOWED_SIGNALS,
+      allow: ["/"],
+      disallow: [...privatePrefixes],
+    },
+    { userAgent: ["*"], contentSignals: CONTENT_SIGNALS, allow: ["/"], disallow: [...privatePrefixes] },
   ];
 }
 
 /*
- * Content Signals (contentsignals.org) for the "*" group: how content may be USED once it has
- * been fetched, as opposed to whether it may be fetched at all. Matches the policy above:
- * search and AI search/answers allowed, model training opted out.
- *
- * DECISION PENDING (Ben): ai-train is "no" to match the training-token opt-outs above. Ben may
- * flip it to "yes" later; change it here and the rendered robots.txt and its tests follow.
+ * Content Signals (contentsignals.org): how content may be USED once fetched, as opposed to
+ * whether it may be fetched at all. The "*" group: search and AI search/answers allowed, model
+ * training opted out (matching the training-token opt-outs above). Decided by Ben 2026-10-08,
+ * together with TRAINING_ALLOWED_SIGNALS for Google-Extended.
  */
 export const CONTENT_SIGNALS = {
   search: "yes",
   "ai-input": "yes",
   "ai-train": "no",
-} as const satisfies Record<string, "yes" | "no">;
+} as const satisfies ContentSignals;
 
-export function contentSignalLine(): string {
-  const pairs = Object.entries(CONTENT_SIGNALS).map(([key, value]) => `${key}=${value}`);
+/* For TRAINING_ALLOWED_TOKENS only: Gemini may train on the public site (decision D-1). */
+export const TRAINING_ALLOWED_SIGNALS = {
+  search: "yes",
+  "ai-input": "yes",
+  "ai-train": "yes",
+} as const satisfies ContentSignals;
+
+export function contentSignalLine(signals: ContentSignals = CONTENT_SIGNALS): string {
+  const pairs = Object.entries(signals).map(([key, value]) => `${key}=${value}`);
 
   return `Content-Signal: ${pairs.join(", ")}`;
 }
 
 /*
  * Renders robots.txt in the same format Next's MetadataRoute.Robots produced (User-Agent lines,
- * then Allow, then Disallow, a blank line between groups, Sitemap last), plus the Content-Signal
- * line in the "*" group. MetadataRoute.Robots cannot emit custom directives, which is why
+ * then Allow, then Disallow, a blank line between groups, Sitemap last), plus a Content-Signal
+ * line in each group that declares one. MetadataRoute.Robots cannot emit custom directives, which is why
  * app/robots.txt/route.ts renders this text instead.
  */
 export function robotsText(groups: readonly RobotsGroup[], sitemapUrl: string): string {
   const blocks = groups.map((group) => {
     const lines = group.userAgent.map((agent) => `User-Agent: ${agent}`);
 
-    if (group.userAgent.includes("*")) {
-      lines.push(contentSignalLine());
+    if (group.contentSignals) {
+      lines.push(contentSignalLine(group.contentSignals));
     }
 
     lines.push(...group.allow.map((rule) => `Allow: ${rule}`));

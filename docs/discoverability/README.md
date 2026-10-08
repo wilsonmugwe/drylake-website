@@ -50,7 +50,7 @@ Vercel mitigation). Desired access is what this PR ships. Sources for every row:
 | Platform | Search / AI product | Crawler / index mechanism | Current access | Desired access | robots rule | Manual action |
 |---|---|---|---|---|---|---|
 | Google | Google Search, AI Overviews, AI Mode | `Googlebot`, own index (AI features use the Search index) | Allowed | Allowed | `*` group | M1 Search Console, submit sitemap |
-| Google | Gemini grounding (Gemini Apps, Vertex AI) + Gemini model training | `Google-Extended` control token (no separate crawler) | Allowed | **Allowed (decision D-1)** | `*` group | none |
+| Google | Gemini grounding (Gemini Apps, Vertex AI) + Gemini model training | `Google-Extended` control token (no separate crawler) | Allowed | **Allowed (decision D-1, reconfirmed by Ben 2026-10-08)** | Own group: same Allow/Disallow as `*`, plus `Content-Signal: ai-train=yes` | none |
 | Microsoft | Bing, Microsoft Copilot | `bingbot`, own index; Copilot grounds on Bing | Allowed | Allowed | `*` group | M2 Bing Webmaster Tools, M3 IndexNow |
 | Microsoft | Training control | No robots token; only `noarchive`/`nocache` meta, which also remove Copilot answers | n/a | No tag (decision D-2) | none | none |
 | Yahoo | Yahoo Search | Bing index [secondary source] | Via Bing | Via Bing | none needed | covered by M2 |
@@ -96,7 +96,7 @@ robots.txt is a crawl hint, never access control.
 | D-2 | No `noarchive`/`nocache` for Bing | Microsoft's only training controls also remove pages from Copilot answers | Microsoft ships a training-only control |
 | D-3 | Training tokens opted out: GPTBot, ClaudeBot, CCBot, meta-externalagent, Amazonbot, Applebot-Extended | Each vendor runs a separate search/retrieval crawler, which stays allowed, so search visibility is unaffected (per vendor docs) | A vendor merges search and training crawlers |
 | D-4 | User-triggered fetchers allowed | They fetch because a person asked about Drylake; blocking them hides Drylake from that person | n/a |
-| D-5 | No per-agent allow groups | A named group replaces the `*` group for that bot; duplicating private Disallows per bot invites drift. Allowed bots use `*` (tested) | n/a |
+| D-5 | No per-agent allow groups, with one exception | A named group replaces the `*` group for that bot; duplicating private Disallows per bot invites drift. Allowed bots use `*` (tested). **Exception (2026-10-08):** `Google-Extended` has its own group so its Content-Signal can say `ai-train=yes` while `*` says `ai-train=no`; its rules are generated from the same `PRIVATE_PREFIXES`, and the unit tests plus the live check assert they equal the `*` rules | Another token is allowed to train |
 | D-6 | IndexNow on every production deploy, from the live sitemap | Bing powers Copilot, DuckDuckGo, Yahoo and Ecosia results; push indexing is free and needs no account | Bing deprecates IndexNow |
 | D-7 | Three service pages, no location pages | Real service lines the site already offers; answers "who builds client portals / automation / AI in Perth" from first-party evidence. Location pages would be thin and are out of scope | A new service line launches |
 | D-8 | Locality only, no street address, no LocalBusiness type | No public premises (pre-launch checklist #14, #17) | Drylake opens an office |

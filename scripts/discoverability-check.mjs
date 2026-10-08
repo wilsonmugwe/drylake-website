@@ -17,7 +17,7 @@
  * Spoofed user agents from a CI IP can legitimately be challenged by bot verification;
  * a 403/429 with x-vercel-mitigated is reported as such, so it is visible, not hidden.
  */
-import { CRAWLERS, blockedTokens } from "../lib/discovery/crawlers.ts";
+import { CRAWLERS, TRAINING_ALLOWED_TOKENS, blockedTokens } from "../lib/discovery/crawlers.ts";
 import { ENTITY, ORGANIZATION_ID, PRIVATE_PREFIXES, PUBLIC_PAGES, SITE_URL, absoluteUrl } from "../lib/discovery/entity.ts";
 import { INDEXNOW_KEY } from "../lib/discovery/indexnow.ts";
 
@@ -117,7 +117,23 @@ async function checkRobots() {
     if (!/^Disallow:\s*\/\s*$/im.test(group)) fail(`robots.txt: ${token} is no longer opted out of training`);
   }
 
-  for (const crawler of CRAWLERS.filter((c) => c.access === "allow")) {
+  if (!/^Content-Signal:\s*search=yes, ai-input=yes, ai-train=no\s*$/im.test(star)) {
+    fail("robots.txt: * group Content-Signal is not search=yes, ai-input=yes, ai-train=no");
+  }
+
+  // Tokens allowed to train (Google-Extended, decision D-1) have their own group only to say
+  // ai-train=yes; it must open exactly what the * group opens.
+  for (const token of TRAINING_ALLOWED_TOKENS) {
+    const group = groups.find((g) => new RegExp(`^User-Agent:\\s*${token}\\s*$`, "im").test(g)) ?? "";
+
+    if (!/^Content-Signal:\s*search=yes, ai-input=yes, ai-train=yes\s*$/im.test(group)) fail(`robots.txt: ${token} group does not signal ai-train=yes`);
+    if (!/^Allow:\s*\/\s*$/im.test(group)) fail(`robots.txt: ${token} group no longer allows /`);
+    for (const prefix of PRIVATE_PREFIXES) {
+      if (!new RegExp(`^Disallow:\\s*${prefix}\\s*$`, "im").test(group)) fail(`robots.txt: ${token} group no longer disallows ${prefix}`);
+    }
+  }
+
+  for (const crawler of CRAWLERS.filter((c) => c.access === "allow" && !TRAINING_ALLOWED_TOKENS.includes(c.token))) {
     if (new RegExp(`^User-Agent:\\s*${crawler.token}\\s*$`, "im").test(body)) {
       fail(`robots.txt: ${crawler.token} has its own group; allowed crawlers must use the * group`);
     }

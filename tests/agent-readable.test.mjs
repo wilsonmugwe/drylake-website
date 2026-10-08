@@ -13,7 +13,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { API_CATALOG_CONTENT_TYPE, apiCatalog } from "../lib/discovery/api-catalog.ts";
-import { CONTENT_SIGNALS, blockedTokens, robotsGroups, robotsText } from "../lib/discovery/crawlers.ts";
+import { CONTENT_SIGNALS, TRAINING_ALLOWED_SIGNALS, TRAINING_ALLOWED_TOKENS, blockedTokens, robotsGroups, robotsText } from "../lib/discovery/crawlers.ts";
 import { PRIVATE_PREFIXES, PUBLIC_PAGES, SITE_URL } from "../lib/discovery/entity.ts";
 import {
   MARKDOWN_CONTENT_TYPE,
@@ -204,10 +204,21 @@ describe("robots.txt Content-Signal", () => {
   const wildcard = blocks.find((block) => /^User-Agent: \*$/m.test(block)) ?? "";
   const training = blocks.find((block) => block.includes("User-Agent: GPTBot")) ?? "";
 
-  it("signals search and AI input allowed, training opted out, in the * group only", () => {
+  const gemini = blocks.find((block) => /^User-Agent: Google-Extended$/m.test(block)) ?? "";
+
+  it("signals search and AI input allowed, training opted out, in the * group", () => {
     assert.deepEqual(CONTENT_SIGNALS, { search: "yes", "ai-input": "yes", "ai-train": "no" });
     assert.match(wildcard, /^Content-Signal: search=yes, ai-input=yes, ai-train=no$/m);
-    assert.equal(text.match(/Content-Signal:/g)?.length, 1);
+    assert.equal(text.match(/Content-Signal:/g)?.length, 2);
+  });
+
+  it("lets Gemini train (Ben, 2026-10-08, D-1) with exactly the access of the * group", () => {
+    assert.deepEqual([...TRAINING_ALLOWED_TOKENS], ["Google-Extended"]);
+    assert.deepEqual(TRAINING_ALLOWED_SIGNALS, { search: "yes", "ai-input": "yes", "ai-train": "yes" });
+    assert.match(gemini, /^Content-Signal: search=yes, ai-input=yes, ai-train=yes$/m);
+    const rules = (block) => block.split("\n").filter((line) => /^(Allow|Disallow):/.test(line));
+    assert.deepEqual(rules(gemini), rules(wildcard));
+    assert.ok(!blockedTokens().includes("Google-Extended"));
   });
 
   it("still disallows every training token and keeps private surfaces closed", () => {
@@ -225,6 +236,11 @@ describe("robots.txt Content-Signal", () => {
     const expected = [
       ...blockedTokens().map((token) => `User-Agent: ${token}`),
       "Disallow: /",
+      "",
+      "User-Agent: Google-Extended",
+      "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
+      "Allow: /",
+      ...PRIVATE_PREFIXES.map((prefix) => `Disallow: ${prefix}`),
       "",
       "User-Agent: *",
       "Content-Signal: search=yes, ai-input=yes, ai-train=no",
