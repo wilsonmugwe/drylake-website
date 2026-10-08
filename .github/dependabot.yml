@@ -14,6 +14,19 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    # Majors that cannot land yet (checked 2026-10-08, PRs #49-#51 closed):
+    # - typescript 7: typescript-eslint does not support TS 7.0, lint fails.
+    # - eslint 10: eslint-plugin-react (via eslint-config-next) crashes on load.
+    # - @types/node: kept in step with the Node runtime by hand; types ahead of the
+    #   runtime let code compile against APIs production does not have.
+    # Remove an entry once its blocker ships a compatible release.
+    ignore:
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
