@@ -68,7 +68,7 @@ export default function WhatWeDo() {
 
           <div className="lg:col-span-9">
             <h2 className="type-section">
-              Less workaround.
+              Less workaround.{" "}
               <br />
               <span className="text-black/50">More workflow.</span>
             </h2>

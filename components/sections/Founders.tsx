@@ -51,7 +51,7 @@ export default function Founders({ variant = "home" }: { variant?: "home" | "pag
 
           <div className="lg:col-span-9">
             <Heading className="type-section">
-              Small team.
+              Small team.{" "}
               <br />
               <span className="text-black/50">Direct access.</span>
             </Heading>

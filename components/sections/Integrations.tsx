@@ -37,7 +37,7 @@ export default function Integrations() {
                 </p>
 
                 <h2 className="mt-6 text-[clamp(2.35rem,10.6vw,3.8rem)] font-semibold leading-[0.93] tracking-[-0.058em] sm:text-[clamp(3.6rem,8vw,5.2rem)] lg:text-[clamp(3.2rem,4.1vw,5rem)]">
-                  Don&apos;t replace
+                  Don&apos;t replace{" "}
                   <br />
                   <span className="text-white/45">what already works.</span>
                 </h2>

@@ -40,7 +40,7 @@ export default function Approach() {
 
           <div className="lg:col-span-9">
             <h2 className="type-section">
-              Understand first.
+              Understand first.{" "}
               <br />
               <span className="text-black/50">Build second.</span>
             </h2>

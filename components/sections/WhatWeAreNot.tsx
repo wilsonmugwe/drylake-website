@@ -100,7 +100,7 @@ export default function WhatWeAreNot() {
 
             <div className="mt-12 border-l-2 border-[#f26a2e] pl-5 sm:mt-16 sm:pl-7">
               <p className="text-[clamp(2.2rem,5vw,5rem)] font-semibold leading-[0.92] tracking-[-0.06em]">
-                The boring part
+                The boring part{" "}
                 <br />
                 <span className="text-white/45">is the hard part.</span>
               </p>
