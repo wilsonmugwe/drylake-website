@@ -1,0 +1,21 @@
+# Dependency updates (portfolio parity check, 2026-10-08). Weekly, grouped so a week's minor and
+# patch bumps arrive as one PR for Wilson; majors stay separate because they need reading.
+# Security updates are raised as soon as GitHub knows about them, independent of this schedule.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Australia/Perth
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

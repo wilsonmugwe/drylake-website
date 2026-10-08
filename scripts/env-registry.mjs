@@ -51,7 +51,8 @@ export const ENV_REGISTRY = [
 
   // Platform
   { name: "VERCEL_ENV", exposure: "platform", required: false, readBy: "lib/clients/invitations.ts (via process.env)", purpose: "production | preview | development" },
-  { name: "VERCEL_REGION", exposure: "platform", required: false, readBy: "lib/perf/request-timing.ts", purpose: "Region in timing logs; must read syd1 in production" },
+  { name: "VERCEL_REGION", exposure: "platform", required: false, readBy: "lib/perf/request-timing.ts, lib/health/health-report.ts", purpose: "Region in timing logs and /api/health; must read syd1 in production" },
+  { name: "VERCEL_GIT_COMMIT_SHA", exposure: "platform", required: false, readBy: "lib/health/health-report.ts", purpose: "Deployed commit, shortened in /api/health" },
 ];
 
 /* Names from earlier Supabase/Clerk/Stripe conventions. Present in an environment = obsolete. */

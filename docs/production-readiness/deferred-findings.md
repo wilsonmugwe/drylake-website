@@ -26,8 +26,8 @@ Recorded during PR 1 and deliberately **not** fixed here, per the programme rule
 - Production environment variables live only in the Vercel dashboard (registry now names them).
 
 ## PR 4: Codebase professionalisation
-- `drylake-v3-source.txt` and `drylake-tree.txt` at the repo root look like generated dumps.
-- No `.env.example`; README has no environment or local-development section.
+- ~~`drylake-v3-source.txt` and `drylake-tree.txt` at the repo root look like generated dumps.~~ Removed 2026-10-08 with the unused Next template SVGs.
+- ~~No `.env.example`~~ Generated from the env registry 2026-10-08 (`node scripts/generate-env-example.mjs`, kept in sync by `tests/env-example.test.mjs`). README has no environment or local-development section.
 - Mixed import styles (`@/` alias vs relative `.ts`) driven by the node test runner.
 - Several routes write `audit_logs` inline instead of `writeAuditLog`.
 - Repeated bespoke `jsonError` helpers across routes.
