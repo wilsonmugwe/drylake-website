@@ -1,3 +1,4 @@
+import { trackEnquirySubmitted } from "@/lib/analytics/enquiry-event";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 export interface EnquiryPayload {
@@ -77,6 +78,8 @@ export async function submitEnquiry(
   const serverMessage = typeof data?.error === "string" ? data.error : null;
 
   if (response.ok && data?.success === true) {
+    // Counted here and nowhere else: this is the only branch where delivery is confirmed.
+    trackEnquirySubmitted(payload.projectType);
     return { ok: true };
   }
 
