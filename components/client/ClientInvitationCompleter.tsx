@@ -21,6 +21,8 @@ export default function ClientInvitationCompleter({ returnTo }: Props) {
   const [failed, setFailed] = useState(false);
   const started = useRef(false);
 
+  // started guards the one-shot POST: StrictMode (dev) runs effects twice, and a re-run after
+  // Clerk's loaded flag flips must not complete the invitation a second time.
   useEffect(() => {
     if (!loaded || started.current) {
       return;

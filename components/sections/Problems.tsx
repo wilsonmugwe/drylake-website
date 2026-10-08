@@ -62,7 +62,7 @@ export default function Problems() {
 
           <div className="lg:col-span-9">
             <h2 className="type-section text-balance">
-              Growth makes the
+              Growth makes the{" "}
               <br className="hidden sm:block" />
               <span className="text-black/50"> cracks visible.</span>
             </h2>

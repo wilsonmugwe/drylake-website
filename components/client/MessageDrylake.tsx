@@ -152,6 +152,10 @@ export default function MessageDrylake({
   );
 }
 
+/*
+ * Mounted only while the dialog is open: each open starts a fresh form and a fresh single-use
+ * Turnstile token, and the Clerk user data below is read only when it is actually needed.
+ */
 function MessageForm({
   organizationName,
   onClose,

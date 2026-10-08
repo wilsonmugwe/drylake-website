@@ -46,8 +46,9 @@ function getEnquiryInbox() {
  * Contract: resolves only when the email provider accepted the message; throws otherwise,
  * so the route never tells a visitor "received" for an enquiry that went nowhere.
  * The enquiry is never logged (it contains personal information).
+ * Throws when the recipient, sender or Resend key is not configured, or Resend rejects.
  */
-export async function deliverContactEnquiry(enquiry: ContactEnquiry) {
+export async function deliverContactEnquiry(enquiry: ContactEnquiry): Promise<void> {
   const rows: Array<[string, string]> = [
     ["Name", enquiry.name],
     ["Email", enquiry.email],

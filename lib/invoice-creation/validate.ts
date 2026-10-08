@@ -76,6 +76,8 @@ export function isValidIsoDate(value: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+// Stricter than lib/validation/uuid.ts (RFC version 1 to 8 and variant nibble). Database
+// generated ids always pass; do not reuse this for ids issued by other systems.
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function isUuidLike(value: unknown): value is string {

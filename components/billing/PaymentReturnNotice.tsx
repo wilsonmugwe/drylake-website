@@ -26,6 +26,8 @@ export default function PaymentReturnNotice({ outcome, paid }: PaymentReturnNoti
   const waiting = outcome === "success" && !paid;
   const gaveUp = waiting && polls >= MAX_POLLS;
 
+  // polls is a dependency on purpose: each refresh re-arms exactly one timer, so at most one is
+  // pending, and the loop stops itself at MAX_POLLS or once the server says the invoice is paid.
   useEffect(() => {
     if (!waiting || gaveUp) {
       return;

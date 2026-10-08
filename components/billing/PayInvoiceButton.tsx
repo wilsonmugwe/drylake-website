@@ -26,6 +26,12 @@ type CheckoutResponse = {
   code?: string;
 };
 
+/*
+ * Starts Stripe Checkout for one invoice. The server decides payability and amount; this only
+ * posts the id, refreshes the page when the server says the invoice state moved on
+ * (STATE_CHANGED_CODES), and follows the returned URL only if it is https. Payment is confirmed
+ * by the Stripe webhook, never here (see PaymentReturnNotice).
+ */
 export default function PayInvoiceButton({
   invoiceId,
   amount,

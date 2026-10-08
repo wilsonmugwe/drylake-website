@@ -54,7 +54,7 @@ export function claimToken(token: string, now = Date.now()): boolean {
 }
 
 /** Test hook: forget every claimed token. */
-export function resetClaimedTokens() {
+export function resetClaimedTokens(): void {
   consumed.clear();
 }
 

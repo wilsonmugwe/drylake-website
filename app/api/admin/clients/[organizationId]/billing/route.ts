@@ -47,6 +47,12 @@ function noStoreHeaders() {
   };
 }
 
+/*
+ * POST: update an ACTIVE client's billing contact (form fields billingContactName,
+ * billingEmail). Admin only. The email is required because issuing an invoice refuses a
+ * client with no valid billing email. The gate is inline and answers 401 JSON when signed
+ * out, because the admin form posts with fetch and handles navigation itself.
+ */
 export async function POST(
   request: Request,
   context: RouteContext

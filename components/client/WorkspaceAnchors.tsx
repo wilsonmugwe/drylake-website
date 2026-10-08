@@ -110,6 +110,8 @@ function landOnPage() {
   target.focus({ preventScroll: true });
 }
 
+// Module-level on purpose: there is one Workspace frame per document, and a newer reveal must
+// cancel an older wait even when it comes from goToSection in ClientNav, outside the component.
 let pending: (() => void) | null = null;
 
 /*

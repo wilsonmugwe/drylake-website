@@ -39,7 +39,7 @@ export default function Production() {
             </p>
 
             <h2 className="type-statement mt-6">
-              The boring part
+              The boring part{" "}
               <br />
               <span className="text-white/40">is the hard part.</span>
             </h2>

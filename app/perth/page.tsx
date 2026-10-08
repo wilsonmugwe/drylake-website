@@ -92,7 +92,7 @@ export default function PerthPage() {
           <p className="section-label mt-6 text-black/60 sm:mt-10">Perth / Western Australia</p>
 
           <h1 className="type-section text-balance mt-5 max-w-5xl">
-            A Perth technology company.
+            A Perth technology company.{" "}
             <br />
             <span className="text-black/45">Building for Australian businesses.</span>
           </h1>

@@ -105,7 +105,7 @@ export default function SignUpPage() {
               </div>
 
               <p className="mt-7 text-[clamp(4.3rem,6.2vw,7.2rem)] font-semibold leading-[0.84] tracking-[-0.075em]">
-                One account.
+                One account.{" "}
                 <br />
 
                 <span className="text-white/45">

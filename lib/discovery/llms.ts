@@ -4,7 +4,7 @@
  * structured data. PURE (tests import it directly).
  */
 
-import { ENTITY, FOUNDERS, PERTH_PATH, SERVICES, SERVICES_PATH, absoluteUrl, findService } from "./entity.ts";
+import { ENTITY, FOUNDERS, PERTH_PATH, PUBLIC_PAGES, SERVICES, SERVICES_PATH, absoluteUrl, findService } from "./entity.ts";
 import { BUSINESS_PROBLEMS, problemPath } from "./problems.ts";
 
 /*
@@ -31,11 +31,18 @@ function problemLines(): string[] {
   });
 }
 
+/* Newest page date, from the same source as the sitemap's lastmod, so the two never disagree. */
+export function lastUpdated(): string {
+  return PUBLIC_PAGES.map((page) => page.lastModified).sort().at(-1) ?? "";
+}
+
 export function llmsText(): string {
   const lines = [
     `# ${ENTITY.brand}`,
     "",
     `> ${ENTITY.summary}`,
+    "",
+    `Last updated: ${lastUpdated()}`,
     "",
     "## Company facts",
     "",
@@ -75,6 +82,7 @@ export function llmsText(): string {
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,
+    `- [Terms](${absoluteUrl("/terms")}): the terms of use for this website`,
     "",
     "## Optional",
     "",

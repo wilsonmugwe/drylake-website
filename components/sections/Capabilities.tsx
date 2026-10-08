@@ -68,7 +68,7 @@ export default function Capabilities() {
 
           <div>
             <h2 className="max-w-4xl text-[clamp(2.7rem,6vw,6rem)] font-semibold leading-[0.9] tracking-[-0.065em]">
-              Different technology.
+              Different technology.{" "}
               <br />
               <span className="text-black/45">Same objective.</span>
             </h2>

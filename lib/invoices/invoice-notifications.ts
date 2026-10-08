@@ -59,7 +59,11 @@ export type ContextResult =
   | { ok: true; context: InvoiceEmailContext }
   | { ok: false; code: string; transient: boolean };
 
-/* Organisation must be ACTIVE with a valid billing email; project must belong to the org. */
+/*
+ * Organisation must be ACTIVE with a valid billing email; project must belong to the org.
+ * On failure, transient true means a lookup failed and a retry may succeed; false means the
+ * data itself must be fixed (missing or invalid billing email, inactive client, mismatch).
+ */
 export async function loadInvoiceEmailContext(
   supabase: SupabaseClient,
   invoice: InvoiceEmailRow
@@ -190,6 +194,14 @@ async function markNotification(
   }
 }
 
+/**
+ * Sends one invoice email and records it: a notification row, the Resend send, the row's
+ * final status, and an audit entry on success.
+ * @returns SENT, FAILED (send failed; row marked FAILED) or NOT_RECORDED (no notification
+ *   row could be created, so nothing was sent).
+ * Delivery failures are reported through the outcome, not thrown, and the invoice status is
+ * never changed here.
+ */
 export async function deliverInvoiceEmail(
   supabase: SupabaseClient,
   invoice: InvoiceEmailRow,
@@ -267,6 +279,7 @@ export async function deliverInvoiceEmail(
     return "FAILED";
   }
 
+  // Same row shape as the shared audit helper; kept inline (see deferred-findings PR 4).
   const { error: auditError } = await supabase.from("audit_logs").insert({
     actor_clerk_user_id: options.actorUserId,
     action: "INVOICE_EMAIL_SENT",

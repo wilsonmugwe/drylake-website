@@ -147,9 +147,10 @@ export async function POST(request: Request, context: RouteContext) {
   } catch (error) {
     const code = clerkErrorCode(error);
 
+    // Code and error class only: Clerk messages can echo the invited email address.
     console.error("Client invitation failed:", {
       code,
-      message: error instanceof Error ? error.message : "Unknown Clerk error",
+      name: error instanceof Error ? error.name : "Unknown Clerk error",
     });
 
     return jsonError(invitationErrorMessage(code), code ? 409 : 502);

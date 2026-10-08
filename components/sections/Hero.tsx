@@ -48,8 +48,8 @@ export default function Hero() {
             </div>
 
             <h1 className="hz-display relative z-10 mt-6 sm:mt-10 lg:mt-14">
-              <span className="block">Your business</span>
-              <span className="block pl-[0.82em]">shouldn&apos;t run</span>
+              <span className="block">Your business</span>{" "}
+              <span className="block pl-[0.82em]">shouldn&apos;t run</span>{" "}
               <span className="block text-white/78 lg:text-white/62">on workarounds.</span>
             </h1>
 

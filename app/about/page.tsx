@@ -66,7 +66,7 @@ export default function AboutPage() {
               <div>
                 <p className="section-label text-black/60">About Drylake</p>
                 <h2 className="type-section mt-5">
-                  Built close to
+                  Built close to{" "}
                   <br />
                   <span className="text-black/45">the problem.</span>
                 </h2>

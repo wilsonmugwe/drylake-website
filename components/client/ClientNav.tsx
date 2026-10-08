@@ -140,6 +140,7 @@ function SectionNavLink({
     onNavigate?.();
 
     if (isSamePageDestination(href, pathname)) {
+      // A same-page destination always carries an anchor, so the cast below cannot be null.
       event.preventDefault();
       goToSection(splitDestination(href).anchor as string);
     }
@@ -175,6 +176,8 @@ export function ClientNavLinks({
   const pathname = usePathname();
   const active = sectionFromPath(pathname) ?? fallback ?? null;
   const projectPath = projectPathFrom(pathname);
+  // Initial value only: the mobile drawer remounts these links every time it opens, and the
+  // rail ignores expanded, so it never needs re-syncing to the path.
   const [expanded, setExpanded] = useState<ClientSection | null>(active);
 
   return (

@@ -104,6 +104,9 @@ const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
     const widgetIdRef = useRef<string | null>(null);
 
     // Latest callbacks without re-rendering the widget when the parent re-renders.
+    // Assigned during render (not in an effect) so the callbacks the widget captured once at
+    // render time always reach the latest handlers. Safe because the ref is only read from
+    // Turnstile events and the imperative reset, never during render.
     const callbacks = useRef({ onToken, onTokenCleared, onUnavailable });
     callbacks.current = { onToken, onTokenCleared, onUnavailable };
 

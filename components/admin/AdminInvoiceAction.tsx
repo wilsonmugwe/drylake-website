@@ -9,6 +9,10 @@ type AdminInvoiceActionProps = {
   disabled?: boolean;
 };
 
+/*
+ * Native form POST (no fetch) so the API route can answer with a redirect back to the invoice
+ * page carrying a notice code. submitting only blocks a double submit while the browser navigates.
+ */
 export default function AdminInvoiceAction({
   invoiceId,
   action,

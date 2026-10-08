@@ -19,6 +19,9 @@ const DEFAULT_ALLOWED_HOSTNAMES = ["drylake.com.au", "www.drylake.com.au"];
  * Cloudflare's published test secrets (always-pass / always-fail / token-spent). Their
  * responses report hostname "example.com", so the hostname check cannot apply to them.
  * They can only ever be configured deliberately, for local or CI testing.
+ * Nothing refuses one in production, and the health route only counts missing variables, so a
+ * test secret there would accept every token and skip the hostname, action and replay checks.
+ * verifyTurnstile logs an error when that happens; it does not change the verdict.
  */
 const TEST_SECRET_PATTERN = /^[123]x0{20,}AA$/;
 
@@ -79,6 +82,11 @@ export async function verifyTurnstile(
   if (!secret) {
     console.error("Turnstile: TURNSTILE_SECRET_KEY is not configured.");
     return { ok: false, reason: "misconfigured" };
+  }
+
+  // Log only, never a different verdict: refusing here would turn a config slip into an outage.
+  if (process.env.VERCEL_ENV === "production" && TEST_SECRET_PATTERN.test(secret)) {
+    console.error("Turnstile: a Cloudflare test secret is configured in production.");
   }
 
   if (!token) {

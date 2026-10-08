@@ -36,6 +36,11 @@ function isValidDate(value: string) {
   );
 }
 
+/*
+ * POST: create a milestone on a project of an ACTIVE client (form fields title, status,
+ * dueDate). Admin only. The new position is the current highest plus one, read separately
+ * from the insert, so two concurrent creates can end up sharing a position.
+ */
 export async function POST(
   request: Request,
   context: RouteContext

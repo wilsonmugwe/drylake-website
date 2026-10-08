@@ -76,6 +76,9 @@ async function retrieveSession(stripe: Stripe, sessionId: string) {
 }
 
 export async function POST(request: Request) {
+  // Uses the session's active org plus RLS rather than the shared client-workspace resolver:
+  // the same boundary (Clerk-signed org id, the organisations RLS policy, ACTIVE filter)
+  // without a Clerk Backend API call on the payment path.
   const { userId, orgId } = await auth();
 
   if (!userId) {

@@ -113,7 +113,9 @@ export async function POST(request: Request, context: RouteContext) {
     })
     .eq("id", invoice.id)
     .eq("status", "DRAFT")
-    // Optimistic lock: issue exactly the amounts that were just read.
+    // Optimistic lock: issue exactly the amounts that were just read. The total alone is
+    // enough: drafts have no edit endpoint, tax is derived from the subtotal, and a concurrent
+    // issue moves the status off DRAFT, which the status filter above also catches.
     .eq("total_cents", stored.totalCents)
     .select(INVOICE_EMAIL_SELECT)
     .maybeSingle<InvoiceEmailRow>();

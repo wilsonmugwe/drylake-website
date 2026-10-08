@@ -44,6 +44,12 @@ const items = [
   },
 ];
 
+/*
+ * Solutions page accordion. Open panels animate with motion; collapsed text is not in the DOM
+ * (unlike FAQ.tsx, which keeps every answer in the DOM for the FAQPage schema).
+ * TODO(2026-10-08): honour prefers-reduced-motion here (motion's reducedMotion "user" setting),
+ * as the rest of the site does. Deferred: it changes animation behaviour (C2 review R4).
+ */
 export default function SmallThings() {
   const [active, setActive] = useState<number | null>(0);
 

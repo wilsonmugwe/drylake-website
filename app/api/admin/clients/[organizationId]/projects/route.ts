@@ -78,6 +78,12 @@ function isValidDate(
   );
 }
 
+/*
+ * POST: create a project for an ACTIVE client (form fields name, status, startDate,
+ * targetEndDate). Admin only, and cross-tenant by design: the organisation comes from the
+ * path and is re-read, and its status checked, before the insert. Answers JSON (401 when
+ * signed out) because the admin form posts with fetch.
+ */
 export async function POST(
   request: Request,
   context: RouteContext

@@ -98,7 +98,7 @@ export default function SignInPage() {
               </div>
 
               <p className="mt-7 text-[clamp(4.5rem,6.5vw,7.5rem)] font-semibold leading-[0.84] tracking-[-0.075em]">
-                Welcome
+                Welcome{" "}
                 <br />
 
                 <span className="text-white/45">

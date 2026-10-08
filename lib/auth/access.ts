@@ -48,6 +48,7 @@ export type ResolveInput = {
 
 function toOption(row: ClientOrganizationRow): ClientOption {
   return {
+    // Callers pass only rows already filtered to a string Clerk org id.
     clerkOrgId: row.clerk_org_id as string,
     organizationId: row.id,
     name: row.name,

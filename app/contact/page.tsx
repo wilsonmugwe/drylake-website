@@ -79,7 +79,7 @@ export default function ContactPage() {
                 </p>
 
                 <h1 className="type-section mt-6 max-w-3xl">
-                  Tell us what&apos;s
+                  Tell us what&apos;s{" "}
                   <br />
 
                   <span className="text-black/45">
@@ -169,7 +169,7 @@ export default function ContactPage() {
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-black/60">
-                      Perth, Western Australia
+                      Perth, Western Australia{" "}
                       <br />
                       ABN 70 702 662 557
                     </p>
