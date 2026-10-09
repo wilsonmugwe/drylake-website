@@ -4,6 +4,7 @@ import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
 import { ENTITY, SERVICES, SERVICES_PATH } from "@/lib/discovery/entity";
 import { CLIENT_LOGIN } from "@/lib/navigation/site-nav";
+import { BUSINESS_PHONE } from "@/lib/site";
 
 const columns = [
   {
@@ -54,8 +55,8 @@ export default function Footer() {
               <a href="mailto:hello@drylake.com.au" className="inline-flex min-h-[44px] w-fit items-center hover:text-white lg:min-h-[34px]">
                 hello@drylake.com.au
               </a>
-              <a href="tel:+61420565457" className="inline-flex min-h-[44px] w-fit items-center hover:text-white lg:min-h-[34px]">
-                +61 420 565 457
+              <a href={BUSINESS_PHONE.href} className="inline-flex min-h-[44px] w-fit items-center hover:text-white lg:min-h-[34px]">
+                {BUSINESS_PHONE.display}
               </a>
             </div>
           </div>

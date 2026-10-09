@@ -175,7 +175,7 @@ describe("PUBLIC: homepage content", () => {
 
   it("the contact CTA keeps both direct lines and the canonical action", () => {
     const cta = code("components/sections/ContactCTA.tsx");
-    assert.match(cta, /tel:\+61420565457/);
+    assert.match(cta, /href=\{BUSINESS_PHONE\.href\}/);
     assert.match(cta, /mailto:hello@drylake\.com\.au/);
     assert.match(cta, /Start a conversation\s*<\/PrimaryCta>/);
   });

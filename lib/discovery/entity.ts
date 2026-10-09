@@ -12,6 +12,7 @@
  */
 
 import { DRYLAKE_BUSINESS } from "../business.ts";
+import { BUSINESS_PHONE } from "../site.ts";
 import { SERVICES, SERVICES_PATH } from "./services.ts";
 
 export const SITE_URL = "https://drylake.com.au";
@@ -23,6 +24,8 @@ export const ENTITY = {
   acn: DRYLAKE_BUSINESS.acn,
   url: SITE_URL,
   email: "hello@drylake.com.au",
+  /* Official business line, E.164-style for machines (lib/site.ts holds every format). */
+  telephone: BUSINESS_PHONE.international,
   locality: "Perth",
   region: "Western Australia",
   regionCode: "WA",

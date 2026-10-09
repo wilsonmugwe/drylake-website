@@ -112,7 +112,7 @@ signatures). Any variation splits the entity.
 | Location | Perth, Western Australia (no street address) |
 | Website | https://drylake.com.au (no www, no trailing slash) |
 | Email | hello@drylake.com.au |
-| Phone | +61 420 565 457 today (founder mobile). Replace everywhere at once when a business number exists |
+| Phone | 0433 448 000 (+61 433 448 000), the official business line from 2026-10-09. One constant: `BUSINESS_PHONE` in lib/site.ts |
 | Founded | 24 September 2026 |
 | Category | Software company / technology company |
 

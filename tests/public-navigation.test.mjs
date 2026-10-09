@@ -260,7 +260,7 @@ describe("the redesign kept the approved homepage copy", () => {
     // "Tell us what's slowing you down." was retired with it.
     "Have a problem", "worth fixing?",
     "No technical brief required. Tell us what's manual, disconnected or taking too much time.",
-    "TALK TO A PERSON, NOT A SALES QUEUE", "+61 420 565 457", "hello@drylake.com.au",
+    "TALK TO A PERSON, NOT A SALES QUEUE", "{BUSINESS_PHONE.display}", "hello@drylake.com.au",
   ];
 
   it("every approved string is still on the homepage", () => {

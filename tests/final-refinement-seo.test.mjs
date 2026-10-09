@@ -117,9 +117,10 @@ describe("structured data: geography and entity relationships", () => {
     for (const service of SERVICES) assert.deepEqual(names(serviceNode(service).areaServed), expected);
   });
 
-  it("publishes no street address, postcode, phone or LocalBusiness type", () => {
+  it("publishes no street address, postcode or LocalBusiness type; phone is the business line only", () => {
     const text = JSON.stringify(siteGraph());
-    assert.ok(!/streetAddress|postalCode|telephone|LocalBusiness|ProfessionalService/.test(text));
+    assert.ok(!/streetAddress|postalCode|LocalBusiness|ProfessionalService/.test(text));
+    assert.ok(!/420 ?565 ?457/.test(text));
   });
 
   it("the offer catalog references exactly the Service node ids", () => {

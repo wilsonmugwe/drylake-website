@@ -2,6 +2,8 @@
  * Homepage FAQ content. Shared by the visible FAQ section and the FAQPage JSON-LD, so the
  * structured data can never describe answers the page does not show.
  */
+import { BUSINESS_PHONE } from "./site.ts";
+
 export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: "What kind of businesses does Drylake work with?",
@@ -26,6 +28,6 @@ export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: "How do we get started?",
     answer:
-      "Start with a conversation. Call +61 420 565 457, email hello@drylake.com.au or use our contact form.",
+      `Start with a conversation. Call ${BUSINESS_PHONE.display}, email hello@drylake.com.au or use our contact form.`,
   },
 ];
