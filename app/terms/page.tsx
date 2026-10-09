@@ -3,6 +3,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
+import { DRYLAKE_BUSINESS } from "@/lib/business";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 import { pageMetadata } from "@/lib/seo";
@@ -112,10 +113,12 @@ export default function TermsPage() {
               </TermsSection>
 
               <TermsSection title="5. Invoices and payments">
+                {/* Read from lib/business.ts so this sentence can never contradict ABN Lookup. */}
                 <p>
-                  Drylake is registered for GST. Our invoices are tax invoices showing the amount
-                  excluding GST, the GST and the total. Payment terms are those in your signed
-                  agreement.
+                  {DRYLAKE_BUSINESS.gstRegistered
+                    ? "Drylake is registered for GST. Our invoices are tax invoices showing the amount excluding GST, the GST and the total."
+                    : "Drylake is not currently registered for GST and does not charge GST. Invoice amounts are in Australian dollars."}{" "}
+                  Payment terms are those in your signed agreement.
                 </p>
                 <p className="mt-3">
                   Card payments made through the Workspace are processed by Stripe. Drylake does not

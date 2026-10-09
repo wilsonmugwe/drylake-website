@@ -97,10 +97,19 @@ describe("calculateInvoiceAmounts", () => {
 });
 
 describe("business config (single source)", () => {
-  it("Drylake is GST registered, with its legal name and ABN, as constants", () => {
-    assert.equal(DRYLAKE_BUSINESS.gstRegistered, true);
+  it("Drylake is NOT GST registered (ABN Lookup 9 Oct 2026), with its legal name and ABN, as constants", () => {
+    assert.equal(DRYLAKE_BUSINESS.gstRegistered, false);
     assert.equal(DRYLAKE_BUSINESS.legalName, "DRYLAKE PTY LTD");
     assert.equal(DRYLAKE_BUSINESS.abn, "70 702 662 557");
+  });
+
+  it("the public Terms page states GST status from the same constant, never a hard-coded claim", () => {
+    const terms = readFileSync(fileURLToPath(new URL("../app/terms/page.tsx", import.meta.url)), "utf8");
+    assert.match(terms, /DRYLAKE_BUSINESS\.gstRegistered\s*\?/);
+    assert.match(terms, /"Drylake is not currently registered for GST and does not charge GST\./);
+    // No unconditional claim outside the ternary (the 9 Oct 2026 page said "registered" while ABN Lookup did not).
+    assert.equal(terms.split("Drylake is registered for GST").length, 2, "the registered sentence exists only once, in the ternary");
+    assert.equal(/ex-GST|inc-GST|GST-inclusive/i.test(terms), false);
   });
 
   it("GST is not switchable by environment variable", () => {
@@ -109,8 +118,16 @@ describe("business config (single source)", () => {
     assert.equal(/process\.env/.test(source + tax), false);
   });
 
-  it("a new invoice gets 10% GST on top", () => {
+  it("a new invoice is plain AUD with no GST while unregistered", () => {
     assert.deepEqual(calculateInvoiceAmounts(645_000, DRYLAKE_BUSINESS.gstRegistered), {
+      subtotalCents: 645_000,
+      taxCents: 0,
+      totalCents: 645_000,
+    });
+  });
+
+  it("once registered, the same calculation adds 10% (the flip is one constant)", () => {
+    assert.deepEqual(calculateInvoiceAmounts(645_000, true), {
       subtotalCents: 645_000,
       taxCents: 64_500,
       totalCents: 709_500,
