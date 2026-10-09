@@ -93,8 +93,14 @@ export async function POST(request: NextRequest) {
   if (!decision.handle || !email?.toEmailAddress) {
     const reason = decision.handle ? "no_recipient" : decision.reason;
 
+    // An organisation invitation that Clerk delivered itself means "Delivered by Clerk" is still
+    // ON for the Organization invitation template: the client got Clerk's generic email, not
+    // ours. That is a configuration fault, not a normal skip (9 Oct 2026: the toggle was turned
+    // off on the application "Invitation" template instead), so it is logged as a warning.
+    const log = reason === "delivered_by_clerk" ? console.warn : console.info;
+
     // Names and flags only (safeEmailEventShape): never the address, link, ticket or body.
-    console.info("Clerk webhook skipped.", {
+    log("Clerk webhook skipped.", {
       deliveryId,
       eventType: event.type,
       reason,
