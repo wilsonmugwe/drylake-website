@@ -38,7 +38,7 @@ One source: `lib/discovery/entity.ts` (legal name, ABN and ACN come from `lib/bu
 the same module invoices use). Every page emits a JSON-LD `@graph` whose nodes reference
 `https://drylake.com.au/#organization`, so all pages describe the same organisation.
 
-Privacy (reviewed 2026-10-06): structured data carries only public business facts. No telephone (the site number is a founder's personal mobile), founders as name + role + employer only.
+Privacy (reviewed 2026-10-06): structured data carries only public business facts. Telephone is the official business line only (0433 448 000, from 2026-10-09; the founder mobile it replaced was never published), founders as name + role + employer only.
 
 Deliberately not published: street address (no public premises), ratings or reviews (none
 exist). The logo IS published (`brand/drylake-mark-512.png` as an ImageObject, M9 done).

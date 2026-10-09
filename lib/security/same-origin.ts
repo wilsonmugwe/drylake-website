@@ -11,14 +11,14 @@
  *
  * What it does NOT block: requests with no browser provenance headers at all (curl,
  * server-to-server). Those carry no victim's cookies, so they are not CSRF; they still hit
- * the handler's own auth checks. The Stripe webhook is exempt because Stripe is a
- * cross-site sender by design and authenticates with its signature.
+ * the handler's own auth checks. The Stripe and Clerk webhooks are exempt because both are
+ * cross-site senders by design and authenticate with their signatures.
  */
 
 export const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /* Server-to-server endpoints authenticated by their own signature, never by cookies. */
-export const CROSS_SITE_EXEMPT_PATHS = new Set(["/api/stripe/webhook"]);
+export const CROSS_SITE_EXEMPT_PATHS = new Set(["/api/stripe/webhook", "/api/clerk/webhook"]);
 
 export type MutationRequest = {
   method: string;

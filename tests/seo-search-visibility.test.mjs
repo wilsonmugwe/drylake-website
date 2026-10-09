@@ -265,7 +265,7 @@ function pngSize(file) {
 }
 
 /* Properties that would claim something Drylake cannot evidence, or publish what it must not. */
-const FORBIDDEN_SCHEMA = /aggregateRating|"review"|ratingValue|"award"|telephone|streetAddress|postalCode|openingHours|priceRange|"offers"|numberOfEmployees|"geo"|hasCredential/;
+const FORBIDDEN_SCHEMA = /aggregateRating|"review"|ratingValue|"award"|streetAddress|postalCode|openingHours|priceRange|"offers"|numberOfEmployees|"geo"|hasCredential/;
 
 describe("PR 6: one registry for page search copy", () => {
   it("every public page in the sitemap has exactly one copy entry", () => {

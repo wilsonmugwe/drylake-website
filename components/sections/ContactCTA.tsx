@@ -4,6 +4,7 @@ import { ArrowUpRight, Mail, Phone } from "lucide-react";
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
+import { BUSINESS_PHONE } from "@/lib/site";
 
 /*
  * The ending (every public page): one question, one action, two direct lines to a person. It
@@ -20,10 +21,10 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
     <>
       <p className="tech-label text-signal">TALK TO A PERSON, NOT A SALES QUEUE</p>
 
-      <a href="tel:+61420565457" className="group mt-4 flex min-h-[52px] items-center justify-between border-b border-white/10">
+      <a href={BUSINESS_PHONE.href} className="group mt-4 flex min-h-[52px] items-center justify-between border-b border-white/10">
         <span className="flex items-center gap-3">
           <Phone aria-hidden="true" size={15} className="text-white/40" />
-          <span className="text-[0.95rem] text-white/75">+61 420 565 457</span>
+          <span className="text-[0.95rem] text-white/75">{BUSINESS_PHONE.display}</span>
         </span>
         <ArrowUpRight aria-hidden="true" size={15} className="text-white/30 transition-colors group-hover:text-white" />
       </a>

@@ -14,7 +14,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProjectForm from "@/components/forms/ProjectForm";
 import Container from "@/components/ui/Container";
-import { RESPONSE_TIME } from "@/lib/site";
+import { BUSINESS_PHONE, RESPONSE_TIME } from "@/lib/site";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
@@ -107,7 +107,7 @@ export default function ContactPage() {
                   </p>
 
                   <a
-                    href="tel:+61420565457"
+                    href={BUSINESS_PHONE.href}
                     className="group mt-4 flex max-w-md items-center justify-between border-b border-black/10 pb-3"
                   >
                     <div className="flex items-center gap-3">
@@ -122,7 +122,7 @@ export default function ContactPage() {
                         </p>
 
                         <p className="mt-0.5 text-sm font-medium text-black/65">
-                          +61 420 565 457
+                          {BUSINESS_PHONE.display}
                         </p>
                       </div>
                     </div>

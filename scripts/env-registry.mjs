@@ -25,6 +25,7 @@ export const ENV_REGISTRY = [
   // Clerk
   { name: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", exposure: "public", required: true, readBy: "@clerk/nextjs", purpose: "Clerk frontend key (pk_live_ in production)" },
   { name: "CLERK_SECRET_KEY", exposure: "secret", required: true, readBy: "@clerk/nextjs", purpose: "Clerk Backend API: organisations, invitations, memberships" },
+  { name: "CLERK_WEBHOOK_SIGNING_SECRET", exposure: "secret", required: true, readBy: "app/api/clerk/webhook/route.ts (@clerk/nextjs/webhooks)", purpose: "Verifies Clerk webhooks; the email.created event delivers the branded client invitation email" },
   { name: "CLERK_JWT_KEY", exposure: "server", required: false, readBy: "proxy.ts", purpose: "PEM public key for networkless session verification; optional" },
   { name: "NEXT_PUBLIC_CLERK_SIGN_IN_URL", exposure: "public", required: true, readBy: "@clerk/nextjs", purpose: "Must be /sign-in, or Clerk links fall back to the hosted Account Portal" },
   { name: "NEXT_PUBLIC_CLERK_SIGN_UP_URL", exposure: "public", required: true, readBy: "@clerk/nextjs", purpose: "Must be /sign-up (invitation sign-up path)" },

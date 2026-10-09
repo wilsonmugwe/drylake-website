@@ -11,8 +11,8 @@
  * "DRYLAKE TECHNOLOGIES" image, which was neither the brand nor the legal name.
  *
  * Privacy (reviewed 2026-10-06): only public business facts that help establish the entity.
- *   - No telephone: the number on the site is a founder's personal mobile (drylake-ops D9);
- *     the business email identifies the contact channel. Add a business number when one exists.
+ *   - Telephone: the official business line (0433 448 000, from 2026-10-09). The founder's
+ *     personal mobile it replaced was never published here (drylake-ops D9).
  *   - Founders: name, job title and employer only (already public on /about). No credentials,
  *     personal profiles, photos, emails or addresses.
  *
@@ -77,6 +77,7 @@ export function organizationNode(): Node {
     description: ENTITY.summary,
     foundingDate: ENTITY.foundingDate,
     email: ENTITY.email,
+    telephone: ENTITY.telephone,
     taxID: ENTITY.abn,
     identifier: [
       { "@type": "PropertyValue", propertyID: "ABN", value: ENTITY.abn },
@@ -95,6 +96,7 @@ export function organizationNode(): Node {
       "@type": "ContactPoint",
       contactType: "customer service",
       email: ENTITY.email,
+      telephone: ENTITY.telephone,
       areaServed: ENTITY.countryCode,
       availableLanguage: "en-AU",
     },

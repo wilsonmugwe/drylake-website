@@ -169,7 +169,7 @@ test("footer: direct contact lines, company details and every link resolves", as
   const footer = page.locator("footer");
 
   await expect(footer.locator('a[href="mailto:hello@drylake.com.au"]')).toBeAttached();
-  await expect(footer.locator('a[href="tel:+61420565457"]')).toBeAttached();
+  await expect(footer.locator('a[href="tel:+61433448000"]')).toBeAttached();
   await expect(footer).toContainText(/Drylake Pty Ltd/i);
   await expect(footer).toContainText("ABN 70 702 662 557");
 

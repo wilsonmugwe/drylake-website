@@ -475,13 +475,17 @@ describe("pre-merge review (2026-10-06)", () => {
     const [organization, website, ...people] = siteGraph();
     const text = JSON.stringify(siteGraph());
 
-    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "foundingDate", "hasOfferCatalog", "identifier", "knowsAbout", "legalName", "location", "logo", "name", "sameAs", "taxID", "url"]);
+    assert.deepEqual(Object.keys(organization).sort(), ["@id", "@type", "address", "alternateName", "areaServed", "contactPoint", "description", "email", "founder", "foundingDate", "hasOfferCatalog", "identifier", "knowsAbout", "legalName", "location", "logo", "name", "sameAs", "taxID", "telephone", "url"]);
     assert.deepEqual(Object.keys(organization.logo).sort(), ["@type", "height", "url", "width"]);
-    assert.deepEqual(Object.keys(organization.contactPoint).sort(), ["@type", "areaServed", "availableLanguage", "contactType", "email"]);
+    assert.deepEqual(Object.keys(organization.contactPoint).sort(), ["@type", "areaServed", "availableLanguage", "contactType", "email", "telephone"]);
     assert.deepEqual(Object.keys(organization.address).sort(), ["@type", "addressCountry", "addressLocality", "addressRegion"]);
     assert.deepEqual(Object.keys(website).sort(), ["@id", "@type", "alternateName", "inLanguage", "name", "publisher", "url"]);
     for (const person of people) assert.deepEqual(Object.keys(person).sort(), ["@id", "@type", "jobTitle", "name", "worksFor"]);
-    assert.ok(!/telephone|\+61|hasCredential|birthDate|homeLocation|streetAddress/.test(text));
+    // The ONLY phone number is the business line; a founder's personal mobile never appears.
+    assert.equal(organization.telephone, "+61 433 448 000");
+    assert.equal(organization.contactPoint.telephone, "+61 433 448 000");
+    assert.deepEqual([...new Set(text.match(/\+61[\d ]+/g))], ["+61 433 448 000"]);
+    assert.ok(!/hasCredential|birthDate|homeLocation|streetAddress/.test(text));
     assert.equal(organization.email, "hello@drylake.com.au");
   });
 
