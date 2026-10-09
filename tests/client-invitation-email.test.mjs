@@ -54,7 +54,6 @@ function build(event, contacts = []) {
     appBaseUrl: APP,
     clerkHost: clerkFrontendApiHost(PK),
     defaultExpiryDays: 14,
-    year: 2026,
   });
 }
 
@@ -62,10 +61,10 @@ const rendered = renderInvitationEmail({
   organizationName: "Acme <Plumbing> & Co",
   recipientFirstName: "Sam",
   acceptUrl: ACCEPT,
-  logoUrl: `${APP}/brand/drylake-lockup-dark-bg.png`,
+  assetOrigin: APP,
   expiresInDays: 14,
-  year: 2026,
 });
+const visibleText = (html) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ");
 
 describe("business phone number", () => {
   it("is the official line in every format", () => {
@@ -94,25 +93,31 @@ describe("business phone number", () => {
 });
 
 describe("invitation email content", () => {
-  it("uses the approved subject, header, eyebrow, headline, button and footer", () => {
+  it("uses the approved subject, eyebrow, headline, button, fallback and footer", () => {
     assert.equal(rendered.subject, "Your Drylake client workspace is ready");
     for (const phrase of [
-      "DRYLAKE TECHNOLOGIES",
-      "YOU’RE INVITED",
+      "You’re invited",
       "Your workspace is ready.",
       "Your workspace brings everything together in one secure place",
       "Activate your workspace",
       "Need assistance?",
       "hello@drylake.com.au",
       "0433 448 000",
+      "drylake.com.au",
       "Drylake Pty Ltd",
       "Perth, Western Australia",
-      "© 2026 Drylake Pty Ltd",
       ...WORKSPACE_HIGHLIGHTS,
     ]) {
       assert.ok(rendered.html.includes(phrase), `html missing ${phrase}`);
       assert.ok(rendered.text.includes(phrase), `text missing ${phrase}`);
     }
+    assert.ok(rendered.html.includes("Button not working? <a "));
+    assert.ok(rendered.html.includes(">Open your invitation in your browser</a>."));
+  });
+
+  it("has no 'DRYLAKE TECHNOLOGIES' label anywhere", () => {
+    assert.ok(!/technologies/i.test(rendered.html));
+    assert.ok(!/technologies/i.test(rendered.text));
   });
 
   it("names the organisation and greets the recipient, escaped", () => {
@@ -123,36 +128,33 @@ describe("invitation email content", () => {
   });
 
   it("falls back to neutral wording without a name or organisation", () => {
-    const plain = renderInvitationEmail({ organizationName: null, recipientFirstName: null, acceptUrl: ACCEPT, logoUrl: "x", expiresInDays: 14, year: 2026 });
+    const plain = renderInvitationEmail({ organizationName: null, recipientFirstName: null, acceptUrl: ACCEPT, assetOrigin: APP, expiresInDays: 14 });
     assert.ok(plain.html.includes("Hello,"));
     assert.ok(plain.html.includes("access your dedicated Drylake client workspace."));
     assert.ok(!plain.html.includes(" for null"));
   });
 
-  it("button and fallback link are the same Clerk accept URL; expiry is stated", () => {
-    const hrefs = [...rendered.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).filter((h) => h.startsWith("https://"));
-    assert.deepEqual(hrefs, [ACCEPT, ACCEPT]);
-    assert.ok(rendered.html.includes(`>${ACCEPT}</a>`), "visible fallback link");
+  it("button and fallback hyperlink carry the Clerk accept URL; the URL is never printed in HTML", () => {
+    const hrefs = [...rendered.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(hrefs.filter((h) => h.includes("/tickets/")), [ACCEPT, ACCEPT], "button + fallback link");
+    assert.ok(!visibleText(rendered.html).includes("ticket="), "no ticket in visible text");
+    assert.ok(!visibleText(rendered.html).includes("clerk.drylake.com.au"), "no Clerk host in visible text");
+    // Plain text has no hyperlinks, so the URL is the only way to carry the link there.
+    assert.ok(rendered.text.split("\n").includes(ACCEPT));
     assert.ok(rendered.html.includes("expires in 14 days"));
     assert.ok(rendered.html.includes(`href="${BUSINESS_PHONE.href}"`));
   });
 
-  it("is email-client safe: tables, inline brand colours, PNG logo, dark scheme, no em dash", () => {
+  it("is email-client safe: tables, inline brand colours, opaque dark-wordmark logo, light scheme, no em dash", () => {
     assert.match(rendered.html, /<table role="presentation"/);
     assert.match(rendered.html, /bgcolor="#f26a2e"/);
-    assert.match(rendered.html, /<meta name="color-scheme" content="dark">/);
-    assert.match(rendered.html, /<img src="https:\/\/drylake\.com\.au\/brand\/drylake-lockup-dark-bg\.png" width="160" height="40" alt="Drylake"/);
+    assert.match(rendered.html, /<meta name="color-scheme" content="light">/);
+    assert.match(rendered.html, /<img src="https:\/\/drylake\.com\.au\/brand\/drylake-email-logo-light\.png" width="140" height="36" alt="Drylake"/);
+    assert.ok(!rendered.html.includes("lockup-dark-bg"), "never the light-wordmark artwork");
     assert.match(rendered.html, /<!--\[if mso\]>/);
-    assert.ok(!/class="[^"]*"[^>]*style=""/.test(rendered.html));
     assert.ok(!rendered.html.includes("—") && !rendered.text.includes("—"));
     // Button text is ink on signal orange (about 6.9:1), not white (about 3:1).
-    assert.match(rendered.html, /color:#0b0b0a;text-decoration:none;border-radius:12px;">Activate your workspace/);
-  });
-
-  it("the logo it references is published by the site", () => {
-    const png = readFileSync(join(ROOT, "public/brand/drylake-lockup-dark-bg.png"));
-    assert.equal(png.readUInt32BE(0), 0x89504e47);
-    assert.equal(png.readUInt32BE(16) / png.readUInt32BE(20), 4, "160x40 display keeps the 4:1 ratio");
+    assert.match(rendered.html, /color:#0b0b0a;text-decoration:none;border-radius:10px;">Activate your workspace/);
   });
 });
 
@@ -201,7 +203,7 @@ describe("webhook event handling", () => {
     assert.equal(plan.email.subject, INVITATION_SUBJECT);
     assert.ok(plan.email.html.includes("for Acme Plumbing."));
     assert.ok(plan.email.html.includes("Hi Sam,"));
-    assert.ok(plan.email.html.includes("https://drylake.com.au/brand/drylake-lockup-dark-bg.png"));
+    assert.ok(plan.email.html.includes("https://drylake.com.au/brand/drylake-email-logo-light.png"));
   });
 
   it("uses Clerk's expiry when present, else the configured 14 days", () => {

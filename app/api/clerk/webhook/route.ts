@@ -117,7 +117,6 @@ export async function POST(request: NextRequest) {
     appBaseUrl: appBaseUrl(process.env),
     clerkHost: clerkFrontendApiHost(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY),
     defaultExpiryDays: CLIENT_INVITATION_EXPIRY_DAYS,
-    year: new Date().getFullYear(),
   });
 
   if (plan.kind === "undeliverable") {

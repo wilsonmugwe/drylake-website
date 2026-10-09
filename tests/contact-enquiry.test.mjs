@@ -49,6 +49,6 @@ describe("no budget wording on the enquiry path", () => {
       const code = read(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
       assert.doesNotMatch(code, /budget/i, file);
     }
-    assert.match(read("lib/email/contact-enquiry.ts"), /\["Help wanted", enquiry\.helpType/);
+    assert.match(read("lib/email/contact-enquiry-email.ts"), /\["Help wanted", enquiry\.helpType/);
   });
 });

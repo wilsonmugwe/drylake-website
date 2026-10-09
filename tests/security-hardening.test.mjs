@@ -193,10 +193,19 @@ describe("contact enquiry validation", () => {
     assert.equal(MAX_REQUEST_BYTES, 10_000);
   });
 
-  it("every enquiry value in the email HTML is escaped", () => {
-    const email = read("lib/email/contact-enquiry.ts");
-    assert.match(email, /escapeHtml\(value\)/);
-    assert.match(email, /escapeHtml\(enquiry\.message\)/);
+  it("every enquiry value in the email HTML is escaped", async () => {
+    // Behavioural, not a source match: escaping now lives in the shared email layout.
+    const { renderEnquiryEmail } = await import("../lib/email/contact-enquiry-email.ts");
+    const evil = '<img src=x onerror="alert(1)">';
+    const { html } = renderEnquiryEmail(
+      { name: evil, email: `${evil}@x.io`, company: evil, projectType: evil, helpType: evil, message: evil, receivedAt: evil,
+        portal: { accountEmail: evil, workspaceName: evil, workspaceState: evil } },
+      "https://drylake.com.au"
+    );
+    assert.equal(html.includes("<img src=x"), false);
+    assert.equal(html.includes('onerror="'), false);
+    assert.ok(html.split("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;").length >= 9, "all nine values escaped");
+    assert.match(read("lib/email/contact-enquiry.ts"), /renderEnquiryEmail\(enquiry, appBaseUrl\(process\.env\)\)/);
   });
 });
 
