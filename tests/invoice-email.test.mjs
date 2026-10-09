@@ -61,11 +61,18 @@ describe("renderInvoiceEmail", () => {
     assert.equal(text.includes(NO_GST_CHARGED_NOTE), false);
   });
 
-  it("the button and the plain link are the same canonical invoice URL", () => {
+  it("the button and the fallback hyperlink are the same canonical invoice URL, never printed", () => {
     const { html, text } = renderInvoiceEmail(input());
     const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
-    assert.deepEqual(hrefs, [PORTAL_URL], "exactly one link: the button");
-    assert.ok(html.includes(`>${PORTAL_URL}</p>`), "plain link under the button");
+    assert.deepEqual(hrefs.filter((href) => href.includes("/client/")), [PORTAL_URL, PORTAL_URL], "button + fallback link");
+    assert.ok(html.includes(">View and pay invoice</a>"));
+    assert.ok(html.includes(">Open your invoice in your browser</a>"));
+    assert.equal(html.includes(`>${PORTAL_URL}<`), false, "the URL is not printed as visible text");
+    // Every other link is the shared footer/logo set (site, email, phone), nothing invoice-specific.
+    assert.deepEqual(
+      [...new Set(hrefs.filter((href) => !href.includes("/client/")))].sort(),
+      ["https://drylake.com.au", "mailto:hello@drylake.com.au", "tel:+61433448000"]
+    );
     assert.ok(text.split("\n").includes(PORTAL_URL), "plain-text body link");
     assert.equal(PORTAL_URL, `https://drylake.com.au/client/billing/${INVOICE_ID}`);
   });

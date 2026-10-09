@@ -1,31 +1,37 @@
 /*
- * Branded client-workspace invitation email. Pure: no env reads, no SDK, relative imports only,
- * so the copy, escaping and link rules are unit tested (tests/client-invitation-email.test.mjs).
+ * Client-workspace invitation email + the Clerk webhook payload handling that feeds it. Pure:
+ * no env reads, no SDK, relative imports only (tests/client-invitation-email.test.mjs).
  *
- * How the email is sent (and why it lives here and not in the Clerk Dashboard):
- *   Clerk creates the organisation invitation and its one-time ticket. With "Delivered by
- *   Clerk" switched OFF for the "Organization invitation" template, Clerk does not send its
- *   generic email; it emits an `email.created` webhook instead (Clerk's documented way to
- *   own delivery). app/api/clerk/webhook/route.ts verifies that webhook, calls
- *   buildInvitationEmail() and sends the result through the existing Resend sender.
- *   The accept link is Clerk's own `action_url`, used unchanged, so the ticket, its expiry,
- *   single use and the organisation membership all stay exactly as Clerk issues them.
+ * How the email is sent: "Delivered by Clerk" is OFF for Clerk's "Organization invitation"
+ * template, so Clerk emits an `email.created` webhook instead of sending its generic email.
+ * app/api/clerk/webhook/route.ts verifies it, calls buildInvitationEmail() and sends the result
+ * through Resend. The accept link is Clerk's own `action_url`, used unchanged, so the ticket,
+ * its expiry, single use and the organisation membership stay exactly as Clerk issues them.
  *
- * Email-client rules this markup follows: table layout and bgcolor attributes (Outlook
- * desktop ignores most CSS), every style inline (Gmail strips classes it cannot scope), one
- * <style> block only for the mobile padding tweak, a PNG logo (no client renders SVG reliably),
- * and an explicit dark colour scheme so dark-mode clients leave the palette alone.
- * Copy rules: every interpolated value is HTML-escaped; no em dashes (client-facing).
+ * Presentation comes from the shared design system (lib/email/layout.ts). The accept URL sits
+ * behind the button and a short fallback hyperlink; it is never printed (a ticket URL runs to
+ * hundreds of characters).
  */
 
-import { BUSINESS_PHONE, CONTACT_EMAIL } from "../site.ts";
+import {
+  type RenderedEmail,
+  button,
+  checklist,
+  fallbackLink,
+  paragraph,
+  renderEmailLayout,
+  textFooter,
+} from "./layout.ts";
+
+export { escapeHtml, type RenderedEmail } from "./layout.ts";
 
 export const CLERK_INVITATION_TEMPLATE_SLUG = "organization_invitation";
 
 export const INVITATION_SUBJECT = "Your Drylake client workspace is ready";
 
-/* Published by the site itself (public/brand), so the image is always the current brand. */
-export const INVITATION_LOGO_PATH = "/brand/drylake-lockup-dark-bg.png";
+export const INVITATION_CTA = "Activate your workspace";
+
+export const INVITATION_FALLBACK_TEXT = "Open your invitation in your browser";
 
 /* What a client can actually do in Drylake Workspace today (components/client/ClientNav.tsx). */
 export const WORKSPACE_HIGHLIGHTS = [
@@ -38,36 +44,10 @@ export type InvitationEmailInput = {
   organizationName: string | null;
   recipientFirstName: string | null;
   acceptUrl: string;
-  logoUrl: string;
+  /* App base URL: the origin the logo is served from. */
+  assetOrigin: string;
   expiresInDays: number;
-  year: number;
 };
-
-export type RenderedEmail = {
-  subject: string;
-  html: string;
-  text: string;
-};
-
-/* Brand palette (app/globals.css): ink, ink-2, ink-3 and signal orange. */
-const INK = "#0b0b0a";
-const CARD = "#121210";
-const PANEL = "#1a1a17";
-const BORDER = "#2b2b27";
-const WHITE = "#ffffff";
-const BODY = "#c9c7bf";
-const MUTED = "#8f8d86";
-const SIGNAL = "#f26a2e";
-const FONT = "Arial,Helvetica,sans-serif";
-
-export function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 /* Single line, trimmed, length-capped: payload and database values are never trusted as markup. */
 export function cleanDisplayText(value: unknown, max = 120): string | null {
@@ -99,129 +79,39 @@ function expiryLine(days: number): string {
   return `This invitation can be used once and expires in ${days} days. If it has expired, contact us and we will send you a new one.`;
 }
 
+const ASSIST_LINE = "Need assistance? Reply to this email and we will help.";
+
 const IGNORE_LINE = "If you were not expecting this invitation, you can safely ignore this email.";
 
 export function renderInvitationEmail(input: InvitationEmailInput): RenderedEmail {
-  const e = escapeHtml;
   const greeting = input.recipientFirstName ? `Hi ${input.recipientFirstName},` : "Hello,";
   const intro = introLine(input.organizationName);
   const expiry = expiryLine(input.expiresInDays);
-  const acceptUrl = e(input.acceptUrl);
-  const preheader = input.organizationName
-    ? `Activate your Drylake client workspace for ${input.organizationName}.`
-    : "Activate your Drylake client workspace.";
-  const copyright = `© ${input.year} Drylake Pty Ltd`;
 
-  const highlights = WORKSPACE_HIGHLIGHTS.map(
-    (item) => `<tr>
-                      <td width="22" valign="top" style="padding:7px 0;font-family:${FONT};font-size:15px;line-height:22px;color:${SIGNAL};">&#9679;</td>
-                      <td style="padding:7px 0;font-family:${FONT};font-size:15px;line-height:22px;color:${WHITE};">${e(item)}</td>
-                    </tr>`
-  ).join("\n                    ");
+  const html = renderEmailLayout({
+    title: INVITATION_SUBJECT,
+    preheader: input.organizationName
+      ? `Activate your Drylake client workspace for ${input.organizationName}.`
+      : "Activate your Drylake client workspace.",
+    eyebrow: "You’re invited",
+    heading: "Your workspace is ready.",
+    assetOrigin: input.assetOrigin,
+    bodyHtml: [
+      paragraph(greeting),
+      paragraph(intro),
+      paragraph(VALUE_LINE),
+      checklist({ title: "In your workspace", items: WORKSPACE_HIGHLIGHTS }),
+      button({ href: input.acceptUrl, label: INVITATION_CTA }),
+      fallbackLink({ href: input.acceptUrl, linkText: INVITATION_FALLBACK_TEXT }),
+      paragraph(expiry, { muted: true, small: true }),
+      paragraph(IGNORE_LINE, { muted: true, small: true }),
+      paragraph(ASSIST_LINE, { muted: true, small: true }),
+    ].join("\n"),
+  });
 
-  const html = `<!doctype html>
-<html lang="en-AU" xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="x-apple-disable-message-reformatting">
-    <meta name="color-scheme" content="dark">
-    <meta name="supported-color-schemes" content="dark">
-    <title>${e(INVITATION_SUBJECT)}</title>
-    <style>
-      :root { color-scheme: dark; supported-color-schemes: dark; }
-      @media only screen and (max-width: 620px) {
-        .dl-pad { padding-left: 24px !important; padding-right: 24px !important; }
-        .dl-h1 { font-size: 28px !important; line-height: 34px !important; }
-        .dl-btn a { display: block !important; text-align: center !important; }
-      }
-    </style>
-  </head>
-  <body style="margin:0;padding:0;background-color:${INK};" bgcolor="${INK}">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${INK};">${e(preheader)}</div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${INK}" style="background-color:${INK};">
-      <tr>
-        <td align="center" style="padding:40px 12px;">
-          <!--[if mso]><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;">
-            <tr>
-              <td class="dl-pad" style="padding:0 8px 24px;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                  <tr>
-                    <td valign="middle"><img src="${e(input.logoUrl)}" width="160" height="40" alt="Drylake" style="display:block;border:0;outline:none;width:160px;height:40px;"></td>
-                    <td align="right" valign="middle" style="font-family:${FONT};font-size:11px;line-height:16px;letter-spacing:2px;color:${MUTED};">DRYLAKE TECHNOLOGIES</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td bgcolor="${CARD}" style="background-color:${CARD};border:1px solid ${BORDER};border-radius:20px;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                  <tr>
-                    <td class="dl-pad" style="padding:40px 40px 8px;">
-                      <p style="margin:0;font-family:${FONT};font-size:12px;line-height:16px;letter-spacing:2px;font-weight:bold;color:${SIGNAL};">YOU’RE INVITED</p>
-                      <h1 class="dl-h1" style="margin:16px 0 0;font-family:${FONT};font-size:32px;line-height:38px;font-weight:bold;color:${WHITE};">Your workspace is ready.</h1>
-                      <p style="margin:24px 0 0;font-family:${FONT};font-size:15px;line-height:24px;color:${BODY};">${e(greeting)}</p>
-                      <p style="margin:12px 0 0;font-family:${FONT};font-size:15px;line-height:24px;color:${BODY};">${e(intro)}</p>
-                      <p style="margin:12px 0 0;font-family:${FONT};font-size:15px;line-height:24px;color:${BODY};">${e(VALUE_LINE)}</p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="dl-pad" style="padding:24px 40px 0;">
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="${PANEL}" style="background-color:${PANEL};border:1px solid ${BORDER};border-radius:14px;">
-                        <tr>
-                          <td style="padding:18px 22px;">
-                            <p style="margin:0 0 6px;font-family:${FONT};font-size:11px;line-height:16px;letter-spacing:2px;color:${MUTED};">IN YOUR WORKSPACE</p>
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                    ${highlights}
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="dl-pad dl-btn" style="padding:32px 40px 0;">
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                        <tr>
-                          <td bgcolor="${SIGNAL}" style="background-color:${SIGNAL};border-radius:12px;">
-                            <a href="${acceptUrl}" target="_blank" style="display:inline-block;padding:15px 28px;font-family:${FONT};font-size:15px;line-height:20px;font-weight:bold;color:${INK};text-decoration:none;border-radius:12px;">Activate your workspace</a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="dl-pad" style="padding:24px 40px 40px;">
-                      <p style="margin:0;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">Button not working? Copy this link into your browser:</p>
-                      <p style="margin:6px 0 0;font-family:${FONT};font-size:13px;line-height:20px;word-break:break-all;"><a href="${acceptUrl}" target="_blank" style="color:${SIGNAL};text-decoration:underline;">${acceptUrl}</a></p>
-                      <p style="margin:20px 0 0;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">${e(expiry)}</p>
-                      <p style="margin:8px 0 0;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">${e(IGNORE_LINE)}</p>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td class="dl-pad" style="padding:28px 8px 0;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">
-                <p style="margin:0;">Need assistance? Email <a href="mailto:${CONTACT_EMAIL}" style="color:${WHITE};text-decoration:underline;">${CONTACT_EMAIL}</a> or call <a href="${BUSINESS_PHONE.href}" style="color:${WHITE};text-decoration:underline;">${BUSINESS_PHONE.display}</a>.</p>
-                <p style="margin:16px 0 0;color:${BODY};font-weight:bold;">Drylake Pty Ltd</p>
-                <p style="margin:2px 0 0;">Perth, Western Australia</p>
-                <p style="margin:2px 0 0;">${e(copyright)}</p>
-              </td>
-            </tr>
-          </table>
-          <!--[if mso]></td></tr></table><![endif]-->
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
-
+  // Plain text has no hyperlinks, so the full URL is the only way to carry the link there.
   const text = [
-    "DRYLAKE TECHNOLOGIES",
-    "",
-    "YOU’RE INVITED",
+    "You’re invited",
     "Your workspace is ready.",
     "",
     greeting,
@@ -233,17 +123,15 @@ export function renderInvitationEmail(input: InvitationEmailInput): RenderedEmai
     "In your workspace:",
     ...WORKSPACE_HIGHLIGHTS.map((item) => `- ${item}`),
     "",
-    "Activate your workspace:",
+    `${INVITATION_CTA}:`,
     input.acceptUrl,
     "",
     expiry,
     IGNORE_LINE,
     "",
-    `Need assistance? Email ${CONTACT_EMAIL} or call ${BUSINESS_PHONE.display}.`,
+    ASSIST_LINE,
     "",
-    "Drylake Pty Ltd",
-    "Perth, Western Australia",
-    copyright,
+    ...textFooter(),
   ].join("\n");
 
   return { subject: INVITATION_SUBJECT, html, text };
@@ -476,7 +364,6 @@ export function buildInvitationEmail(params: {
   appBaseUrl: string;
   clerkHost: string | null;
   defaultExpiryDays: number;
-  year: number;
 }): InvitationEmailPlan {
   const { event } = params;
   const fields = invitationTemplateFields(event.data);
@@ -490,9 +377,8 @@ export function buildInvitationEmail(params: {
       email: renderInvitationEmail({
         ...people,
         acceptUrl: fields.actionUrl,
-        logoUrl: new URL(INVITATION_LOGO_PATH, params.appBaseUrl).toString(),
+        assetOrigin: params.appBaseUrl,
         expiresInDays: fields.expiresInDays ?? params.defaultExpiryDays,
-        year: params.year,
       }),
     };
   }
