@@ -14,6 +14,8 @@ import {
   WORKSPACE_HIGHLIGHTS,
   buildInvitationEmail,
   clerkFrontendApiHost,
+  emailEventDecision,
+  safeEmailEventShape,
   isOurInvitationEmail,
   isTrustedAcceptUrl,
   personalise,
@@ -231,6 +233,41 @@ describe("webhook event handling", () => {
     for (const call of code.match(/console\.\w+\([\s\S]*?\);/g) ?? []) {
       assert.ok(!/toEmailAddress|acceptUrl|action_url|html|event\.data/.test(call), call);
     }
+  });
+
+  it("every skip has a named reason", () => {
+    assert.deepEqual(emailEventDecision(clerkEvent()), { handle: true });
+    assert.deepEqual(emailEventDecision(null), { handle: false, reason: "malformed_event" });
+    assert.deepEqual(emailEventDecision(clerkEvent({ slug: "verification_code" })), { handle: false, reason: "other_template" });
+    assert.deepEqual(emailEventDecision(clerkEvent({ delivered_by_clerk: true })), { handle: false, reason: "delivered_by_clerk" });
+    assert.deepEqual(emailEventDecision(clerkEvent({ to_email_address: "" })), { handle: false, reason: "no_recipient" });
+  });
+
+  it("diagnostic shape carries names and flags only, never the address, link, ticket or body", () => {
+    const raw = {
+      id: "ema_1", slug: "organization_invitation", delivered_by_clerk: false,
+      to_email_address: "owner@client.com.au", subject: "Secret subject", body: "<a href='https://clerk.drylake.com.au/v1/tickets/accept?ticket=SECRET'>x</a>",
+      data: { action_url: "https://clerk.drylake.com.au/v1/tickets/accept?ticket=SECRET", org: { name: "Acme", image_url: "https://img" }, "bad key!": 1 },
+    };
+    const shape = safeEmailEventShape(raw);
+    assert.deepEqual(shape, {
+      slug: "organization_invitation",
+      deliveredByClerk: "false",
+      hasRecipient: true,
+      hasBody: true,
+      dataKeys: ["action_url", "org", "org.image_url", "org.name"],
+    });
+    assert.ok(!/SECRET|owner@|client\.com\.au|Acme|Secret subject|https?:/.test(JSON.stringify(shape)));
+    assert.equal(safeEmailEventShape({ id: "x" }).deliveredByClerk, "absent");
+    assert.equal(safeEmailEventShape({ id: "x", delivered_by_clerk: "false" }).deliveredByClerk, "type:string");
+    assert.equal(safeEmailEventShape({ id: "x", slug: "<script>" }).slug, "unrecognised");
+  });
+
+  it("the route returns and logs the skip reason instead of a bare handled:false", () => {
+    const code = read("app/api/clerk/webhook/route.ts");
+    assert.ok(!/handled: false \}\)/.test(code), "every handled:false response names a reason");
+    assert.match(code, /console\.info\("Clerk webhook skipped\.", \{[\s\S]*?reason,[\s\S]*?\.\.\.shape,/);
+    assert.match(code, /request\.headers\.get\("svix-id"\)/);
   });
 
   it("the webhook is a signature-authenticated cross-site sender", () => {
