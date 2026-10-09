@@ -3,12 +3,15 @@
  * (admin, client portal, email, Stripe) reads. Pure: no framework imports, so it is unit
  * tested (tests/gst.test.mjs).
  *
- * Drylake is GST registered: every NEW invoice carries 10% GST on top
- * (lib/invoices/gst.ts). This is a constant on purpose, not an env flag: GST treatment is
- * a fact about the business, and a per-deployment switch could silently mis-tax invoices.
- * ATO GST registration: date of effect 24 September 2026, annual GST reporting (voluntary,
- * turnover under A$75k; drylake-ops D31). Invoices dated on or after that date carry GST.
- * Annual reporting ends once turnover is projected over A$75k: quarterly BAS from then on.
+ * Drylake is NOT GST registered (ABN Lookup, extracted 9 Oct 2026: "Not currently registered
+ * for GST"; drylake-ops D39, which supersedes D31). Collecting GST while unregistered is
+ * unlawful, so every NEW invoice is plain AUD with no GST line (lib/invoices/gst.ts).
+ * Registration is being lodged with date of effect 24 September 2026, annual reporting.
+ * Flip this to true ONLY once ABN Lookup shows "Registered from ..."; ABN Lookup is the source
+ * of truth, not a chat confirmation (D31 was a chat confirmation and was wrong).
+ *
+ * This is a constant on purpose, not an env flag: GST treatment is a fact about the business,
+ * and a per-deployment switch could silently mis-tax invoices.
  *
  * Never hard-code the ABN or legal name in a component: import DRYLAKE_BUSINESS.
  */
@@ -18,5 +21,5 @@ export const DRYLAKE_BUSINESS = {
   abn: "70 702 662 557",
   acn: "702 662 557",
   country: "Australia",
-  gstRegistered: true,
+  gstRegistered: false,
 } as const;
