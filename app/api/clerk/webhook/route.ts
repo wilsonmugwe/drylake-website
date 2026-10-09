@@ -6,8 +6,9 @@ import {
   buildInvitationEmail,
   clerkFrontendApiHost,
   type ContactRow,
-  isOurInvitationEmail,
+  emailEventDecision,
   readClerkEmailEvent,
+  safeEmailEventShape,
 } from "@/lib/email/client-invitation-email";
 import { senderAddress } from "@/lib/email/contact-enquiry-sender";
 import { getEmailFromAddress, getResendClient } from "@/lib/email/resend";
@@ -77,14 +78,37 @@ export async function POST(request: NextRequest) {
     return json({ error: "Invalid signature" }, 400);
   }
 
+  // Svix delivery id: lets a log line be matched to the attempt in Clerk's webhook log.
+  const deliveryId = request.headers.get("svix-id");
+
   if (event.type !== "email.created") {
-    return json({ received: true, handled: false });
+    console.info("Clerk webhook skipped.", { deliveryId, eventType: event.type, reason: "not_email_created" });
+    return json({ received: true, handled: false, reason: "not_email_created" });
   }
 
   const email = readClerkEmailEvent(event.data);
+  const decision = emailEventDecision(email);
+  const shape = safeEmailEventShape(event.data);
 
-  if (!email || !isOurInvitationEmail(email) || !email.toEmailAddress) {
-    return json({ received: true, handled: false });
+  if (!decision.handle || !email?.toEmailAddress) {
+    const reason = decision.handle ? "no_recipient" : decision.reason;
+
+    // An organisation invitation that Clerk delivered itself means "Delivered by Clerk" is still
+    // ON for the Organization invitation template: the client got Clerk's generic email, not
+    // ours. That is a configuration fault, not a normal skip (9 Oct 2026: the toggle was turned
+    // off on the application "Invitation" template instead), so it is logged as a warning.
+    const log = reason === "delivered_by_clerk" ? console.warn : console.info;
+
+    // Names and flags only (safeEmailEventShape): never the address, link, ticket or body.
+    log("Clerk webhook skipped.", {
+      deliveryId,
+      eventType: event.type,
+      reason,
+      clerkEmailId: email?.id ?? null,
+      ...shape,
+    });
+
+    return json({ received: true, handled: false, reason });
   }
 
   const plan = buildInvitationEmail({
@@ -99,10 +123,12 @@ export async function POST(request: NextRequest) {
   if (plan.kind === "undeliverable") {
     // Retrying cannot fix a payload with no link; the admin can resend from the client page.
     console.error("CRITICAL: client invitation email could not be built.", {
+      deliveryId,
       clerkEmailId: email.id,
       reason: plan.reason,
+      ...shape,
     });
-    return json({ received: true, handled: false });
+    return json({ received: true, handled: false, reason: "undeliverable" });
   }
 
   if (plan.kind === "clerk-original") {

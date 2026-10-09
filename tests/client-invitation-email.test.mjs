@@ -14,6 +14,8 @@ import {
   WORKSPACE_HIGHLIGHTS,
   buildInvitationEmail,
   clerkFrontendApiHost,
+  emailEventDecision,
+  safeEmailEventShape,
   isOurInvitationEmail,
   isTrustedAcceptUrl,
   personalise,
@@ -231,6 +233,101 @@ describe("webhook event handling", () => {
     for (const call of code.match(/console\.\w+\([\s\S]*?\);/g) ?? []) {
       assert.ok(!/toEmailAddress|acceptUrl|action_url|html|event\.data/.test(call), call);
     }
+  });
+
+  it("every skip has a named reason", () => {
+    assert.deepEqual(emailEventDecision(clerkEvent()), { handle: true });
+    assert.deepEqual(emailEventDecision(null), { handle: false, reason: "malformed_event" });
+    assert.deepEqual(emailEventDecision(clerkEvent({ slug: "verification_code" })), { handle: false, reason: "other_template" });
+    assert.deepEqual(emailEventDecision(clerkEvent({ delivered_by_clerk: true })), { handle: false, reason: "delivered_by_clerk" });
+    assert.deepEqual(emailEventDecision(clerkEvent({ to_email_address: "" })), { handle: false, reason: "no_recipient" });
+  });
+
+  it("diagnostic shape carries names and flags only, never the address, link, ticket or body", () => {
+    const raw = {
+      id: "ema_1", slug: "organization_invitation", delivered_by_clerk: false,
+      to_email_address: "owner@client.com.au", subject: "Secret subject", body: "<a href='https://clerk.drylake.com.au/v1/tickets/accept?ticket=SECRET'>x</a>",
+      data: { action_url: "https://clerk.drylake.com.au/v1/tickets/accept?ticket=SECRET", org: { name: "Acme", image_url: "https://img" }, "bad key!": 1 },
+    };
+    const shape = safeEmailEventShape(raw);
+    assert.deepEqual(shape, {
+      slug: "organization_invitation",
+      deliveredByClerk: "false",
+      hasRecipient: true,
+      hasBody: true,
+      dataKeys: ["action_url", "org", "org.image_url", "org.name"],
+    });
+    assert.ok(!/SECRET|owner@|client\.com\.au|Acme|Secret subject|https?:/.test(JSON.stringify(shape)));
+    assert.equal(safeEmailEventShape({ id: "x" }).deliveredByClerk, "absent");
+    assert.equal(safeEmailEventShape({ id: "x", delivered_by_clerk: "false" }).deliveredByClerk, "type:string");
+    assert.equal(safeEmailEventShape({ id: "x", slug: "<script>" }).slug, "unrecognised");
+  });
+
+  it("the route returns and logs the skip reason instead of a bare handled:false", () => {
+    const code = read("app/api/clerk/webhook/route.ts");
+    assert.ok(!/handled: false \}\)/.test(code), "every handled:false response names a reason");
+    assert.match(code, /log\("Clerk webhook skipped\.", \{[\s\S]*?reason,[\s\S]*?\.\.\.shape,/);
+    assert.match(code, /request\.headers\.get\("svix-id"\)/);
+    assert.match(code, /reason === "delivered_by_clerk" \? console\.warn : console\.info/);
+    for (const call of code.match(/\blog\([\s\S]*?\);/g) ?? []) {
+      assert.ok(!/toEmailAddress|acceptUrl|action_url|html|event\.data/.test(call), call);
+    }
+  });
+});
+
+/*
+ * Regression: production delivery 01M4FSJHWRY8X57PKDK4XJC3WF, 9 Oct 2026 15:38:21 AWST, returned
+ * {"received":true,"handled":false}. Verified in the Clerk Dashboard (production instance):
+ *   - the event was the organisation invitation for test org ABCDE (org created 15:38:20, invite
+ *     pending, 14-day expiry, no inviter: our admin flow);
+ *   - Clerk's template slug is `organization_invitation` (Dashboard path .../email/organization_invitation/edit);
+ *   - the subject template is "Invitation to join {{org.name}}", so the org name is at data.org.name;
+ *   - "Delivered by Clerk" was ON for Organization invitation and OFF for the application-level
+ *     "Invitation" template (slug `invitation`): the toggle was switched on the wrong template.
+ * The payload body itself sits in Svix's cross-origin log panel and could not be opened, so the
+ * fixture below is the documented EmailJSON shape with those verified values, redacted.
+ */
+describe("regression: 9 Oct 2026 production skip", () => {
+  const production = (deliveredByClerk) => ({
+    object: "email",
+    id: "ema_REDACTED",
+    slug: "organization_invitation",
+    from_email_name: "invitations",
+    to_email_address: "redacted@gmail.com",
+    email_address_id: null,
+    user_id: null,
+    subject: "Invitation to join ABCDE",
+    body: "<html>REDACTED Clerk body</html>",
+    body_plain: "REDACTED",
+    status: "queued",
+    delivered_by_clerk: deliveredByClerk,
+    data: {
+      action_url: "https://clerk.drylake.com.au/v1/tickets/accept?ticket=REDACTED",
+      app: { name: "Drylake Technologies", domain_name: "drylake.com.au" },
+      org: { name: "ABCDE" },
+      invitation: { expires_in_days: 14 },
+    },
+  });
+
+  it("with Delivered by Clerk ON (the production state) it is skipped as delivered_by_clerk, never sent twice", () => {
+    const event = readClerkEmailEvent(production(true));
+    assert.deepEqual(emailEventDecision(event), { handle: false, reason: "delivered_by_clerk" });
+    assert.equal(safeEmailEventShape(production(true)).deliveredByClerk, "true");
+  });
+
+  it("with Delivered by Clerk OFF (the intended state) it is handled and branded for the right org", () => {
+    const event = readClerkEmailEvent(production(false));
+    assert.deepEqual(emailEventDecision(event), { handle: true });
+    const plan = build(event);
+    assert.equal(plan.kind, "branded");
+    assert.ok(plan.email.html.includes("client workspace for ABCDE."));
+    assert.ok(plan.email.html.includes('href="https://clerk.drylake.com.au/v1/tickets/accept?ticket=REDACTED"'));
+    assert.ok(plan.email.html.includes("expires in 14 days"));
+  });
+
+  it("the application-level `invitation` template is never mistaken for a client invitation", () => {
+    const appInvite = readClerkEmailEvent({ ...production(false), slug: "invitation" });
+    assert.deepEqual(emailEventDecision(appInvite), { handle: false, reason: "other_template" });
   });
 
   it("the webhook is a signature-authenticated cross-site sender", () => {

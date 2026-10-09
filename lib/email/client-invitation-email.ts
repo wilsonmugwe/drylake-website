@@ -343,7 +343,83 @@ export function readClerkEmailEvent(data: unknown): ClerkEmailEvent | null {
 
 /* Only an organisation invitation that Clerk did NOT deliver itself is ours to send. */
 export function isOurInvitationEmail(event: ClerkEmailEvent): boolean {
-  return event.slug === CLERK_INVITATION_TEMPLATE_SLUG && !event.deliveredByClerk && !!event.toEmailAddress;
+  return emailEventDecision(event).handle;
+}
+
+/*
+ * Why an email.created event is (or is not) ours. Every "no" has a named reason so the
+ * webhook can return it to Clerk's delivery log and write it to the function log: a silent
+ * `handled: false` hid the 9 Oct 2026 production skip.
+ */
+export type SkipReason =
+  | "not_email_created"
+  | "malformed_event"
+  | "other_template"
+  | "delivered_by_clerk"
+  | "no_recipient";
+
+export type EmailEventDecision = { handle: true } | { handle: false; reason: SkipReason };
+
+export function emailEventDecision(event: ClerkEmailEvent | null): EmailEventDecision {
+  if (!event) {
+    return { handle: false, reason: "malformed_event" };
+  }
+
+  if (event.slug !== CLERK_INVITATION_TEMPLATE_SLUG) {
+    return { handle: false, reason: "other_template" };
+  }
+
+  // Clerk sent this one itself: sending ours as well would give the client two invitations.
+  if (event.deliveredByClerk) {
+    return { handle: false, reason: "delivered_by_clerk" };
+  }
+
+  if (!event.toEmailAddress) {
+    return { handle: false, reason: "no_recipient" };
+  }
+
+  return { handle: true };
+}
+
+const SAFE_TOKEN = /^[A-Za-z0-9_.-]{1,64}$/;
+
+/*
+ * Shape of a verified email.created payload that is safe to log: the template slug, how the
+ * delivery flag arrived, whether a recipient/body exist, and the NAMES (never values) of the
+ * template variables. No address, link, ticket, subject or body ever leaves this function.
+ */
+export function safeEmailEventShape(data: unknown): {
+  slug: string;
+  deliveredByClerk: string;
+  hasRecipient: boolean;
+  hasBody: boolean;
+  dataKeys: string[];
+} {
+  const raw = record(data);
+  const flag = raw.delivered_by_clerk;
+  const keys: string[] = [];
+
+  for (const [key, value] of Object.entries(record(raw.data))) {
+    if (!SAFE_TOKEN.test(key)) {
+      continue;
+    }
+
+    keys.push(key);
+
+    for (const nested of Object.keys(record(value))) {
+      if (SAFE_TOKEN.test(nested)) {
+        keys.push(`${key}.${nested}`);
+      }
+    }
+  }
+
+  return {
+    slug: typeof raw.slug === "string" && SAFE_TOKEN.test(raw.slug) ? raw.slug : raw.slug == null ? "absent" : "unrecognised",
+    deliveredByClerk: typeof flag === "boolean" ? String(flag) : flag === undefined ? "absent" : `type:${typeof flag}`,
+    hasRecipient: typeof raw.to_email_address === "string" && raw.to_email_address.length > 0,
+    hasBody: typeof raw.body === "string" && raw.body.length > 0,
+    dataKeys: keys.sort().slice(0, 40),
+  };
 }
 
 /* Template variables Clerk exposes for this template (action_url, org name, expiry). */
