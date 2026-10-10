@@ -227,7 +227,10 @@ describe("metadata quality", () => {
 
   it("Perth is not mechanically added to every title", () => {
     const withPerth = titles.filter((title) => /Perth/.test(title));
-    assert.ok(withPerth.length <= 2, withPerth.join(" / "));
+    // Three: /perth, /about and the homepage (audit 2026-10-10, keyword volume in lib/seo-pages.ts).
+    // Service titles stay national; Perth reaches them through body FAQs, not titles.
+    assert.ok(withPerth.length <= 3, withPerth.join(" / "));
+    for (const service of SERVICES) assert.doesNotMatch(service.title, /Perth/);
   });
 
   it("titles stay short enough to display in results", () => {

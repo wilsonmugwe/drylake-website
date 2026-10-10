@@ -10,6 +10,7 @@ import { pageMetadata } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seo-pages";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
+import { pageLastUpdated } from "@/lib/discovery/entity";
 
 /*
  * Website and Drylake Workspace terms (portfolio parity check, 2026-10-08: pre-launch checklist #18
@@ -17,7 +18,8 @@ import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
  * project work is governed by each client's signed Proposal / Statement of Work and Master
  * Services Agreement (drylake-ops/06-legal/02), and these terms defer to it on any conflict.
  * Wording mirrors the MSA (WA law, ACL non-excludable rights, liability limited as the law
- * permits). No em dashes; no prices; GST stated as registered (D31).
+ * permits). No em dashes; no prices. GST wording reads DRYLAKE_BUSINESS.gstRegistered (D39,
+ * not registered as of 10 Oct 2026); never hard-code it.
  */
 const SEO = PAGE_SEO.terms;
 
@@ -193,7 +195,7 @@ export default function TermsPage() {
               </TermsSection>
 
               <p className="border-t border-black/10 pt-8 text-sm text-black/60">
-                Last updated: 8 October 2026
+                Last updated: {pageLastUpdated("/terms")}
               </p>
             </div>
           </Container>
