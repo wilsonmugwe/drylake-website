@@ -2,13 +2,32 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { DRYLAKE_BUSINESS } from "@/lib/business";
+import { BUSINESS_PHONE, CONTACT_EMAIL, POSTAL_ADDRESS } from "@/lib/site";
 
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seo-pages";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
+import { pageLastUpdated } from "@/lib/discovery/entity";
 
+/*
+ * Privacy Policy (website audit, 2026-10-10). Written against what the code actually does, not
+ * a template, so APP 1.4 is met: the kinds of information held, how it is collected, why,
+ * access and correction, complaints, and overseas disclosure with likely countries.
+ *
+ * Facts this page relies on (re-check before changing any of them):
+ *   - enquiry fields: lib/contact/validate-enquiry.ts (name, email, company, two topic picks,
+ *     message); delivered by email through Resend; only a one-way hash of the Turnstile token
+ *     is stored (lib/contact/consumed-tokens.ts), not the enquiry;
+ *   - Workspace: Clerk sign-in; organisations, projects, documents, invoices and audit_logs in
+ *     Supabase; card payments through Stripe Checkout;
+ *   - public pages set no cookies (curl, 2026-10-10); Vercel Web Analytics is cookieless;
+ *   - no AI service receives personal information from the website or Workspace (grep, 2026-10-10);
+ *   - Clerk is US hosted (clerk.com/security, checked 2026-10-08), hence "including the United
+ *     States". Supabase and Resend regions are NOT verified, so no data-residency claim is made.
+ * Deliberately no retention periods: none are verified. Legal wording is for Wilson/Ben approval.
+ */
 const SEO = PAGE_SEO.privacy;
 
 export const metadata: Metadata = pageMetadata(SEO);
@@ -17,6 +36,8 @@ const PRIVACY_CRUMBS = [
   { name: "Home", path: "/" },
   { name: "Privacy Policy", path: "/privacy" },
 ];
+
+const linkClass = "font-medium text-black underline underline-offset-4";
 
 export default function PrivacyPage() {
   return (
@@ -43,8 +64,8 @@ export default function PrivacyPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-7 text-black/60">
-            How Drylake handles information provided through our website and
-            services.
+            How Drylake handles personal information collected through our
+            website, Drylake Workspace and our services.
           </p>
         </Container>
 
@@ -53,119 +74,183 @@ export default function PrivacyPage() {
             <div className="max-w-3xl space-y-10 text-base leading-7 text-black/65">
               <PolicySection title="1. About this policy">
                 <p>
-                  This Privacy Policy explains how Drylake Pty Ltd (ABN 70 702
-                  662 557) collects, uses, stores and handles personal
-                  information provided through our website and in connection
-                  with our services.
+                  This Privacy Policy explains how {DRYLAKE_BUSINESS.legalName} (ABN{" "}
+                  {DRYLAKE_BUSINESS.abn}), trading as Drylake, collects, uses, stores and
+                  discloses personal information. It applies to drylake.com.au, to Drylake
+                  Workspace (the signed-in area where clients follow their projects, documents
+                  and invoices) and to our dealings with clients and prospective clients. We
+                  handle personal information in line with the Australian Privacy Principles in
+                  the Privacy Act 1988 (Cth).
                 </p>
               </PolicySection>
 
-              <PolicySection title="2. Information we may collect">
-                <p>
-                  We may collect information that you provide directly to us,
-                  including your name, email address, company or organisation,
-                  project requirements, enquiry details and other information
-                  you choose to provide.
+              <PolicySection title="2. Information we collect">
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>
+                    <strong className="font-semibold text-black">Enquiries.</strong> When you use
+                    our contact form: your name, email address, company (optional), the area you
+                    need help with, the kind of help you want and your message. If you email or
+                    call us, we collect what you choose to tell us.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-black">Clients.</strong> The names,
+                    work email addresses and roles of the people at a client organisation, and
+                    the project information, documents and invoices we share through Drylake
+                    Workspace.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-black">Sign-in.</strong> If you are
+                    invited to Drylake Workspace, the account details needed to sign you in
+                    securely and a record of sign-in activity.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-black">Payments.</strong> When you pay
+                    an invoice by card, the payment is made on Stripe&apos;s secure checkout. We
+                    receive confirmation of the payment, not your full card details.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-black">Technical information.</strong>{" "}
+                    Information your browser sends when you visit, such as IP address, browser
+                    type and pages viewed, used to run, secure and measure the website.
+                  </li>
+                </ul>
+                <p className="mt-3">
+                  We collect personal information directly from you, or from your organisation
+                  when it invites you to Drylake Workspace. You do not have to give us your
+                  details, but without them we may not be able to reply to you or provide our
+                  services.
                 </p>
               </PolicySection>
 
               <PolicySection title="3. How we use information">
                 <p>
-                  We may use information to respond to enquiries, assess
-                  potential projects, communicate with clients, provide and
-                  improve our services, maintain the security of our systems,
-                  and meet applicable legal or regulatory obligations.
+                  We use personal information to reply to enquiries, assess and deliver
+                  projects, give clients access to Drylake Workspace, issue invoices and record
+                  payments, keep our systems secure, and meet our legal and record-keeping
+                  obligations. We do not sell personal information and we do not use it for
+                  advertising.
                 </p>
               </PolicySection>
 
-              <PolicySection title="4. Website and security information">
+              <PolicySection title="4. Cookies and analytics">
                 <p>
-                  Our website and service providers may process technical
-                  information required to operate, secure and protect the
-                  website, such as request information, security events and
-                  information used to detect automated or malicious activity.
+                  Our public pages do not set cookies. We use Vercel Web Analytics to count
+                  visits and enquiries in aggregate; it does not use cookies. Signing in to
+                  Drylake Workspace uses cookies that are needed to keep you signed in. We use
+                  Cloudflare Turnstile on the contact form to check that a submission comes from
+                  a person rather than an automated program.
                 </p>
               </PolicySection>
 
-              <PolicySection title="5. Service providers">
+              <PolicySection title="5. Artificial intelligence">
                 <p>
-                  We may use trusted service providers to host, secure,
-                  communicate through and operate our website and business
-                  systems. These providers may process information on our behalf
-                  where necessary to provide those services.
+                  Our website and Drylake Workspace do not send your personal information to AI
+                  services. If a client project involves AI processing of the client&apos;s
+                  data, how that works is agreed in writing with the client for that project.
                 </p>
               </PolicySection>
 
-              <PolicySection title="6. Disclosure">
+              <PolicySection title="6. Service providers">
                 <p>
-                  We do not sell personal information. Information may be
-                  disclosed to service providers where required to operate our
-                  business, where required by law, or where otherwise authorised
-                  or permitted.
+                  We use service providers to run our website, Drylake Workspace and business
+                  systems. They handle personal information on our behalf, only as needed to
+                  provide their service:
                 </p>
-              </PolicySection>
-
-              <PolicySection title="7. Data security">
-                <p>
-                  We take reasonable technical and organisational measures to
-                  protect information against unauthorised access, misuse,
-                  interference, loss and unauthorised disclosure or alteration.
-                  No method of electronic transmission or storage can be
-                  guaranteed to be completely secure.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="8. Retention">
-                <p>
-                  We retain information for as long as reasonably necessary for
-                  the purposes for which it was collected, for legitimate
-                  business requirements, and where required by law.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="9. Access and correction">
-                <p>
-                  You may contact Drylake if you wish to request access to, or
-                  correction of, personal information that we hold about you,
-                  subject to applicable law.
-                </p>
-              </PolicySection>
-
-              <PolicySection title="10. Privacy enquiries">
-                <p>
-                  Privacy enquiries, including requests for access or
-                  correction, can be sent to Drylake Pty Ltd at{" "}
-                  <a
-                    href={`mailto:${CONTACT_EMAIL}`}
-                    className="font-medium text-black underline underline-offset-4"
-                  >
-                    {CONTACT_EMAIL}
-                  </a>
-                  . Please mention &quot;Privacy&quot; in the subject line.
-                </p>
+                <ul className="mt-3 list-disc space-y-2 pl-5">
+                  <li>Vercel: website hosting and aggregate visit analytics</li>
+                  <li>Clerk: Drylake Workspace sign-in and account security</li>
+                  <li>Supabase: database and document storage for Drylake Workspace</li>
+                  <li>Stripe: card payments for invoices</li>
+                  <li>Resend: delivery of enquiry notifications, invitations and invoice emails</li>
+                  <li>Cloudflare: protection of the contact form against automated abuse</li>
+                  <li>Microsoft 365: our business email</li>
+                </ul>
                 <p className="mt-3">
-                  If you are not satisfied with our response, you can contact
-                  the Office of the Australian Information Commissioner at{" "}
-                  <a
-                    href="https://www.oaic.gov.au"
-                    className="font-medium text-black underline underline-offset-4"
-                  >
+                  We may also disclose personal information where the law requires or allows
+                  it, or with your consent.
+                </p>
+              </PolicySection>
+
+              <PolicySection title="7. Overseas disclosure">
+                <p>
+                  Some of these providers store or process information outside Australia,
+                  including in the United States. Where we use an overseas provider, we take
+                  reasonable steps to ensure it handles personal information consistently with
+                  the Australian Privacy Principles.
+                </p>
+              </PolicySection>
+
+              <PolicySection title="8. Security">
+                <p>
+                  We use encrypted connections, sign-in controls, role-based access so each
+                  person sees only their own organisation&apos;s information, and a record of
+                  administrative changes. No method of transmitting or storing information is
+                  completely secure, and if a data breach is likely to cause serious harm we
+                  will notify you and the Office of the Australian Information Commissioner as
+                  the law requires.
+                </p>
+              </PolicySection>
+
+              <PolicySection title="9. Keeping and deleting information">
+                <p>
+                  We keep personal information only for as long as we need it for the purposes
+                  above, or as long as the law requires. Invoices and payment records are kept
+                  for as long as Australian tax and company record-keeping laws require. When we
+                  no longer need information, we take reasonable steps to delete or de-identify
+                  it. You can ask us to delete your information, and we will do so unless the
+                  law requires us to keep it.
+                </p>
+              </PolicySection>
+
+              <PolicySection title="10. Access and correction">
+                <p>
+                  You can ask for access to the personal information we hold about you, or ask
+                  us to correct it. We will respond within a reasonable time and tell you if
+                  there is a lawful reason we cannot give access.
+                </p>
+              </PolicySection>
+
+              <PolicySection title="11. Questions and complaints">
+                <p>
+                  Contact {DRYLAKE_BUSINESS.legalName} about privacy, including access,
+                  correction, deletion or a complaint:
+                </p>
+                <ul className="mt-3 space-y-1">
+                  <li>
+                    Email:{" "}
+                    <a href={`mailto:${CONTACT_EMAIL}?subject=Privacy`} className={linkClass}>
+                      {CONTACT_EMAIL}
+                    </a>{" "}
+                    (please put &quot;Privacy&quot; in the subject line)
+                  </li>
+                  <li>
+                    Phone:{" "}
+                    <a href={BUSINESS_PHONE.href} className={linkClass}>
+                      {BUSINESS_PHONE.display}
+                    </a>
+                  </li>
+                  <li>Post: {POSTAL_ADDRESS}</li>
+                </ul>
+                <p className="mt-3">
+                  We will look into a complaint and reply to you. If you are not satisfied with
+                  our response, you can complain to the Office of the Australian Information
+                  Commissioner at{" "}
+                  <a href="https://www.oaic.gov.au" className={linkClass}>
                     oaic.gov.au
                   </a>
                   .
                 </p>
               </PolicySection>
 
-              <PolicySection title="11. Changes to this policy">
+              <PolicySection title="12. Changes to this policy">
                 <p>
-                  We may update this Privacy Policy from time to time to reflect
-                  changes to our services, systems, business practices or legal
-                  obligations.
+                  We may update this policy when our services, systems or legal obligations
+                  change. The date below shows when it last changed.
                 </p>
               </PolicySection>
 
               <p className="border-t border-black/10 pt-8 text-sm text-black/60">
-                Last updated: 8 October 2026
+                Last updated: {pageLastUpdated("/privacy")}
               </p>
             </div>
           </Container>

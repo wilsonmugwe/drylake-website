@@ -6,6 +6,7 @@ import {
   RotateCcw,
   Send,
 } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import TurnstileWidget, {
@@ -366,10 +367,20 @@ export default function ProjectForm() {
 
       {/* Submit */}
       <div className="flex flex-col gap-3 border-t border-black/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-xs text-xs leading-5 text-black/60">
-          No technical specification required. Just give us
-          enough context to understand where to start.
-        </p>
+        <div className="max-w-xs space-y-2 text-xs leading-5 text-black/60">
+          <p>
+            No technical specification required. Just give us
+            enough context to understand where to start.
+          </p>
+          {/* APP 5 collection notice: said where the details are collected, not only in the policy. */}
+          <p data-testid="enquiry-privacy-notice">
+            We use these details to reply to your enquiry. See our{" "}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-black">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </div>
 
         <button
           type="submit"

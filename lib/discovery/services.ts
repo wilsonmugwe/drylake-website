@@ -116,7 +116,7 @@ export const SERVICES: readonly Service[] = [
       "Sign-in and permissions, so each person sees and changes only what they should",
       "Validation that stops bad data at the point it is entered",
       "A history of changes for the records that matter",
-      "Monitoring, backups and recovery planned from the first release",
+      "Monitoring, backups and recovery arrangements tailored to your project and agreed scope",
       "Hosting and data location chosen deliberately, including Australian regions where it matters",
     ],
     faqs: [
@@ -129,6 +129,11 @@ export const SERVICES: readonly Service[] = [
         question: "Do we need a technical specification before we start?",
         answer:
           "No. Start with the business problem. Drylake works through the workflow with you and recommends whether custom software, an existing product or an integration is the better fit.",
+      },
+      {
+        question: "Does Drylake build custom software in Perth?",
+        answer:
+          "Yes. Drylake is based in Perth and designs and builds custom software, portals and web applications for businesses in Perth, across Western Australia and Australia-wide.",
       },
       {
         question: "Can custom software work alongside the software we already use?",
@@ -458,6 +463,11 @@ export const SERVICES: readonly Service[] = [
         question: "Does Drylake only build websites as part of larger projects?",
         answer:
           "No. Drylake builds standalone business websites as well as websites that form part of a broader customer journey, business system or operational workflow.",
+      },
+      {
+        question: "Does Drylake build websites and web applications in Perth?",
+        answer:
+          "Yes. Drylake is a Perth company that builds business websites and web applications for businesses in Perth and across Australia.",
       },
       {
         question: "Can the website connect to our other systems?",

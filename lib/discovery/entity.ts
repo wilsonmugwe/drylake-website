@@ -103,21 +103,38 @@ export type PublicPage = {
 };
 
 export const PUBLIC_PAGES: readonly PublicPage[] = [
-  { path: "/", lastModified: "2026-10-08", changeFrequency: "weekly", priority: 1 },
+  { path: "/", lastModified: "2026-10-10", changeFrequency: "weekly", priority: 1 },
   { path: "/solutions", lastModified: "2026-10-08", changeFrequency: "monthly", priority: 0.9 },
   { path: SERVICES_PATH, lastModified: "2026-10-08", changeFrequency: "monthly", priority: 0.9 },
   ...SERVICES.map((service) => ({
     path: service.path,
-    lastModified: "2026-10-08",
+    lastModified: "2026-10-10",
     changeFrequency: "monthly" as const,
     priority: 0.8,
   })),
   { path: "/perth", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/contact", lastModified: "2026-10-05", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/privacy", lastModified: "2026-10-08", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/terms", lastModified: "2026-10-08", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/contact", lastModified: "2026-10-10", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/privacy", lastModified: "2026-10-10", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/terms", lastModified: "2026-10-09", changeFrequency: "yearly", priority: 0.3 },
 ];
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+] as const;
+
+/*
+ * The visible "Last updated" line on the legal pages reads the same date as the sitemap, so
+ * the two cannot disagree (the Terms page said 8 October after its GST wording changed on
+ * 9 October). Formatted by hand, not Intl, so server and test output never depend on ICU data.
+ */
+export function pageLastUpdated(path: string): string {
+  const page = PUBLIC_PAGES.find((entry) => entry.path === path);
+  if (!page) throw new Error(`pageLastUpdated: ${path} is not in PUBLIC_PAGES`);
+  const [year, month, day] = page.lastModified.split("-").map(Number);
+  return `${day} ${MONTHS[month - 1]} ${year}`;
+}
 
 /* Path prefixes that are never public: robots Disallow + X-Robots-Tag noindex. */
 export const PRIVATE_PREFIXES = [

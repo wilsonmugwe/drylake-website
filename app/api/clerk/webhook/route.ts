@@ -37,8 +37,9 @@ export const dynamic = "force-dynamic";
  * Never log the payload, the recipient address or the accept link: ids and codes only.
  */
 
+/* no-store like every other API helper: a webhook result must never be cached by the CDN. */
 function json(body: Record<string, unknown>, status = 200) {
-  return NextResponse.json(body, { status });
+  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 }
 
 /* Best-effort personalisation; a lookup failure only costs the greeting, never the email. */

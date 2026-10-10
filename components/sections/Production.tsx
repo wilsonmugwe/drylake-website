@@ -12,8 +12,8 @@ const strata = [
   { name: "Permissions", text: "Each person sees and changes only what their role allows." },
   { name: "Data validation", text: "Wrong or missing information is caught before it is saved." },
   { name: "Integrations", text: "Information moves between your systems without retyping." },
-  { name: "Monitoring", text: "Errors and slowdowns are noticed early, not reported by customers." },
-  { name: "Backups & recovery", text: "Data is backed up, so a bad day stays recoverable." },
+  { name: "Monitoring", text: "Errors and slowdowns noticed early, as agreed per project." },
+  { name: "Backups & recovery", text: "Backup and recovery arranged to your agreed scope." },
 ];
 
 /*

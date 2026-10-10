@@ -1,8 +1,8 @@
 # API and server-action security matrix
 
 The app has **no server actions** (`"use server"` appears nowhere); every mutation is a route
-handler under `app/api`. Since PR 2, every non-GET request to `/api/*` except the Stripe
-webhook first passes the proxy's cross-origin refusal (`lib/security/same-origin.ts`).
+handler under `app/api`. Since PR 2, every non-GET request to `/api/*` except the Stripe and
+Clerk webhooks (`CROSS_SITE_EXEMPT_PATHS`) first passes the proxy's cross-origin refusal (`lib/security/same-origin.ts`).
 
 Legend: **Authn** who the caller is; **Authz** what decides they may act; **Scope** how the
 tenant is bounded; **Valid.** input validation; **CSRF** protection beyond the proxy;
@@ -46,6 +46,7 @@ returned; CSRF: proxy + `SameSite=Lax`; Rate: none in-app (admin-only).
 |---|---|---|
 | `POST /api/contact` | none (public) | Turnstile verified server-side, single-use token store, hostname and action bound; **new** strict validation and real byte limit; HTML-escaped email; enquiry never logged; rate limit via Vercel Firewall (Wilson to confirm) |
 | `POST /api/stripe/webhook` | Stripe signature (HMAC over the raw body, 300 s window) | exempt from the Origin check by design; see stripe-security.md |
+| `POST /api/clerk/webhook` | Clerk (Svix) signature verified before the body is read | exempt from the Origin check by design; handles `email.created` for invitations only; idempotent per Clerk email id; logs ids and reason codes, never the recipient, payload or accept link; accept links restricted to trusted hosts; responses `no-store` (audit 2026-10-10, row was missing) |
 | `GET /llms.txt` | none | static public text, no data |
 
 ## Input security summary

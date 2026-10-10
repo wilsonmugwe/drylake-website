@@ -28,9 +28,12 @@ export type PageSeo = {
 export const PAGE_SEO = {
   home: {
     path: "/",
-    title: "Drylake | Operational Software & Automation Australia",
+    /* Perth in the home title (audit 2026-10-10): Perth-qualified software queries carry measured
+       AU volume (DataForSEO, Oct 2026: "custom software perth" 90/mo, "software company perth"
+       110/mo). The hero headline is unchanged; this is the search result title only. */
+    title: "Drylake | Custom Software & Automation, Perth WA",
     description:
-      "Drylake builds operational software, automation and connected systems for Australian businesses held back by manual processes and disconnected tools.",
+      "Drylake is a Perth software company building custom software, automation and connected systems for Australian businesses held back by manual processes.",
     shareDescription:
       "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
     image: "/og/home.png",
