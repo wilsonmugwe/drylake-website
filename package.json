@@ -20,7 +20,7 @@
     "motion": "^14.0.0",
     "next": "^16.3.8",
     "node-html-markdown": "^2.0.0",
-    "node-html-parser": "^6.1.13",
+    "node-html-parser": "^9.0.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "resend": "^6.32.0",
