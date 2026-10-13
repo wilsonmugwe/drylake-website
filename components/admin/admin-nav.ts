@@ -1,5 +1,6 @@
 import {
   Building2,
+  CalendarClock,
   CreditCard,
   FileText,
   FolderKanban,
@@ -18,7 +19,10 @@ export type AdminNavItem = { label: string; href: string; icon: LucideIcon };
 export const ADMIN_NAV_GROUPS: Array<{ label: string; items: AdminNavItem[] }> = [
   {
     label: "Operations",
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+    items: [
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Consultations", href: "/admin/consultations", icon: CalendarClock },
+    ],
   },
   {
     label: "Clients and delivery",

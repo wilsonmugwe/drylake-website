@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   ArrowDown,
   ArrowUpRight,
+  CalendarClock,
   Check,
   Mail,
   Phone,
@@ -15,6 +16,9 @@ import Footer from "@/components/layout/Footer";
 import ProjectForm from "@/components/forms/ProjectForm";
 import Container from "@/components/ui/Container";
 import { BUSINESS_PHONE, RESPONSE_TIME } from "@/lib/site";
+import PrimaryCta from "@/components/ui/PrimaryCta";
+import { CONSULTATION_INTRO, MESSAGE_ALTERNATIVE } from "@/lib/consultations/copy";
+import { PRIMARY_CTA } from "@/lib/navigation/site-nav";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 
@@ -182,15 +186,33 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Form */}
+              {/* Two ways in (brief, Task 3): book a consultation, or send a message. The form
+                  below is unchanged; the booking option sits beside it, never in its place. */}
               <div>
+                <div className="mb-9 border border-black/10 bg-[#f4f2ec] p-5 sm:p-7" aria-labelledby="contact-option-book">
+                  <p className="section-label flex items-center gap-2 text-black/60">
+                    <CalendarClock aria-hidden="true" size={14} className="text-[#f26a2e]" />
+                    Option A
+                  </p>
+                  <h2 id="contact-option-book" className="mt-2 text-xl font-semibold tracking-[-0.04em] sm:text-2xl">
+                    Book a free consultation
+                  </h2>
+                  <p className="mt-2 max-w-xl text-sm leading-6 text-black/65">{CONSULTATION_INTRO}</p>
+                  <PrimaryCta href={PRIMARY_CTA.href} surface="light" className="mt-5 w-full sm:w-auto">
+                    {PRIMARY_CTA.label}
+                  </PrimaryCta>
+                </div>
+
                 <div className="mb-7 border-b border-black/10 pb-5">
                   <p className="section-label text-black/60">
-                    Tell us about the business
+                    Option B
                   </p>
+                  <h2 id="send-a-message" className="mt-2 scroll-mt-28 text-xl font-semibold tracking-[-0.04em] sm:text-2xl">
+                    Send us a message
+                  </h2>
 
                   <p className="mt-2 max-w-xl text-sm leading-6 text-black/60">
-                    A few details are enough to get the conversation started.
+                    {MESSAGE_ALTERNATIVE}
                   </p>
                 </div>
 

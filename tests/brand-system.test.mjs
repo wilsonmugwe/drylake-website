@@ -149,10 +149,10 @@ describe("the canonical primary CTA (white, dark text)", () => {
     assert.deepEqual(offenders, []);
   });
 
-  it("keeps the site's label wording (\"Get Started for Free\" since 2026-10-13)", () => {
-    assert.match(code("components/sections/Hero.tsx"), /Get Started for Free\s*<\/PrimaryCta>/);
-    assert.match(code("components/sections/ContactCTA.tsx"), /Get Started for Free\s*<\/PrimaryCta>/);
-    assert.match(code("app/perth/page.tsx"), /Get Started for Free\s*<\/PrimaryCta>/);
+  it("every body CTA renders the single-source label (\"Start Free Consultation\" since 2026-10-13)", () => {
+    for (const file of ["components/sections/Hero.tsx", "components/sections/ContactCTA.tsx", "app/perth/page.tsx", "app/services/[slug]/page.tsx"]) {
+      assert.match(code(file), /<PrimaryCta href=\{PRIMARY_CTA\.href\}[^>]*>\s*\{PRIMARY_CTA\.label\}\s*<\/PrimaryCta>/, file);
+    }
   });
 
   const css = read("app/public-site.css");

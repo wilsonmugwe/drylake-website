@@ -179,8 +179,8 @@ describe("hero headline paints on the first frame (LCP)", () => {
 });
 
 describe("primary call to action casing", () => {
-  it("the single source reads 'Get Started for Free' (sentence case)", () => {
-    assert.equal(PRIMARY_CTA.label, "Get Started for Free");
+  it("the single source reads 'Start Free Consultation' (the brief's wording, 2026-10-13)", () => {
+    assert.equal(PRIMARY_CTA.label, "Start Free Consultation");
   });
 
   it("no visitor-facing 'Start a Conversation' (title case) remains on public surfaces", () => {

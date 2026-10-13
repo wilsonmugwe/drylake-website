@@ -29,7 +29,12 @@ export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
   "/services/web-development": { 320: 6856, 360: 6600, 375: 6523, 390: 6433, 393: 6408, 414: 6319, 430: 6207, 768: 5822, 1024: 5361, 1440: 5283 },
   "/perth": { 320: 5191, 360: 5009, 375: 4999, 390: 4964, 393: 4967, 414: 4847, 430: 4798, 768: 4708, 1024: 4160, 1440: 4218 },
   "/about": { 320: 5962, 360: 5802, 375: 5762, 390: 5726, 393: 5728, 414: 5621, 430: 5614, 768: 5406, 1024: 4443, 1440: 4281 },
-  "/contact": { 320: 3909, 360: 3738, 375: 3737, 390: 3723, 393: 3724, 414: 3689, 430: 3696, 768: 3586, 1024: 2579, 1440: 2654 },
+  // Re-baselined 2026-10-13 (consultation booking): /contact gained "Option A: Book a free
+  // consultation" above the unchanged enquiry form, +12-16% by design. Was
+  // { 320: 3909, 360: 3738, 375: 3737, 390: 3723, 393: 3724, 414: 3689, 430: 3696, 768: 3586, 1024: 2579, 1440: 2654 }.
+  // /consultation has no baseline on purpose: its height depends on live availability (the local
+  // build has no database and shows the error state), so a fixed number would be meaningless.
+  "/contact": { 320: 4407, 360: 4259, 375: 4266, 390: 4244, 393: 4246, 414: 4211, 430: 4194, 768: 4032, 1024: 2995, 1440: 3050 },
   // /privacy re-baselined 2026-10-10: the policy now covers APP 1.4 in full (12 sections).
   "/privacy": { 320: 6708, 360: 6158, 375: 6080, 390: 5889, 393: 5834, 414: 5617, 430: 5538, 768: 4506, 1024: 4031, 1440: 4107 },
 };

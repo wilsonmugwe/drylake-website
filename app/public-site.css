@@ -1591,10 +1591,17 @@ main [tabindex="-1"]:focus {
   outline-color: var(--signal);
 }
 
-/* The quiet cue that a plate opens something: a small + after its label, x while it is open. */
+/* The quiet cue that a plate opens something: a small + after its label, x while it is open.
+ * Out of flow on purpose (2026-10-13): as a flex item it widened every centred label by ~1em,
+ * which pushed the first letter of the left-column labels ("Scheduling", "Quotes") off the
+ * light plate onto the dark crack at phone widths, where it read as clipped. Absolute, the
+ * text stays centred on its anchor and the cue hangs to its right.
+ * Guarded by tests/e2e/lakebed-labels.spec.ts (every label inside its own plate). */
 .lb-ix .lb-label::after {
   content: "+";
-  margin-left: 0.1em;
+  position: absolute;
+  left: 100%;
+  margin-left: 0.3em;
   font-weight: 500;
   opacity: 0.45;
   transition: opacity 0.2s ease;
@@ -1851,4 +1858,200 @@ body {
     font-size: clamp(1.7rem, 9svh, 2.8rem);
     max-width: 22em;
   }
+}
+
+/* ------------------------------------------------------------------ CONSULTATION BOOKING
+ * Date/time chips (SlotPicker) and the booking buttons. Shared by /consultation,
+ * /consultation/manage and the admin reschedule panel. The radios inside the chips are
+ * visually hidden, so focus is drawn on the chip itself (:has(:focus-visible)).
+ * Tap targets are at least 44 px; selected state is never colour alone (weight + inversion). */
+.consult-chip {
+  position: relative;
+  display: flex;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0.55rem 0.4rem;
+  border: 1px solid rgba(11, 11, 10, 0.16);
+  border-radius: 10px;
+  background: #fff;
+  color: #0b0b0a;
+  text-align: center;
+  cursor: pointer;
+}
+
+.consult-chip:hover {
+  border-color: #0b0b0a;
+}
+
+.consult-chip[data-selected] {
+  border-color: #0b0b0a;
+  background: #0b0b0a;
+  color: #fff;
+}
+
+/* The radio covers the chip: the whole chip is the hit target, the browser draws nothing. */
+.consult-radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.consult-chip:has(input:focus-visible) {
+  outline: 2px solid #f26a2e;
+  outline-offset: 2px;
+}
+
+.consult-chip-full {
+  border-style: dashed;
+  color: rgba(11, 11, 10, 0.55);
+  cursor: not-allowed;
+}
+
+.consult-chip-full:hover {
+  border-color: rgba(11, 11, 10, 0.16);
+}
+
+.consult-chip-time {
+  min-height: 48px;
+}
+
+.consult-primary,
+.consult-secondary {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.consult-primary {
+  border: 1px solid #0b0b0a;
+  background: #0b0b0a;
+  color: #fff;
+}
+
+/* Motion only for visitors who have not asked for less (no reduce block needed). */
+@media (prefers-reduced-motion: no-preference) {
+  .consult-chip {
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .consult-primary,
+  .consult-secondary {
+    transition: transform 0.15s ease;
+  }
+
+  .consult-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+}
+
+.consult-secondary {
+  border: 1px solid rgba(11, 11, 10, 0.2);
+  background: transparent;
+  color: #0b0b0a;
+}
+
+.consult-secondary:hover:not(:disabled) {
+  border-color: #0b0b0a;
+}
+
+.consult-primary:focus-visible,
+.consult-secondary:focus-visible {
+  outline: 2px solid #f26a2e;
+  outline-offset: 3px;
+}
+
+/* Disabled: muted fill, still readable (#3d3c38 on #dedcd5 is 8.6:1), never faded by opacity. */
+.consult-primary:disabled,
+.consult-secondary:disabled {
+  border-color: #dedcd5;
+  background: #dedcd5;
+  color: #3d3c38;
+  cursor: not-allowed;
+}
+
+/* Destructive actions: red text/border on the secondary, red fill on the final confirmation.
+ * #a1281e on white is 6.9:1; white on #a1281e is 6.9:1. */
+.consult-danger {
+  border-color: rgba(161, 40, 30, 0.45);
+  color: #a1281e;
+}
+
+.consult-danger:hover:not(:disabled) {
+  border-color: #a1281e;
+}
+
+.consult-primary-danger {
+  border-color: #a1281e;
+  background: #a1281e;
+}
+
+@media (max-width: 639px) {
+  .consult-primary,
+  .consult-secondary {
+    width: 100%;
+  }
+}
+
+
+/* Admin consultation actions (components/admin/AdminConsultationActions.tsx). 44 px targets. */
+.drylake-admin .admin-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #d4d4d4;
+  border-radius: 12px;
+  background: #fff;
+  color: #171716;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.drylake-admin .admin-action:hover:not(:disabled) {
+  border-color: #171716;
+}
+
+.drylake-admin .admin-action:focus-visible {
+  outline: 2px solid #f26a2e;
+  outline-offset: 2px;
+}
+
+.drylake-admin .admin-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.drylake-admin .admin-action-primary {
+  border-color: #171716;
+  background: #171716;
+  color: #fff;
+}
+
+.drylake-admin .admin-action-danger {
+  border-color: #f0b4ad;
+  color: #a1281e;
+}
+
+.drylake-admin .admin-action-danger-solid {
+  border-color: #a1281e;
+  background: #a1281e;
+  color: #fff;
 }

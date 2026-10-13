@@ -45,18 +45,19 @@ describe("COPY", () => {
     for (const text of [h1, lede]) assert.doesNotMatch(text, /\bAI\b|artificial intelligence/i);
   });
 
-  it("the primary CTA reads Get Started for Free and keeps /contact", () => {
-    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Get Started for Free", "/contact"]);
+  it("the primary CTA books a free consultation, and its note states the conditions", () => {
+    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Start Free Consultation", "/consultation"]);
     assert.doesNotMatch(PRIMARY_CTA_NOTE, /—/);
-    assert.match(PRIMARY_CTA_NOTE, /free/i);
-    assert.match(PRIMARY_CTA_NOTE, /quoted before work starts/);
+    assert.match(PRIMARY_CTA_NOTE, /free 30-minute consultation/i);
+    assert.match(PRIMARY_CTA_NOTE, /no obligation/i);
+    assert.match(PRIMARY_CTA_NOTE, /quoted before it begins/);
   });
 
-  it("every body CTA saying Get Started for Free has the free-enquiry note right after it", () => {
+  it("every body CTA has the free-consultation note right after it", () => {
     for (const file of ["components/sections/Hero.tsx", "components/sections/ContactCTA.tsx", "app/perth/page.tsx", "app/services/[slug]/page.tsx"]) {
       const src = code(file);
       assert.doesNotMatch(src, /Discuss your project\s*<\/PrimaryCta>/, file);
-      const at = src.indexOf("Get Started for Free");
+      const at = src.indexOf("{PRIMARY_CTA.label}");
       assert.ok(at > 0, file);
       const after = src.slice(at, at + 900);
       assert.match(after, /\{PRIMARY_CTA_NOTE\}/, `${file}: note missing beside the CTA`);

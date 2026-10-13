@@ -2,6 +2,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   Building2,
+  CalendarCheck,
+  CalendarClock,
+  CalendarRange,
+  CalendarX,
   FileText,
   FolderKanban,
   Receipt,
@@ -10,6 +14,8 @@ import {
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminStatCard from "@/components/admin/AdminStatCard";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
+import { perthWeekBounds } from "@/lib/consultations/admin-view";
+import { formatPerthDate, formatPerthRange } from "@/lib/consultations/rules";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +58,22 @@ export default async function AdminPage() {
         }),
     ]);
 
+  // Consultation summary: counted in the database from real bookings, never hard-coded.
+  const now = new Date();
+  const week = perthWeekBounds(now);
+  const ACTIVE = ["CONFIRMED", "RESCHEDULED"];
+  const [upcoming, thisWeek, cancelled, nextConsultation] = await Promise.all([
+    supabase.from("consultation_bookings").select("id", { count: "exact", head: true })
+      .in("status", ACTIVE).gt("start_time", now.toISOString()),
+    supabase.from("consultation_bookings").select("id", { count: "exact", head: true })
+      .in("status", ACTIVE).gte("start_time", week.from.toISOString()).lt("start_time", week.to.toISOString()),
+    supabase.from("consultation_bookings").select("id", { count: "exact", head: true }).eq("status", "CANCELLED"),
+    supabase.from("consultation_bookings").select("id, customer_name, start_time")
+      .in("status", ACTIVE).gt("start_time", now.toISOString()).order("start_time", { ascending: true }).limit(1).maybeSingle(),
+  ]);
+  const consultationsUnavailable = Boolean(upcoming.error);
+  const next = nextConsultation.data as { id: string; customer_name: string; start_time: string } | null;
+
   const { data: recentClients } = await supabase
     .from("organizations")
     .select("id, name, status, created_at")
@@ -93,6 +115,35 @@ export default async function AdminPage() {
             value={documents.count ?? 0}
             icon={<FileText size={17} />}
           />
+        </section>
+
+        <section aria-labelledby="consultations-summary" className="mt-6 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 id="consultations-summary" className="font-semibold text-neutral-950">Consultations</h2>
+              <p className="mt-1 text-xs text-neutral-500">Free 30-minute consultations booked on the website (Perth time)</p>
+            </div>
+            <Link href="/admin/consultations" className="flex items-center gap-2 text-sm font-medium text-neutral-600 transition hover:text-neutral-950">
+              Manage
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {consultationsUnavailable ? (
+            <p className="mt-4 text-sm text-red-800">Consultation figures are unavailable. Check that the consultation migration has been applied.</p>
+          ) : (
+            <div className="mt-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
+              <AdminStatCard label="Upcoming" value={upcoming.count ?? 0} detail="Confirmed, not yet held" icon={<CalendarClock size={17} />} />
+              <AdminStatCard label="This week" value={thisWeek.count ?? 0} detail="Monday to Sunday, Perth" icon={<CalendarRange size={17} />} />
+              <AdminStatCard label="Cancelled" value={cancelled.count ?? 0} detail="All time" icon={<CalendarX size={17} />} />
+              <AdminStatCard
+                label="Next"
+                value={next ? formatPerthDate(new Date(next.start_time)).replace(/ \d{4}$/, "") : "None"}
+                detail={next ? `${formatPerthRange(new Date(next.start_time))}, ${next.customer_name}` : "No upcoming consultation"}
+                icon={<CalendarCheck size={17} />}
+              />
+            </div>
+          )}
         </section>
 
         <section className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">

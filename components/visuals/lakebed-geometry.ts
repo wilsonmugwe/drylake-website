@@ -17,10 +17,15 @@ export const lakebedPct = (v: number) => Math.round(((v - VIEW_MIN) / VIEW_SIZE)
  * far it starts from home (dx/dy in tile units, r in degrees): outward from the tile's centre, so
  * the broken tile reads as one thing cracked apart, not as random confetti.
  */
+/*
+ * lx is the plate's horizontal midpoint at the label's height (2026-10-13): Quotes spans about
+ * x 10..39 at y 26 and Scheduling x 10..46 at y 72 (inside the 4.5-unit stroke), so centring
+ * there leaves the most room on both sides at phone widths.
+ */
 export const LAKEBED_PLATES: readonly { label: string; lx: number; ly: number; dx: number; dy: number; r: number }[] = [
-  { label: "Quotes", lx: 22, ly: 26, dx: -6, dy: -5, r: -5 },
+  { label: "Quotes", lx: 24.5, ly: 26, dx: -6, dy: -5, r: -5 },
   { label: "Invoices", lx: 72, ly: 19, dx: 6, dy: -6, r: 4 },
-  { label: "Scheduling", lx: 24, ly: 72, dx: -6, dy: 5, r: 4 },
+  { label: "Scheduling", lx: 27, ly: 72, dx: -6, dy: 5, r: 4 },
   { label: "One system", lx: 73, ly: 53.5, dx: 7, dy: 0, r: -3 },
   { label: "Enquiries", lx: 75, ly: 82, dx: 4, dy: 7, r: -4 },
 ];

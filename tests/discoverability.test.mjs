@@ -204,7 +204,8 @@ describe("structured data describes one organisation", () => {
 });
 
 describe("every public page is listed, titled and canonical", () => {
-  const PRIVATE_DIRS = ["admin", "client", "portal", "sign-in", "sign-up", "api"];
+  // Derived from the robots/X-Robots-Tag source of truth, so a new private surface is covered.
+  const PRIVATE_DIRS = PRIVATE_PREFIXES.map((prefix) => prefix.slice(1));
 
   const routeFiles = walk(join(ROOT, "app"), (file) => file.endsWith("page.tsx")).filter(
     (file) => !PRIVATE_DIRS.some((dir) => file.startsWith(`app/${dir}/`))
@@ -374,7 +375,7 @@ describe("crawler policy: search and AI search in, training out, private closed"
   });
 
   it("private prefixes cover every private application surface", () => {
-    assert.deepEqual([...PRIVATE_PREFIXES].sort(), ["/admin", "/api", "/client", "/portal", "/sign-in", "/sign-up"]);
+    assert.deepEqual([...PRIVATE_PREFIXES].sort(), ["/admin", "/api", "/client", "/consultation/manage", "/portal", "/sign-in", "/sign-up"]);
   });
 
   it("private surfaces also send X-Robots-Tag noindex", () => {

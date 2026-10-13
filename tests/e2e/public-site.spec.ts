@@ -47,9 +47,9 @@ test("homepage hero states the proposition and offers the free primary action", 
 
   await expect(page.locator("h1")).toHaveText(/Technology that makes\s*running your business easier\./);
 
-  const cta = page.locator("main").getByRole("link", { name: /Get Started for Free/i }).first();
+  const cta = page.locator("main").getByRole("link", { name: /Start Free Consultation/i }).first();
   await expect(cta).toBeVisible();
-  await expect(cta).toHaveAttribute("href", "/contact");
+  await expect(cta).toHaveAttribute("href", "/consultation");
 });
 
 test("logo: header wordmark draws the y in tile ochre and links home", async ({ page }) => {
@@ -68,16 +68,16 @@ test("logo: header wordmark draws the y in tile ochre and links home", async ({ 
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 });
 
-test("Get Started for Free opens the contact page at the top, not the footer", async ({ page }, testInfo) => {
+test("Start Free Consultation opens the booking page at the top, not the footer", async ({ page }, testInfo) => {
   await page.goto("/");
 
   if (isMobileProject(testInfo)) {
-    await page.locator("main").getByRole("link", { name: /Get Started for Free/i }).first().click();
+    await page.locator("main").getByRole("link", { name: /Start Free Consultation/i }).first().click();
   } else {
-    await page.locator("header").getByRole("link", { name: /Get Started for Free/i }).click();
+    await page.locator("header").getByRole("link", { name: /Start Free Consultation/i }).click();
   }
 
-  await expect(page).toHaveURL(/\/contact$/);
+  await expect(page).toHaveURL(/\/consultation$/);
   await expect(page.locator("h1")).toBeInViewport();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 });

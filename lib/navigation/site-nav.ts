@@ -20,6 +20,7 @@
 
 export const HOME_PATH = "/";
 export const CONTACT_PATH = "/contact";
+export const CONSULTATION_PATH = "/consultation";
 export const SIGN_IN_PATH = "/sign-in";
 export const PORTAL_PATH = "/portal";
 
@@ -44,11 +45,13 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: PORTAL_PATH };
 /* Plain-English messaging (2026-10-13): names what the visitor is here to do. Public site only;
    the client portal keeps its own "Start a conversation" (MessageDrylake), untouched. */
-/* Final corrections (2026-10-13): "Get Started for Free". What is free is the first enquiry and
-   conversation, never the build, so every surface that carries this label beside body copy also
-   shows PRIMARY_CTA_NOTE (ACL s18; pre-launch checklist C1: the condition sits beside the offer). */
-export const PRIMARY_CTA: NavItem = { label: "Get Started for Free", href: CONTACT_PATH };
-export const PRIMARY_CTA_NOTE = "Your first enquiry and conversation are free. Any build is quoted before work starts.";
+/* Consultation booking (2026-10-13): the primary action books a free 30-minute consultation.
+   What is free is the consultation, never the build, so every surface that carries this label
+   beside body copy also shows PRIMARY_CTA_NOTE (ACL s18; pre-launch checklist C1: the condition
+   sits beside the offer). The contact form stays reachable as "Contact" in the nav and as
+   "Send us a message" in the closing section of every page. */
+export const PRIMARY_CTA: NavItem = { label: "Start Free Consultation", href: CONSULTATION_PATH };
+export const PRIMARY_CTA_NOTE = "Free 30-minute consultation. No obligation to proceed. Any work is quoted before it begins.";
 
 export type NavAction =
   /* Let next/link navigate (different page). Next lands at the top, or at the hash target. */

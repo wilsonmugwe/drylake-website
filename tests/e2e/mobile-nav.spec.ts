@@ -76,7 +76,7 @@ test("menu lists the destinations, Client Login and the primary action, all 44px
   await openMenu(page);
 
   const menu = dialog(page);
-  for (const name of ["What We Do", "Our Approach", "About", "Contact", "Client Login", "Get Started for Free"]) {
+  for (const name of ["What We Do", "Our Approach", "About", "Contact", "Client Login", "Start Free Consultation"]) {
     const link = menu.getByRole("link", { name: new RegExp(name) }).first();
     await expect(link).toBeVisible();
     const box = await link.boundingBox();
@@ -116,14 +116,14 @@ test("a section link from another page navigates home to the section", async ({ 
     .toBeLessThan(120);
 });
 
-test("Get Started for Free from the menu opens the contact page at the top", async ({ page }) => {
+test("Start Free Consultation from the menu opens the booking page at the top", async ({ page }) => {
   await page.goto("/about");
   await page.evaluate(() => window.scrollTo(0, 1200));
   await openMenu(page);
 
-  await dialog(page).getByRole("link", { name: /Get Started for Free/ }).click();
+  await dialog(page).getByRole("link", { name: /Start Free Consultation/ }).click();
 
-  await expect(page).toHaveURL(/\/contact$/);
+  await expect(page).toHaveURL(/\/consultation$/);
   await expect(dialog(page)).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 });

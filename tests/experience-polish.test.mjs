@@ -73,7 +73,7 @@ describe("PUBLIC: the hero", () => {
 
   it("says what Drylake does in an owner's words, next to a free primary action", () => {
     assert.match(hero, /We build websites, business software and automation tools that save time,\s+reduce manual work and help your business run smoothly\./);
-    assert.match(hero, /<PrimaryCta href="\/contact"[^>]*>\s*Get Started for Free\s*<\/PrimaryCta>/);
+    assert.match(hero, /<PrimaryCta href=\{PRIMARY_CTA\.href\}[^>]*>\s*\{PRIMARY_CTA\.label\}\s*<\/PrimaryCta>/);
     assert.match(hero, /caption=\{[\s\S]*Until they work together\./);
   });
 
@@ -177,7 +177,9 @@ describe("PUBLIC: homepage content", () => {
     const cta = code("components/sections/ContactCTA.tsx");
     assert.match(cta, /href=\{BUSINESS_PHONE\.href\}/);
     assert.match(cta, /mailto:hello@drylake\.com\.au/);
-    assert.match(cta, /Get Started for Free\s*<\/PrimaryCta>/);
+    assert.match(cta, /\{PRIMARY_CTA\.label\}\s*<\/PrimaryCta>/);
+    // The second route in (brief, Task 3): the message form is linked beside the booking CTA.
+    assert.match(cta, /<SiteLink href=\{CONTACT_PATH\}[^>]*>\s*Send us a message/);
   });
 
   it("the footer keeps every corporate fact and every service link", () => {

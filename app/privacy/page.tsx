@@ -93,6 +93,13 @@ export default function PrivacyPage() {
                     call us, we collect what you choose to tell us.
                   </li>
                   <li>
+                    <strong className="font-semibold text-black">Consultation bookings.</strong>{" "}
+                    When you book a free consultation: your name, email address, phone number and
+                    business name (both optional), what you tell us about your business or project,
+                    and the time you chose. We keep a record of changes to the booking (rescheduled,
+                    cancelled or completed) and of the emails we send you about it.
+                  </li>
+                  <li>
                     <strong className="font-semibold text-black">Clients.</strong> The names,
                     work email addresses and roles of the people at a client organisation, and
                     the project information, documents and invoices we share through Drylake
@@ -124,7 +131,8 @@ export default function PrivacyPage() {
 
               <PolicySection title="3. How we use information">
                 <p>
-                  We use personal information to reply to enquiries, assess and deliver
+                  We use personal information to reply to enquiries, arrange and hold
+                  consultations (including confirmation and reminder emails), assess and deliver
                   projects, give clients access to Drylake Workspace, issue invoices and record
                   payments, keep our systems secure, and meet our legal and record-keeping
                   obligations. We do not sell personal information and we do not use it for
@@ -137,8 +145,8 @@ export default function PrivacyPage() {
                   Our public pages do not set cookies. We use Vercel Web Analytics to count
                   visits and enquiries in aggregate; it does not use cookies. Signing in to
                   Drylake Workspace uses cookies that are needed to keep you signed in. We use
-                  Cloudflare Turnstile on the contact form to check that a submission comes from
-                  a person rather than an automated program.
+                  Cloudflare Turnstile on the contact and booking forms to check that a submission
+                  comes from a person rather than an automated program.
                 </p>
               </PolicySection>
 
@@ -159,10 +167,10 @@ export default function PrivacyPage() {
                 <ul className="mt-3 list-disc space-y-2 pl-5">
                   <li>Vercel: website hosting and aggregate visit analytics</li>
                   <li>Clerk: Drylake Workspace sign-in and account security</li>
-                  <li>Supabase: database and document storage for Drylake Workspace</li>
+                  <li>Supabase: database and document storage for Drylake Workspace, and consultation bookings</li>
                   <li>Stripe: card payments for invoices</li>
-                  <li>Resend: delivery of enquiry notifications, invitations and invoice emails</li>
-                  <li>Cloudflare: protection of the contact form against automated abuse</li>
+                  <li>Resend: delivery of enquiry notifications, consultation emails, invitations and invoice emails</li>
+                  <li>Cloudflare: protection of the contact and booking forms against automated abuse</li>
                   <li>Microsoft 365: our business email</li>
                 </ul>
                 <p className="mt-3">

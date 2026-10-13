@@ -32,8 +32,14 @@ const { ADMIN_NAV_GROUPS, isAdminNavActive } = await import(
   `data:text/javascript,${encodeURIComponent(
     stripTypeScriptTypes(
       read("components/admin/admin-nav.ts").replace(
-        /import \{[\s\S]*?\} from "lucide-react";/,
-        "const Building2 = 1, CreditCard = 1, FileText = 1, FolderKanban = 1, LayoutDashboard = 1, Receipt = 1;"
+        /import \{([\s\S]*?)\} from "lucide-react";/,
+        (_, names) =>
+          `const ${names
+            .split(",")
+            .map((n) => n.replace(/\btype\b/, "").trim())
+            .filter((n) => n && n !== "LucideIcon")
+            .map((n) => `${n} = 1`)
+            .join(", ")};`
       )
     )
   )}`
