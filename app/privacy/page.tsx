@@ -3,7 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
 import { DRYLAKE_BUSINESS } from "@/lib/business";
-import { BUSINESS_PHONE, CONTACT_EMAIL, POSTAL_ADDRESS } from "@/lib/site";
+import { BUSINESS_PHONE, CONTACT_EMAIL, PUBLIC_LOCATION } from "@/lib/site";
 
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seo-pages";
@@ -229,7 +229,10 @@ export default function PrivacyPage() {
                       {BUSINESS_PHONE.display}
                     </a>
                   </li>
-                  <li>Post: {POSTAL_ADDRESS}</li>
+                  <li>
+                    Location: {PUBLIC_LOCATION}. We have no public office; if you need to write to us
+                    by post, email us and we will give you a postal address.
+                  </li>
                 </ul>
                 <p className="mt-3">
                   We will look into a complaint and reply to you. If you are not satisfied with

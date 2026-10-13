@@ -40,17 +40,20 @@ export default function Hero() {
                 <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
                 <span>Perth / Western Australia</span>
                 <span aria-hidden="true" className="hidden text-white/35 sm:inline">/</span>
-                <span className="hidden sm:inline">Software Engineering</span>
+                <span className="hidden sm:inline">Websites, Software &amp; Automation</span>
               </p>
               <p aria-hidden="true" className="hidden text-white/45 md:block">
                 31.95° S&nbsp;&nbsp;115.86° E
               </p>
             </div>
 
-            <h1 className="hz-display relative z-10 mt-6 sm:mt-10 lg:mt-14">
-              <span className="block">Your business</span>{" "}
-              <span className="block pl-[0.82em]">shouldn&apos;t run</span>{" "}
-              <span className="block text-white/78 lg:text-white/62">on workarounds.</span>
+            {/* Plain-English messaging (2026-10-13): visitors could not say what Drylake does, so the
+                headline now SAYS it. Longer than the old three-word lines, so it is set one step
+                smaller (hz-display-plain) and held left of the lake-bed tile on desktop. Still
+                server-rendered, no entrance animation (LCP rule). */}
+            <h1 className="hz-display hz-display-plain relative z-10 mt-6 sm:mt-10 lg:mt-14">
+              We build websites, business software and automations that make{" "}
+              <span className="text-white/78">running your business easier.</span>
             </h1>
 
             <figure className="lb-figure hidden sm:block">
@@ -65,8 +68,9 @@ export default function Hero() {
 
             <div className="relative z-10 mt-6 sm:mt-10 lg:mt-12 lg:max-w-[38rem]">
               <p className="type-lede max-w-[34rem] text-white/72">
-                Drylake builds practical software and automation for Australian
-                businesses that have outgrown spreadsheets, email and double handling.
+                We help Australian businesses build better websites, replace spreadsheets
+                and manual processes, connect the tools they already use, and automate
+                repetitive work with software and AI.
               </p>
             </div>
 
@@ -80,11 +84,11 @@ export default function Hero() {
           <div className="lg:max-w-[38rem]">
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
               <PrimaryCta href="/contact" className="w-full sm:w-auto sm:min-w-[232px]">
-                Start a conversation
+                Discuss your project
               </PrimaryCta>
 
-              <SiteLink href="/#approach" className="btn-ghost-dark w-full sm:w-auto sm:min-w-[188px]">
-                <span>How we work</span>
+              <SiteLink href="/#solutions" className="btn-ghost-dark w-full sm:w-auto sm:min-w-[188px]">
+                <span>See what we build</span>
                 <ArrowDown aria-hidden="true" size={15} />
               </SiteLink>
             </div>

@@ -89,8 +89,8 @@ export default function ContactPage() {
 
                 <p className="mt-6 max-w-lg text-base leading-7 text-black/60">
                   You don&apos;t need a technical brief or project plan. Tell us
-                  how the business works today, what&apos;s causing friction and
-                  what you&apos;d like to improve.
+                  what you want built, such as a new website, a booking system or an
+                  automation, or simply what is taking your team too much time.
                 </p>
 
                 <div className="mt-7 border-l-2 border-[#f26a2e] pl-4">

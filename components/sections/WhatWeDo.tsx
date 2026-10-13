@@ -13,48 +13,56 @@ type Service = {
 };
 
 /*
- * Each row links to its service page (lib/discovery/services.ts slugs). Experience polish: the
- * outcome leads and the capability name follows, in words an owner uses. AI is one row among four
- * (the standalone AI chapter is gone, brief section 6): what it does for the work, with a person
- * checking what matters.
+ * Each row links to its service page (lib/discovery/services.ts slugs). Plain-English messaging
+ * (2026-10-13): five rows, one per service, websites first because visitors could not tell
+ * Drylake builds websites. The label is the service in everyday words, the headline says what it
+ * does for the business, and the examples are things an owner would recognise.
  */
 const services: Service[] = [
   {
     number: "01",
-    name: "Custom Software",
-    statement: "Software that fits the business.",
-    text: "Internal systems, portals and apps built around how your business actually works, instead of bending the business around a product.",
-    examples: "Internal platforms / Client & staff portals / Job and workflow systems / Web & mobile applications",
-    href: "/services/custom-software-development",
+    name: "Websites",
+    statement: "Websites that bring in work.",
+    text: "We build professional websites that make it easier for customers to find your business, understand what you offer and get in touch.",
+    examples: "Business websites / Enquiry & booking forms / Redesigns / Customer-facing web features",
+    href: "/services/web-development",
   },
   {
     number: "02",
-    name: "Automation",
-    statement: "Fewer manual steps.",
-    text: "The routine steps your team repeats every day, done automatically: less double handling, fewer reminders, fewer mistakes.",
-    examples: "Approvals / Reminders & follow-ups / Notifications / Keeping records in sync",
-    href: "/services/business-automation",
+    name: "Custom Software & Apps",
+    statement: "Software built for how you work.",
+    text: "Still running your business through spreadsheets and paperwork? We build software that keeps your information organised and makes everyday work easier.",
+    examples: "Customer portals / Booking systems / Staff dashboards / Job tracking",
+    href: "/services/custom-software-development",
   },
   {
     number: "03",
-    name: "Connected Systems",
-    statement: "Make the systems talk.",
-    text: "Connect the platforms you already use, so information moves between them instead of being typed in twice.",
-    examples: "Accounting & CRM / Shared customer data / Existing platforms / Reporting",
-    href: "/services/systems-integration",
+    name: "Business Automation",
+    statement: "Less repetitive work.",
+    text: "We help your business spend less time on repetitive tasks by setting up software that handles them automatically.",
+    examples: "Appointment reminders / Enquiry follow-ups / Recurring reports / Routine documents",
+    href: "/services/business-automation",
   },
   {
     number: "04",
-    name: "AI",
-    statement: "AI where it earns its place.",
-    text: "Reading documents, sorting enquiries, drafting replies: AI where it genuinely saves work, with a person checking what matters.",
-    examples: "Document processing / Sorting & routing enquiries / Drafting & summaries / Decision support",
+    name: "Connecting Your Systems",
+    statement: "Your tools, working together.",
+    text: "Using several tools that don't talk to each other? We connect them so you don't have to keep entering the same information.",
+    examples: "Website to customer list / Bookings to calendars / Software to accounting / One customer record",
+    href: "/services/systems-integration",
+  },
+  {
+    number: "05",
+    name: "AI for Business",
+    statement: "AI for the everyday admin.",
+    text: "We build AI tools that help your team handle repetitive work, find information and respond to customers faster, with people staying in control where needed.",
+    examples: "Answering common questions / Searching documents / Drafting replies / Sorting enquiries",
     href: "/services/ai-automation",
   },
 ];
 
 /*
- * Chapter 3, What We Do (light, nav target #solutions). Not cards: four editorial rows on
+ * Chapter 3, What We Do (light, nav target #solutions). Not cards: five editorial rows on
  * hairlines, each one link to its service page. The outcome is the headline of each row; the
  * service name is its label. Desktop: hovering or focusing a row draws a rule under it and nudges
  * the arrow; everything is visible without hover. Phones: one compact column per row.
@@ -68,14 +76,14 @@ export default function WhatWeDo() {
 
           <div className="lg:col-span-9">
             <h2 className="type-section">
-              Less workaround.{" "}
+              What we build.{" "}
               <br />
-              <span className="text-black/50">More workflow.</span>
+              <span className="text-black/50">What it does for you.</span>
             </h2>
 
             <p className="type-lede mt-5 max-w-2xl text-black/62 sm:mt-6">
-              We build software, automate the repetitive work and join up the
-              systems you already use, so your team spends less time on admin.
+              Websites, business software, automations and AI tools, built so your
+              team spends less time on paperwork and more time on customers.
             </p>
           </div>
         </div>
@@ -116,16 +124,12 @@ export default function WhatWeDo() {
 
       <Container className="relative pb-(--section-y)">
         <div className="flex flex-wrap gap-x-8 pt-3 sm:justify-end">
-          <Link href="/services/web-development" className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold">
-            <span className="link-underline">Web development</span>
-            <ArrowUpRight aria-hidden="true" size={15} />
-          </Link>
           <Link href="/services" className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold">
             <span className="link-underline">All services</span>
             <ArrowUpRight aria-hidden="true" size={15} />
           </Link>
           <Link href="/solutions" className="group inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold">
-            <span className="link-underline">Explore what we do</span>
+            <span className="link-underline">Problems we solve</span>
             <ArrowUpRight aria-hidden="true" size={15} />
           </Link>
         </div>

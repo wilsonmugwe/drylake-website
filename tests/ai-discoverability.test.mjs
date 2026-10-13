@@ -49,12 +49,11 @@ describe("heading text keeps its word boundaries", () => {
     assert.deepEqual(offenders, []);
   });
 
-  it("the homepage h1 separates its three lines with spaces", () => {
+  it("the homepage h1 keeps a space before its dimmed phrase", () => {
     const hero = read("components/sections/Hero.tsx");
     const h1 = hero.slice(hero.indexOf("<h1"), hero.indexOf("</h1>"));
-    assert.equal((h1.match(/<\/span>\{" "\}/g) ?? []).length, 2);
-    // The approved headline itself is unchanged.
-    for (const words of ["Your business", "shouldn&apos;t run", "on workarounds."]) assert.ok(h1.includes(words), words);
+    // Plain-English headline (2026-10-13): "...that make" + {" "} + <span>running your business easier.</span>
+    assert.match(h1, /that make\{" "\}\s*<span[^>]*>running your business easier\.<\/span>/);
   });
 });
 

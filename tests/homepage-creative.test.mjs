@@ -92,23 +92,23 @@ describe("the hero is drawn, not photographed", () => {
     const source = code("components/sections/Hero.tsx");
     assert.ok(!source.startsWith('"use client"'), "Hero stays a server component");
     assert.equal((source.match(/<h1\b/g) ?? []).length, 1);
-    assert.match(source, /Your business[\s\S]*shouldn&apos;t run[\s\S]*on workarounds\./);
+    assert.match(source, /We build websites, business software and automations that make[\s\S]*running your business easier\./);
     // No entrance animation on the headline at all (PR 3: the delayed line was the LCP element).
     assert.ok(!/<h1[^>]*dl-fade/.test(source));
   });
 });
 
 describe("calls to action", () => {
-  it("every 'Start a conversation' on the homepage and footer is a PrimaryCta", () => {
+  it("every 'Discuss your project' on the homepage and footer is a PrimaryCta", () => {
     for (const file of [...HOME_SECTIONS, "components/layout/Footer.tsx"]) {
       const source = code(file);
-      for (const match of source.matchAll(/Start a conversation/g)) {
+      for (const match of source.matchAll(/Discuss your project/g)) {
         const after = source.slice(match.index + match[0].length, match.index + match[0].length + 40);
         // PR 3: the ending's eyebrow label shares the CTA's sentence case; it is a heading label,
         // not an action, so it may sit in a .section-label paragraph.
         const before = source.slice(Math.max(0, match.index - 240), match.index);
         const eyebrow = /className="section-label[^"]*"[^<]*>(?:(?!<\/p>)[\s\S])*$/.test(before) && /^\s*<\/p>/.test(after);
-        assert.ok(eyebrow || /^\s*<\/PrimaryCta>/.test(after), `${file}: "Start a conversation" outside PrimaryCta`);
+        assert.ok(eyebrow || /^\s*<\/PrimaryCta>/.test(after), `${file}: "Discuss your project" outside PrimaryCta`);
       }
     }
     assert.match(code("components/sections/ContactCTA.tsx"), /Have a problem[\s\S]*worth fixing\?/);
@@ -119,10 +119,11 @@ describe("service rows", () => {
   const source = code("components/sections/WhatWeDo.tsx");
   const hrefs = [...source.matchAll(/href(?:: |=)"([^"]+)"/g)].map((m) => m[1]);
 
-  it("are the four rows of the brief, in order, with no em dash in the labels", () => {
+  it("are the five services in plain words, websites first, with no em dash in the labels", () => {
     const names = [...source.matchAll(/name: "([^"]+)"/g)].map((m) => m[1]);
-    // Experience polish: AI is the last of four rows (a capability, not the identity).
-    assert.deepEqual(names, ["Custom Software", "Automation", "Connected Systems", "AI"]);
+    // Plain-English messaging (2026-10-13): visitors could not tell Drylake builds websites.
+    assert.deepEqual(names, ["Websites", "Custom Software & Apps", "Business Automation", "Connecting Your Systems", "AI for Business"]);
+    assert.ok(names.every((name) => !name.includes("\u2014")));
   });
 
   it("link only to routes that exist", () => {

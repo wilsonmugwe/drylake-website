@@ -26,6 +26,7 @@ import {
 import { problemPath, problemsForService } from "@/lib/discovery/problems";
 import { pageMetadata } from "@/lib/seo";
 import { serviceShareImage } from "@/lib/seo-pages";
+import { VALUE_EXAMPLE_NOTE, VALUE_EXAMPLES } from "@/lib/value-examples";
 
 /*
  * One page per service line (lib/discovery/services.ts). Statically generated: no auth, no
@@ -61,6 +62,8 @@ export default async function ServicePage({ params }: Props) {
   if (!service) {
     notFound();
   }
+
+  const example = VALUE_EXAMPLES[service.valueExample];
 
   const crumbs = [
     { name: "Home", path: "/" },
@@ -100,8 +103,17 @@ export default async function ServicePage({ params }: Props) {
             {service.intro}
           </p>
 
+          {/* An illustrative calculation, labelled as one (lib/value-examples.ts), never a result. */}
+          <p className="mt-6 max-w-2xl border-l-2 border-black/15 pl-4 text-base leading-7 text-black/70">
+            <span className="block font-mono text-[0.62rem] uppercase tracking-[0.12em] text-black/62">For example</span>
+            {example.text}
+            <span className="mt-1 block text-sm leading-6 text-black/60">
+              Assumes {example.assumptions} {VALUE_EXAMPLE_NOTE}
+            </span>
+          </p>
+
           <PrimaryCta href="/contact" surface="light" className="mt-8">
-            Start a conversation
+            Discuss your project
           </PrimaryCta>
         </Container>
 

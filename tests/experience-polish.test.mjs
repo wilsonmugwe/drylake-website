@@ -61,7 +61,7 @@ describe("PUBLIC: the hero", () => {
 
   it("keeps the core proposition as the one h1, painted in place (no entrance animation)", () => {
     assert.equal((hero.match(/<h1\b/g) ?? []).length, 1);
-    assert.match(h1, /Your business[\s\S]*shouldn&apos;t run[\s\S]*on workarounds\./);
+    assert.match(h1, /We build websites, business software and automations that make[\s\S]*running your business easier\./);
     assert.ok(!/dl-|lb-|animate-|opacity-0|--d"/.test(h1));
   });
 
@@ -72,8 +72,8 @@ describe("PUBLIC: the hero", () => {
   });
 
   it("says what Drylake does in an owner's words, next to a free primary action", () => {
-    assert.match(hero, /practical software and automation for Australian\s+businesses that have outgrown spreadsheets, email and double handling\./);
-    assert.match(hero, /<PrimaryCta href="\/contact"[^>]*>\s*Start a conversation\s*<\/PrimaryCta>/);
+    assert.match(hero, /We help Australian businesses build better websites, replace spreadsheets\s+and manual processes, connect the tools they already use, and automate\s+repetitive work with software and AI\./);
+    assert.match(hero, /<PrimaryCta href="\/contact"[^>]*>\s*Discuss your project\s*<\/PrimaryCta>/);
     assert.match(hero, /<figcaption[\s\S]*Until they are one system\./);
   });
 
@@ -177,7 +177,7 @@ describe("PUBLIC: homepage content", () => {
     const cta = code("components/sections/ContactCTA.tsx");
     assert.match(cta, /href=\{BUSINESS_PHONE\.href\}/);
     assert.match(cta, /mailto:hello@drylake\.com\.au/);
-    assert.match(cta, /Start a conversation\s*<\/PrimaryCta>/);
+    assert.match(cta, /Discuss your project\s*<\/PrimaryCta>/);
   });
 
   it("the footer keeps every corporate fact and every service link", () => {

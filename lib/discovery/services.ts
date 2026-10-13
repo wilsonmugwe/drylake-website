@@ -11,7 +11,11 @@
  *   - Every page must be useful to a real buyer: the problem, what can be built, when it is
  *     and is not a fit, how the work is approached and what makes it dependable.
  *   - No em dashes (portfolio rule for client-facing copy). "Perth" only where it is the point.
+ *   - Plain English first (2026-10-13): the headline and intro say what the service IS in words a
+ *     non-technical owner uses; technical detail stays further down for those who want it.
  */
+
+import type { ValueExampleKey } from "../value-examples.ts";
 
 export type ServiceFaq = { question: string; answer: string };
 export type ServicePoint = { title: string; text: string };
@@ -37,7 +41,10 @@ export type Service = {
   /* One line for service lists and link cards. */
   summary: string;
   headline: string;
+  /* First visible paragraph: what the service is, in plain English (2026-10-13 messaging rule). */
   intro: string;
+  /* Illustrative time example shown under the intro (lib/value-examples.ts; never a result). */
+  valueExample: ValueExampleKey;
   problemHeading: string;
   problem: readonly string[];
   builds: readonly string[];
@@ -57,16 +64,17 @@ export const SERVICES: readonly Service[] = [
   {
     slug: "custom-software-development",
     path: path("custom-software-development"),
-    name: "Custom software development",
+    name: "Custom software & apps",
     serviceType: "Custom software development",
     title: "Custom Software Development for Australian Businesses | Drylake",
     description:
-      "Drylake designs and builds custom software for Australian businesses: internal platforms, client and staff portals, workflow systems and web applications.",
+      "Drylake builds custom software for Australian businesses: customer portals, booking systems, staff dashboards and job tracking that replace spreadsheets.",
     summary:
-      "Internal platforms, client and staff portals, workflow systems and web applications built around how the business works.",
-    headline: "Software that fits the business.",
+      "Customer portals, booking systems, staff dashboards and job tracking, built for the way your business works.",
+    headline: "Software built for the way your business works.",
     intro:
-      "Drylake designs and builds internal platforms, client and staff portals, workflow systems and web applications for Australian businesses. We start with the workflow the business depends on, then design the software around it.",
+      "Still running the business through spreadsheets, emails and paperwork? We build software made for your business, such as customer portals, booking systems, staff dashboards and job tracking, so your information sits in one organised place and everyday work is easier.",
+    valueExample: "searching",
     problemHeading: "When the spreadsheet has become the system.",
     problem: [
       "Most businesses run on a mix of packaged software, spreadsheets and email. That works until an important process lives in a file only a few people understand, information is copied between tools, and every change makes it harder to manage, share or scale.",
@@ -150,12 +158,13 @@ export const SERVICES: readonly Service[] = [
     serviceType: "Business process automation",
     title: "Business Automation and Workflow Automation | Drylake",
     description:
-      "Drylake automates routine business work for Australian businesses: approvals, notifications, follow-ups, forms and the hand-offs between people and systems.",
+      "Drylake sets up business automation for Australian businesses: appointment reminders, enquiry follow-ups, recurring reports and routine paperwork, done for you.",
     summary:
-      "Approvals, notifications, follow-ups and routine hand-offs automated, so less depends on someone remembering.",
-    headline: "Less manual follow-up. More workflow.",
+      "Reminders, follow-ups, recurring reports and routine paperwork handled by software, so less depends on someone remembering.",
+    headline: "Spend less time on repetitive tasks.",
     intro:
-      "Drylake automates routine, repeated steps for Australian businesses: approvals, notifications, follow-ups, forms and the hand-offs between people and systems. The aim is less manual handling, not more software to manage.",
+      "Automation means setting up software to do routine tasks for you, such as sending appointment reminders, following up enquiries, moving information between systems, preparing recurring reports and processing routine documents. Your team spends less time on repeated work, and fewer things depend on someone remembering.",
+    valueExample: "reminders",
     problemHeading: "Too much depends on manual follow-up.",
     problem: [
       "Routine work often still relies on emails, reminders and somebody remembering what happens next. When that person is busy or away, work stalls, and nobody can easily see where things are up to.",
@@ -229,16 +238,17 @@ export const SERVICES: readonly Service[] = [
   {
     slug: "systems-integration",
     path: path("systems-integration"),
-    name: "Systems integration",
+    name: "Connecting your systems",
     serviceType: "Systems integration",
-    title: "Systems Integration: Connect Your Existing Software | Drylake",
+    title: "Systems Integration: Connect Your Business Tools | Drylake",
     description:
-      "Drylake connects the systems Australian businesses already use, such as accounting, CRM, payments and Microsoft 365, so information stops being copied by hand.",
+      "Drylake connects the business tools you already use, such as your website, bookings, CRM and accounting software, so you stop entering the same details twice.",
     summary:
-      "The software you already use, connected, so information moves between systems without being copied or re-entered.",
-    headline: "Make the systems talk.",
+      "The tools you already use, connected, so the same information does not have to be typed in twice.",
+    headline: "Get your business tools working together.",
     intro:
-      "Drylake connects the software Australian businesses already use so information moves between systems without being copied or re-entered. Where practical we keep the systems you rely on and build the connections around them.",
+      "Using several tools that don't talk to each other? We connect them: your website to your customer list, your booking system to your calendar, your business software to your accounting. Information is entered once and appears where it is needed, and you keep the software that already works. This is sometimes called systems integration.",
+    valueExample: "copying",
     problemHeading: "Our systems don't talk to each other.",
     problem: [
       "Information spread across platforms creates gaps, delays and manual work. The team copies details from one system to another, records drift out of step, and nobody is sure which version is right.",
@@ -246,8 +256,8 @@ export const SERVICES: readonly Service[] = [
     ],
     builds: [
       "Integrations between accounting, CRM, payment and operational systems",
-      "Data synchronisation so every system holds the same record",
-      "Custom APIs and connectors where no ready-made integration exists",
+      "Customer and job details kept the same in every system",
+      "Custom connections (APIs) where no ready-made link exists",
       "Migration from platforms the business has outgrown",
       "Reporting that brings information from several systems together",
     ],
@@ -312,17 +322,18 @@ export const SERVICES: readonly Service[] = [
   {
     slug: "ai-automation",
     path: path("ai-automation"),
-    name: "AI automation",
+    name: "AI for business",
     // Structured data only (not visible copy): the phrase buyers search, backed by this page's FAQ.
     serviceType: "AI integration and automation",
-    title: "AI Automation for Real Business Workflows | Drylake",
+    title: "AI Automation for Everyday Business Admin | Drylake",
     description:
-      "Drylake builds practical AI into Australian business workflows: document processing, drafting, summarising and internal tools, with people checking the results.",
+      "Drylake builds practical AI tools for Australian businesses: answering common questions, searching documents and drafting replies, with people in control.",
     summary:
-      "Practical AI inside real workflows: reading documents, drafting, summarising and answering questions from your own records.",
-    headline: "AI where it earns its place.",
+      "AI tools that answer common questions, search your documents, draft replies and sort enquiries, with a person checking what matters.",
+    headline: "Use AI to help with the repetitive work.",
     intro:
-      "Drylake builds AI into business workflows where it reduces work or adds genuinely useful functionality. We use AI as one part of a working system, not as a product on its own.",
+      "We build practical AI tools that help with everyday work: answering common customer questions, finding information in your documents, preparing draft emails and replies, and sorting enquiries so the urgent ones are seen first. AI does the first pass; people stay in control of anything that affects a customer, money or a decision.",
+    valueExample: "sorting",
     problemHeading: "Useful AI is part of a workflow.",
     problem: [
       "AI is good at work that used to need a person to read: incoming documents, long emails, notes and records. It can draft, summarise, classify and answer questions from information the business already holds.",
@@ -330,9 +341,9 @@ export const SERVICES: readonly Service[] = [
     ],
     builds: [
       "Document processing that reads and routes incoming paperwork",
-      "AI-assisted workflows that draft, summarise or classify",
+      "Drafting, summarising and sorting routine messages for a person to check",
       "Internal tools that answer questions from the business's own records",
-      "Decision support that surfaces what needs attention",
+      "Highlighting what needs attention first",
       "Review steps, so a person checks results before they matter",
     ],
     useCases: [
@@ -396,16 +407,17 @@ export const SERVICES: readonly Service[] = [
   {
     slug: "web-development",
     path: path("web-development"),
-    name: "Web development",
+    name: "Websites & web development",
     serviceType: "Website and web application development",
-    title: "Web Development and Business Websites | Drylake",
+    title: "Website Development for Australian Businesses | Drylake",
     description:
-      "Drylake builds fast, clear business websites and web applications for Australian businesses, with forms, bookings and payments connected to your systems.",
+      "Drylake builds professional business websites in Perth and across Australia: new sites, redesigns, enquiry and booking forms, connected to how you work.",
     summary:
-      "Fast, clear business websites and web applications, connected to the forms, bookings and systems behind them.",
-    headline: "A professional digital front door for the business.",
+      "Professional business websites, redesigns and online enquiry and booking forms that make it easy for customers to get in touch.",
+    headline: "Websites that help customers find you and get in touch.",
     intro:
-      "Drylake builds fast, clear business websites and web applications for Australian businesses, designed around what customers need to understand and what you want them to do next. Where it helps, the website connects to the systems behind it.",
+      "We build professional websites for Australian businesses: new sites, redesigns of existing ones, online enquiry and booking forms, and customer-facing features such as secure log-ins. Customers understand what you offer and find it easy to contact you, and where it helps, enquiries go straight to the right person or system.",
+    valueExample: "enquiries",
     problemHeading: "The website is where the work starts.",
     problem: [
       "For many customers the website is the first place they check. If it is slow, hard to use or unclear about what the business does, they leave before they ever make contact.",
@@ -416,7 +428,7 @@ export const SERVICES: readonly Service[] = [
       "Forms and bookings that send information to the right place in the business",
       "Online payment flows connected to the processes around them",
       "Client portals and secure sign-in areas",
-      "Technical foundations: performance, crawlability, indexing and search configuration",
+      "Fast pages, set up properly so search engines can find and list them",
       "Domains, DNS and business email configured properly",
     ],
     useCases: [

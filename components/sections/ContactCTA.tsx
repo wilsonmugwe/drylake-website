@@ -44,7 +44,7 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
       <Container className="relative pb-10 pt-(--section-y) sm:pb-14 lg:pb-16">
         <p className="section-label flex items-center gap-2.5 text-white/60">
           <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal" />
-          Start a conversation
+          Discuss your project
         </p>
 
         <div className="mt-6 grid gap-10 sm:mt-8 sm:gap-12 lg:grid-cols-12 lg:items-end lg:gap-8">
@@ -54,12 +54,12 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
             </h2>
 
             <p className="type-lede mt-5 max-w-xl text-white/66 sm:mt-7">
-              No technical brief required. Tell us what&apos;s manual,
-              disconnected or taking too much time.
+              No technical brief needed. Tell us what you want built, or what
+              is taking your team too much time.
             </p>
 
             <PrimaryCta href="/contact" size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
-              Start a conversation
+              Discuss your project
             </PrimaryCta>
           </div>
 

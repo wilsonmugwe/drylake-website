@@ -9,12 +9,12 @@ export const RESPONSE_TIME = "1 business day";
 export const CONTACT_EMAIL = "hello@drylake.com.au";
 
 /*
- * Postal address for privacy and legal correspondence (confirmed company details, 2026-10-10).
- * Used on the Privacy Policy only. Deliberately NOT in structured data or on marketing pages:
- * Drylake serves clients remotely and on site, so it is a correspondence address, not a
- * premises clients visit (no LocalBusiness / ProfessionalService address claim).
+ * Public location: city level ONLY (2026-10-13). The street address previously published on the
+ * Privacy Policy was a residence and was removed; no street address may appear on any public
+ * surface (tests/plain-english-messaging.test.mjs scans the source and the built output).
+ * A postal address for formal correspondence is given on request, never published.
  */
-export const POSTAL_ADDRESS = "10/53 Davidson Terrace, Joondalup WA 6027";
+export const PUBLIC_LOCATION = "Perth, Western Australia, Australia";
 
 /*
  * Drylake's official business line (drylake-ops, 2026-10-09). The ONE place the number lives:

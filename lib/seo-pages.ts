@@ -31,13 +31,13 @@ export const PAGE_SEO = {
     /* Perth in the home title (audit 2026-10-10): Perth-qualified software queries carry measured
        AU volume (DataForSEO, Oct 2026: "custom software perth" 90/mo, "software company perth"
        110/mo). The hero headline is unchanged; this is the search result title only. */
-    title: "Drylake | Custom Software & Automation, Perth WA",
+    title: "Drylake | Websites, Software & Automation, Perth WA",
     description:
-      "Drylake is a Perth software company building custom software, automation and connected systems for Australian businesses held back by manual processes.",
+      "Drylake builds websites, business software and automations for Australian businesses, so your team spends less time on repetitive admin. Based in Perth, WA.",
     shareDescription:
-      "Operational software, automation and connected systems for Australian businesses that have outgrown manual processes and disconnected tools.",
+      "Websites, business software, automations and AI tools that make running an Australian business easier.",
     image: "/og/home.png",
-    imageAlt: "Drylake: operational software and automation for Australian businesses",
+    imageAlt: "Drylake: websites, business software and automation for Australian businesses",
   },
   solutions: {
     path: "/solutions",
@@ -53,17 +53,17 @@ export const PAGE_SEO = {
   },
   services: {
     path: "/services",
-    title: "Services: Software, Automation, Integration, AI and Web | Drylake",
+    title: "Services: Websites, Software, Automation & AI | Drylake",
     description:
-      "The five things Drylake builds for Australian businesses: custom software, business automation, systems integration, AI automation and web development.",
+      "The five things Drylake builds for Australian businesses: websites, custom software and apps, business automation, connected systems and practical AI tools.",
     image: "/og/services.png",
     imageAlt: "Drylake services: custom software, automation, integration, AI and web",
   },
   perth: {
     path: "/perth",
-    title: "Perth Software, Automation and AI Company | Drylake",
+    title: "Perth Website, Software & Automation Company | Drylake",
     description:
-      "Drylake is a Perth technology company building custom software, automation, systems integration, AI and websites for businesses in Perth, WA and Australia.",
+      "Drylake is a Perth company building websites, business software, automations and AI tools for businesses in Perth, across Western Australia and Australia.",
     image: "/og/perth.png",
     imageAlt: "Drylake: a Perth technology company building for Australian businesses",
   },
@@ -71,7 +71,7 @@ export const PAGE_SEO = {
     path: "/about",
     title: "About Drylake | Perth Technology Company",
     description:
-      "Drylake (DRYLAKE PTY LTD) is a Perth technology company building practical software, automation and connected systems for Australian businesses.",
+      "Drylake (DRYLAKE PTY LTD) is a Perth technology company building websites, business software, automations and AI tools for Australian businesses.",
     shareDescription:
       "A Perth technology company building practical software, automation and technical systems for Australian businesses.",
     image: "/og/about.png",
@@ -81,9 +81,9 @@ export const PAGE_SEO = {
     path: "/contact",
     title: "Contact Drylake | Software & Automation Enquiries",
     description:
-      "Talk to Drylake about software, automation, integrations or operational technology. Call, email or tell us what is slowing your business down.",
+      "Talk to Drylake about a website, business software, automation or AI. Call, email or tell us what you want built or what is taking your team too long.",
     shareDescription:
-      "Talk to Drylake about software, automation, integrations or operational technology for your business.",
+      "Talk to Drylake about a website, business software, automation or AI tools for your business.",
     image: "/og/contact.png",
     imageAlt: "Contact Drylake: tell us what is getting in the way",
   },

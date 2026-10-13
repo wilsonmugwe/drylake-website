@@ -42,7 +42,9 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 
 /* /portal, not /sign-in: it serves both states server-side (see ClientAccessLink). */
 export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: PORTAL_PATH };
-export const PRIMARY_CTA: NavItem = { label: "Start a conversation", href: CONTACT_PATH };
+/* Plain-English messaging (2026-10-13): names what the visitor is here to do. Public site only;
+   the client portal keeps its own "Start a conversation" (MessageDrylake), untouched. */
+export const PRIMARY_CTA: NavItem = { label: "Discuss your project", href: CONTACT_PATH };
 
 export type NavAction =
   /* Let next/link navigate (different page). Next lands at the top, or at the hash target. */
