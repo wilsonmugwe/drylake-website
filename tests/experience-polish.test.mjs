@@ -74,7 +74,7 @@ describe("PUBLIC: the hero", () => {
   it("says what Drylake does in an owner's words, next to a free primary action", () => {
     assert.match(hero, /We build websites, business software and automation tools that save time,\s+reduce manual work and help your business run smoothly\./);
     assert.match(hero, /<PrimaryCta href="\/contact"[^>]*>\s*Get Started for Free\s*<\/PrimaryCta>/);
-    assert.match(hero, /caption=\{[\s\S]*Until they are one system\./);
+    assert.match(hero, /caption=\{[\s\S]*Until they work together\./);
   });
 
   it("draws the resolved Drylake mark from the tile's own plates and ochre", () => {
@@ -151,7 +151,7 @@ describe("PUBLIC: homepage content", () => {
       assert.match(PAGE, new RegExp(`<${name}\\b`), name);
     }
     const production = code("components/sections/Production.tsx");
-    for (const item of ["Authentication", "Permissions", "Data validation", "Integrations", "Monitoring", "Backups & recovery"]) {
+    for (const item of ["Secure login", "Who can see what", "Fewer mistakes", "Connected tools", "Keeping things running", "Backups and recovery"]) {
       assert.ok(production.includes(`name: "${item}"`), item);
     }
   });

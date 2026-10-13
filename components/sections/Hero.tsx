@@ -59,14 +59,14 @@ export default function Hero() {
               <span className="text-white/78">running your business easier.</span>
             </h1>
 
-            {/* The picture stays server-rendered (children); LakeBedInteractive only adds the
-                hover / focus / tap layer and swaps the caption for a plate's explanation. */}
+            {/* The picture stays server-rendered (children); LakeBedInteractive adds the plate
+                buttons and the small same-page card each one opens (homepage clarity 2026-10-10). */}
             <figure className="lb-figure hidden sm:block">
               <LakeBedInteractive
                 caption={
                   <>
-                    <span>Quotes, enquiries, tasks, invoices: held together by copy, paste and email.</span>
-                    <span className="text-white/85"> Until they are one system.</span>
+                    <span>Quotes, invoices, scheduling, enquiries: held together by copy, paste and email.</span>
+                    <span className="text-white/85"> Until they work together.</span>
                   </>
                 }
               >

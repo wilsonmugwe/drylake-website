@@ -1359,6 +1359,18 @@ main [tabindex="-1"]:focus {
   rotate: calc(var(--r) * var(--m) * 1deg);
 }
 
+/* Homepage clarity (2026-10-10): "Customer details" is the longest label. Below desktop each node
+   is centred in its half of the stage (22% / 78%), so it may wrap rather than leave the stage at
+   320 px; wider phones and tablets keep one line. */
+@media (max-width: 1023px) {
+  .hz-sys-node {
+    min-width: min(7.6rem, 42%);
+    max-width: 42%;
+    white-space: normal;
+    line-height: 1.35;
+  }
+}
+
 /* A loose end on every unconnected system (phones show these instead of workaround arcs). */
 .hz-sys-node::after {
   content: "";
@@ -1546,12 +1558,11 @@ main [tabindex="-1"]:focus {
  * them is touched by the LAKE BED keyframes, so the entrance timeline is unchanged, and nothing
  * moves. "One system" (plate 3) is the hub and lights every crack.
  */
+/* Homepage clarity (2026-10-10): each button covers its whole plate (clip-path from the plate's
+   own outline, set inline), so the plate is the target. The focus ring sits on the label. */
 .lb-hit {
   position: absolute;
-  transform: translate(-50%, -50%);
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: 10px;
+  inset: 0;
   background: transparent;
   cursor: pointer;
   touch-action: manipulation;
@@ -1562,9 +1573,162 @@ main [tabindex="-1"]:focus {
   outline: none;
 }
 
-.lb-hit:focus-visible {
-  outline: 1px solid rgba(255, 255, 255, 0.6);
-  outline-offset: 2px;
+.lb-hit-mark {
+  position: absolute;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.lb-hit:focus-visible .lb-hit-mark {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: -2px;
+}
+
+.lb-hit[aria-expanded="true"]:focus-visible .lb-hit-mark {
+  outline-color: var(--signal);
+}
+
+/* The quiet cue that a plate opens something: a small + after its label, x while it is open. */
+.lb-ix .lb-label::after {
+  content: "+";
+  margin-left: 0.1em;
+  font-weight: 500;
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.lb-ix .lb-label-ochre::after {
+  opacity: 0.7;
+}
+
+.lb-ix[data-active="0"] .lb-label[data-plate="0"]::after,
+.lb-ix[data-active="1"] .lb-label[data-plate="1"]::after,
+.lb-ix[data-active="2"] .lb-label[data-plate="2"]::after,
+.lb-ix[data-active="3"] .lb-label[data-plate="3"]::after,
+.lb-ix[data-active="4"] .lb-label[data-plate="4"]::after {
+  opacity: 1;
+}
+
+.lb-ix[data-open="0"] .lb-label[data-plate="0"]::after,
+.lb-ix[data-open="1"] .lb-label[data-plate="1"]::after,
+.lb-ix[data-open="2"] .lb-label[data-plate="2"]::after,
+.lb-ix[data-open="3"] .lb-label[data-plate="3"]::after,
+.lb-ix[data-open="4"] .lb-label[data-plate="4"]::after {
+  content: "\00d7";
+}
+
+/* The card (native popover, top layer). Hidden until open; positioned by the island. */
+.lb-pop {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(19rem, calc(100vw - 24px));
+  max-height: calc(100svh - 24px);
+  overflow: auto;
+  padding: 0.95rem 1rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  background: var(--ink-2);
+  color: #fff;
+  box-shadow:
+    0 18px 40px -12px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(var(--pop-y, 6px)) scale(0.98);
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s var(--ease-out),
+    overlay 0.22s allow-discrete,
+    display 0.22s allow-discrete;
+}
+
+.lb-pop[data-side="below"] {
+  --pop-y: -6px;
+}
+
+.lb-pop:popover-open {
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  .lb-pop:popover-open {
+    opacity: 0;
+    transform: translateY(var(--pop-y, 6px)) scale(0.98);
+  }
+}
+
+.lb-pop::backdrop {
+  background: transparent;
+}
+
+.lb-pop-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.lb-pop-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--signal);
+}
+
+.lb-pop-close {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -0.4rem -0.45rem 0 0;
+  flex-shrink: 0;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lb-pop-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.lb-pop-close:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 1px;
+}
+
+.lb-pop-kicker {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.lb-pop-kicker-help {
+  color: var(--signal);
+}
+
+.lb-pop-help {
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lb-pop-text {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .lb-ix .lb-link {
@@ -1621,6 +1785,12 @@ main [tabindex="-1"]:focus {
 /* ------------------------------------------------------- reduced motion ---- */
 
 @media (prefers-reduced-motion: reduce) {
+  .lb-pop,
+  .lb-pop:popover-open {
+    transform: none;
+    transition: opacity 0.12s ease;
+  }
+
   .lb-ix .lb-link,
   .lb-ix .lb-label,
   .lb-ix .lb-fill {

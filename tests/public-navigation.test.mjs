@@ -215,10 +215,11 @@ describe("the redesign kept the approved homepage copy", () => {
     "Perth / Western Australia", "Websites, Software &amp; Automation",
     "Technology that makes", "running your business easier.",
     "We build websites, business software and automation tools that save time, reduce manual work and help your business run smoothly.",
-    "Quotes, enquiries, tasks, invoices: held together by copy, paste and email.", "Until they are one system.",
+    "Quotes, invoices, scheduling, enquiries: held together by copy, paste and email.", "Until they work together.",
     "Get Started for Free", "See what we build", "Australian company", "Founder-led", "Perth, WA",
     // Problems: real situations, the fix, and a labelled example (lib/value-examples.ts)
-    "01 / The Problem", "Your business shouldn't run", "on workarounds.", "Small, repeated tasks add up.",
+    // Homepage clarity (2026-10-10): the problem heading is now the outcome.
+    "01 / The Problem", "Less paperwork.", "Less chasing.", "More time for your business.", "Small, repeated tasks add up.",
     "We're managing bookings and jobs through emails and spreadsheets.",
     "Our staff enter the same customer details into three systems.",
     "We connect those systems so the information only needs to be entered once, where the software supports it.",
@@ -242,19 +243,19 @@ describe("the redesign kept the approved homepage copy", () => {
     "Microsoft 365", "Xero", "MYOB", "Payments", "CRM", "APIs",
     "Integrations depend on the capabilities and access provided by each platform.",
     // Founders
-    "03 / Founder-Led", "Small team.", "Direct access.",
+    "03 / Why Drylake", "Small team.", "Direct access.",
     "Work directly with the people responsible for understanding the problem and delivering the solution.",
     "Benedict Wambugu", "Wilson Mugwe", "Master of Project Management",
     "Bachelor of Computer Science, majoring in Software Engineering",
     // "What founder-led means" + its statement now close the founders block on /about (variant="page").
     // Approach + production
-    "04 / How We Work", "Understand first.", "Build second.",
-    // Final refinement: "No technical specification required." dropped here (it repeated the CTA).
-    "We start with the business problem and work forward from there.",
-    "We learn how the business works today, where time is being lost and what actually needs to improve.",
+    // Homepage clarity (2026-10-10): the seven-stage customer journey replaced the four stages.
+    "04 / How We Work", "From first conversation", "to launch.",
+    "Getting started shouldn't be complicated. Here's what working with Drylake looks like.",
+    "We start by learning about your business, the challenges you're facing and what you'd like to achieve.",
     "Production Matters", "The boring part", "is the hard part.",
     "We engineer the less visible parts that make software dependable when the business starts relying on it.",
-    "Authentication", "Permissions", "Data validation", "Integrations", "Monitoring", "Backups & recovery",
+    "Secure login", "Who can see what", "Fewer mistakes", "Connected tools", "Keeping things running", "Backups and recovery",
     "What your team sees",
     // FAQ + close
     // The FAQ moved into the closing conversation (brief section 9): same five answers.

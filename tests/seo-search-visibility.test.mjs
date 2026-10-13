@@ -416,6 +416,6 @@ describe("homepage duplicate copy (Approach section)", () => {
     const source = code("components/sections/Approach.tsx");
 
     assert.equal((source.match(/\{stage\.text\}/g) ?? []).length, 1);
-    assert.equal((read("components/sections/Approach.tsx").match(/We learn how the business works today/g) ?? []).length, 1);
+    assert.equal((read("components/sections/Approach.tsx").match(/We start by learning about your business/g) ?? []).length, 1);
   });
 });

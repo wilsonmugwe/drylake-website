@@ -3,6 +3,8 @@
  *   COPY      the approved h1 and lede, with no AI in either; the primary CTA reads "Get Started
  *             for Free" and every surface carrying it says what is free (the enquiry, not the build).
  *   LABELS    the lake-bed plates read Enquiries and Tasks (not Customers and Jobs), caption too.
+ *             Homepage clarity (2026-10-10): Quotes, Invoices, Scheduling, One system, Enquiries,
+ *             and each plate opens a same-page card (pinned in tests/homepage-clarity.test.mjs).
  *   INTERACT  each plate is a real button (hover, focus, tap) that lights its own cracks and
  *             shows a short explanation; the picture stays server-rendered and unchanged at rest.
  * Layout at 1366x768 / 1440x900 (CTA in the first viewport) is checked in tests/e2e/public-site.spec.ts.
@@ -15,7 +17,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   LAKEBED_CONNECTIONS,
-  LAKEBED_EXPLANATIONS,
+  LAKEBED_POPOVERS,
   LAKEBED_LINK_PLATES,
   LAKEBED_PLATES,
 } from "../components/visuals/lakebed-geometry.ts";
@@ -63,13 +65,13 @@ describe("COPY", () => {
 });
 
 describe("LABELS", () => {
-  it("plates read Quotes, Enquiries, Tasks, One system, Invoices", () => {
-    assert.deepEqual(LAKEBED_PLATES.map((p) => p.label), ["Quotes", "Enquiries", "Tasks", "One system", "Invoices"]);
+  it("plates read Quotes, Invoices, Scheduling, One system, Enquiries", () => {
+    assert.deepEqual(LAKEBED_PLATES.map((p) => p.label), ["Quotes", "Invoices", "Scheduling", "One system", "Enquiries"]);
   });
 
   it("the caption names the same parts", () => {
     const hero = flat(code("components/sections/Hero.tsx"));
-    assert.match(hero, /Quotes, enquiries, tasks, invoices: held together by copy, paste and email\./);
+    assert.match(hero, /Quotes, invoices, scheduling, enquiries: held together by copy, paste and email\./);
     assert.doesNotMatch(hero, /customers, jobs/i);
   });
 });
@@ -84,11 +86,13 @@ describe("INTERACT", () => {
     for (let i = 0; i < LAKEBED_PLATES.length; i += 1) assert.ok(LAKEBED_LINK_PLATES.some((pair) => pair.includes(i)), `plate ${i}`);
   });
 
-  it("one short explanation per plate, plain English, no em dash", () => {
-    assert.equal(LAKEBED_EXPLANATIONS.length, LAKEBED_PLATES.length);
-    for (const text of LAKEBED_EXPLANATIONS) {
-      assert.ok(text.length <= 90, text);
-      assert.doesNotMatch(text, /—|\bAI\b/);
+  it("one short problem and one way we help per plate, plain English, no em dash", () => {
+    assert.equal(LAKEBED_POPOVERS.length, LAKEBED_PLATES.length);
+    for (const { problem, help } of LAKEBED_POPOVERS) {
+      for (const text of [problem, help]) {
+        assert.ok(text.length <= 90, text);
+        assert.doesNotMatch(text, /—|\bAI\b/);
+      }
     }
   });
 
@@ -100,14 +104,15 @@ describe("INTERACT", () => {
     assert.match(src, /data-plate=\{i\}\s*style=/);
   });
 
-  it("the interaction island uses real buttons with hover, focus, tap and Escape", () => {
+  it("the interaction island uses real buttons with hover, focus and a native popover per plate", () => {
     const src = read("components/visuals/LakeBedInteractive.tsx");
     assert.match(src, /^"use client";/);
     assert.match(src, /<button[\s\S]*type="button"/);
-    for (const handler of ["onPointerEnter", "onPointerLeave", "onFocus", "onBlur", "onClick"]) assert.match(src, new RegExp(handler));
-    assert.match(src, /aria-pressed=\{active === i\}/);
-    assert.match(src, /event\.key === "Escape"/);
-    assert.match(src, /addEventListener\("pointerdown"/);
+    for (const handler of ["onPointerEnter", "onPointerLeave", "onFocus", "onBlur"]) assert.match(src, new RegExp(handler));
+    // Click, click-again, outside click, Escape and one-at-a-time come from popover="auto".
+    assert.match(src, /popoverTarget=\{cardId\}/);
+    assert.match(src, /popover="auto"/);
+    assert.match(src, /aria-expanded=\{open === i\}/);
   });
 
   it("the hero passes the server-rendered picture into the island, both variants", () => {
@@ -119,9 +124,10 @@ describe("INTERACT", () => {
   it("CSS highlights only with opacity, filter and stroke-width, and has a visible focus ring", () => {
     const css = read("app/public-site.css");
     const at = css.indexOf("LAKE BED INTERACTION");
-    const block = css.slice(at, css.indexOf("reduced motion ----", at));
+    // The card (.lb-pop) animates in; the picture itself never moves, so only the picture is checked.
+    const block = css.slice(at, css.indexOf("reduced motion ----", at)).replace(/[^{}]*\.lb-pop[^{}]*\{[^}]*\}/g, "");
     assert.doesNotMatch(block, /transform:(?!\s*translate\(-50%, -50%\))/);
-    assert.match(block, /\.lb-hit:focus-visible \{\s*outline: 1px solid/);
+    assert.match(block, /\.lb-hit:focus-visible \.lb-hit-mark \{\s*outline: 2px solid/);
     for (let i = 0; i < LAKEBED_PLATES.length; i += 1) assert.match(block, new RegExp(`\\.lb-ix\\[data-active="${i}"\\]`));
   });
 });

@@ -190,7 +190,7 @@ describe("Horizon geometry", () => {
     );
     assert.deepEqual(
       SYSTEM_NODES.map((n) => n.label),
-      ["Website", "CRM", "Email", "Customers", "Accounting", "Documents", "Payments", "Staff"]
+      ["Website", "Customer details", "Emails", "Customers", "Bookkeeping", "Documents", "Payments", "Team"]
     );
     for (const node of SYSTEM_NODES) {
       for (const v of [node.d.fx, node.d.fy, node.m.fx, node.m.fy, node.d.sx, node.m.sx]) {
