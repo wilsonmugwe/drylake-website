@@ -97,7 +97,7 @@ describe("navigation labels and destinations", () => {
       ]
     );
     assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/portal"]);
-    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Start a conversation", "/contact"]);
+    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Discuss your project", "/contact"]);
   });
 
   it("every homepage section target exists exactly once", () => {
@@ -210,29 +210,32 @@ describe("the redesign kept the approved homepage copy", () => {
 
   const APPROVED = [
     // Hero
-    "Perth / Western Australia", "Software Engineering", "Your business", "shouldn't run", "on workarounds.",
-    // Experience polish language pass (brief section 7): outcomes in an owner's words.
-    "Drylake builds practical software and automation for Australian businesses that have outgrown spreadsheets, email and double handling.",
+    // Plain-English messaging (2026-10-13): the hero SAYS what Drylake does; "workarounds" moved to
+    // the problem chapter's heading.
+    "Perth / Western Australia", "Websites, Software &amp; Automation",
+    "We build websites, business software and automations that make", "running your business easier.",
+    "We help Australian businesses build better websites, replace spreadsheets and manual processes, connect the tools they already use, and automate repetitive work with software and AI.",
     "Quotes, customers, jobs, invoices: held together by copy, paste and email.", "Until they are one system.",
-    "Start a conversation", "How we work", "Australian company", "Founder-led", "Perth, WA",
-    // Problems
-    "01 / The Problem", "Growth makes the", "cracks visible.",
-    "The business grows. Manual steps multiply. Systems that once worked well enough start getting in the way.",
-    "The spreadsheet has become the system.", "Important processes depend on files that are becoming difficult to manage, share or scale.",
-    "We're entering the same information more than once.", "Your team is copying information between systems instead of doing useful work.",
-    "Our systems don't talk to each other.", "Information is spread across platforms, creating gaps, delays and manual work.",
-    "Too much depends on manual follow-up.", "Routine work still relies on emails, reminders and somebody remembering what happens next.",
+    "Discuss your project", "See what we build", "Australian company", "Founder-led", "Perth, WA",
+    // Problems: real situations, the fix, and a labelled example (lib/value-examples.ts)
+    "01 / The Problem", "Your business shouldn't run", "on workarounds.", "Small, repeated tasks add up.",
+    "We're managing bookings and jobs through emails and spreadsheets.",
+    "Our staff enter the same customer details into three systems.",
+    "We connect those systems so the information only needs to be entered once, where the software supports it.",
+    "We keep sending the same reminders and messages to customers.",
+    "We answer the same customer questions all day.", "For example", "Assumes",
     // Final refinement 2026-10-08: the Problems "NEXT" reassurance ("You don't need to know the
     // technical solution...") was retired as a repeat of the closing "No technical brief required"
     // (kept below); that slot now links to /solutions.
     "See every business problem we solve",
     // What We Do
-    "02 / What We Do", "Less workaround.", "More workflow.",
-    "We build software, automate the repetitive work and join up the systems you already use, so your team spends less time on admin.",
-    "Software that fits the business.", "Fewer manual steps.", "Make the systems talk.", "AI where it earns its place.",
-    "Internal platforms / Client & staff portals / Job and workflow systems / Web & mobile applications",
-    "Approvals / Reminders & follow-ups / Notifications / Keeping records in sync",
-    "Document processing / Sorting & routing enquiries / Drafting & summaries / Decision support",
+    "02 / What We Do", "What we build.", "What it does for you.",
+    "Websites that bring in work.", "Software built for how you work.", "Less repetitive work.",
+    "Your tools, working together.", "AI for the everyday admin.",
+    "Business websites / Enquiry & booking forms / Redesigns / Customer-facing web features",
+    "Customer portals / Booking systems / Staff dashboards / Job tracking",
+    "Appointment reminders / Enquiry follow-ups / Recurring reports / Routine documents",
+    "Answering common questions / Searching documents / Drafting replies / Sorting enquiries",
     // Integrations
     "Work With What You Have", "Don't replace", "what already works.",
     "We can connect, extend and build around the systems your business already depends on.",
@@ -259,7 +262,7 @@ describe("the redesign kept the approved homepage copy", () => {
     // PR 2: the closing headline is now Ben's "Have a problem worth fixing?" (brief, 7 Oct 2026);
     // "Tell us what's slowing you down." was retired with it.
     "Have a problem", "worth fixing?",
-    "No technical brief required. Tell us what's manual, disconnected or taking too much time.",
+    "No technical brief needed. Tell us what you want built, or what is taking your team too much time.",
     "TALK TO A PERSON, NOT A SALES QUEUE", "{BUSINESS_PHONE.display}", "hello@drylake.com.au",
   ];
 

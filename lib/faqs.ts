@@ -6,14 +6,14 @@ import { BUSINESS_PHONE } from "./site.ts";
 
 export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   {
-    question: "What kind of businesses does Drylake work with?",
+    question: "What does Drylake actually do?",
     answer:
-      "We work with Australian businesses that are being held back by manual processes, disconnected systems or software that no longer fits the way they operate. You do not need to be a technology company to work with us.",
+      "We build websites, business software, automations and AI tools for Australian businesses. In practice that means things like a new website with a working enquiry form, a booking or job system to replace spreadsheets, automatic reminders for customers, or connecting your website to your accounting software. You do not need to be a technology company to work with us.",
   },
   {
     question: "Do we need to know exactly what we want built?",
     answer:
-      "No. Start with the business problem. Tell us what is taking too long, being repeated, breaking down or creating unnecessary work. We can work through whether software, automation, integration or another approach makes sense.",
+      "No. Tell us what is taking too long, being repeated or creating unnecessary work. We will explain the options in plain English, including when a simpler fix or an existing product is the better choice.",
   },
   {
     question: "Can you work with software we already use?",
@@ -21,13 +21,13 @@ export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
       "Yes. Where practical, we prefer to keep useful systems in place. We can connect, extend or build around existing software where the platform supports the required integration.",
   },
   {
-    question: "Do you build websites too?",
+    question: "Do you build websites on their own?",
     answer:
-      "Yes. Drylake can build modern websites and digital experiences, particularly where they form part of a broader customer journey, business system or operational workflow.",
+      "Yes. We build standalone business websites and redesign existing ones. Where it helps, we also connect the website to the rest of your business, such as sending enquiries straight to the right person or system.",
   },
   {
     question: "How do we get started?",
     answer:
-      `Start with a conversation. Call ${BUSINESS_PHONE.display}, email hello@drylake.com.au or use our contact form.`,
+      `Tell us about your project. Call ${BUSINESS_PHONE.display}, email hello@drylake.com.au or use our contact form.`,
   },
 ];

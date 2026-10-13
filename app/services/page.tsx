@@ -52,8 +52,10 @@ export default function ServicesPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-7 text-black/65 sm:text-lg sm:leading-8">
-            The five things Drylake provides to growing Australian businesses. Most work combines
-            more than one of these. Start with the problem and we will work out which fits.
+            Drylake builds five kinds of things for Australian businesses: websites, custom
+            software and apps, business automation, connections between the tools you already use,
+            and practical AI tools. Most projects use more than one. Start with the problem and we
+            will work out which fits.
           </p>
 
           <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60">

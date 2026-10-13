@@ -92,19 +92,19 @@ export default function PerthPage() {
           <p className="section-label mt-6 text-black/60 sm:mt-10">Perth / Western Australia</p>
 
           <h1 className="type-section text-balance mt-5 max-w-5xl">
-            A Perth technology company.{" "}
+            Websites, software and automation.{" "}
             <br />
-            <span className="text-black/45">Building for Australian businesses.</span>
+            <span className="text-black/45">Built in Perth for Australian businesses.</span>
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-7 text-black/65 sm:text-lg sm:leading-8">
             {ENTITY.brand} is a technology company based in {ENTITY.locality}, {ENTITY.region}. We
-            build custom software, business automation, systems integrations, applied AI and
-            websites for businesses in Perth, across WA and around Australia.
+            build websites, business software, automations and AI tools, and connect the systems
+            businesses already use, for businesses in Perth, across WA and around Australia.
           </p>
 
           <PrimaryCta href="/contact" surface="light" className="mt-8">
-            Start a conversation
+            Discuss your project
           </PrimaryCta>
         </Container>
 

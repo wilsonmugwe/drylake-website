@@ -36,7 +36,7 @@ export const ENTITY = {
   foundingDate: "2026-09-24",
   /* One sentence that answers "What is Drylake?" everywhere it is asked. */
   summary:
-    "Drylake is a Perth, Western Australia technology company that builds custom software, client and staff portals, business automation, systems integrations and applied AI for Australian businesses.",
+    "Drylake is a Perth, Western Australia technology company that builds websites, custom business software, automations, connections between business systems and practical AI tools for Australian businesses.",
   /* "What is Drylake Pty Ltd?" */
   legalSummary:
     "DRYLAKE PTY LTD (ABN 70 702 662 557) is the Australian proprietary company that trades as Drylake.",

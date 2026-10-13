@@ -76,13 +76,13 @@ export default function SolutionsPage() {
 
               <div>
                 <h1 className="type-section text-balance max-w-5xl">
-                  Technology should solve the problem.
+                  The business problems we solve.
                 </h1>
 
                 <p className="mt-7 max-w-2xl text-base leading-7 text-black/65 sm:text-lg">
-                  From small technical problems to custom software and connected
-                  systems, Drylake starts with what needs to work and builds from
-                  there.
+                  Recognise one of these? Each problem is matched with what we
+                  build to fix it, from a small fix to a complete system, in plain
+                  English.
                 </p>
 
                 <p className="mt-4 max-w-2xl text-sm leading-6 text-black/60">

@@ -56,7 +56,7 @@ test("keyboard: the header is reachable in reading order with a visible focus in
 
   const expected = isMobileProject(testInfo)
     ? ["Skip to content", "Drylake home", "Menu"]
-    : ["Skip to content", "Drylake home", "What We Do", "Our Approach", "About", "Contact", "Client Login", "Start a conversation"];
+    : ["Skip to content", "Drylake home", "What We Do", "Our Approach", "About", "Contact", "Client Login", "Discuss your project"];
 
   for (const name of expected) {
     await page.keyboard.press("Tab");

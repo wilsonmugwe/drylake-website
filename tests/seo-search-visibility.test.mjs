@@ -105,17 +105,17 @@ describe("/services architecture", () => {
 
   it("findService only knows the five slugs", () => {
     assert.equal(findService("applied-ai"), null);
-    assert.equal(findService("web-development")?.name, "Web development");
+    assert.equal(findService("web-development")?.name, "Websites & web development");
   });
 
-  it("the service template renders every content block and a Start a conversation link", () => {
+  it("the service template renders every content block and a Discuss your project link", () => {
     const page = code("app/services/[slug]/page.tsx");
 
     for (const field of ["service.problem", "service.builds", "service.useCases", "service.approach", "service.production", "service.faqs"]) {
       assert.ok(page.includes(`${field}.map(`), field);
     }
     assert.match(page, /href="\/contact"/);
-    assert.match(page, /Start a conversation/);
+    assert.match(page, /Discuss your project/);
     assert.match(page, /relatedServices\(service\)/);
     assert.match(page, /href="\/perth"/);
   });

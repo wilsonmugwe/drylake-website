@@ -66,7 +66,9 @@ describe("Privacy Policy covers what the site actually does (APP 1.4)", () => {
   it("uses the shared business constants, never typed-in identity details", () => {
     assert.match(page, /DRYLAKE_BUSINESS\.legalName/);
     assert.match(page, /BUSINESS_PHONE\.display/);
-    assert.match(page, /POSTAL_ADDRESS/);
+    // 2026-10-13: the street address was a residence and is gone; city-level location only.
+    assert.match(page, /PUBLIC_LOCATION/);
+    assert.doesNotMatch(page, /POSTAL_ADDRESS/);
   });
 });
 
@@ -88,11 +90,11 @@ describe("marketing does not promise services that are scope-dependent", () => {
 });
 
 describe("search titles", () => {
-  it("the homepage title names Perth; the hero headline file is untouched by it", () => {
+  it("the homepage title names Perth and the hero h1 says what Drylake builds", () => {
     assert.match(PAGE_SEO.home.title, /Perth/);
     const hero = read("components/sections/Hero.tsx");
-    // The approved headline, word for word, inside the page's only h1.
-    assert.match(hero, /<h1[^>]*>\s*<span[^>]*>Your business<\/span>\{" "\}\s*<span[^>]*>shouldn&apos;t run<\/span>\{" "\}\s*<span[^>]*>on workarounds\.<\/span>\s*<\/h1>/);
+    // Plain-English headline (2026-10-13), inside the page's only h1.
+    assert.match(hero, /<h1[^>]*>[\s\S]*We build websites, business software and automations that make[\s\S]*running your business easier\.[\s\S]*<\/h1>/);
   });
 
   it("every service with a Perth FAQ answers it with a fact the page states", () => {

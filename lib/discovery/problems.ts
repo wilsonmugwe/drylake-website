@@ -10,7 +10,8 @@
  *
  * Content rules: the problems are the ones named in the refinement brief; each outcome states
  * what the work changes, in plain words, and only what the linked service page already says it
- * can build. No statistics, savings, client results or time claims. No em dashes.
+ * can build. No statistics or client results. Time and cost figures appear only as illustrative
+ * calculations from lib/value-examples.ts (2026-10-13), never here. No em dashes.
  */
 
 import type { ServiceSlug } from "./services.ts";
@@ -38,6 +39,12 @@ export const BUSINESS_PROBLEMS: readonly BusinessProblem[] = [
     problem: "Important enquiries disappear into inboxes.",
     outcome: "Enquiries create a record and reach the right person automatically, so nothing waits to be noticed.",
     services: ["web-development", "business-automation"],
+  },
+  {
+    id: "repeat-messages",
+    problem: "We keep sending the same reminders and messages to customers.",
+    outcome: "Routine reminders and follow-ups are sent automatically at the right time, so nobody has to remember them.",
+    services: ["business-automation"],
   },
   {
     id: "document-requests",

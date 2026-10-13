@@ -290,7 +290,7 @@ Checks run: `npx tsc --noEmit` exit 0, `npx eslint .` exit 0, `npm test` 1038/10
 | # | Decision | Who | Notes |
 |---|---|---|---|
 | 1 | **Approve the Privacy Policy wording**, especially sections 7 (overseas) and 9 (retention, no periods stated) | Ben + Wilson | Not legal advice; DUAL's free contract review or a lawyer could read it |
-| 2 | **Is 10/53 Davidson Terrace, Joondalup a residence?** It is published on the Privacy Policy only, as a postal address. If it is a home, remove it before merge (email + phone satisfy APP 1.4) | Ben | Earlier D19/D25 kept the street address off every public surface |
+| 2 | **Is the street address on the Privacy Policy a residence? (Yes: removed 2026-10-13.)** It is published on the Privacy Policy only, as a postal address. If it is a home, remove it before merge (email + phone satisfy APP 1.4) | Ben | Earlier D19/D25 kept the street address off every public surface |
 | 3 | **MSA cl 5.8 says "Drylake is registered for GST"** (drylake-ops `06-legal/02`). False until ABN Lookup shows registration; fix before any MSA is signed | Ben | Contractual; not edited |
 | 4 | **MSA data schedule cl 2 says Client Data hosted by Drylake is stored in Australia.** Drylake Workspace uses Clerk (US) and Supabase (region unverified). Either confirm Supabase is Sydney and carve Clerk out, or reword | Ben + Wilson | Contractual; not edited |
 | 5 | Keep `Content-Signal` in robots.txt (Lighthouse SEO 92) or drop it (100)? | Ben | Recommendation: keep; Google ignores it |

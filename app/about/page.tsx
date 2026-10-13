@@ -78,8 +78,9 @@ export default function AboutPage() {
                 </p>
 
                 <p>
-                  Drylake is a Perth-based technology company building practical
-                  software and technical systems for Australian businesses.
+                  Drylake is a Perth-based technology company. We build websites,
+                  business software, automations and AI tools for Australian
+                  businesses.
                 </p>
 
                 <p>
