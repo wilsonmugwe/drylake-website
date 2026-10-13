@@ -7,7 +7,7 @@ import PrimaryCta from "@/components/ui/PrimaryCta";
 import LakeBed from "@/components/visuals/LakeBed";
 import LakeBedInteractive from "@/components/visuals/LakeBedInteractive";
 import LakeField from "@/components/visuals/LakeField";
-import { PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
+import { PRIMARY_CTA, PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 
 /*
  * The opening (experience polish, 2026-10-07; concept: docs/design/2026-10-07-experience-polish.md).
@@ -92,8 +92,8 @@ export default function Hero() {
               desktop (sub-pixel AA). Nothing overlaps the actions at any width. */}
           <div className="lg:max-w-[38rem]">
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
-              <PrimaryCta href="/contact" className="w-full sm:w-auto sm:min-w-[232px]">
-                Get Started for Free
+              <PrimaryCta href={PRIMARY_CTA.href} className="w-full sm:w-auto sm:min-w-[232px]">
+                {PRIMARY_CTA.label}
               </PrimaryCta>
 
               <SiteLink href="/#solutions" className="btn-ghost-dark w-full sm:w-auto sm:min-w-[188px]">

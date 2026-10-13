@@ -40,6 +40,11 @@ export const ENV_REGISTRY = [
   { name: "CONTACT_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/email/contact-enquiry.ts", purpose: "Optional sender for website enquiries; defaults to EMAIL_FROM's address as \"Drylake website enquiries\"" },
   { name: "CONTACT_TO_EMAIL", exposure: "server", required: true, readBy: "lib/email/contact-enquiry.ts", purpose: "Inbox that receives website and portal enquiries" },
 
+  // Consultation booking (docs/operations/consultations.md)
+  { name: "CONSULTATION_TOKEN_SECRET", exposure: "secret", required: true, readBy: "lib/consultations/token.ts (via app/api/consultations, app/api/admin/consultations, lib/consultations/dispatch-server.ts)", purpose: "HMAC key for customer appointment-management links (32+ random characters). Rotating it revokes every outstanding link" },
+  { name: "CRON_SECRET", exposure: "secret", required: true, readBy: "app/api/cron/consultation-notifications/route.ts", purpose: "Bearer secret for the consultation email dispatcher (Vercel Cron sends it automatically; pg_cron reads it from Supabase Vault)" },
+  { name: "CONSULTATION_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/consultations/dispatch-server.ts", purpose: "Optional sender for consultation emails; defaults to EMAIL_FROM's address as \"Drylake consultations\"" },
+
   // Cloudflare Turnstile
   { name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", exposure: "public", required: true, readBy: "components/forms/ProjectForm.tsx, components/client/MessageDrylake.tsx", purpose: "Turnstile widget site key" },
   { name: "TURNSTILE_SECRET_KEY", exposure: "secret", required: true, readBy: "lib/contact/turnstile.ts", purpose: "Server-side Turnstile verification" },

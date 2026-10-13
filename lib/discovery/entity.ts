@@ -114,8 +114,9 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   })),
   { path: "/perth", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/contact", lastModified: "2026-10-10", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/privacy", lastModified: "2026-10-10", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/contact", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/consultation", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/privacy", lastModified: "2026-10-13", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", lastModified: "2026-10-09", changeFrequency: "yearly", priority: 0.3 },
 ];
 
@@ -144,6 +145,8 @@ export const PRIVATE_PREFIXES = [
   "/portal",
   "/sign-in",
   "/sign-up",
+  /* A customer's own appointment (opened by a private link): never indexed. */
+  "/consultation/manage",
 ] as const;
 
 export function absoluteUrl(path: string): string {

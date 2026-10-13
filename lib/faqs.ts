@@ -2,6 +2,7 @@
  * Homepage FAQ content. Shared by the visible FAQ section and the FAQPage JSON-LD, so the
  * structured data can never describe answers the page does not show.
  */
+import { QUOTE_FIRST } from "./consultations/copy.ts";
 import { BUSINESS_PHONE } from "./site.ts";
 
 export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
@@ -27,7 +28,8 @@ export const faqs: ReadonlyArray<{ question: string; answer: string }> = [
   },
   {
     question: "How do we get started?",
+    /* Booking route + the approved quote-first wording (brief, Task 8: no public price schedule). */
     answer:
-      `Tell us about your project. Call ${BUSINESS_PHONE.display}, email hello@drylake.com.au or use our contact form.`,
+      `Book a free 30-minute consultation online, or tell us about your project: call ${BUSINESS_PHONE.display}, email hello@drylake.com.au or use our contact form. ${QUOTE_FIRST}`,
   },
 ];

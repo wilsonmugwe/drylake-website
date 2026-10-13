@@ -97,7 +97,7 @@ describe("navigation labels and destinations", () => {
       ]
     );
     assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/portal"]);
-    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Get Started for Free", "/contact"]);
+    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Start Free Consultation", "/consultation"]);
   });
 
   it("every homepage section target exists exactly once", () => {
@@ -216,7 +216,7 @@ describe("the redesign kept the approved homepage copy", () => {
     "Technology that makes", "running your business easier.",
     "We build websites, business software and automation tools that save time, reduce manual work and help your business run smoothly.",
     "Quotes, invoices, scheduling, enquiries: held together by copy, paste and email.", "Until they work together.",
-    "Get Started for Free", "See what we build", "Australian company", "Founder-led", "Perth, WA",
+    "{PRIMARY_CTA.label}", "See what we build", "Australian company", "Founder-led", "Perth, WA",
     // Problems: real situations, the fix, and a labelled example (lib/value-examples.ts)
     // Homepage clarity (2026-10-10): the problem heading is now the outcome.
     "01 / The Problem", "Less paperwork.", "Less chasing.", "More time for your business.", "Small, repeated tasks add up.",

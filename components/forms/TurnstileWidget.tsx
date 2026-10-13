@@ -85,6 +85,8 @@ interface TurnstileWidgetProps {
   onTokenCleared: () => void;
   /** The widget itself could not load or run (blocked script, bad site key, hostname). */
   onUnavailable: (reason: string) => void;
+  /** Turnstile action the token is bound to; the server verifier rejects any other. */
+  action?: string;
 }
 
 /*
@@ -97,7 +99,7 @@ interface TurnstileWidgetProps {
  */
 const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
   function TurnstileWidget(
-    { siteKey, onToken, onTokenCleared, onUnavailable },
+    { siteKey, onToken, onTokenCleared, onUnavailable, action = CONTACT_ACTION },
     ref
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -134,7 +136,7 @@ const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
             // "flexible" has a 300 px minimum, wider than the form on a 320 px phone,
             // which pushed the whole contact page past its gutter. Compact (150 px) there.
             size: containerRef.current.offsetWidth < 300 ? "compact" : "flexible",
-            action: CONTACT_ACTION,
+            action,
             callback: (token: string) => callbacks.current.onToken(token),
             "expired-callback": () => callbacks.current.onTokenCleared(),
             "timeout-callback": () => callbacks.current.onTokenCleared(),
@@ -163,7 +165,7 @@ const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
 
         widgetIdRef.current = null;
       };
-    }, [siteKey]);
+    }, [siteKey, action]);
 
     return <div ref={containerRef} className="min-h-[65px]" />;
   }

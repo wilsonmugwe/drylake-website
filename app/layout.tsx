@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
+import SiteAnalytics from "@/components/analytics/SiteAnalytics";
 
 import "./globals.css";
 import "./public-site.css";
@@ -133,7 +133,7 @@ export default function RootLayout({
 
         {children}
 
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   );

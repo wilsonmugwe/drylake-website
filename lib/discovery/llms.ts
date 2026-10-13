@@ -81,6 +81,7 @@ export function llmsText(): string {
     `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company`,
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
+    `- [Free consultation](${absoluteUrl("/consultation")}): book a free 30-minute consultation (Monday, Tuesday and Friday, Perth time)`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,
     `- [Terms](${absoluteUrl("/terms")}): the terms of use for this website`,
     "",

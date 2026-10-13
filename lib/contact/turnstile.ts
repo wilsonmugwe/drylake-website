@@ -75,7 +75,8 @@ export function clientIp(request: Request): string | null {
 export async function verifyTurnstile(
   token: string,
   remoteIp: string | null,
-  claimStore: ClaimStore | null = null
+  claimStore: ClaimStore | null = null,
+  expectedAction: string = CONTACT_ACTION
 ): Promise<TurnstileVerdict> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
@@ -169,8 +170,8 @@ export async function verifyTurnstile(
     return { ok: false, reason: "wrong-host" };
   }
 
-  // A token is bound to the widget action that minted it; only the contact form's counts.
-  if (result.action !== CONTACT_ACTION) {
+  // A token is bound to the widget action that minted it; only the expected form's counts.
+  if (result.action !== expectedAction) {
     console.error("Turnstile: token minted for unexpected action:", result.action ?? "(none)");
     return { ok: false, reason: "wrong-action" };
   }

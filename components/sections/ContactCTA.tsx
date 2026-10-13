@@ -4,7 +4,8 @@ import { ArrowUpRight, Mail, Phone } from "lucide-react";
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
-import { PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
+import SiteLink from "@/components/navigation/SiteLink";
+import { CONTACT_PATH, PRIMARY_CTA, PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 import { BUSINESS_PHONE } from "@/lib/site";
 
 /*
@@ -59,10 +60,18 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
               is taking your team too much time.
             </p>
 
-            <PrimaryCta href="/contact" size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
-              Get Started for Free
+            <PrimaryCta href={PRIMARY_CTA.href} size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
+              {PRIMARY_CTA.label}
             </PrimaryCta>
             <p className="mt-3 text-[0.8rem] leading-5 text-white/60">{PRIMARY_CTA_NOTE}</p>
+            {/* The second way in (brief, Task 3): the contact form is never replaced by booking. */}
+            <p className="mt-5 text-sm leading-6 text-white/66">
+              Prefer to write?{" "}
+              <SiteLink href={CONTACT_PATH} className="font-semibold text-white underline underline-offset-4 hover:text-signal">
+                Send us a message
+              </SiteLink>
+              {" "}and a founder will reply.
+            </p>
           </div>
 
           <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">{lines}</div>

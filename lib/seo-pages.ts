@@ -87,6 +87,15 @@ export const PAGE_SEO = {
     image: "/og/contact.png",
     imageAlt: "Contact Drylake: tell us what is getting in the way",
   },
+  consultation: {
+    path: "/consultation",
+    title: "Book a Free 30-Minute Consultation | Drylake, Perth",
+    description:
+      "Book a free 30-minute consultation with Drylake, a Perth technology company. Talk through your business, ideas and options. No obligation to proceed.",
+    shareDescription: "Book a free 30-minute consultation with Drylake. No obligation to proceed.",
+    image: "/og/consultation.png",
+    imageAlt: "Book a free 30-minute consultation with Drylake",
+  },
   privacy: {
     path: "/privacy",
     title: "Privacy Policy | Drylake",

@@ -113,7 +113,7 @@ describe("plain English", () => {
     const hero = read("components/sections/Hero.tsx");
     const h1 = hero.slice(hero.indexOf("<h1"), hero.indexOf("</h1>"));
     assert.match(h1, /Technology that makes[\s\S]*running your business easier\./);
-    assert.match(hero, /Get Started for Free\s*<\/PrimaryCta>/);
+    assert.match(hero, /\{PRIMARY_CTA\.label\}\s*<\/PrimaryCta>/);
     assert.match(hero, /href="\/#solutions"[\s\S]*See what we build/);
   });
 

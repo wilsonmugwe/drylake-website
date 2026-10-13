@@ -22,6 +22,7 @@ export const PUBLIC_PATHS = [
   "/perth",
   "/about",
   "/contact",
+  "/consultation",
   "/privacy",
   "/terms",
 ] as const;
@@ -61,6 +62,10 @@ export function collectConsoleErrors(page: Page): string[] {
     if (message.type() !== "error") return;
     const text = message.text();
     if (!isRemote && LOCAL_ONLY_NOISE.some((pattern) => pattern.test(text))) return;
+    // The local build has no database (placeholder Supabase URL), so the booking page's
+    // availability call answers 503 by design; the page shows its own error state. Scoped to
+    // that one URL so any other 5xx still fails, and never ignored against production.
+    if (!isRemote && /status of 503/.test(text) && message.location().url.includes("/api/consultations/availability")) return;
     errors.push(text);
   });
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));

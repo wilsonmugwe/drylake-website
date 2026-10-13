@@ -108,14 +108,14 @@ describe("/services architecture", () => {
     assert.equal(findService("web-development")?.name, "Websites & web development");
   });
 
-  it("the service template renders every content block and a Get Started for Free link", () => {
+  it("the service template renders every content block and the free-consultation CTA", () => {
     const page = code("app/services/[slug]/page.tsx");
 
     for (const field of ["service.problem", "service.builds", "service.useCases", "service.approach", "service.production", "service.faqs"]) {
       assert.ok(page.includes(`${field}.map(`), field);
     }
-    assert.match(page, /href="\/contact"/);
-    assert.match(page, /Get Started for Free/);
+    assert.match(page, /<PrimaryCta href=\{PRIMARY_CTA\.href\}/);
+    assert.match(page, /\{PRIMARY_CTA\.label\}/);
     assert.match(page, /relatedServices\(service\)/);
     assert.match(page, /href="\/perth"/);
   });
@@ -173,10 +173,10 @@ describe("sitemap and page registry", () => {
   const paths = PUBLIC_PAGES.map((page) => page.path);
 
   it("lists /services, every service, /perth and the core pages exactly once", () => {
-    for (const path of ["/", "/solutions", "/services", ...SERVICES.map((s) => s.path), "/perth", "/about", "/contact", "/privacy", "/terms"]) {
+    for (const path of ["/", "/solutions", "/services", ...SERVICES.map((s) => s.path), "/perth", "/about", "/contact", "/consultation", "/privacy", "/terms"]) {
       assert.equal(paths.filter((p) => p === path).length, 1, path);
     }
-    assert.equal(paths.length, 13); // /terms added 2026-10-08
+    assert.equal(paths.length, 14); // /terms added 2026-10-08, /consultation 2026-10-13
   });
 
   it("lists nothing private, no auth route and no trailing slash", () => {
@@ -211,9 +211,9 @@ describe("Perth page", () => {
     assert.ok(!INVENTED_PROOF.test(page.replace(/\/\*[\s\S]*?\*\//g, "")));
   });
 
-  it("links to the services and to Start a conversation", () => {
+  it("links to the services and to the free consultation", () => {
     assert.match(source, /<ServiceIndex\b/);
-    assert.match(source, /href="\/contact"/);
+    assert.match(source, /<PrimaryCta href=\{PRIMARY_CTA\.href\}/);
   });
 });
 

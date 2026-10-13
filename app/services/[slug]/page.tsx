@@ -10,7 +10,7 @@ import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
-import { PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
+import { PRIMARY_CTA, PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 import {
   ENTITY,
   SERVICES,
@@ -113,8 +113,8 @@ export default async function ServicePage({ params }: Props) {
             </span>
           </p>
 
-          <PrimaryCta href="/contact" surface="light" className="mt-8">
-            Get Started for Free
+          <PrimaryCta href={PRIMARY_CTA.href} surface="light" className="mt-8">
+            {PRIMARY_CTA.label}
           </PrimaryCta>
           <p className="mt-3 text-sm leading-6 text-black/60">{PRIMARY_CTA_NOTE}</p>
         </Container>
