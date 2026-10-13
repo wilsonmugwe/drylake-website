@@ -15,6 +15,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { BUSINESS_PROBLEMS } from "../lib/discovery/problems.ts";
 import { SERVICES } from "../lib/discovery/services.ts";
 import { faqs } from "../lib/faqs.ts";
 import { computeFigure, VALUE_EXAMPLE_NOTE, VALUE_EXAMPLES } from "../lib/value-examples.ts";
@@ -144,6 +145,27 @@ describe("plain English", () => {
   it("the FAQ answers 'what does Drylake do' and says websites are built on their own", () => {
     assert.equal(faqs[0].question, "What does Drylake actually do?");
     assert.ok(faqs.some((faq) => /standalone business websites/.test(faq.answer)));
+  });
+});
+
+describe("problems are in the owner's words and every link lands", () => {
+  it("every homepage problem anchor exists on /solutions", () => {
+    const ids = new Set(BUSINESS_PROBLEMS.map((item) => item.id));
+    const anchors = [...read("components/sections/Problems.tsx").matchAll(/anchor: "([^"]+)"/g)].map((m) => m[1]);
+    assert.equal(anchors.length, 4);
+    for (const anchor of anchors) assert.ok(ids.has(anchor), anchor);
+  });
+
+  it("covers the brief's situations, including websites, portals and starting with AI", () => {
+    const problems = BUSINESS_PROBLEMS.map((item) => item.problem).join("\n");
+    for (const phrase of [
+      "better website that customers can actually use",
+      "bookings and jobs through emails and spreadsheets",
+      "same reminders and messages",
+      "systems don't work together",
+      "log in and check their information",
+      "use AI but don't know where to start",
+    ]) assert.ok(problems.includes(phrase), phrase);
   });
 });
 
