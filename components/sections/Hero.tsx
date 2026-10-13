@@ -5,7 +5,9 @@ import Container from "@/components/ui/Container";
 import InView from "@/components/motion/InView";
 import PrimaryCta from "@/components/ui/PrimaryCta";
 import LakeBed from "@/components/visuals/LakeBed";
+import LakeBedInteractive from "@/components/visuals/LakeBedInteractive";
 import LakeField from "@/components/visuals/LakeField";
+import { PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 
 /*
  * The opening (experience polish, 2026-10-07; concept: docs/design/2026-10-07-experience-polish.md).
@@ -51,31 +53,38 @@ export default function Hero() {
                 headline now SAYS it. Longer than the old three-word lines, so it is set one step
                 smaller (hz-display-plain) and held left of the lake-bed tile on desktop. Still
                 server-rendered, no entrance animation (LCP rule). */}
+            {/* Final corrections (2026-10-13): the headline and lede as approved, no AI in either. */}
             <h1 className="hz-display hz-display-plain relative z-10 mt-6 sm:mt-10 lg:mt-14">
-              We build websites, business software and automations that make{" "}
+              Technology that makes{" "}
               <span className="text-white/78">running your business easier.</span>
             </h1>
 
+            {/* The picture stays server-rendered (children); LakeBedInteractive only adds the
+                hover / focus / tap layer and swaps the caption for a plate's explanation. */}
             <figure className="lb-figure hidden sm:block">
-              <div className="lb-tile">
+              <LakeBedInteractive
+                caption={
+                  <>
+                    <span>Quotes, enquiries, tasks, invoices: held together by copy, paste and email.</span>
+                    <span className="text-white/85"> Until they are one system.</span>
+                  </>
+                }
+              >
                 <LakeBed />
-              </div>
-              <figcaption className="lb-caption font-mono text-[0.62rem] uppercase leading-[1.6] tracking-[0.1em] text-white/60 sm:text-[0.68rem]">
-                <span>Quotes, customers, jobs, invoices: held together by copy, paste and email.</span>
-                <span className="text-white/85"> Until they are one system.</span>
-              </figcaption>
+              </LakeBedInteractive>
             </figure>
 
             <div className="relative z-10 mt-6 sm:mt-10 lg:mt-12 lg:max-w-[38rem]">
               <p className="type-lede max-w-[34rem] text-white/72">
-                We help Australian businesses build better websites, replace spreadsheets
-                and manual processes, connect the tools they already use, and automate
-                repetitive work with software and AI.
+                We build websites, business software and automation tools that save time,
+                reduce manual work and help your business run smoothly.
               </p>
             </div>
 
             <InView className="hz-assemble sm:hidden" threshold={0.4}>
-              <LakeBed variant="phone" />
+              <LakeBedInteractive variant="phone">
+                <LakeBed variant="phone" />
+              </LakeBedInteractive>
             </InView>
           </div>
 
@@ -84,7 +93,7 @@ export default function Hero() {
           <div className="lg:max-w-[38rem]">
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
               <PrimaryCta href="/contact" className="w-full sm:w-auto sm:min-w-[232px]">
-                Discuss your project
+                Get Started for Free
               </PrimaryCta>
 
               <SiteLink href="/#solutions" className="btn-ghost-dark w-full sm:w-auto sm:min-w-[188px]">
@@ -92,6 +101,7 @@ export default function Hero() {
                 <ArrowDown aria-hidden="true" size={15} />
               </SiteLink>
             </div>
+            <p className="mt-3 text-[0.8rem] leading-5 text-white/60">{PRIMARY_CTA_NOTE}</p>
           </div>
 
           <div className="relative z-10 mt-8 flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-white/55 sm:mt-12">

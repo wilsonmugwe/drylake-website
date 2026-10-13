@@ -92,23 +92,23 @@ describe("the hero is drawn, not photographed", () => {
     const source = code("components/sections/Hero.tsx");
     assert.ok(!source.startsWith('"use client"'), "Hero stays a server component");
     assert.equal((source.match(/<h1\b/g) ?? []).length, 1);
-    assert.match(source, /We build websites, business software and automations that make[\s\S]*running your business easier\./);
+    assert.match(source, /Technology that makes[\s\S]*running your business easier\./);
     // No entrance animation on the headline at all (PR 3: the delayed line was the LCP element).
     assert.ok(!/<h1[^>]*dl-fade/.test(source));
   });
 });
 
 describe("calls to action", () => {
-  it("every 'Discuss your project' on the homepage and footer is a PrimaryCta", () => {
+  it("every 'Get Started for Free' on the homepage and footer is a PrimaryCta", () => {
     for (const file of [...HOME_SECTIONS, "components/layout/Footer.tsx"]) {
       const source = code(file);
-      for (const match of source.matchAll(/Discuss your project/g)) {
+      for (const match of source.matchAll(/Get Started for Free/g)) {
         const after = source.slice(match.index + match[0].length, match.index + match[0].length + 40);
         // PR 3: the ending's eyebrow label shares the CTA's sentence case; it is a heading label,
         // not an action, so it may sit in a .section-label paragraph.
         const before = source.slice(Math.max(0, match.index - 240), match.index);
         const eyebrow = /className="section-label[^"]*"[^<]*>(?:(?!<\/p>)[\s\S])*$/.test(before) && /^\s*<\/p>/.test(after);
-        assert.ok(eyebrow || /^\s*<\/PrimaryCta>/.test(after), `${file}: "Discuss your project" outside PrimaryCta`);
+        assert.ok(eyebrow || /^\s*<\/PrimaryCta>/.test(after), `${file}: "Get Started for Free" outside PrimaryCta`);
       }
     }
     assert.match(code("components/sections/ContactCTA.tsx"), /Have a problem[\s\S]*worth fixing\?/);
@@ -174,7 +174,8 @@ describe("motion has a readable resting state", () => {
   it("each story visual has a text caption, so nothing is conveyed only by motion", () => {
     assert.match(code("components/visuals/FragmentField.tsx"), /<figcaption/);
     assert.match(code("components/sections/Integrations.tsx"), /<figcaption/);
-    assert.match(code("components/sections/Hero.tsx"), /<figcaption/);
+    // Hero caption is rendered by the interaction island (final corrections 2026-10-13).
+    assert.match(code("components/visuals/LakeBedInteractive.tsx"), /<figcaption/);
     for (const file of ["components/visuals/FragmentField.tsx", "components/visuals/SystemsStage.tsx", "components/visuals/LakeBed.tsx"]) {
       assert.match(code(file), /aria-hidden="true"/, file);
     }

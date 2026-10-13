@@ -31,7 +31,7 @@ const nextSteps = [
   {
     number: "02",
     title: "We talk",
-    text: "We learn how the process works today, where the friction is and what you want to improve.",
+    text: "This first conversation is free. We learn how the process works today, where the friction is and what you want to improve. Any build is quoted before work starts.",
   },
   {
     number: "03",

@@ -94,7 +94,7 @@ describe("search titles", () => {
     assert.match(PAGE_SEO.home.title, /Perth/);
     const hero = read("components/sections/Hero.tsx");
     // Plain-English headline (2026-10-13), inside the page's only h1.
-    assert.match(hero, /<h1[^>]*>[\s\S]*We build websites, business software and automations that make[\s\S]*running your business easier\.[\s\S]*<\/h1>/);
+    assert.match(hero, /<h1[^>]*>[\s\S]*Technology that makes[\s\S]*running your business easier\.[\s\S]*<\/h1>/);
   });
 
   it("every service with a Perth FAQ answers it with a fact the page states", () => {

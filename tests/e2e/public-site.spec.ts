@@ -45,9 +45,9 @@ for (const path of PUBLIC_PATHS) {
 test("homepage hero states the proposition and offers the free primary action", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.locator("h1")).toHaveText(/We build websites, business software and automations that make\s*running your business easier\./);
+  await expect(page.locator("h1")).toHaveText(/Technology that makes\s*running your business easier\./);
 
-  const cta = page.locator("main").getByRole("link", { name: /Discuss your project/i }).first();
+  const cta = page.locator("main").getByRole("link", { name: /Get Started for Free/i }).first();
   await expect(cta).toBeVisible();
   await expect(cta).toHaveAttribute("href", "/contact");
 });
@@ -68,13 +68,13 @@ test("logo: header wordmark draws the y in tile ochre and links home", async ({ 
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 });
 
-test("Discuss your project opens the contact page at the top, not the footer", async ({ page }, testInfo) => {
+test("Get Started for Free opens the contact page at the top, not the footer", async ({ page }, testInfo) => {
   await page.goto("/");
 
   if (isMobileProject(testInfo)) {
-    await page.locator("main").getByRole("link", { name: /Discuss your project/i }).first().click();
+    await page.locator("main").getByRole("link", { name: /Get Started for Free/i }).first().click();
   } else {
-    await page.locator("header").getByRole("link", { name: /Discuss your project/i }).click();
+    await page.locator("header").getByRole("link", { name: /Get Started for Free/i }).click();
   }
 
   await expect(page).toHaveURL(/\/contact$/);
@@ -142,7 +142,7 @@ test("browser Back and Forward retrace a visit", async ({ page }) => {
 
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator("h1")).toContainText("We build websites");
+  await expect(page.locator("h1")).toContainText("Technology that makes");
 
   await page.goForward();
   await expect(page).toHaveURL(/\/about$/);

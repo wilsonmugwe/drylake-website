@@ -44,7 +44,11 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: PORTAL_PATH };
 /* Plain-English messaging (2026-10-13): names what the visitor is here to do. Public site only;
    the client portal keeps its own "Start a conversation" (MessageDrylake), untouched. */
-export const PRIMARY_CTA: NavItem = { label: "Discuss your project", href: CONTACT_PATH };
+/* Final corrections (2026-10-13): "Get Started for Free". What is free is the first enquiry and
+   conversation, never the build, so every surface that carries this label beside body copy also
+   shows PRIMARY_CTA_NOTE (ACL s18; pre-launch checklist C1: the condition sits beside the offer). */
+export const PRIMARY_CTA: NavItem = { label: "Get Started for Free", href: CONTACT_PATH };
+export const PRIMARY_CTA_NOTE = "Your first enquiry and conversation are free. Any build is quoted before work starts.";
 
 export type NavAction =
   /* Let next/link navigate (different page). Next lands at the top, or at the hash target. */

@@ -4,6 +4,7 @@ import { BRAND_INK, TILE_OCHRE, TILE_OCHRE_PLATE, TILE_PLATES } from "@/componen
 import {
   LAKEBED_CONNECTIONS,
   LAKEBED_JUNCTIONS,
+  LAKEBED_LINK_PLATES,
   LAKEBED_PHONE_OFFSETS,
   LAKEBED_PHONE_VIEW,
   LAKEBED_PLATES,
@@ -63,7 +64,7 @@ export default function LakeBed({
         {TILE_PLATES.map((d, i) => {
           const plate = offsets[i];
           return (
-            <g key={d} className="lb-plate" style={{ "--dx": `${plate.dx}px`, "--dy": `${plate.dy}px`, "--r": `${plate.r}deg`, "--i": i } as CSSProperties}>
+            <g key={d} className="lb-plate" data-plate={i} style={{ "--dx": `${plate.dx}px`, "--dy": `${plate.dy}px`, "--r": `${plate.r}deg`, "--i": i } as CSSProperties}>
               <path
                 d={d}
                 clipPath={`url(#${clipId})`}
@@ -84,6 +85,7 @@ export default function LakeBed({
               d={d}
               pathLength={1}
               className="lb-link"
+              data-plates={LAKEBED_LINK_PLATES[i].join(" ")}
               style={{ "--i": i } as CSSProperties}
               fill="none"
               strokeWidth="0.42"
@@ -107,6 +109,7 @@ export default function LakeBed({
           <span
             key={plate.label}
             className={i === TILE_OCHRE_PLATE ? "lb-label lb-label-ochre" : "lb-label"}
+            data-plate={i}
             style={
               {
                 left: `${pct(plate.lx)}%`,

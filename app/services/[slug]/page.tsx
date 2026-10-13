@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
+import { PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 import {
   ENTITY,
   SERVICES,
@@ -113,8 +114,9 @@ export default async function ServicePage({ params }: Props) {
           </p>
 
           <PrimaryCta href="/contact" surface="light" className="mt-8">
-            Discuss your project
+            Get Started for Free
           </PrimaryCta>
+          <p className="mt-3 text-sm leading-6 text-black/60">{PRIMARY_CTA_NOTE}</p>
         </Container>
 
         <section aria-labelledby="problem-heading" className="mineral-texture bg-[#f2f0e9] py-(--section-y-compact)">

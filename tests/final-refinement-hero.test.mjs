@@ -44,11 +44,13 @@ describe("MESSAGE first, then explanation, tiles, CTA (phones)", () => {
     };
     const order = [at("<h1"), at("type-lede"), at('<InView className="hz-assemble sm:hidden"'), at("<PrimaryCta")];
     assert.deepEqual([...order].sort((a, b) => a - b), order);
-    assert.match(hero, /<InView className="hz-assemble sm:hidden"[^>]*>\s*<LakeBed variant="phone" \/>\s*<\/InView>/);
+    assert.match(hero, /<InView className="hz-assemble sm:hidden"[^>]*>\s*<LakeBedInteractive variant="phone">\s*<LakeBed variant="phone" \/>\s*<\/LakeBedInteractive>\s*<\/InView>/);
   });
 
   it("tablet and desktop keep the approved lake-bed tile and caption", () => {
-    assert.match(hero, /<figure className="lb-figure hidden sm:block">\s*<div className="lb-tile">\s*<LakeBed \/>/);
+    assert.match(hero, /<figure className="lb-figure hidden sm:block">\s*<LakeBedInteractive[\s\S]*?>\s*<LakeBed \/>/);
+    // The tile box and figcaption now come from the interaction island (final corrections 2026-10-13).
+    assert.match(read("components/visuals/LakeBedInteractive.tsx"), /"lb-tile lb-ix relative"[\s\S]*<figcaption className="lb-caption/);
   });
 
   it("the CTA is never delayed by script: plain markup in the hero, no animation class", () => {

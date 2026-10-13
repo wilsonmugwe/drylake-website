@@ -97,7 +97,7 @@ describe("navigation labels and destinations", () => {
       ]
     );
     assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/portal"]);
-    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Discuss your project", "/contact"]);
+    assert.deepEqual([PRIMARY_CTA.label, PRIMARY_CTA.href], ["Get Started for Free", "/contact"]);
   });
 
   it("every homepage section target exists exactly once", () => {
@@ -213,10 +213,10 @@ describe("the redesign kept the approved homepage copy", () => {
     // Plain-English messaging (2026-10-13): the hero SAYS what Drylake does; "workarounds" moved to
     // the problem chapter's heading.
     "Perth / Western Australia", "Websites, Software &amp; Automation",
-    "We build websites, business software and automations that make", "running your business easier.",
-    "We help Australian businesses build better websites, replace spreadsheets and manual processes, connect the tools they already use, and automate repetitive work with software and AI.",
-    "Quotes, customers, jobs, invoices: held together by copy, paste and email.", "Until they are one system.",
-    "Discuss your project", "See what we build", "Australian company", "Founder-led", "Perth, WA",
+    "Technology that makes", "running your business easier.",
+    "We build websites, business software and automation tools that save time, reduce manual work and help your business run smoothly.",
+    "Quotes, enquiries, tasks, invoices: held together by copy, paste and email.", "Until they are one system.",
+    "Get Started for Free", "See what we build", "Australian company", "Founder-led", "Perth, WA",
     // Problems: real situations, the fix, and a labelled example (lib/value-examples.ts)
     "01 / The Problem", "Your business shouldn't run", "on workarounds.", "Small, repeated tasks add up.",
     "We're managing bookings and jobs through emails and spreadsheets.",

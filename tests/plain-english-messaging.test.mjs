@@ -112,8 +112,8 @@ describe("plain English", () => {
   it("the hero h1 says what Drylake builds, with the two brief CTAs", () => {
     const hero = read("components/sections/Hero.tsx");
     const h1 = hero.slice(hero.indexOf("<h1"), hero.indexOf("</h1>"));
-    assert.match(h1, /We build websites, business software and automations that make[\s\S]*running your business easier\./);
-    assert.match(hero, /Discuss your project\s*<\/PrimaryCta>/);
+    assert.match(h1, /Technology that makes[\s\S]*running your business easier\./);
+    assert.match(hero, /Get Started for Free\s*<\/PrimaryCta>/);
     assert.match(hero, /href="\/#solutions"[\s\S]*See what we build/);
   });
 
