@@ -28,17 +28,28 @@ export type BusinessProblem = {
 export const SOLUTIONS_PATH = "/solutions";
 
 export const BUSINESS_PROBLEMS: readonly BusinessProblem[] = [
+  /*
+   * Plain-English pass (2026-10-13): each problem is written the way an owner says it, and each
+   * outcome says what Drylake does about it in everyday words. Anchor ids are unchanged (homepage
+   * rows and service pages link to them); three situations from the brief were added.
+   */
+  {
+    id: "better-website",
+    problem: "We need a better website that customers can actually use.",
+    outcome: "We build a clear, fast website that explains what you do, works well on phones and makes it easy for customers to get in touch.",
+    services: ["web-development"],
+  },
   {
     id: "double-entry",
-    problem: "Staff enter the same information into more than one system.",
-    outcome: "Connected systems remove duplicate entry: information is entered once and appears where it is needed.",
+    problem: "Our staff spend too much time entering the same information.",
+    outcome: "We connect your systems so details are entered once and appear where they are needed, where the software supports it.",
     services: ["systems-integration", "business-automation"],
   },
   {
-    id: "lost-enquiries",
-    problem: "Important enquiries disappear into inboxes.",
-    outcome: "Enquiries create a record and reach the right person automatically, so nothing waits to be noticed.",
-    services: ["web-development", "business-automation"],
+    id: "critical-spreadsheet",
+    problem: "We're managing bookings and jobs through emails and spreadsheets.",
+    outcome: "We build one simple system for bookings, customers and jobs, with proper records and access for the right people.",
+    services: ["custom-software-development"],
   },
   {
     id: "repeat-messages",
@@ -47,45 +58,51 @@ export const BUSINESS_PROBLEMS: readonly BusinessProblem[] = [
     services: ["business-automation"],
   },
   {
+    id: "lost-enquiries",
+    problem: "Enquiries get lost in our inbox.",
+    outcome: "Website enquiries go straight to the right person or system, so nothing waits to be noticed.",
+    services: ["web-development", "business-automation"],
+  },
+  {
+    id: "disconnected-systems",
+    problem: "Our systems don't work together.",
+    outcome: "We connect the tools you already use instead of replacing them, so information moves between them on its own.",
+    services: ["systems-integration", "custom-software-development"],
+  },
+  {
     id: "document-requests",
-    problem: "Customers keep asking for documents and updates.",
-    outcome: "Client portals give customers one place to see their documents, progress and invoices.",
+    problem: "We want customers to log in and check their information.",
+    outcome: "A secure customer portal gives each customer one place to see their documents, progress and invoices, instead of asking by email.",
     services: ["custom-software-development", "web-development"],
   },
   {
     id: "email-approvals",
-    problem: "Approvals sit in email.",
-    outcome: "Requests route to the right person, the decision is recorded and the work moves on.",
+    problem: "Approvals sit in someone's inbox.",
+    outcome: "Requests go to the right person, the decision is recorded and the work moves on.",
     services: ["business-automation"],
   },
   {
-    id: "critical-spreadsheet",
-    problem: "A spreadsheet has become a critical system.",
-    outcome: "Purpose-built software gives the process proper records, permissions and history that a shared file cannot hold safely.",
-    services: ["custom-software-development"],
-  },
-  {
     id: "manual-transfer",
-    problem: "Teams move data between software by hand.",
-    outcome: "Integrations keep records in step between systems, without exports, imports or retyping.",
+    problem: "We copy information from one program into another by hand.",
+    outcome: "We set up connections that keep records the same in each system, without exporting, importing or retyping.",
     services: ["systems-integration"],
   },
   {
     id: "manual-reporting",
-    problem: "Reporting means hours of manual consolidation.",
-    outcome: "Reports that draw from each system give management visibility without assembling it by hand.",
+    problem: "Putting reports together takes hours every week or month.",
+    outcome: "Reports that pull from each system automatically, so you can see how the business is going without building them by hand.",
     services: ["systems-integration", "business-automation"],
   },
   {
-    id: "disconnected-systems",
-    problem: "Existing systems do not communicate.",
-    outcome: "Connecting them, rather than replacing them, closes the gaps while the business keeps the software that still works.",
-    services: ["systems-integration", "custom-software-development"],
+    id: "incoming-paperwork",
+    problem: "Someone has to read and sort every email, form and document.",
+    outcome: "AI tools can read, sort and send routine paperwork to the right place, with anything unclear passed to a person.",
+    services: ["ai-automation"],
   },
   {
-    id: "incoming-paperwork",
-    problem: "Incoming paperwork has to be read and sorted by hand.",
-    outcome: "AI can read, check and route it, with anything unclear passed to a person.",
+    id: "ai-start",
+    problem: "We want to use AI but don't know where to start.",
+    outcome: "We look at where your team spends time on reading, writing or sorting, then recommend AI only where it genuinely helps, with a person checking what matters.",
     services: ["ai-automation"],
   },
 ];
