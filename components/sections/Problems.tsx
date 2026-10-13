@@ -74,10 +74,13 @@ export default function Problems() {
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">01 / The Problem</p>
 
           <div className="lg:col-span-9">
-            <h2 className="type-section text-balance">
-              Your business shouldn&apos;t run{" "}
-              <br className="hidden sm:block" />
-              <span className="text-black/50"> on workarounds.</span>
+            {/* Homepage clarity (2026-10-10): the outcome, in the owner's words. Three short lines, the
+                third muted, same oversized type-section scale; each line is its own block so the
+                break points are fixed and nothing wraps awkwardly at any width. */}
+            <h2 className="type-section">
+              <span className="block">Less paperwork.</span>
+              <span className="block">Less chasing.</span>
+              <span className="block text-balance text-black/50">More time for your business.</span>
             </h2>
 
             <p className="type-lede mt-5 sm:mt-7 max-w-2xl text-black/62">

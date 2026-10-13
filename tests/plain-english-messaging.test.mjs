@@ -117,8 +117,8 @@ describe("plain English", () => {
     assert.match(hero, /href="\/#solutions"[\s\S]*See what we build/);
   });
 
-  it("'workarounds' survives as the problem chapter's heading", () => {
-    assert.match(read("components/sections/Problems.tsx"), /Your business shouldn&apos;t run[\s\S]*on workarounds\./);
+  it("the problem chapter's heading is the outcome (homepage clarity 2026-10-10)", () => {
+    assert.match(read("components/sections/Problems.tsx"), /Less paperwork\.[\s\S]*Less chasing\.[\s\S]*More time for your business\./);
   });
 
   it("What We Do lists all five services, each linking to its own page", () => {

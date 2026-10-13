@@ -73,13 +73,13 @@ export type SystemNode = {
 
 export const SYSTEM_NODES: readonly SystemNode[] = [
   { label: "Website", d: { sx: 18, sy: 14, fx: 12, fy: 22, r: -7 }, m: { sx: 30, sy: 6, fx: 22, fy: 12, r: -6 } },
-  { label: "CRM", d: { sx: 46, sy: 30, fx: 31, fy: 22, r: 9 }, m: { sx: 74, sy: 18, fx: 78, fy: 12, r: 8 } },
-  { label: "Email", d: { sx: 78, sy: 12, fx: 69, fy: 22, r: -4 }, m: { sx: 24, sy: 30, fx: 22, fy: 32, r: 5 } },
+  { label: "Customer details", d: { sx: 46, sy: 30, fx: 31, fy: 22, r: 9 }, m: { sx: 74, sy: 18, fx: 78, fy: 12, r: 8 } },
+  { label: "Emails", d: { sx: 78, sy: 12, fx: 69, fy: 22, r: -4 }, m: { sx: 24, sy: 30, fx: 22, fy: 32, r: 5 } },
   { label: "Customers", d: { sx: 90, sy: 46, fx: 88, fy: 22, r: 11 }, m: { sx: 70, sy: 38, fx: 78, fy: 32, r: -9 } },
-  { label: "Accounting", d: { sx: 12, sy: 62, fx: 12, fy: 78, r: 6 }, m: { sx: 34, sy: 60, fx: 22, fy: 68, r: 7 } },
+  { label: "Bookkeeping", d: { sx: 12, sy: 62, fx: 12, fy: 78, r: 6 }, m: { sx: 34, sy: 60, fx: 22, fy: 68, r: 7 } },
   { label: "Documents", d: { sx: 36, sy: 86, fx: 31, fy: 78, r: -10 }, m: { sx: 72, sy: 70, fx: 78, fy: 68, r: -5 } },
   { label: "Payments", d: { sx: 64, sy: 72, fx: 69, fy: 78, r: 5 }, m: { sx: 26, sy: 86, fx: 22, fy: 88, r: -8 } },
-  { label: "Staff", d: { sx: 84, sy: 88, fx: 88, fy: 78, r: -8 }, m: { sx: 68, sy: 94, fx: 78, fy: 88, r: 6 } },
+  { label: "Team", d: { sx: 84, sy: 88, fx: 88, fy: 78, r: -8 }, m: { sx: 68, sy: 94, fx: 78, fy: 88, r: 6 } },
 ];
 
 /* Dashed workarounds between scattered systems (desktop), with what they really are. */

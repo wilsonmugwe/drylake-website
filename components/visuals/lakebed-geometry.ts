@@ -19,10 +19,10 @@ export const lakebedPct = (v: number) => Math.round(((v - VIEW_MIN) / VIEW_SIZE)
  */
 export const LAKEBED_PLATES: readonly { label: string; lx: number; ly: number; dx: number; dy: number; r: number }[] = [
   { label: "Quotes", lx: 22, ly: 26, dx: -6, dy: -5, r: -5 },
-  { label: "Enquiries", lx: 72, ly: 19, dx: 6, dy: -6, r: 4 },
-  { label: "Tasks", lx: 24, ly: 72, dx: -6, dy: 5, r: 4 },
+  { label: "Invoices", lx: 72, ly: 19, dx: 6, dy: -6, r: 4 },
+  { label: "Scheduling", lx: 24, ly: 72, dx: -6, dy: 5, r: 4 },
   { label: "One system", lx: 73, ly: 53.5, dx: 7, dy: 0, r: -3 },
-  { label: "Invoices", lx: 75, ly: 82, dx: 4, dy: 7, r: -4 },
+  { label: "Enquiries", lx: 75, ly: 82, dx: 4, dy: 7, r: -4 },
 ];
 
 /*
@@ -82,14 +82,63 @@ export const LAKEBED_LINK_PLATES: readonly (readonly number[])[] = [
   [3, 4],
 ];
 
-/* One short line per plate, in LAKEBED_PLATES order, shown when a plate is selected. */
-export const LAKEBED_EXPLANATIONS: readonly string[] = [
-  "Quotes built from your own prices, sent and followed up in one place.",
-  "Every enquiry captured once, whether it came from the website, email or phone.",
-  "Work assigned, scheduled and tracked, without reminders kept by hand.",
-  "Everything connected, so information is entered once and used everywhere.",
-  "Invoices raised from the finished work, never typed out again.",
+/*
+ * Homepage clarity (2026-10-10): what each plate opens when selected, in LAKEBED_PLATES order.
+ * Each is an everyday problem and how Drylake helps with it. They are examples of problems we
+ * solve, not features of one finished product, so nothing here names a product or a result.
+ */
+export const LAKEBED_POPOVERS: readonly { problem: string; help: string }[] = [
+  {
+    problem: "Preparing quotes takes too long.",
+    help: "Create, send and keep track of quotes without losing paperwork.",
+  },
+  {
+    problem: "Keeping track of invoices and payments is frustrating.",
+    help: "Keep invoices and payment information organised in one place.",
+  },
+  {
+    problem: "Appointments get missed, double-booked or forgotten.",
+    help: "Make it easier to manage bookings, availability and reminders.",
+  },
+  {
+    problem: "Your business information is spread across too many places.",
+    help: "Bring the tools you rely on together so your business runs more smoothly.",
+  },
+  {
+    problem: "Customer messages get buried in emails or missed.",
+    help: "Keep enquiries together so it’s easier to respond and follow up.",
+  },
 ];
+
+/*
+ * Each plate as a CSS polygon() in percent of a view box (min, size), so a plate's own outline is
+ * its click target (clip-path on the button), not a box around its label.
+ */
+export function platePolygon(d: string, view: { min: number; size: number }): string {
+  const tokens = d.match(/[MHVLZ]|-?\d+(?:\.\d+)?/g) ?? [];
+  const points: [number, number][] = [];
+  let x = 0;
+  let y = 0;
+  let cmd = "";
+  for (let i = 0; i < tokens.length; i += 1) {
+    const t = tokens[i];
+    if (/[MHVLZ]/.test(t)) {
+      cmd = t;
+      continue;
+    }
+    if (cmd === "H") x = Number(t);
+    else if (cmd === "V") y = Number(t);
+    else {
+      x = Number(t);
+      y = Number(tokens[(i += 1)]);
+    }
+    points.push([x, y]);
+  }
+  return `polygon(${points.map(([px, py]) => `${viewPct(px, view)}% ${viewPct(py, view)}%`).join(", ")})`;
+}
+
+/* The desktop tile's view box as (min, size), for platePolygon. */
+export const LAKEBED_TILE_VIEW = { min: VIEW_MIN, size: VIEW_SIZE } as const;
 
 /* Where cracks meet: a node on each once connected. */
 export const LAKEBED_JUNCTIONS: readonly (readonly [number, number])[] = [

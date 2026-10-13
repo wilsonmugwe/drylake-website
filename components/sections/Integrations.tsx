@@ -60,9 +60,15 @@ export default function Integrations() {
               <figure className="lg:col-span-7">
                 <SystemsStage />
                 <figcaption className="mt-5 font-mono text-[0.68rem] uppercase leading-5 tracking-[0.1em] text-white/60">
-                  Website, CRM, email, accounting, documents, payments, staff and customers:
-                  connected through one system instead of copied between them.
+                  Website, customer details, emails, bookkeeping, documents, payments, team and
+                  customers: connected instead of copied between them.
                 </figcaption>
+                {/* Homepage clarity (2026-10-10): the diagram in one plain sentence. */}
+                <p className="type-body mt-4 max-w-xl text-white/72">
+                  Your website, customer details, emails and payments shouldn&apos;t all be
+                  disconnected. We help bring them together so you spend less time switching
+                  between systems.
+                </p>
               </figure>
             </div>
           </Container>

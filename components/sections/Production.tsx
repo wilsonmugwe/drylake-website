@@ -5,15 +5,23 @@ import Container from "@/components/ui/Container";
 
 /*
  * The engineering under a finished product, in order of depth: what each layer does for the
- * business, in one plain sentence. Descriptions of purpose, not claims of results.
+ * business, in one plain sentence. Descriptions of purpose, not claims of results. Homepage
+ * clarity (2026-10-10): named in everyday words, not engineering terms; monitoring and backups
+ * say "where included" because they depend on the agreed scope, never every project.
  */
 const strata = [
-  { name: "Authentication", text: "Only the right people get in." },
-  { name: "Permissions", text: "Each person sees and changes only what their role allows." },
-  { name: "Data validation", text: "Wrong or missing information is caught before it is saved." },
-  { name: "Integrations", text: "Information moves between your systems without retyping." },
-  { name: "Monitoring", text: "Errors and slowdowns noticed early, as agreed per project." },
-  { name: "Backups & recovery", text: "Backup and recovery arranged to your agreed scope." },
+  { name: "Secure login", text: "Only authorised people can access your system." },
+  { name: "Who can see what", text: "You decide what each team member can access." },
+  { name: "Fewer mistakes", text: "Catch missing or incorrect information early." },
+  { name: "Connected tools", text: "Your systems share information so you don't have to enter it twice." },
+  {
+    name: "Keeping things running",
+    text: "Spot problems early and help keep your system working smoothly, where monitoring is included.",
+  },
+  {
+    name: "Backups and recovery",
+    text: "Help protect your information and recover it if something goes wrong, where backups are included.",
+  },
 ];
 
 /*

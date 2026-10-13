@@ -17,7 +17,8 @@ test("a public page asked for text/markdown returns Markdown with the right head
 
   const body = await response.text();
   expect(body).toMatch(/^# .*Drylake\n\nSource: https:\/\/drylake\.com\.au\/services\n/);
-  expect(body).toContain("[Custom software development](https://drylake.com.au/services/custom-software-development)");
+  // PR #65 renamed the service line in plain English ("Custom software & apps").
+  expect(body).toContain("[Custom software & apps](https://drylake.com.au/services/custom-software-development)");
   expect(body).not.toMatch(/<(script|svg|nav|footer)\b/);
 });
 

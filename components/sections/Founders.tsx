@@ -22,6 +22,35 @@ const founders = [
 ];
 
 /*
+ * Why Drylake (homepage clarity, 2026-10-10): the five reasons, in plain English, under the
+ * founders on the homepage. Each is something we do, not a result we claim. The Workspace row
+ * names only what the client Workspace actually shows today (components/client: progress,
+ * milestones, latest update, shared documents, invoices with online payment).
+ */
+const reasons = [
+  {
+    title: "Talk to the people building it",
+    text: "You deal directly with the founders who design and build your solution. There are no layers of account managers to get through.",
+  },
+  {
+    title: "Practical, not complicated",
+    text: "We recommend what your business actually needs. If a simpler tool or a small change will do the job, we will say so, rather than push complicated software or AI.",
+  },
+  {
+    title: "Built properly",
+    text: "From the start we think about keeping your information safe, making sure things keep working, making changes easy later and making it simple for your team to use.",
+  },
+  {
+    title: "You always know where things stand",
+    text: "We explain what we are building, what stage your project is at and what happens next, in plain English.",
+  },
+  {
+    title: "See your project online",
+    text: "Your Drylake Workspace is a private online area where you can see your project's progress, milestones, latest updates, shared documents and invoices.",
+  },
+];
+
+/*
  * Founder-led (experience polish, 2026-10-07). Two founders side by side as one editorial spread
  * (each column: role, name, what they own, credential, what to talk to them about), instead of
  * two stacked full-width rows. Facts unchanged. No portrait or initials mark (mobile refinement
@@ -46,7 +75,7 @@ export default function Founders({ variant = "home" }: { variant?: "home" | "pag
       <Container>
         <div className="grid gap-5 lg:grid-cols-12 lg:gap-8">
           <p className="section-label text-black/62 lg:col-span-3 lg:pt-4">
-            {page ? "About / Founder-Led" : "03 / Founder-Led"}
+            {page ? "About / Founder-Led" : "03 / Why Drylake"}
           </p>
 
           <div className="lg:col-span-9">
@@ -99,6 +128,26 @@ export default function Founders({ variant = "home" }: { variant?: "home" | "pag
             </article>
           ))}
         </div>
+
+        {!page && (
+          <div className="grid gap-6 border-t border-black/12 pt-8 sm:pt-10 lg:grid-cols-12 lg:gap-8">
+            <h3 className="tech-label text-black/62 lg:col-span-3 lg:pt-1">Why work with us</h3>
+
+            <ol className="grid gap-x-10 sm:grid-cols-2 lg:col-span-9">
+              {reasons.map((reason, i) => (
+                <li key={reason.title} className="border-b border-black/10 py-5 sm:py-6">
+                  <p className="flex items-baseline gap-3">
+                    <span aria-hidden="true" className="font-mono text-[0.68rem] text-(--orange-ink)">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-[1.15rem] font-semibold leading-tight tracking-[-0.025em]">{reason.title}</span>
+                  </p>
+                  <p className="type-body mt-2 max-w-md text-black/68">{reason.text}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {page && (
           <div className="grid gap-4 border-t border-black/12 pt-7 sm:pt-9 lg:grid-cols-12 lg:gap-8">

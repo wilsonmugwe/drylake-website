@@ -9,11 +9,18 @@
 type Heights = Record<number, number>;
 
 export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
-  "/": { 320: 10915, 360: 10540, 375: 10430, 390: 10395, 393: 10391, 414: 10351, 430: 10272, 768: 11145, 1024: 8979, 1440: 8702 },
+  // Re-baselined 2026-10-10 (homepage clarity): PR #65 added a worked example under each problem
+  // without re-baselining, and this change adds the five Why Drylake reasons and grows How We Work
+  // from four stages to seven, +29-35% in all, by design. Was
+  // { 320: 10915, 360: 10540, 375: 10430, 390: 10395, 393: 10391, 414: 10351, 430: 10272, 768: 11145, 1024: 8979, 1440: 8702 }.
+  "/": { 320: 14818, 360: 14170, 375: 13965, 390: 13969, 393: 13905, 414: 13514, 430: 13345, 768: 14056, 1024: 12095, 1440: 11295 },
   // Re-baselined 2026-10-08 (final refinement): /solutions gained the problem-led list
   // (ProblemIndex, nine problems linked to their services), +21-28% by design. Was
   // { 320: 9466, 360: 9108, 375: 8971, 390: 8915, 393: 8919, 414: 8824, 430: 8743, 768: 9149, 1024: 7158, 1440: 7064 }.
-  "/solutions": { 320: 12141, 360: 11703, 375: 11498, 390: 11330, 393: 11334, 414: 11156, 430: 11024, 768: 11210, 1024: 8872, 1440: 8562 },
+  // Re-baselined again 2026-10-10: PR #66 rewrote the problems in the owner's words and added three
+  // situations, +11-16% (two widths past the band since #66, not caused by the homepage change). Was
+  // { 320: 12141, 360: 11703, 375: 11498, 390: 11330, 393: 11334, 414: 11156, 430: 11024, 768: 11210, 1024: 8872, 1440: 8562 }.
+  "/solutions": { 320: 14065, 360: 13333, 375: 13175, 390: 13046, 393: 13000, 414: 12712, 430: 12546, 768: 12561, 1024: 10121, 1440: 9475 },
   "/services": { 320: 2864, 360: 2831, 375: 2811, 390: 2794, 393: 2795, 414: 2783, 430: 2768, 768: 2948, 1024: 2312, 1440: 2392 },
   "/services/custom-software-development": { 320: 7093, 360: 6773, 375: 6655, 390: 6495, 393: 6497, 414: 6403, 430: 6341, 768: 5910, 1024: 5409, 1440: 5287 },
   "/services/business-automation": { 320: 6751, 360: 6499, 375: 6486, 390: 6396, 393: 6399, 414: 6298, 430: 6234, 768: 5781, 1024: 5212, 1440: 5214 },
