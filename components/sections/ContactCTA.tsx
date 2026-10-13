@@ -4,6 +4,7 @@ import { ArrowUpRight, Mail, Phone } from "lucide-react";
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
+import { PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 import { BUSINESS_PHONE } from "@/lib/site";
 
 /*
@@ -59,8 +60,9 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
             </p>
 
             <PrimaryCta href="/contact" size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
-              Discuss your project
+              Get Started for Free
             </PrimaryCta>
+            <p className="mt-3 text-[0.8rem] leading-5 text-white/60">{PRIMARY_CTA_NOTE}</p>
           </div>
 
           <div className="border-t border-white/12 pt-6 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">{lines}</div>

@@ -52,8 +52,8 @@ describe("heading text keeps its word boundaries", () => {
   it("the homepage h1 keeps a space before its dimmed phrase", () => {
     const hero = read("components/sections/Hero.tsx");
     const h1 = hero.slice(hero.indexOf("<h1"), hero.indexOf("</h1>"));
-    // Plain-English headline (2026-10-13): "...that make" + {" "} + <span>running your business easier.</span>
-    assert.match(h1, /that make\{" "\}\s*<span[^>]*>running your business easier\.<\/span>/);
+    // Plain-English headline (2026-10-13): "Technology that makes" + {" "} + <span>running your business easier.</span>
+    assert.match(h1, /Technology that makes\{" "\}\s*<span[^>]*>running your business easier\.<\/span>/);
   });
 });
 

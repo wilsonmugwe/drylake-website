@@ -53,7 +53,7 @@ test("a visitor opening the Workspace lands on the sign-in screen and can get ba
   await back.click();
 
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator("h1")).toContainText("Your business");
+  await expect(page.locator("h1")).toContainText("running your business easier");
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 });
 

@@ -108,14 +108,14 @@ describe("/services architecture", () => {
     assert.equal(findService("web-development")?.name, "Websites & web development");
   });
 
-  it("the service template renders every content block and a Discuss your project link", () => {
+  it("the service template renders every content block and a Get Started for Free link", () => {
     const page = code("app/services/[slug]/page.tsx");
 
     for (const field of ["service.problem", "service.builds", "service.useCases", "service.approach", "service.production", "service.faqs"]) {
       assert.ok(page.includes(`${field}.map(`), field);
     }
     assert.match(page, /href="\/contact"/);
-    assert.match(page, /Discuss your project/);
+    assert.match(page, /Get Started for Free/);
     assert.match(page, /relatedServices\(service\)/);
     assert.match(page, /href="\/perth"/);
   });

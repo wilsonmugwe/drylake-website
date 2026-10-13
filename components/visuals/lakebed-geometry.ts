@@ -19,8 +19,8 @@ export const lakebedPct = (v: number) => Math.round(((v - VIEW_MIN) / VIEW_SIZE)
  */
 export const LAKEBED_PLATES: readonly { label: string; lx: number; ly: number; dx: number; dy: number; r: number }[] = [
   { label: "Quotes", lx: 22, ly: 26, dx: -6, dy: -5, r: -5 },
-  { label: "Customers", lx: 72, ly: 19, dx: 6, dy: -6, r: 4 },
-  { label: "Jobs", lx: 24, ly: 72, dx: -6, dy: 5, r: 4 },
+  { label: "Enquiries", lx: 72, ly: 19, dx: 6, dy: -6, r: 4 },
+  { label: "Tasks", lx: 24, ly: 72, dx: -6, dy: 5, r: 4 },
   { label: "One system", lx: 73, ly: 53.5, dx: 7, dy: 0, r: -3 },
   { label: "Invoices", lx: 75, ly: 82, dx: 4, dy: 7, r: -4 },
 ];
@@ -66,6 +66,29 @@ export const LAKEBED_CONNECTIONS: readonly string[] = [
   "M44 40 L55 64",
   "M55 64 L43 96",
   "M55 64 L70 69 L96 65",
+];
+
+/*
+ * Interaction (final corrections, 2026-10-13): which plates each crack runs between, in
+ * LAKEBED_CONNECTIONS order (indexes into LAKEBED_PLATES). Selecting a plate lights the cracks
+ * on its own edges; "One system" (the hub) lights them all.
+ */
+export const LAKEBED_LINK_PLATES: readonly (readonly number[])[] = [
+  [0, 1],
+  [0, 2],
+  [1, 3],
+  [2, 3],
+  [2, 4],
+  [3, 4],
+];
+
+/* One short line per plate, in LAKEBED_PLATES order, shown when a plate is selected. */
+export const LAKEBED_EXPLANATIONS: readonly string[] = [
+  "Quotes built from your own prices, sent and followed up in one place.",
+  "Every enquiry captured once, whether it came from the website, email or phone.",
+  "Work assigned, scheduled and tracked, without reminders kept by hand.",
+  "Everything connected, so information is entered once and used everywhere.",
+  "Invoices raised from the finished work, never typed out again.",
 ];
 
 /* Where cracks meet: a node on each once connected. */

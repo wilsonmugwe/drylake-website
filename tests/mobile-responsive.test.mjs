@@ -166,7 +166,7 @@ describe("hero headline paints on the first frame (LCP)", () => {
 
   it("the h1 exists once and carries the copy", () => {
     assert.ok(h1);
-    assert.match(h1, /We build websites, business software and automations that make[\s\S]*running your business easier\./);
+    assert.match(h1, /Technology that makes[\s\S]*running your business easier\./);
   });
 
   it("no headline line has an entrance animation, a delay or a hidden start state", () => {
@@ -179,8 +179,8 @@ describe("hero headline paints on the first frame (LCP)", () => {
 });
 
 describe("primary call to action casing", () => {
-  it("the single source reads 'Discuss your project' (sentence case)", () => {
-    assert.equal(PRIMARY_CTA.label, "Discuss your project");
+  it("the single source reads 'Get Started for Free' (sentence case)", () => {
+    assert.equal(PRIMARY_CTA.label, "Get Started for Free");
   });
 
   it("no visitor-facing 'Start a Conversation' (title case) remains on public surfaces", () => {

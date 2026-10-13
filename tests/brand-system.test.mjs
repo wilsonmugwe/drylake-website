@@ -149,10 +149,10 @@ describe("the canonical primary CTA (white, dark text)", () => {
     assert.deepEqual(offenders, []);
   });
 
-  it("keeps the site's label wording (\"Discuss your project\" since 2026-10-13)", () => {
-    assert.match(code("components/sections/Hero.tsx"), /Discuss your project\s*<\/PrimaryCta>/);
-    assert.match(code("components/sections/ContactCTA.tsx"), /Discuss your project\s*<\/PrimaryCta>/);
-    assert.match(code("app/perth/page.tsx"), /Discuss your project\s*<\/PrimaryCta>/);
+  it("keeps the site's label wording (\"Get Started for Free\" since 2026-10-13)", () => {
+    assert.match(code("components/sections/Hero.tsx"), /Get Started for Free\s*<\/PrimaryCta>/);
+    assert.match(code("components/sections/ContactCTA.tsx"), /Get Started for Free\s*<\/PrimaryCta>/);
+    assert.match(code("app/perth/page.tsx"), /Get Started for Free\s*<\/PrimaryCta>/);
   });
 
   const css = read("app/public-site.css");

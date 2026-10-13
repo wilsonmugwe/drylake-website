@@ -1537,9 +1537,96 @@ main [tabindex="-1"]:focus {
   height: auto !important;
 }
 
+/* ------------------------------------------------- LAKE BED INTERACTION ---- */
+
+/*
+ * Final corrections (2026-10-13), components/visuals/LakeBedInteractive.tsx. One transparent
+ * button per plate sets data-active on .lb-ix; the other cracks and labels recede, so the
+ * selected plate's own connections read as lit. Opacity, filter and stroke-width only: none of
+ * them is touched by the LAKE BED keyframes, so the entrance timeline is unchanged, and nothing
+ * moves. "One system" (plate 3) is the hub and lights every crack.
+ */
+.lb-hit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lb-hit:focus {
+  outline: none;
+}
+
+.lb-hit:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.lb-ix .lb-link {
+  transition:
+    opacity 0.25s ease,
+    stroke-width 0.25s ease;
+}
+
+.lb-ix .lb-label,
+.lb-ix .lb-fill {
+  transition:
+    filter 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.lb-ix[data-active] .lb-link {
+  opacity: 0.18;
+}
+
+.lb-ix[data-active="0"] .lb-link[data-plates~="0"],
+.lb-ix[data-active="1"] .lb-link[data-plates~="1"],
+.lb-ix[data-active="2"] .lb-link[data-plates~="2"],
+.lb-ix[data-active="3"] .lb-link,
+.lb-ix[data-active="4"] .lb-link[data-plates~="4"] {
+  opacity: 1;
+  stroke-width: 0.8;
+}
+
+.lb-ix[data-active] .lb-label {
+  filter: opacity(0.45);
+}
+
+.lb-ix[data-active] .lb-fill {
+  opacity: 0.82;
+}
+
+.lb-ix[data-active="0"] :is(.lb-label[data-plate="0"], .lb-plate[data-plate="0"] .lb-fill),
+.lb-ix[data-active="1"] :is(.lb-label[data-plate="1"], .lb-plate[data-plate="1"] .lb-fill),
+.lb-ix[data-active="2"] :is(.lb-label[data-plate="2"], .lb-plate[data-plate="2"] .lb-fill),
+.lb-ix[data-active="3"] :is(.lb-label[data-plate="3"], .lb-plate[data-plate="3"] .lb-fill),
+.lb-ix[data-active="4"] :is(.lb-label[data-plate="4"], .lb-plate[data-plate="4"] .lb-fill) {
+  filter: none;
+  opacity: 1;
+}
+
+.lb-explain {
+  margin-top: 0.5rem;
+}
+
+.lb-explain:empty {
+  display: none;
+}
+
 /* ------------------------------------------------------- reduced motion ---- */
 
 @media (prefers-reduced-motion: reduce) {
+  .lb-ix .lb-link,
+  .lb-ix .lb-label,
+  .lb-ix .lb-fill {
+    transition: none;
+  }
+
   .lf-link,
   .lf-node,
   .lb-plate,
