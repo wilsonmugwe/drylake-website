@@ -2,10 +2,13 @@ import { NextResponse, after } from "next/server";
 
 import { CONSULTATION_ACTION } from "@/lib/contact/turnstile-action";
 import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
+import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
+import { calendarSetting } from "@/lib/consultations/calendar/provider";
+import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
 import { runConsultationDispatch } from "@/lib/consultations/dispatch-server";
 import { SUCCESS_OUTCOMES, describeOutcome } from "@/lib/consultations/outcomes";
 import { consultationEnd } from "@/lib/consultations/rules";
-import { createConsultation } from "@/lib/consultations/service";
+import { createConsultation, freeRepresentativesAt } from "@/lib/consultations/service";
 import { tokenSecret } from "@/lib/consultations/token";
 import { MAX_BOOKING_REQUEST_BYTES, validateBookingRequest } from "@/lib/consultations/validate";
 import { readJsonBody } from "@/lib/security/read-json";
@@ -24,8 +27,11 @@ function jsonError(message: string, status: number, extra: Record<string, unknow
 
 /*
  * Book a free consultation. Order: size/type -> field rules -> rate limit -> Turnstile ->
- * database function (slot rules, overlap, notice, per-email limit, idempotency, audit event,
- * email outbox, all in one transaction) -> respond -> deliver queued emails after the response.
+ * Microsoft 365 free/busy for this one slot, fresh (when connected; failure = nothing booked) ->
+ * database function (slot rules, per-representative overlap, fair assignment among the free
+ * representatives, notice, per-email limit, idempotency, audit event, email outbox, all in one
+ * transaction) -> respond -> after the response: create the Outlook event (Teams link or phone
+ * details, invitation to the customer), then deliver the queued emails.
  *
  * The response never says "booked" unless the database committed the booking. Email delivery
  * is not part of that promise: it is durable in the outbox and retried if Resend is down.
@@ -62,7 +68,18 @@ export async function POST(request: Request) {
       return jsonError("Security verification failed. Please complete the check again and confirm.", 403);
     }
 
-    const result = await createConsultation(supabase, fields, secret);
+    // Revalidate calendars for exactly this slot. Unverifiable = refuse, never guess.
+    let candidates: Awaited<ReturnType<typeof freeRepresentativesAt>>;
+    try {
+      candidates = await freeRepresentativesAt(calendarSetting(process.env), fields.start);
+    } catch (error) {
+      if (!(error instanceof CalendarUnavailableError)) throw error;
+      console.error("Consultation booking: calendar check failed:", error.message);
+      const described = describeOutcome("calendar_unavailable");
+      return jsonError(described.message, described.status, { code: "calendar_unavailable" });
+    }
+
+    const result = await createConsultation(supabase, fields, secret, candidates);
     const described = describeOutcome(result.outcome);
 
     if (!SUCCESS_OUTCOMES.has(result.outcome) || !result.reference || !result.start_time) {
@@ -70,8 +87,13 @@ export async function POST(request: Request) {
       return jsonError(described.message, described.status, { code: result.outcome });
     }
 
-    // Deliver the confirmation and founder notices now; the cron retries anything that fails.
-    after(() => runConsultationDispatch(supabase));
+    // Calendar event first (the Teams link goes in the confirmation), then the emails. Both are
+    // durable queues: the cron retries anything that fails here.
+    const bookingId = result.booking_id;
+    after(async () => {
+      if (bookingId) await runCalendarSync(supabase, { bookingId, limit: 1 });
+      await runConsultationDispatch(supabase);
+    });
 
     const start = new Date(result.start_time);
     return NextResponse.json(

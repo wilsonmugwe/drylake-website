@@ -3,6 +3,7 @@
  * wording and the Perth week used by the dashboard summary. PURE (unit-tested in tests/consultation-admin.test.mjs).
  */
 
+import { REPRESENTATIVES } from "./representatives.ts";
 import { perthParts, perthToInstant } from "./rules.ts";
 
 export const CONSULTATION_FILTERS = ["UPCOMING", "CONFIRMED", "RESCHEDULED", "CANCELLED", "COMPLETED"] as const;
@@ -24,6 +25,48 @@ export const CONSULTATION_SORT_OPTIONS: Array<{ value: ConsultationSort; label: 
   { value: "LATEST", label: "Appointment: latest first" },
   { value: "NEWEST", label: "Booked: newest first" },
 ];
+
+export const CONSULTATION_REPRESENTATIVE_OPTIONS: Array<{ value: string; label: string }> = REPRESENTATIVES.map((r) => ({
+  value: r.key,
+  label: r.name,
+}));
+
+export const CONSULTATION_DATE_RANGES = ["TODAY", "THIS_WEEK", "NEXT_7_DAYS", "NEXT_30_DAYS", "PAST_30_DAYS"] as const;
+export type ConsultationDateRange = (typeof CONSULTATION_DATE_RANGES)[number];
+
+export const CONSULTATION_DATE_OPTIONS: Array<{ value: ConsultationDateRange; label: string }> = [
+  { value: "TODAY", label: "Today" },
+  { value: "THIS_WEEK", label: "This week" },
+  { value: "NEXT_7_DAYS", label: "Next 7 days" },
+  { value: "NEXT_30_DAYS", label: "Next 30 days" },
+  { value: "PAST_30_DAYS", label: "Past 30 days" },
+];
+
+/** Appointment-time bounds for a date filter, in Perth days, as instants [from, to). */
+export function dateRangeBounds(range: ConsultationDateRange, now: Date): { from: Date; to: Date } {
+  const p = perthParts(now);
+  const day = (offset: number) => perthToInstant(p.year, p.month, p.day + offset, 0, 0);
+  switch (range) {
+    case "TODAY":
+      return { from: day(0), to: day(1) };
+    case "THIS_WEEK":
+      return perthWeekBounds(now);
+    case "NEXT_7_DAYS":
+      return { from: now, to: day(8) };
+    case "NEXT_30_DAYS":
+      return { from: now, to: day(31) };
+    case "PAST_30_DAYS":
+      return { from: day(-30), to: now };
+  }
+}
+
+export const METHOD_SHORT: Record<string, string> = { TEAMS: "Teams", PHONE: "Phone" };
+
+export const CALENDAR_STATE_LABELS: Record<string, string> = {
+  PENDING: "Calendar update pending",
+  SYNCED: "In calendar",
+  FAILED: "Calendar sync failed",
+};
 
 export const STATUS_LABELS: Record<string, string> = {
   CONFIRMED: "Confirmed",
@@ -50,6 +93,7 @@ const KIND: Record<string, string> = {
   CUSTOMER_CANCELLED: "customer cancellation notice",
   FOUNDER_CANCELLED: "founder cancellation notice",
   CUSTOMER_REMINDER: "24-hour reminder",
+  FOUNDER_CALENDAR_FAILED: "founder calendar-failure alert",
 };
 
 export type ConsultationEvent = {
@@ -69,8 +113,16 @@ export function describeEvent(event: ConsultationEvent): string {
   switch (event.action) {
     case "CREATED":
       return `Booked by ${who.toLowerCase()}`;
-    case "RESCHEDULED":
-      return `Rescheduled by ${who.toLowerCase()}`;
+    case "RESCHEDULED": {
+      const from = typeof event.previous?.representative === "string" ? event.previous.representative : null;
+      const to = typeof event.next?.representative === "string" ? event.next.representative : null;
+      const moved = from && to && from !== to ? ` (reassigned from ${capitalise(from)} to ${capitalise(to)})` : "";
+      return `Rescheduled by ${who.toLowerCase()}${moved}`;
+    }
+    case "CALENDAR_SYNCED":
+      return event.next?.has_event ? "Microsoft 365 calendar updated" : "Microsoft 365 event removed";
+    case "CALENDAR_SYNC_FAILED":
+      return `Microsoft 365 calendar update failed${event.next?.final ? " (gave up, founders alerted)" : " (will retry)"}`;
     case "CANCELLED":
       return `Cancelled by ${who.toLowerCase()}${event.next?.reason_given ? " (reason given)" : ""}`;
     case "COMPLETED":
@@ -87,6 +139,8 @@ export function describeEvent(event: ConsultationEvent): string {
       return event.action;
   }
 }
+
+const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** Start and end of the current Perth week (Monday 00:00 to next Monday 00:00), as instants. */
 export function perthWeekBounds(now: Date): { from: Date; to: Date } {

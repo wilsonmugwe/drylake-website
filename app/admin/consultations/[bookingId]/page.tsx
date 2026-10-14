@@ -2,12 +2,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import AdminCalendarRetry from "@/components/admin/AdminCalendarRetry";
 import AdminConsultationActions from "@/components/admin/AdminConsultationActions";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
-import { type ConsultationEvent, STATUS_BADGE, STATUS_LABELS, describeEvent } from "@/lib/consultations/admin-view";
+import {
+  CALENDAR_STATE_LABELS,
+  type ConsultationEvent,
+  STATUS_BADGE,
+  STATUS_LABELS,
+  describeEvent,
+} from "@/lib/consultations/admin-view";
+import { calendarSetting } from "@/lib/consultations/calendar/provider";
+import { MEETING_METHOD_LABELS, representativeName } from "@/lib/consultations/representatives";
 import { CONSULTATION_TIMEZONE_LABEL, formatPerthDate, formatPerthRange } from "@/lib/consultations/rules";
-import { CONSULTATION_COLUMNS, type ConsultationRecord, isActive } from "@/lib/consultations/service";
+import { CONSULTATION_COLUMNS, type ConsultationRecord, currentJoinUrl, isActive } from "@/lib/consultations/service";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { isUuid } from "@/lib/validation/uuid";
 
@@ -33,6 +42,7 @@ const NOTIFICATION_LABEL: Record<string, string> = {
   CUSTOMER_CANCELLED: "Customer cancellation notice",
   FOUNDER_CANCELLED: "Founder cancellation notice",
   CUSTOMER_REMINDER: "24-hour reminder",
+  FOUNDER_CALENDAR_FAILED: "Founder calendar-failure alert",
 };
 
 export default async function AdminConsultationPage({ params }: { params: Promise<{ bookingId: string }> }) {
@@ -63,6 +73,7 @@ export default async function AdminConsultationPage({ params }: { params: Promis
   const history = (events.data ?? []) as ConsultationEvent[];
   const emails = (notifications.data ?? []) as Notification[];
   const started = hasStarted(start);
+  const calendarMode = calendarSetting(process.env).mode;
 
   return (
     <main className="min-h-screen p-5 sm:p-8 lg:p-10">
@@ -92,6 +103,25 @@ export default async function AdminConsultationPage({ params }: { params: Promis
               <Detail label="Business" value={record.business_name || "Not provided"} />
               <Detail label="Date" value={formatPerthDate(start)} />
               <Detail label="Time" value={`${formatPerthRange(start)} (${CONSULTATION_TIMEZONE_LABEL})`} />
+              <Detail label="Representative" value={representativeName(record.assigned_representative)} />
+              <Detail label="Consultation method" value={MEETING_METHOD_LABELS[record.meeting_method] ?? record.meeting_method} />
+              {record.meeting_method === "TEAMS" && (
+                <Detail
+                  label="Teams meeting"
+                  value={
+                    currentJoinUrl(record) ? (
+                      <a className="break-all underline" href={currentJoinUrl(record) as string} target="_blank" rel="noopener noreferrer">
+                        Join link
+                      </a>
+                    ) : (
+                      "Not created yet"
+                    )
+                  }
+                />
+              )}
+              {record.meeting_method === "PHONE" && (
+                <Detail label="Call the customer on" value={record.customer_phone ?? "Not provided"} />
+              )}
               <Detail label="Booked" value={stamp.format(new Date(record.created_at))} />
               <Detail label="Times rescheduled" value={String(record.reschedule_count)} />
               {record.status === "CANCELLED" && (
@@ -111,6 +141,22 @@ export default async function AdminConsultationPage({ params }: { params: Promis
 
           <section aria-labelledby="actions-heading" className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
             <h2 id="actions-heading" className="font-semibold text-neutral-950">Actions</h2>
+            <div className="mb-5 rounded-xl border border-neutral-200 bg-[#fbfbf9] p-4 text-sm" data-testid="admin-calendar-status">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">Microsoft 365 calendar</p>
+              <p className={`mt-1 font-medium ${record.calendar_sync_state === "FAILED" ? "text-red-700" : "text-neutral-900"}`}>
+                {calendarMode === "none"
+                  ? "Calendar integration is off. Add this consultation to the calendar by hand."
+                  : calendarMode === "misconfigured"
+                    ? "Calendar integration is misconfigured. Check the Microsoft 365 settings."
+                    : record.calendar_synced_version >= record.version && record.calendar_sync_state === "SYNCED"
+                      ? CALENDAR_STATE_LABELS.SYNCED
+                      : CALENDAR_STATE_LABELS[record.calendar_sync_state] ?? record.calendar_sync_state}
+              </p>
+              {record.calendar_last_error && record.calendar_sync_state !== "SYNCED" && (
+                <p className="mt-1 text-xs text-red-700">Last error: {record.calendar_last_error}</p>
+              )}
+              {calendarMode === "microsoft" && record.calendar_sync_state === "FAILED" && <AdminCalendarRetry bookingId={record.id} />}
+            </div>
             <AdminConsultationActions
               bookingId={record.id}
               version={record.version}

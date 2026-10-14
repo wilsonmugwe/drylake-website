@@ -7,6 +7,7 @@
  * Field limits match the CHECK constraints in the consultation migration.
  */
 
+import { type MeetingMethod, isMeetingMethod } from "./representatives.ts";
 import { isUuid } from "../validation/uuid.ts";
 
 export const MAX_BOOKING_REQUEST_BYTES = 8_000;
@@ -27,10 +28,11 @@ export type BookingFields = {
   phone: string;
   businessName: string;
   description: string;
+  method: MeetingMethod;
   turnstileToken: string;
 };
 
-export type BookingField = "start" | "name" | "email" | "phone" | "businessName" | "description";
+export type BookingField = "start" | "method" | "name" | "email" | "phone" | "businessName" | "description";
 
 export type Validation<T> =
   | { ok: true; fields: T }
@@ -41,6 +43,12 @@ const LINE_BREAK = /[\r\n\u0085\u2028\u2029]/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /* Digits, spaces, +, (, ), - and . only: a phone number, not free text. */
 const PHONE = /^[0-9+()\-. ]{6,40}$/;
+/* A number we can actually ring: 8 to 15 digits once spaces and punctuation are removed. */
+export function isCallablePhone(phone: string): boolean {
+  if (!PHONE.test(phone)) return false;
+  const digits = phone.replace(/\D/g, "").length;
+  return digits >= 8 && digits <= 15;
+}
 const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
 
 const str = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -71,6 +79,10 @@ export function validateBookingRequest(body: unknown): Validation<BookingFields>
 
   if (!isUuid(idempotencyKey)) return { ok: false, status: 400, message: "Invalid request." };
   if (!start) return { ok: false, status: 400, message: "Please choose a consultation time.", field: "start" };
+  const method = str(raw.method).toUpperCase();
+  if (!isMeetingMethod(method)) {
+    return { ok: false, status: 400, message: "Please choose Microsoft Teams or a phone call.", field: "method" };
+  }
   if (!fields.name) return { ok: false, status: 400, message: "Please enter your full name.", field: "name" };
   if (!fields.email) return { ok: false, status: 400, message: "Please enter your email address.", field: "email" };
   if (!fields.description) {
@@ -84,8 +96,16 @@ export function validateBookingRequest(body: unknown): Validation<BookingFields>
   }
 
   if (!EMAIL.test(fields.email)) return { ok: false, status: 400, message: "Please enter a valid email address.", field: "email" };
-  if (fields.phone && !PHONE.test(fields.phone)) {
-    return { ok: false, status: 400, message: "Please enter a valid phone number, or leave it blank.", field: "phone" };
+  if (method === "PHONE" && !fields.phone) {
+    return { ok: false, status: 400, message: "Please enter the phone number we should call.", field: "phone" };
+  }
+  if (fields.phone && !isCallablePhone(fields.phone)) {
+    return {
+      ok: false,
+      status: 400,
+      message: method === "PHONE" ? "Please enter a valid phone number we can call." : "Please enter a valid phone number, or leave it blank.",
+      field: "phone",
+    };
   }
 
   const singleLine = [fields.name, fields.email, fields.phone, fields.businessName];
@@ -93,7 +113,7 @@ export function validateBookingRequest(body: unknown): Validation<BookingFields>
     return { ok: false, status: 400, message: "Invalid characters detected." };
   }
 
-  return { ok: true, fields: { idempotencyKey, start, ...fields, turnstileToken: str(raw.turnstileToken) } };
+  return { ok: true, fields: { idempotencyKey, start, ...fields, method, turnstileToken: str(raw.turnstileToken) } };
 }
 
 export type ManageAction = "view" | "cancel" | "reschedule";

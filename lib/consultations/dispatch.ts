@@ -13,10 +13,16 @@
  *
  * A reminder is re-checked against the live booking at send time and skipped unless the booking
  * is still active and still at the time the reminder was queued for.
+ *
+ * Teams links: a customer email for a Teams consultation waits (defer, no attempt spent) while
+ * the calendar queue is still creating or moving the Outlook event, for at most
+ * CALENDAR_WAIT_MINUTES; after that it goes without the link and says the invitation carries it.
+ * The link is only ever taken from a calendar sync of the booking's CURRENT version.
  * Never logs names, addresses, the manage token or the email body.
  */
 
 import { type ConsultationEmailKind, CUSTOMER_KINDS, renderConsultationEmail } from "../email/consultation-emails.ts";
+import { type MeetingMethod, representativeName } from "./representatives.ts";
 import { deriveManageToken, hashManageToken, manageUrl } from "./token.ts";
 
 export type OutboxRow = {
@@ -28,6 +34,7 @@ export type OutboxRow = {
   payload: Record<string, unknown>;
   attempts: number;
   max_attempts: number;
+  created_at: string;
 };
 
 export type BookingRow = {
@@ -43,6 +50,12 @@ export type BookingRow = {
   version: number;
   cancellation_reason: string | null;
   management_token_hash: string;
+  assigned_representative: string;
+  meeting_method: MeetingMethod;
+  calendar_join_url: string | null;
+  calendar_synced_version: number;
+  calendar_sync_state: string;
+  calendar_last_error: string | null;
 };
 
 export type OutgoingEmail = {
@@ -59,13 +72,18 @@ export type DispatchDeps = {
   loadBookings(ids: string[]): Promise<BookingRow[]>;
   finish(id: string, outcome: "sent" | "retry" | "skipped", providerId: string | null, error: string | null, retryAfterMinutes: number): Promise<void>;
   send(email: OutgoingEmail): Promise<{ id: string | null }>;
+  defer(id: string, minutes: number): Promise<void>;
+  /** Microsoft 365 connected: Teams emails wait briefly for the meeting link. */
+  calendarConnected: boolean;
   tokenSecret(): string;
   baseUrl: string;
   replyTo: string;
   now(): Date;
 };
 
-export type DispatchSummary = { claimed: number; sent: number; retried: number; skipped: number };
+export type DispatchSummary = { claimed: number; sent: number; retried: number; skipped: number; deferred: number };
+
+export const CALENDAR_WAIT_MINUTES = 10;
 
 const ACTIVE = new Set(["CONFIRMED", "RESCHEDULED"]);
 
@@ -88,6 +106,23 @@ const asDate = (value: unknown): Date | null => {
  */
 const DESCRIBES_CURRENT = new Set(["CUSTOMER_CONFIRMATION", "CUSTOMER_RESCHEDULED", "CUSTOMER_REMINDER"]);
 
+const WAITS_FOR_LINK = new Set(["CUSTOMER_CONFIRMATION", "CUSTOMER_RESCHEDULED"]);
+
+/** The booking's Teams link, only when the calendar holds the booking as it is NOW. */
+export function joinUrlFor(booking: BookingRow): string | null {
+  return booking.meeting_method === "TEAMS" && ACTIVE.has(booking.status) && booking.calendar_synced_version >= booking.version
+    ? booking.calendar_join_url
+    : null;
+}
+
+/** True while this customer email should wait for the calendar queue to produce the Teams link. */
+export function waitingForCalendar(row: OutboxRow, booking: BookingRow, calendarConnected: boolean, now: Date): boolean {
+  if (!calendarConnected || !WAITS_FOR_LINK.has(row.kind) || booking.meeting_method !== "TEAMS") return false;
+  if (booking.calendar_sync_state !== "PENDING" || booking.calendar_synced_version >= booking.version) return false;
+  const queuedAt = new Date(row.created_at).getTime();
+  return Number.isFinite(queuedAt) && now.getTime() - queuedAt < CALENDAR_WAIT_MINUTES * 60_000;
+}
+
 /** Why a queued email must not go out any more, or null when it should be sent. */
 export function skipReason(row: OutboxRow, booking: BookingRow | undefined, now: Date): string | null {
   if (!booking) return "booking not found";
@@ -103,7 +138,7 @@ export function skipReason(row: OutboxRow, booking: BookingRow | undefined, now:
 
 export async function dispatchConsultationNotifications(deps: DispatchDeps, limit = 25): Promise<DispatchSummary> {
   const rows = await deps.claim(limit);
-  const summary: DispatchSummary = { claimed: rows.length, sent: 0, retried: 0, skipped: 0 };
+  const summary: DispatchSummary = { claimed: rows.length, sent: 0, retried: 0, skipped: 0, deferred: 0 };
   if (rows.length === 0) return summary;
 
   const bookings = new Map((await deps.loadBookings([...new Set(rows.map((r) => r.booking_id))])).map((b) => [b.id, b]));
@@ -116,6 +151,12 @@ export async function dispatchConsultationNotifications(deps: DispatchDeps, limi
     if (skip || !booking) {
       await deps.finish(row.id, "skipped", null, skip ?? "booking not found", 0);
       summary.skipped += 1;
+      continue;
+    }
+
+    if (waitingForCalendar(row, booking, deps.calendarConnected, now)) {
+      await deps.defer(row.id, 1);
+      summary.deferred += 1;
       continue;
     }
 
@@ -146,6 +187,11 @@ export async function dispatchConsultationNotifications(deps: DispatchDeps, limi
         previousStart: asDate(row.payload.previous_start_time),
         actor: (row.payload.actor_type as "CUSTOMER" | "ADMIN" | undefined) ?? "CUSTOMER",
         cancellationReason: booking.cancellation_reason,
+        method: booking.meeting_method,
+        representativeName: representativeName(booking.assigned_representative),
+        joinUrl: joinUrlFor(booking),
+        calendarConnected: deps.calendarConnected,
+        calendarError: booking.calendar_last_error,
         manageUrl: link,
         assetOrigin: deps.baseUrl,
       });

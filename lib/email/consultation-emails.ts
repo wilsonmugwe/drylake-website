@@ -14,6 +14,7 @@ import {
   formatPerthDate,
   formatPerthRange,
 } from "../consultations/rules.ts";
+import { MEETING_METHOD_LABELS, type MeetingMethod } from "../consultations/representatives.ts";
 import { CONTACT_EMAIL } from "../site.ts";
 import {
   type DetailRow,
@@ -35,7 +36,8 @@ export type ConsultationEmailKind =
   | "FOUNDER_RESCHEDULED"
   | "CUSTOMER_CANCELLED"
   | "FOUNDER_CANCELLED"
-  | "CUSTOMER_REMINDER";
+  | "CUSTOMER_REMINDER"
+  | "FOUNDER_CALENDAR_FAILED";
 
 export const CUSTOMER_KINDS: readonly ConsultationEmailKind[] = [
   "CUSTOMER_CONFIRMATION",
@@ -57,6 +59,14 @@ export type ConsultationEmailInput = {
   /* Who made a reschedule or cancellation. */
   actor?: "CUSTOMER" | "ADMIN" | "SYSTEM";
   cancellationReason?: string | null;
+  /* How the consultation happens and with whom (absent on bookings rendered by older tests). */
+  method?: MeetingMethod;
+  representativeName?: string | null;
+  /* Teams join link from the CURRENT calendar event; null while not (yet) available. */
+  joinUrl?: string | null;
+  /* Microsoft 365 connected: the calendar invitation carries the Teams link. */
+  calendarConnected?: boolean;
+  calendarError?: string | null;
   /* Customer emails for an active booking carry the management link. */
   manageUrl?: string | null;
   assetOrigin: string;
@@ -70,6 +80,7 @@ export const CONSULTATION_SUBJECTS: Record<ConsultationEmailKind, (name: string)
   CUSTOMER_CANCELLED: () => "Your Drylake Consultation Has Been Cancelled",
   FOUNDER_CANCELLED: (name) => `Consultation Cancelled: ${name}`,
   CUSTOMER_REMINDER: () => "Reminder: Your Drylake Consultation is Tomorrow",
+  FOUNDER_CALENDAR_FAILED: (name) => `Action Needed: Calendar Sync Failed for ${name}'s Consultation`,
 };
 
 /* What the customer can expect. Only facts the brief states: free, 30 minutes, no obligation. */
@@ -87,6 +98,36 @@ function appointmentRows(start: Date): DetailRow[] {
     { label: "Timezone", value: CONSULTATION_TIMEZONE_LABEL },
     { label: "Duration", value: `${CONSULTATION_MINUTES} minutes` },
   ];
+}
+
+function methodRows(input: ConsultationEmailInput, audience: "customer" | "founder"): DetailRow[] {
+  const rows: DetailRow[] = [];
+  if (input.method) rows.push({ label: "Consultation method", value: MEETING_METHOD_LABELS[input.method] });
+  if (input.representativeName) rows.push({ label: audience === "customer" ? "With" : "Representative", value: input.representativeName });
+  return rows;
+}
+
+/* How to join: Teams button, Teams-link-to-follow note, or "we will call you". Active bookings only. */
+function meetingBlocks(input: ConsultationEmailInput): { blocks: string[]; lines: string[] } {
+  if (input.method === "PHONE") {
+    const text = `We will call you on ${input.customerPhone || "the number you gave us"} at the appointment time. Please keep your phone nearby.`;
+    return { blocks: [messageBlock({ title: "Phone consultation", text })], lines: [`Phone consultation: ${text}`] };
+  }
+  if (input.method !== "TEAMS") return { blocks: [], lines: [] };
+  if (input.joinUrl) {
+    return {
+      blocks: [
+        paragraph("Your consultation is a Microsoft Teams video call. Join from your browser or the Teams app at the appointment time."),
+        button({ href: input.joinUrl, label: "Join Microsoft Teams Meeting" }),
+        fallbackLink({ href: input.joinUrl, linkText: "Open the Teams meeting in your browser" }),
+      ],
+      lines: [`Microsoft Teams meeting: ${input.joinUrl}`],
+    };
+  }
+  const text = input.calendarConnected
+    ? "Your Microsoft Teams link is in the calendar invitation sent to this email address. If you cannot find it, reply to this email and we will send it again."
+    : "We will email your Microsoft Teams link before the consultation.";
+  return { blocks: [messageBlock({ title: "Microsoft Teams video call", text })], lines: [`Microsoft Teams video call: ${text}`] };
 }
 
 function customerDetailRows(input: ConsultationEmailInput): DetailRow[] {
@@ -107,7 +148,10 @@ type Parts = { eyebrow: string; heading: string; preheader: string; blocks: stri
 function compose(input: ConsultationEmailInput): Parts {
   const ref = input.reference;
   const when = `${formatPerthDate(input.start)}, ${formatPerthRange(input.start)} (${CONSULTATION_TIMEZONE_LABEL})`;
-  const rows = [{ label: "Booking reference", value: ref }, ...appointmentRows(input.start)];
+  const rows = [{ label: "Booking reference", value: ref }, ...appointmentRows(input.start), ...methodRows(input, "customer")];
+  const founderRows = [{ label: "Booking reference", value: ref }, ...appointmentRows(input.start), ...methodRows(input, "founder")];
+  const meeting = meetingBlocks(input);
+  const founderLink = input.joinUrl ? [{ label: "Teams link", value: input.joinUrl }] : [];
   const manage = input.manageUrl
     ? [
         button({ href: input.manageUrl, label: "Manage Appointment" }),
@@ -130,8 +174,9 @@ function compose(input: ConsultationEmailInput): Parts {
         blocks: [
           paragraph("Your free consultation with Drylake is confirmed. Here are the details."),
           detailTable(rows),
+          ...meeting.blocks,
           checklist({ title: "What to expect", items: WHAT_TO_EXPECT }),
-          paragraph("Need a different time? You can reschedule or cancel with the button below."),
+          paragraph("Need a different time? You can reschedule or cancel with the button below until 2 hours before your consultation."),
           ...manage,
           questions,
         ],
@@ -141,6 +186,8 @@ function compose(input: ConsultationEmailInput): Parts {
           `Booking reference: ${ref}`,
           `When: ${when}`,
           `Duration: ${CONSULTATION_MINUTES} minutes`,
+          ...methodLines(input),
+          ...meeting.lines,
           "",
           "What to expect:",
           ...WHAT_TO_EXPECT.map((item) => `- ${item}`),
@@ -158,6 +205,7 @@ function compose(input: ConsultationEmailInput): Parts {
         blocks: [
           paragraph("A quick reminder of your free consultation with Drylake."),
           detailTable(rows),
+          ...meeting.blocks,
           paragraph("If the time no longer suits you, please reschedule or cancel so we can offer it to someone else."),
           ...manage,
           questions,
@@ -168,6 +216,8 @@ function compose(input: ConsultationEmailInput): Parts {
           `Booking reference: ${ref}`,
           `When: ${when}`,
           `Duration: ${CONSULTATION_MINUTES} minutes`,
+          ...methodLines(input),
+          ...meeting.lines,
           "",
           ...manageLines,
           questionsLine,
@@ -186,6 +236,7 @@ function compose(input: ConsultationEmailInput): Parts {
         blocks: [
           paragraph(intro),
           detailTable([...rows, { label: "Previous time", value: previous }]),
+          ...meeting.blocks,
           paragraph("If the new time does not suit you, you can change it or cancel below."),
           ...manage,
           questions,
@@ -196,6 +247,8 @@ function compose(input: ConsultationEmailInput): Parts {
           `Booking reference: ${ref}`,
           `New time: ${when}`,
           `Previous time: ${previous}`,
+          ...methodLines(input),
+          ...meeting.lines,
           "",
           ...manageLines,
           questionsLine,
@@ -217,6 +270,7 @@ function compose(input: ConsultationEmailInput): Parts {
           paragraph(intro),
           detailTable(rows),
           ...reason,
+          ...(input.method === "TEAMS" ? [paragraph("The Microsoft Teams link for this appointment no longer applies.")] : []),
           paragraph("You are welcome to book another free consultation at any time at drylake.com.au/consultation."),
           questions,
         ],
@@ -239,7 +293,7 @@ function compose(input: ConsultationEmailInput): Parts {
         heading: `${input.customerName} booked a consultation.`,
         preheader: `${when}. Reference ${ref}.`,
         blocks: [
-          detailTable(rows),
+          detailTable([...founderRows, ...founderLink]),
           detailTable(customerDetailRows(input)),
           messageBlock({ title: "About their business or project", text: input.projectDescription }),
           paragraph("Reply to this email to write to the customer directly.", { muted: true, small: true }),
@@ -249,6 +303,7 @@ function compose(input: ConsultationEmailInput): Parts {
           "",
           `Booking reference: ${ref}`,
           `When: ${when}`,
+          ...methodLines(input),
           `Name: ${input.customerName}`,
           `Email: ${input.customerEmail}`,
           `Phone: ${input.customerPhone || "Not provided"}`,
@@ -266,7 +321,7 @@ function compose(input: ConsultationEmailInput): Parts {
         preheader: `Now ${when}. Changed by ${actorPhrase(input.actor)}.`,
         blocks: [
           paragraph(`Rescheduled by ${actorPhrase(input.actor)}.`),
-          detailTable([...rows, { label: "Previous time", value: previous }]),
+          detailTable([...founderRows, { label: "Previous time", value: previous }, ...founderLink]),
           detailTable(customerDetailRows(input)),
         ],
         lines: [
@@ -275,6 +330,7 @@ function compose(input: ConsultationEmailInput): Parts {
           `Booking reference: ${ref}`,
           `New time: ${when}`,
           `Previous time: ${previous}`,
+          ...methodLines(input),
           `Email: ${input.customerEmail}`,
         ],
       };
@@ -286,7 +342,7 @@ function compose(input: ConsultationEmailInput): Parts {
         preheader: `${when}. Cancelled by ${actorPhrase(input.actor)}.`,
         blocks: [
           paragraph(`Cancelled by ${actorPhrase(input.actor)}. The time is free for another booking.`),
-          detailTable(rows),
+          detailTable(founderRows),
           ...(input.cancellationReason ? [messageBlock({ title: "Reason", text: input.cancellationReason })] : []),
           detailTable(customerDetailRows(input)),
         ],
@@ -299,7 +355,31 @@ function compose(input: ConsultationEmailInput): Parts {
           `Email: ${input.customerEmail}`,
         ],
       };
+
+    case "FOUNDER_CALENDAR_FAILED": {
+      const intro =
+        "Drylake could not update Microsoft 365 for this consultation after repeated attempts. The booking itself stands and the customer has their email, but the Outlook event, the calendar invitation or the Teams link may be missing or out of date.";
+      const action = "Open Admin > Consultations, check the booking, and use Retry calendar sync once Microsoft 365 is working.";
+      return {
+        eyebrow: "Action needed",
+        heading: `Calendar sync failed for ${input.customerName}.`,
+        preheader: `${when}. Reference ${ref}.`,
+        blocks: [
+          paragraph(intro),
+          detailTable(founderRows),
+          ...(input.calendarError ? [messageBlock({ title: "Last error", text: input.calendarError })] : []),
+          paragraph(action),
+          detailTable(customerDetailRows(input)),
+        ],
+        lines: [intro, "", `Booking reference: ${ref}`, `When: ${when}`, ...methodLines(input),
+          ...(input.calendarError ? [`Last error: ${input.calendarError}`] : []), "", action, `Email: ${input.customerEmail}`],
+      };
+    }
   }
+}
+
+function methodLines(input: ConsultationEmailInput): string[] {
+  return methodRows(input, "customer").map((row) => `${row.label}: ${row.value}`);
 }
 
 export function renderConsultationEmail(input: ConsultationEmailInput): RenderedEmail {

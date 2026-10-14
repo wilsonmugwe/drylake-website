@@ -39,6 +39,9 @@ export type SlotPickerProps = {
   tone?: "public" | "admin";
 };
 
+export const NO_AVAILABILITY_MESSAGE =
+  "No consultation times are currently available. You can still get in touch with Drylake, and we'll help you find a suitable time.";
+
 export default function SlotPicker({ days, date, start, onDateChange, onStartChange, excludeStart, tone = "public" }: SlotPickerProps) {
   const id = useId();
   const visibleDays = useMemo(
@@ -51,7 +54,7 @@ export default function SlotPicker({ days, date, start, onDateChange, onStartCha
   if (visibleDays.every((day) => day.slots.length === 0)) {
     return (
       <p className="border-l-2 border-[#f26a2e] pl-3 text-sm leading-6 text-black/70" role="status">
-        Every consultation time in the next four weeks is booked. Please send us a message instead and we will find a time.
+        {NO_AVAILABILITY_MESSAGE}
       </p>
     );
   }

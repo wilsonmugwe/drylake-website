@@ -1,9 +1,12 @@
 import { after } from "next/server";
 
 import { authorizeAdminApi, jsonError, jsonResponse } from "@/lib/auth/admin-api";
+import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
+import { calendarSetting } from "@/lib/consultations/calendar/provider";
+import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
 import { runConsultationDispatch } from "@/lib/consultations/dispatch-server";
 import { describeOutcome } from "@/lib/consultations/outcomes";
-import { cancelConsultation, completeConsultation, rescheduleConsultation } from "@/lib/consultations/service";
+import { cancelConsultation, completeConsultation, freeRepresentativesAt, rescheduleConsultation } from "@/lib/consultations/service";
 import { tokenSecret } from "@/lib/consultations/token";
 import { parseStart } from "@/lib/consultations/validate";
 import { readJsonBody } from "@/lib/security/read-json";
@@ -12,10 +15,12 @@ import { isUuid } from "@/lib/validation/uuid";
 
 type RouteContext = { params: Promise<{ bookingId: string }> };
 
-const ACTIONS = new Set(["reschedule", "cancel", "complete"]);
+const ACTIONS = new Set(["reschedule", "cancel", "complete", "retry_calendar"]);
 
 /*
- * Admin actions on one consultation: reschedule, cancel (optional reason), mark completed.
+ * Admin actions on one consultation: reschedule, cancel (optional reason), mark completed, and
+ * retry a calendar sync that gave up (FAILED). Reschedule checks Microsoft 365 for the new slot
+ * first, exactly as the customer path does, and may reassign the representative.
  * Platform admins only (checked before the body is read or the service-role client exists).
  * Every action goes through the same SQL function the customer uses, with actor ADMIN and the
  * admin's Clerk id, so the change is audited, version-checked (a stale screen is refused, not
@@ -35,7 +40,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   const action = typeof body.action === "string" ? body.action : "";
   const version = typeof body.version === "number" && Number.isInteger(body.version) && body.version > 0 ? body.version : 0;
-  if (!ACTIONS.has(action) || version === 0) return jsonError("Invalid request.", 400);
+  if (!ACTIONS.has(action) || (version === 0 && action !== "retry_calendar")) return jsonError("Invalid request.", 400);
 
   const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 500) : "";
   const newStart = action === "reschedule" ? parseStart(body.newStart) : null;
@@ -46,13 +51,31 @@ export async function POST(request: Request, context: RouteContext) {
     const actor = { type: "ADMIN" as const, clerkUserId: gate.userId };
     let outcome: string;
 
+    if (action === "retry_calendar") {
+      const { data, error } = await supabase.rpc("consultation_retry_calendar_sync", { p_booking_id: bookingId });
+      if (error) throw new Error(`retry calendar: ${error.code ?? ""} ${error.message}`);
+      if (data !== "queued") return jsonError("This consultation has no failed calendar sync to retry.", 409, "not_failed");
+      console.info("Admin consultation calendar retry queued by", gate.userId);
+      after(() => runCalendarSync(supabase, { bookingId, limit: 1 }));
+      return jsonResponse({ success: true, outcome: "calendar_retry_queued", message: "Calendar sync queued again." });
+    }
+
     if (action === "reschedule") {
+      let candidates: Awaited<ReturnType<typeof freeRepresentativesAt>>;
+      try {
+        candidates = await freeRepresentativesAt(calendarSetting(process.env), newStart as Date);
+      } catch (error) {
+        if (!(error instanceof CalendarUnavailableError)) throw error;
+        const described = describeOutcome("calendar_unavailable");
+        return jsonError("Microsoft 365 calendars could not be checked, so nothing was changed. Try again shortly.", described.status, "calendar_unavailable");
+      }
       ({ outcome } = await rescheduleConsultation(supabase, {
         id: bookingId,
         expectedVersion: version,
         newStart: newStart as Date,
         actor,
         secret: tokenSecret(process.env),
+        candidates,
       }));
     } else if (action === "cancel") {
       ({ outcome } = await cancelConsultation(supabase, { id: bookingId, expectedVersion: version, actor, reason: reason || null }));
@@ -65,7 +88,12 @@ export async function POST(request: Request, context: RouteContext) {
       return jsonError(described.message, described.status, outcome);
     }
 
-    if (outcome !== "completed") after(() => runConsultationDispatch(supabase));
+    if (outcome !== "completed") {
+      after(async () => {
+        await runCalendarSync(supabase, { bookingId, limit: 1 });
+        await runConsultationDispatch(supabase);
+      });
+    }
 
     return jsonResponse({ success: true, outcome, message: described.message });
   } catch (error) {

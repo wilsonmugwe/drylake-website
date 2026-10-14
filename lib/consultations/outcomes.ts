@@ -20,7 +20,15 @@ export type ConsultationOutcome =
   | "stale"
   | "already_started"
   | "same_slot"
-  | "not_started";
+  | "not_started"
+  | "change_window_closed"
+  | "phone_required"
+  | "invalid_method"
+  | "calendar_unavailable";
+
+/* Customers reach Drylake directly once online changes close (2 hours before the start). */
+export const CHANGE_WINDOW_CLOSED_MESSAGE =
+  "Online changes close 2 hours before your consultation. Please email hello@drylake.com.au or reply to your confirmation email and we will help.";
 
 export const SLOT_TAKEN_MESSAGE = "This time has just been booked. Please choose another available time.";
 
@@ -45,6 +53,13 @@ const MESSAGES: Record<ConsultationOutcome, { status: number; message: string }>
   already_started: { status: 409, message: "This appointment has already started, so it can no longer be changed online." },
   same_slot: { status: 400, message: "That is already your appointment time. Please choose a different time." },
   not_started: { status: 409, message: "A consultation can only be marked completed once it has started." },
+  change_window_closed: { status: 409, message: CHANGE_WINDOW_CLOSED_MESSAGE },
+  phone_required: { status: 400, message: "Please enter the phone number we should call." },
+  invalid_method: { status: 400, message: "Please choose Microsoft Teams or a phone call." },
+  calendar_unavailable: {
+    status: 503,
+    message: "We couldn't confirm that time with our calendars just now. Nothing has been booked. Please try again in a minute.",
+  },
 };
 
 export function describeOutcome(outcome: string): { status: number; message: string; known: boolean } {

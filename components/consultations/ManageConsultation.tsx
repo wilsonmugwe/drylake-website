@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, CalendarX, LoaderCircle, RotateCcw } from "lucide-react";
+import { CalendarClock, CalendarX, LoaderCircle, Phone, RotateCcw, Video } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -204,11 +204,46 @@ export default function ManageConsultation() {
           <dt className="section-label text-black/60">Time</dt>
           <dd className="mt-1 font-semibold">{formatPerthRange(when)} ({CONSULTATION_TIMEZONE_LABEL})</dd>
         </div>
+        <div>
+          <dt className="section-label text-black/60">How we will meet</dt>
+          <dd className="mt-1 font-semibold" data-testid="manage-method">
+            {booking.method === "PHONE" ? "Phone call" : "Microsoft Teams video call"}
+          </dd>
+        </div>
+        <div>
+          <dt className="section-label text-black/60">With</dt>
+          <dd className="mt-1 font-semibold">{booking.representative}</dd>
+        </div>
       </dl>
         <p className="mt-4 text-xs leading-5 text-black/60">
           Free {CONSULTATION_MINUTES}-minute consultation for {booking.name}. No obligation to proceed.
         </p>
       </div>
+
+      {(booking.status === "CONFIRMED" || booking.status === "RESCHEDULED") && (
+        <div className="flex items-start gap-3 border-l-2 border-black/20 pl-3 text-sm leading-6 text-black/70" data-testid="manage-instructions">
+          {booking.method === "PHONE" ? (
+            <>
+              <Phone aria-hidden="true" size={16} className="mt-1 shrink-0" />
+              <p>We will call you on <strong className="text-black">{booking.phone}</strong> at the appointment time.</p>
+            </>
+          ) : (
+            <>
+              <Video aria-hidden="true" size={16} className="mt-1 shrink-0" />
+              {booking.joinUrl ? (
+                <p>
+                  Join at the appointment time:{" "}
+                  <a href={booking.joinUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+                    Join Microsoft Teams meeting
+                  </a>
+                </p>
+              ) : (
+                <p>Your Microsoft Teams link is in your confirmation email and calendar invitation from Drylake.</p>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {booking.status === "CANCELLED" && (
         <p className="text-sm leading-6 text-black/65">
@@ -218,9 +253,12 @@ export default function ManageConsultation() {
       )}
 
       {!booking.canChange && booking.status !== "CANCELLED" && (
-        <p className="text-sm leading-6 text-black/65">
-          This appointment can no longer be changed online. Need help? Email{" "}
-          <a className="underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+        <p className="text-sm leading-6 text-black/65" data-testid="manage-locked">
+          {booking.changeWindowClosed
+            ? "Online changes close 2 hours before your consultation. To change or cancel now, please email "
+            : "This appointment can no longer be changed online. Need help? Email "}
+          <a className="underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          {booking.changeWindowClosed ? " or reply to your confirmation email, and we will help." : "."}
         </p>
       )}
 

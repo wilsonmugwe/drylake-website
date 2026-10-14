@@ -151,6 +151,7 @@ describe("booking request validation", () => {
     name: "Sam Example",
     email: "Sam@Example.com",
     description: "We run a cleaning business and lose bookings in email.",
+    method: "TEAMS",
     turnstileToken: "t",
   };
   it("accepts a complete request and normalises the email", () => {
@@ -282,6 +283,8 @@ function fakeDeps({ rows, bookings, send }) {
       baseUrl: "https://drylake.com.au",
       replyTo: "hello@drylake.com.au",
       now: () => NOW,
+      defer: async (id, minutes) => finished.push({ id, outcome: "deferred", minutes }),
+      calendarConnected: false,
     },
   };
 }
@@ -299,6 +302,12 @@ const booking = {
   version: 1,
   cancellation_reason: null,
   management_token_hash: hashManageToken(deriveManageToken("s".repeat(40), "4f7a5c1e-1111-4222-8333-444455556666", 1)),
+  assigned_representative: "wilson",
+  meeting_method: "TEAMS",
+  calendar_join_url: null,
+  calendar_synced_version: 0,
+  calendar_sync_state: "PENDING",
+  calendar_last_error: null,
 };
 
 const row = (over) => ({
@@ -309,6 +318,7 @@ const row = (over) => ({
   payload: { start_time: booking.start_time, end_time: booking.start_time, actor_type: "CUSTOMER" },
   attempts: 1,
   max_attempts: 8,
+  created_at: NOW.toISOString(),
   ...over,
 });
 
@@ -320,7 +330,7 @@ describe("outbox worker", () => {
     ];
     const { deps, sent, finished } = fakeDeps({ rows, bookings: [booking] });
     const summary = await dispatchConsultationNotifications(deps);
-    assert.deepEqual(summary, { claimed: 3, sent: 3, retried: 0, skipped: 0 });
+    assert.deepEqual(summary, { claimed: 3, sent: 3, retried: 0, skipped: 0, deferred: 0 });
     assert.deepEqual(sent.map((s) => s.to).sort(), ["benedict@drylake.com.au", "sam@example.com", "wilson@drylake.com.au"]);
     assert.deepEqual(sent.map((s) => s.idempotencyKey), rows.map((r) => r.event_key));
     assert.ok(finished.every((f) => f.outcome === "sent"));
