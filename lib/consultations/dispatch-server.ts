@@ -7,6 +7,7 @@ import { getResendClient } from "@/lib/email/resend";
 import { appBaseUrl } from "@/lib/invoices/invoice-url";
 import { CONTACT_EMAIL } from "@/lib/site";
 
+import { calendarSetting } from "./calendar/provider";
 import { type BookingRow, type DispatchSummary, type OutboxRow, dispatchConsultationNotifications } from "./dispatch";
 import { tokenSecret } from "./token";
 
@@ -22,7 +23,7 @@ export function consultationFromAddress(env: { CONSULTATION_EMAIL_FROM?: string;
 }
 
 const BOOKING_COLUMNS =
-  "id, reference, customer_name, customer_email, customer_phone, business_name, project_description, start_time, status, version, cancellation_reason, management_token_hash";
+  "id, reference, customer_name, customer_email, customer_phone, business_name, project_description, start_time, status, version, cancellation_reason, management_token_hash, assigned_representative, meeting_method, calendar_join_url, calendar_synced_version, calendar_sync_state, calendar_last_error";
 
 /*
  * Runs one outbox pass with the service-role client the CALLER created (route handlers only:
@@ -73,6 +74,11 @@ export async function runConsultationDispatch(supabase: SupabaseClient, limit = 
           if (error) throw new Error(`${error.name}: ${error.message}`);
           return { id: data?.id ?? null };
         },
+        async defer(id, minutes) {
+          const { error } = await supabase.rpc("consultation_defer_notification", { p_id: id, p_delay: `${minutes} minutes` });
+          if (error) console.error("Consultation outbox: defer failed:", error.code ?? "", error.message);
+        },
+        calendarConnected: calendarSetting(process.env).mode === "microsoft",
         tokenSecret: () => tokenSecret(process.env),
         baseUrl: appBaseUrl(process.env),
         replyTo: CONTACT_EMAIL,

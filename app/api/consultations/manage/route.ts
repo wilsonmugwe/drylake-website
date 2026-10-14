@@ -1,6 +1,9 @@
 import { NextResponse, after } from "next/server";
 
 import { clientIp } from "@/lib/contact/turnstile";
+import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
+import { calendarSetting } from "@/lib/consultations/calendar/provider";
+import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
 import { runConsultationDispatch } from "@/lib/consultations/dispatch-server";
 import { describeOutcome } from "@/lib/consultations/outcomes";
 import {
@@ -8,6 +11,7 @@ import {
   customerView,
   findById,
   findByManageToken,
+  freeRepresentativesAt,
   rescheduleConsultation,
 } from "@/lib/consultations/service";
 import { tokenSecret } from "@/lib/consultations/token";
@@ -35,9 +39,12 @@ function jsonError(message: string, status: number, extra: Record<string, unknow
  * it carries no admin rights and no other customer's data.
  *
  *   view        -> the booking's own details
- *   cancel      -> consultation_cancel_booking (actor CUSTOMER)
- *   reschedule  -> consultation_reschedule_booking (actor CUSTOMER), atomic; returns the new
- *                  token because the old link is revoked by the change
+ *   cancel      -> consultation_cancel_booking (actor CUSTOMER), until 2 hours before the start
+ *   reschedule  -> Microsoft 365 free/busy for the new slot (fresh), then
+ *                  consultation_reschedule_booking (actor CUSTOMER), atomic: keeps the same
+ *                  representative when free, otherwise reassigns; returns the new token because
+ *                  the old link is revoked by the change. Also closes 2 hours before the start.
+ * After a change the Outlook event is moved / reassigned / cancelled by the calendar queue.
  *
  * Unknown, malformed and expired tokens get the same 404, so the endpoint reveals nothing
  * about which bookings exist.
@@ -79,12 +86,22 @@ export async function POST(request: Request) {
     if (action === "cancel") {
       ({ outcome } = await cancelConsultation(supabase, { id: booking.id, expectedVersion: version, actor, reason: null }));
     } else {
+      let candidates: Awaited<ReturnType<typeof freeRepresentativesAt>>;
+      try {
+        candidates = await freeRepresentativesAt(calendarSetting(process.env), newStart as Date);
+      } catch (error) {
+        if (!(error instanceof CalendarUnavailableError)) throw error;
+        console.error("Consultation reschedule: calendar check failed:", error.message);
+        const described = describeOutcome("calendar_unavailable");
+        return jsonError(described.message, described.status, { code: "calendar_unavailable", booking: customerView(booking) });
+      }
       const result = await rescheduleConsultation(supabase, {
         id: booking.id,
         expectedVersion: version,
         newStart: newStart as Date,
         actor,
         secret,
+        candidates,
       });
       outcome = result.outcome;
       newToken = result.newToken;
@@ -99,7 +116,10 @@ export async function POST(request: Request) {
       return jsonError(described.message, described.status, { code: outcome, booking: view });
     }
 
-    after(() => runConsultationDispatch(supabase));
+    after(async () => {
+      await runCalendarSync(supabase, { bookingId: booking.id, limit: 1 });
+      await runConsultationDispatch(supabase);
+    });
 
     return NextResponse.json(
       { success: true, message: described.message, booking: view, ...(newToken ? { token: newToken } : {}) },

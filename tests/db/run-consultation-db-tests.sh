@@ -6,14 +6,17 @@
 #
 # 1. Creates the Supabase roles (anon, authenticated, service_role) the migration grants against.
 # 2. Applies every migration in supabase/migrations that does not need the production schema.
-# 3. Applies the consultation migration TWICE (it must be re-runnable).
-# 4. Runs tests/db/consultation-bookings.sql (assertions; any failure stops the run).
-# 5. Races 20 concurrent bookings for one slot: exactly one may succeed.
+# 3. Applies the two consultation migrations TWICE each (they must be re-runnable).
+# 4. Runs tests/db/consultation-bookings.sql and consultation-representatives.sql (assertions;
+#    any failure stops the run).
+# 5. Races 20 concurrent bookings for one slot with two representatives: exactly two may succeed,
+#    one per representative.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NAME="drylake-consultation-test-pg"
 MIGRATION="$ROOT/supabase/migrations/20261013120000_consultation_bookings.sql"
+REPS_MIGRATION="$ROOT/supabase/migrations/20261014090000_consultation_representatives.sql"
 
 cleanup() { docker rm -f "$NAME" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
@@ -39,14 +42,17 @@ SQL
 echo "== apply migration (twice: must be idempotent)"
 psql_run < "$MIGRATION"
 psql_run < "$MIGRATION"
+psql_run < "$REPS_MIGRATION"
+psql_run < "$REPS_MIGRATION"
 
 echo "== assertions"
 psql_run < "$ROOT/tests/db/consultation-bookings.sql" 2>&1 | sed 's/^psql:<stdin>:[0-9]*: NOTICE:  /  /'
+psql_run < "$ROOT/tests/db/consultation-representatives.sql" 2>&1 | sed 's/^psql:<stdin>:[0-9]*: NOTICE:  /  /'
 
-echo "== concurrency: 20 simultaneous bookings for one slot"
+echo "== concurrency: 20 simultaneous bookings for one slot, two representatives"
 SLOT_SQL="((date_trunc('week', now() at time zone 'Australia/Perth') + interval '21 days') + time '13:30') at time zone 'Australia/Perth'"
 for i in $(seq 1 20); do
-  docker exec "$NAME" psql -U postgres -tA -c "set role service_role; select outcome from public.consultation_create_booking(gen_random_uuid(), gen_random_uuid(), 'DL-RACE$i', 'Racer', 'racer$i@example.com', null, null, 'race', $SLOT_SQL, md5('$i') || md5('x$i'), array['wilson@drylake.com.au'])" > "/tmp/drylake-race-$i.txt" 2>&1 &
+  docker exec "$NAME" psql -U postgres -tA -c "set role service_role; select outcome from public.consultation_create_booking(gen_random_uuid(), gen_random_uuid(), 'DL-RACE$i', 'Racer', 'racer$i@example.com', null, null, 'race', $SLOT_SQL, md5('$i') || md5('x$i'), array['wilson@drylake.com.au'], 'TEAMS', array['wilson','benedict'])" > "/tmp/drylake-race-$i.txt" 2>&1 &
 done
 wait
 
@@ -55,16 +61,17 @@ taken=$(cat /tmp/drylake-race-*.txt | grep -c '^slot_taken$' || true)
 rm -f /tmp/drylake-race-*.txt
 rows=$(docker exec "$NAME" psql -U postgres -tA -c "select count(*) from public.consultation_bookings where reference like 'DL-RACE%'")
 echo "  created=$created slot_taken=$taken rows=$rows"
-if [ "$created" != "1" ] || [ "$taken" != "19" ] || [ "$rows" != "1" ]; then
-  echo "FAIL: concurrent bookings must produce exactly one reservation"
+reps=$(docker exec "$NAME" psql -U postgres -tA -c "select count(distinct assigned_representative) from public.consultation_bookings where reference like 'DL-RACE%'")
+if [ "$created" != "2" ] || [ "$taken" != "18" ] || [ "$rows" != "2" ] || [ "$reps" != "2" ]; then
+  echo "FAIL: concurrent bookings must produce exactly one reservation per representative"
   exit 1
 fi
-echo "  ok  exactly one of 20 concurrent bookings succeeded"
+echo "  ok  exactly two of 20 concurrent bookings succeeded, one per representative"
 
 echo "== concurrency: 6 simultaneous bookings for one email at different times (limit 2)"
 for i in $(seq 1 6); do
   SLOT="((date_trunc('week', now() at time zone 'Australia/Perth') + interval '22 days') + time '09:00' + interval '$((i * 30)) minutes') at time zone 'Australia/Perth'"
-  docker exec "$NAME" psql -U postgres -tA -c "set role service_role; select outcome from public.consultation_create_booking(gen_random_uuid(), gen_random_uuid(), 'DL-LIM00$i', 'Limit', 'limit@example.com', null, null, 'x', $SLOT, md5('l$i') || md5('m$i'), array[]::text[])" > "/tmp/drylake-limit-$i.txt" 2>&1 &
+  docker exec "$NAME" psql -U postgres -tA -c "set role service_role; select outcome from public.consultation_create_booking(gen_random_uuid(), gen_random_uuid(), 'DL-LIM00$i', 'Limit', 'limit@example.com', null, null, 'x', $SLOT, md5('l$i') || md5('m$i'), array[]::text[], 'TEAMS', array['wilson','benedict'])" > "/tmp/drylake-limit-$i.txt" 2>&1 &
 done
 wait
 active=$(docker exec "$NAME" psql -U postgres -tA -c "select count(*) from public.consultation_bookings where customer_email = 'limit@example.com' and status in ('CONFIRMED','RESCHEDULED')")

@@ -26,6 +26,9 @@ export const LAST_START_MINUTES = 16 * 60 + 30;
 export const MIN_NOTICE_MINUTES = 120;
 export const HORIZON_DAYS = 28;
 
+/* Customers change or cancel online until 2 hours before the start (p_customer_cutoff in SQL). */
+export const CUSTOMER_CHANGE_CUTOFF_MINUTES = 120;
+
 /* Slot hoarding guard, mirrored by p_max_active in the database. */
 export const MAX_UPCOMING_PER_EMAIL = 2;
 
@@ -111,11 +114,12 @@ export function checkSlot(start: Date, now: Date): SlotRuleResult {
 export type DaySlots = { date: string; slots: string[] };
 
 /*
- * Every bookable slot from now to the horizon, grouped by Perth date, minus the busy starts.
+ * Every bookable slot from now to the horizon, grouped by Perth date, minus the busy starts and
+ * any slot `isFree` rejects (no representative free: lib/consultations/availability.ts).
  * Slots are ISO instants (UTC). Days with no free slot are kept (empty) so the UI can show
  * "fully booked" rather than silently skipping a Monday.
  */
-export function buildAvailability(now: Date, busyStarts: Iterable<string | Date>): DaySlots[] {
+export function buildAvailability(now: Date, busyStarts: Iterable<string | Date>, isFree?: (start: Date) => boolean): DaySlots[] {
   const busy = new Set([...busyStarts].map((s) => new Date(s).getTime()));
   const today = perthParts(now);
   const days: DaySlots[] = [];
@@ -129,7 +133,7 @@ export function buildAvailability(now: Date, busyStarts: Iterable<string | Date>
     const slots: string[] = [];
     for (let m = FIRST_START_MINUTES; m <= LAST_START_MINUTES; m += CONSULTATION_MINUTES) {
       const start = perthToInstant(p.year, p.month, p.day, Math.floor(m / 60), m % 60);
-      if (checkSlot(start, now).ok && !busy.has(start.getTime())) slots.push(start.toISOString());
+      if (checkSlot(start, now).ok && !busy.has(start.getTime()) && (!isFree || isFree(start))) slots.push(start.toISOString());
     }
 
     const date = perthDateKey(noon);

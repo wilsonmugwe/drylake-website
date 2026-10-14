@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
 import { runConsultationDispatch } from "@/lib/consultations/dispatch-server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
@@ -19,8 +20,9 @@ function authorised(request: Request): boolean {
 }
 
 /*
- * Consultation email outbox pass: confirmations, founder notices, reschedule/cancel notices and
- * 24-hour reminders that are due. Callers, all authenticated by `Authorization: Bearer CRON_SECRET`:
+ * Consultation background pass: first the Microsoft 365 calendar queue (events to create, move,
+ * reassign or cancel; skipped while no calendar is connected), then the email outbox
+ * (confirmations, founder notices, reschedule/cancel notices and 24-hour reminders that are due). Callers, all authenticated by `Authorization: Bearer CRON_SECRET`:
  *   - Supabase pg_cron + pg_net, every minute (docs/operations/sql/2026-10-13-consultation-dispatch-cron.sql)
  *     gives reminders their precision on any Vercel plan;
  *   - Vercel Cron, daily (vercel.json): a backstop that is valid on the Hobby plan.
@@ -41,20 +43,24 @@ async function handle(request: Request) {
     return NextResponse.json({ error: "Misconfigured" }, { status: 503, headers: NO_STORE });
   }
 
-  const totals = { claimed: 0, sent: 0, retried: 0, skipped: 0 };
+  // Calendar first: confirmations waiting for a Teams link can then go in the same run.
+  const calendar = await runCalendarSync(supabase, { limit: 10 });
+
+  const totals = { claimed: 0, sent: 0, retried: 0, skipped: 0, deferred: 0 };
   for (let pass = 0; pass < 4; pass += 1) {
     const summary = await runConsultationDispatch(supabase, 25);
     if (!summary) {
-      return NextResponse.json({ ok: false, ...totals }, { status: 500, headers: NO_STORE });
+      return NextResponse.json({ ok: false, ...totals, calendar }, { status: 500, headers: NO_STORE });
     }
     totals.claimed += summary.claimed;
     totals.sent += summary.sent;
     totals.retried += summary.retried;
     totals.skipped += summary.skipped;
+    totals.deferred += summary.deferred;
     if (summary.claimed < 25) break;
   }
 
-  return NextResponse.json({ ok: true, ...totals }, { headers: NO_STORE });
+  return NextResponse.json({ ok: true, ...totals, calendar }, { headers: NO_STORE });
 }
 
 export const GET = handle;

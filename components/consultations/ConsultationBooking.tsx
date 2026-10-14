@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CalendarCheck, LoaderCircle, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck, LoaderCircle, Mail, Phone, RotateCcw, Video } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
-import SlotPicker from "@/components/consultations/SlotPicker";
+import SlotPicker, { NO_AVAILABILITY_MESSAGE } from "@/components/consultations/SlotPicker";
 import TurnstileWidget, { type TurnstileHandle } from "@/components/forms/TurnstileWidget";
+import PrimaryCta from "@/components/ui/PrimaryCta";
 import { CONSULTATION_ACTION } from "@/lib/contact/turnstile-action";
 import { type BookingConfirmation, fetchAvailability, newIdempotencyKey, requestBooking } from "@/lib/consultations/client";
 import {
@@ -15,10 +16,16 @@ import {
   formatPerthDate,
   formatPerthRange,
 } from "@/lib/consultations/rules";
+import { MEETING_METHOD_LABELS, type MeetingMethod } from "@/lib/consultations/representatives";
 import { CONTACT_EMAIL } from "@/lib/site";
 
 /*
- * The public booking flow: choose a slot -> your details -> review and confirm -> confirmed.
+ * The public booking flow: choose a slot -> how to meet (Teams or phone) and your details ->
+ * review and confirm -> confirmed.
+ *
+ * Two different "no times" screens: a genuinely full calendar (NoAvailability: contact form,
+ * email, check again) and a technical failure to load (the error, Try again, and the same
+ * contact routes). The server reports a failure as an error, never as an empty calendar.
  *
  * Safety properties (the server enforces all of them again):
  *   - one idempotency key per booking attempt, kept across retries, so a refresh, double click
@@ -32,9 +39,12 @@ import { CONTACT_EMAIL } from "@/lib/site";
 
 type Step = "pick" | "details" | "review" | "done";
 
-type Details = { name: string; email: string; phone: string; businessName: string; description: string };
+type Details = { method: MeetingMethod | ""; name: string; email: string; phone: string; businessName: string; description: string };
 
-const EMPTY: Details = { name: "", email: "", phone: "", businessName: "", description: "" };
+const EMPTY: Details = { method: "", name: "", email: "", phone: "", businessName: "", description: "" };
+
+const PHONE_PATTERN = /^[0-9+()\-. ]{6,40}$/;
+const callable = (phone: string) => PHONE_PATTERN.test(phone) && phone.replace(/\D/g, "").length >= 8 && phone.replace(/\D/g, "").length <= 15;
 
 const inputClass =
   "mt-2 w-full border-b border-black/15 bg-transparent py-3.5 text-base outline-none transition-colors placeholder:text-black/30 focus:border-black aria-[invalid=true]:border-red-700";
@@ -111,10 +121,16 @@ export default function ConsultationBooking() {
     event.preventDefault();
     const name = details.name.trim();
     const email = details.email.trim();
+    const phone = details.phone.trim();
+    if (!details.method) return setFieldError({ field: "method", message: "Please choose Microsoft Teams or a phone call." });
     if (!name) return setFieldError({ field: "name", message: "Please enter your full name." });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setFieldError({ field: "email", message: "Please enter a valid email address." });
-    if (details.phone.trim() && !/^[0-9+()\-. ]{6,40}$/.test(details.phone.trim())) {
-      return setFieldError({ field: "phone", message: "Please enter a valid phone number, or leave it blank." });
+    if (details.method === "PHONE" && !phone) return setFieldError({ field: "phone", message: "Please enter the phone number we should call." });
+    if (phone && !callable(phone)) {
+      return setFieldError({
+        field: "phone",
+        message: details.method === "PHONE" ? "Please enter a valid phone number we can call." : "Please enter a valid phone number, or leave it blank.",
+      });
     }
     if (!details.description.trim()) {
       return setFieldError({ field: "description", message: "Please tell us a little about your business or project." });
@@ -125,7 +141,7 @@ export default function ConsultationBooking() {
   }
 
   async function confirm() {
-    if (inFlight.current || !start) return;
+    if (inFlight.current || !start || !details.method) return;
     if (!token) {
       setSubmitError("Please complete the security check above, then confirm.");
       return;
@@ -144,6 +160,7 @@ export default function ConsultationBooking() {
       phone: details.phone.trim(),
       businessName: details.businessName.trim(),
       description: details.description.trim(),
+      method: details.method,
       turnstileToken: token,
     });
 
@@ -163,6 +180,12 @@ export default function ConsultationBooking() {
       setStart(null);
       await load();
       setStep("pick");
+      return;
+    }
+
+    if (result.code === "phone_required" || result.code === "invalid_method") {
+      setFieldError({ field: result.code === "phone_required" ? "phone" : "method", message: result.message });
+      setStep("details");
       return;
     }
 
@@ -198,6 +221,14 @@ export default function ConsultationBooking() {
         <dt className="section-label text-black/60">Timezone</dt>
         <dd className="mt-1 font-semibold">{CONSULTATION_TIMEZONE_LABEL}</dd>
       </div>
+      {details.method && (
+        <div className="sm:col-span-2">
+          <dt className="section-label text-black/60">How we will meet</dt>
+          <dd className="mt-1 font-semibold">
+            {details.method === "PHONE" ? `Phone call: we will call you on ${details.phone.trim()}` : MEETING_METHOD_LABELS.TEAMS}
+          </dd>
+        </div>
+      )}
     </dl>
       <p className="mt-3 text-xs leading-5 text-black/60">No obligation to proceed. Any work is quoted before it begins.</p>
     </div>
@@ -220,6 +251,11 @@ export default function ConsultationBooking() {
         <p className="mt-3 text-sm leading-6 text-black/65">
           Booking reference <strong className="font-mono text-black">{confirmed.reference}</strong>. A confirmation email is on its way to{" "}
           <strong className="text-black">{details.email.trim()}</strong> with a link to reschedule or cancel.
+        </p>
+        <p className="mt-3 text-sm leading-6 text-black/65" data-testid="consultation-method-note">
+          {details.method === "PHONE"
+            ? `This is a phone consultation. We will call you on ${details.phone.trim()} at the appointment time.`
+            : "This is a Microsoft Teams video call. Your Teams link will be in your confirmation email and calendar invitation."}
         </p>
         <p className="mt-3 text-sm leading-6 text-black/65">
           No email within a few minutes? Check your spam folder, or write to{" "}
@@ -257,12 +293,15 @@ export default function ConsultationBooking() {
             </p>
           )}
           {loadError ? (
-            <div role="alert" className="space-y-3 text-sm leading-6 text-black/70">
+            <div role="alert" className="space-y-3 text-sm leading-6 text-black/70" data-testid="consultation-load-error">
               <p>{loadError}</p>
               <button type="button" onClick={() => void load()} className="inline-flex min-h-[44px] items-center border-b border-black font-semibold">
                 Try again
               </button>
+              <ContactAlternatives />
             </div>
+          ) : days !== null && days.every((day) => day.slots.length === 0) ? (
+            <NoAvailability onRetry={() => void load()} />
           ) : days === null ? (
             <p role="status" className="flex items-center gap-2 text-sm text-black/60">
               <LoaderCircle aria-hidden="true" size={16} className="animate-spin" /> Loading available times
@@ -292,6 +331,54 @@ export default function ConsultationBooking() {
           <h2 id="consult-details" ref={headingRef} tabIndex={-1} className="text-2xl font-semibold tracking-[-0.04em] outline-none">
             Your details
           </h2>
+          <fieldset aria-describedby={fieldError.field === "method" ? "consult-method-error" : undefined}>
+            <legend className="section-label text-black/60">
+              How would you like to meet?<span aria-hidden="true" className="text-[#b83f0c]"> *</span>
+            </legend>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {(["TEAMS", "PHONE"] as const).map((method) => (
+                <label
+                  key={method}
+                  className={`relative flex min-h-[44px] cursor-pointer items-start gap-3 border p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-black ${
+                    details.method === method ? "border-black bg-[#f4f2ec]" : "border-black/15 hover:border-black/40"
+                  }`}
+                >
+                  {/* The native radio covers the whole card: one 44px+ target, native keyboard behaviour. */}
+                  <input
+                    type="radio"
+                    name="method"
+                    value={method}
+                    checked={details.method === method}
+                    onChange={() => {
+                      setDetails((current) => ({ ...current, method }));
+                      if (fieldError.field === "method") setFieldError({ field: null, message: "" });
+                    }}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                      details.method === method ? "border-black" : "border-black/40"
+                    }`}
+                  >
+                    {details.method === method && <span className="h-2 w-2 rounded-full bg-black" />}
+                  </span>
+                  <span>
+                    <span className="flex items-center gap-2 font-semibold">
+                      {method === "TEAMS" ? <Video aria-hidden="true" size={16} /> : <Phone aria-hidden="true" size={16} />}
+                      {method === "TEAMS" ? "Microsoft Teams" : "Phone call"}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-black/60">
+                      {method === "TEAMS" ? "Video call. We email you the Teams link." : "We call you at the appointment time."}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {fieldError.field === "method" && (
+              <p id="consult-method-error" role="alert" className="mt-2 text-sm text-red-700">{fieldError.message}</p>
+            )}
+          </fieldset>
           <div className="grid gap-6 sm:grid-cols-2">
             <Field id="consult-name" label="Full name" required error={fieldError.field === "name" ? fieldError.message : ""}>
               <input id="consult-name" name="name" autoComplete="name" maxLength={120} value={details.name} onChange={update("name")}
@@ -303,9 +390,15 @@ export default function ConsultationBooking() {
                 aria-invalid={fieldError.field === "email"} aria-describedby={fieldError.field === "email" ? "consult-email-error" : undefined}
                 aria-required="true" className={inputClass} />
             </Field>
-            <Field id="consult-phone" label="Phone number (optional)" error={fieldError.field === "phone" ? fieldError.message : ""}>
+            <Field
+              id="consult-phone"
+              label={details.method === "PHONE" ? "Phone number we should call" : "Phone number (optional)"}
+              required={details.method === "PHONE"}
+              error={fieldError.field === "phone" ? fieldError.message : ""}
+            >
               <input id="consult-phone" name="phone" type="tel" autoComplete="tel" maxLength={40} value={details.phone} onChange={update("phone")}
                 aria-invalid={fieldError.field === "phone"} aria-describedby={fieldError.field === "phone" ? "consult-phone-error" : undefined}
+                aria-required={details.method === "PHONE" ? "true" : undefined}
                 className={inputClass} />
             </Field>
             <Field id="consult-business" label="Business name (optional)">
@@ -404,6 +497,30 @@ export default function ConsultationBooking() {
           </div>
         </section>
       )}
+    </div>
+  );
+}
+
+/* Real contact routes for when booking online is not possible: the contact form and email. */
+function ContactAlternatives() {
+  return (
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-1 text-sm font-semibold">
+      <PrimaryCta href="/contact" surface="light">Send us a message</PrimaryCta>
+      <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Consultation request")}`} className="inline-flex min-h-[44px] items-center gap-2 border-b border-black/30 text-black/80 hover:text-black">
+        <Mail aria-hidden="true" size={15} /> {CONTACT_EMAIL}
+      </a>
+    </div>
+  );
+}
+
+function NoAvailability({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="space-y-4 border-l-2 border-[#f26a2e] pl-4" role="status" data-testid="consultation-no-availability">
+      <p className="text-sm leading-6 text-black/75">{NO_AVAILABILITY_MESSAGE}</p>
+      <ContactAlternatives />
+      <button type="button" onClick={onRetry} className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-black/70 hover:text-black">
+        <RotateCcw aria-hidden="true" size={14} /> Check the calendar again
+      </button>
     </div>
   );
 }

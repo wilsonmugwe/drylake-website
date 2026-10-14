@@ -53,6 +53,7 @@ export type BookingRequest = {
   phone: string;
   businessName: string;
   description: string;
+  method: "TEAMS" | "PHONE";
   turnstileToken: string;
 };
 
@@ -74,7 +75,12 @@ export type ManagedBooking = {
   status: "CONFIRMED" | "RESCHEDULED" | "CANCELLED" | "COMPLETED";
   version: number;
   canChange: boolean;
+  changeWindowClosed: boolean;
   cancelledByDrylake: boolean;
+  method: "TEAMS" | "PHONE";
+  representative: string;
+  phone: string | null;
+  joinUrl: string | null;
 };
 
 export type ManageResponse = { success: true; booking: ManagedBooking | null; message?: string; token?: string };

@@ -7,13 +7,20 @@ import { ilikePattern, readEnumParam, readFilterParam, type AdminSearchParams } 
 import { ADMIN_LIST_LIMIT } from "@/lib/admin/search";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import {
+  CALENDAR_STATE_LABELS,
+  CONSULTATION_DATE_OPTIONS,
+  CONSULTATION_DATE_RANGES,
   CONSULTATION_FILTER_OPTIONS,
   CONSULTATION_FILTERS,
+  CONSULTATION_REPRESENTATIVE_OPTIONS,
+  METHOD_SHORT,
+  dateRangeBounds,
   CONSULTATION_SORT_OPTIONS,
   CONSULTATION_SORTS,
   STATUS_BADGE,
   STATUS_LABELS,
 } from "@/lib/consultations/admin-view";
+import { REPRESENTATIVE_KEYS, representativeName } from "@/lib/consultations/representatives";
 import { formatPerthDate, formatPerthRange } from "@/lib/consultations/rules";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
@@ -28,6 +35,9 @@ type Row = {
   business_name: string | null;
   start_time: string;
   status: string;
+  assigned_representative: string;
+  meeting_method: string;
+  calendar_sync_state: string;
   created_at: string;
 };
 
@@ -45,11 +55,22 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
   const status = readEnumParam(params, "status", CONSULTATION_FILTERS);
   const sort = readEnumParam(params, "sort", CONSULTATION_SORTS) || "SOONEST";
   const q = readFilterParam(params, "q");
+  const rep = readEnumParam(params, "rep", REPRESENTATIVE_KEYS);
+  const when = readEnumParam(params, "when", CONSULTATION_DATE_RANGES);
 
   const supabase = createAdminSupabaseClient();
   let query = supabase
     .from("consultation_bookings")
-    .select("id, reference, customer_name, customer_email, business_name, start_time, status, created_at", { count: "exact" });
+    .select(
+      "id, reference, customer_name, customer_email, business_name, start_time, status, assigned_representative, meeting_method, calendar_sync_state, created_at",
+      { count: "exact" }
+    );
+
+  if (rep) query = query.eq("assigned_representative", rep);
+  if (when) {
+    const { from, to } = dateRangeBounds(when, new Date());
+    query = query.gte("start_time", from.toISOString()).lt("start_time", to.toISOString());
+  }
 
   if (status === "UPCOMING") {
     query = query.in("status", ["CONFIRMED", "RESCHEDULED"]).gt("start_time", new Date().toISOString());
@@ -87,6 +108,8 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
             searchPlaceholder="Search name, email, business or reference"
             selects={[
               { param: "status", label: "Status", options: CONSULTATION_FILTER_OPTIONS, allLabel: "All appointments" },
+              { param: "when", label: "Date", options: CONSULTATION_DATE_OPTIONS, allLabel: "Any date" },
+              { param: "rep", label: "Representative", options: CONSULTATION_REPRESENTATIVE_OPTIONS, allLabel: "Both representatives" },
               {
                 param: "sort",
                 label: "Sort",
@@ -119,7 +142,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
                   <tr>
                     <th scope="col" className="px-5 py-3 font-semibold">Appointment</th>
                     <th scope="col" className="px-5 py-3 font-semibold">Customer</th>
-                    <th scope="col" className="px-5 py-3 font-semibold">Business</th>
+                    <th scope="col" className="px-5 py-3 font-semibold">With</th>
                     <th scope="col" className="px-5 py-3 font-semibold">Status</th>
                     <th scope="col" className="px-5 py-3 font-semibold">Booked</th>
                     <th scope="col" className="px-5 py-3"><span className="sr-only">Open</span></th>
@@ -138,7 +161,15 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
                           <p className="font-medium text-neutral-950">{row.customer_name}</p>
                           <p className="mt-0.5 break-all text-xs text-neutral-600">{row.customer_email}</p>
                         </td>
-                        <td className="px-5 py-4 text-neutral-700">{row.business_name || "Not provided"}</td>
+                        <td className="px-5 py-4 text-neutral-700">
+                          <p className="font-medium text-neutral-900">{representativeName(row.assigned_representative)}</p>
+                          <p className="mt-0.5 text-xs text-neutral-600">
+                            {METHOD_SHORT[row.meeting_method] ?? row.meeting_method}
+                            {row.calendar_sync_state === "FAILED" ? (
+                              <span className="ml-1.5 font-medium text-red-700">· {CALENDAR_STATE_LABELS.FAILED}</span>
+                            ) : null}
+                          </p>
+                        </td>
                         <td className="px-5 py-4">
                           <StatusBadge status={row.status} />
                         </td>
@@ -178,6 +209,10 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
                       </div>
                       <p className="mt-3 text-sm text-neutral-800">{formatPerthDate(start)}</p>
                       <p className="text-xs text-neutral-600">{formatPerthRange(start)} · {row.reference}</p>
+                      <p className="mt-1 text-xs text-neutral-600">
+                        {representativeName(row.assigned_representative)} · {METHOD_SHORT[row.meeting_method] ?? row.meeting_method}
+                        {row.calendar_sync_state === "FAILED" ? <span className="font-medium text-red-700"> · {CALENDAR_STATE_LABELS.FAILED}</span> : null}
+                      </p>
                     </Link>
                   </li>
                 );
