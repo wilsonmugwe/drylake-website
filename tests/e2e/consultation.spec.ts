@@ -32,7 +32,8 @@ async function pickFirstSlot(page: Page) {
   await page.getByRole("button", { name: "Continue" }).click();
 }
 
-async function fillDetails(page: Page) {
+async function fillDetails(page: Page, method: "Microsoft Teams" | "Phone call" = "Microsoft Teams") {
+  await page.getByRole("radio", { name: new RegExp(method) }).check();
   await page.getByLabel(/Full name/).fill("Quinn Tester");
   await page.getByLabel(/Email address/).fill("quinn@example.com");
   await page.getByLabel(/About your business or project/).fill("We run a cleaning business and lose bookings in email.");
@@ -64,7 +65,10 @@ test.describe("consultation booking @local", () => {
     await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
     await pickFirstSlot(page);
 
-    // Required fields are enforced before the review step.
+    // Required fields are enforced before the review step: the meeting method first, then the name.
+    await page.getByRole("button", { name: "Review booking" }).click();
+    await expect(page.getByText("Please choose Microsoft Teams or a phone call.")).toBeVisible();
+    await page.getByRole("radio", { name: /Microsoft Teams/ }).check();
     await page.getByRole("button", { name: "Review booking" }).click();
     await expect(page.getByText("Please enter your full name.")).toBeVisible();
     await fillDetails(page);
@@ -85,6 +89,7 @@ test.describe("consultation booking @local", () => {
     expect(body.start).toBe("2027-03-01T01:30:00.000Z");
     expect(body.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
     expect(body.turnstileToken).toBe("XXXX.DUMMY.TOKEN.XXXX");
+    expect(body.method).toBe("TEAMS");
   });
 
   test("a slot taken meanwhile: the brief's message, fresh times, back to choosing; the retry keeps one key", async ({ page }) => {
@@ -175,9 +180,43 @@ test.describe("manage appointment @local", () => {
     status: "CONFIRMED",
     version: 1,
     canChange: true,
+    changeWindowClosed: false,
     cancelledByDrylake: false,
+    method: "TEAMS",
+    representative: "Wilson",
+    phone: null,
+    joinUrl: null,
   };
   const TOKEN = "A".repeat(43);
+
+  test("shows the method, the representative and the Teams link", async ({ page }) => {
+    await page.route("**/api/consultations/manage", (route) =>
+      route.fulfill({ json: { success: true, booking: { ...BOOKING, joinUrl: "https://teams.microsoft.com/l/meetup-join/abc" } } })
+    );
+    await page.goto(`/consultation/manage#t=${TOKEN}`);
+    await expect(page.getByTestId("manage-method")).toHaveText("Microsoft Teams video call");
+    await expect(page.getByText("Wilson")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Join Microsoft Teams meeting" })).toHaveAttribute("href", "https://teams.microsoft.com/l/meetup-join/abc");
+  });
+
+  test("a phone consultation shows the number Drylake will call", async ({ page }) => {
+    await page.route("**/api/consultations/manage", (route) =>
+      route.fulfill({ json: { success: true, booking: { ...BOOKING, method: "PHONE", phone: "0400 000 000" } } })
+    );
+    await page.goto(`/consultation/manage#t=${TOKEN}`);
+    await expect(page.getByTestId("manage-method")).toHaveText("Phone call");
+    await expect(page.getByTestId("manage-instructions")).toContainText("We will call you on 0400 000 000");
+  });
+
+  test("inside the 2-hour cut-off: no online changes, and how to reach Drylake", async ({ page }) => {
+    await page.route("**/api/consultations/manage", (route) =>
+      route.fulfill({ json: { success: true, booking: { ...BOOKING, canChange: false, changeWindowClosed: true } } })
+    );
+    await page.goto(`/consultation/manage#t=${TOKEN}`);
+    await expect(page.getByTestId("manage-locked")).toContainText("Online changes close 2 hours before your consultation");
+    await expect(page.getByRole("button", { name: "Reschedule" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Cancel consultation" })).toHaveCount(0);
+  });
 
   test("opens from the fragment link, never sends the token in a URL, and cancels after confirming", async ({ page }) => {
     const bodies: Array<Record<string, unknown>> = [];
@@ -240,6 +279,88 @@ test.describe("manage appointment @local", () => {
     await expect(page.getByRole("alert").filter({ hasText: "not valid or has expired" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Book a new consultation" })).toBeVisible();
   });
+});
+
+test.describe("consultation method and availability states @local", () => {
+  test.beforeEach(async ({ page }) => {
+    await stubTurnstile(page);
+  });
+
+  test("a phone consultation requires a callable number and sends method PHONE", async ({ page }) => {
+    await stubAvailability(page);
+    const posts: Array<Record<string, string>> = [];
+    await page.route("**/api/consultations", async (route: Route) => {
+      posts.push(route.request().postDataJSON());
+      await route.fulfill({ status: 201, json: { success: true, booking: { reference: "DL-PHONE2", start: DAYS[0].slots[1], end: DAYS[0].slots[1] } } });
+    });
+    await page.goto("/consultation");
+    await pickFirstSlot(page);
+
+    // No method chosen: refused before review.
+    await page.getByRole("button", { name: "Review booking" }).click();
+    await expect(page.getByText("Please choose Microsoft Teams or a phone call.")).toBeVisible();
+
+    await page.getByRole("radio", { name: /Phone call/ }).check();
+    await expect(page.getByLabel(/Phone number we should call/)).toBeVisible();
+    await page.getByLabel(/Full name/).fill("Quinn Tester");
+    await page.getByLabel(/Email address/).fill("quinn@example.com");
+    await page.getByLabel(/About your business or project/).fill("Cleaning business.");
+    await page.getByRole("button", { name: "Review booking" }).click();
+    await expect(page.getByText("Please enter the phone number we should call.")).toBeVisible();
+    await page.getByLabel(/Phone number we should call/).fill("12");
+    await page.getByRole("button", { name: "Review booking" }).click();
+    await expect(page.getByText("Please enter a valid phone number we can call.")).toBeVisible();
+    await page.getByLabel(/Phone number we should call/).fill("0400 000 000");
+    await page.getByRole("button", { name: "Review booking" }).click();
+
+    await expect(page.locator("dl").first()).toContainText("Phone call: we will call you on 0400 000 000");
+    await page.getByRole("button", { name: "Confirm free consultation" }).click();
+    await expect(page.getByTestId("consultation-method-note")).toContainText("We will call you on 0400 000 000");
+    expect(posts[0].method).toBe("PHONE");
+    expect(posts[0].phone).toBe("0400 000 000");
+  });
+
+  test("no times available: the helpful alternative, not a dead end", async ({ page }) => {
+    const calls = await stubAvailability(page, DAYS.map((d) => ({ ...d, slots: [] })));
+    await page.goto("/consultation");
+    const panel = page.getByTestId("consultation-no-availability");
+    await expect(panel).toContainText(
+      "No consultation times are currently available. You can still get in touch with Drylake, and we'll help you find a suitable time."
+    );
+    await expect(panel.getByRole("link", { name: /Send us a message/ })).toHaveAttribute("href", "/contact");
+    await expect(panel.getByRole("link", { name: /hello@drylake\.com\.au/ })).toHaveAttribute("href", /^mailto:hello@drylake\.com\.au/);
+    const before = calls();
+    await panel.getByRole("button", { name: "Check the calendar again" }).click();
+    await expect.poll(calls).toBeGreaterThan(before);
+    await expect(page.getByTestId("consultation-load-error")).toHaveCount(0);
+  });
+
+  test("a temporary failure is an error with a retry, never shown as 'no times'", async ({ page }) => {
+    await page.route("**/api/consultations/availability", (route) =>
+      route.fulfill({ status: 503, json: { error: "Consultation times could not be loaded right now. Please try again shortly.", code: "calendar_unavailable" } })
+    );
+    await page.goto("/consultation");
+    const error = page.getByTestId("consultation-load-error");
+    await expect(error).toContainText("could not be loaded right now");
+    await expect(error.getByRole("button", { name: "Try again" })).toBeVisible();
+    await expect(error.getByRole("link", { name: /Send us a message/ })).toBeVisible();
+    await expect(page.getByTestId("consultation-no-availability")).toHaveCount(0);
+  });
+
+  for (const width of [375, 1440]) {
+    test(`the method step is accessible and fits at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await stubAvailability(page);
+      await page.goto("/consultation");
+      await pickFirstSlot(page);
+      await page.getByRole("radio", { name: /Phone call/ }).check();
+      const { scrollWidth, clientWidth } = await horizontalOverflow(page);
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+      // 44px targets are the mobile rule (desktop footer links are 34px by design, outside this form).
+      if (width < 768) expect(await undersizedTargets(page)).toEqual([]);
+      await expectNoAxeViolations(page);
+    });
+  }
 });
 
 /* The hero tile labels (brief, Task 4): every label sits inside its own plate at every width. */

@@ -339,10 +339,11 @@ export default function ConsultationBooking() {
               {(["TEAMS", "PHONE"] as const).map((method) => (
                 <label
                   key={method}
-                  className={`flex min-h-[44px] cursor-pointer items-start gap-3 border p-4 transition-colors ${
+                  className={`relative flex min-h-[44px] cursor-pointer items-start gap-3 border p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-black ${
                     details.method === method ? "border-black bg-[#f4f2ec]" : "border-black/15 hover:border-black/40"
                   }`}
                 >
+                  {/* The native radio covers the whole card: one 44px+ target, native keyboard behaviour. */}
                   <input
                     type="radio"
                     name="method"
@@ -352,8 +353,16 @@ export default function ConsultationBooking() {
                       setDetails((current) => ({ ...current, method }));
                       if (fieldError.field === "method") setFieldError({ field: null, message: "" });
                     }}
-                    className="mt-1 h-4 w-4 accent-black"
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                   />
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                      details.method === method ? "border-black" : "border-black/40"
+                    }`}
+                  >
+                    {details.method === method && <span className="h-2 w-2 rounded-full bg-black" />}
+                  </span>
                   <span>
                     <span className="flex items-center gap-2 font-semibold">
                       {method === "TEAMS" ? <Video aria-hidden="true" size={16} /> : <Phone aria-hidden="true" size={16} />}
