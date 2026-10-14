@@ -14,7 +14,7 @@
  * Never logs customer names, addresses or meeting links.
  */
 
-import { type CalendarEvent, type CalendarProvider } from "./calendar/types.ts";
+import { type CalendarEvent, CalendarEventMissingError, type CalendarProvider } from "./calendar/types.ts";
 import { type MeetingMethod, REPRESENTATIVES, type Representative, representativeByKey } from "./representatives.ts";
 
 export type SyncRow = {
@@ -33,12 +33,15 @@ export type SyncRow = {
   calendar_event_owner: string | null;
   calendar_join_url: string | null;
   calendar_sync_attempts: number;
+  /* The lease this worker holds; passed back to finish as a fence. */
+  calendar_lease_until: string | null;
 };
 
 export type SyncResult = { eventId: string | null; owner: string | null; joinUrl: string | null };
 
 export type CalendarSyncDeps = {
-  claim(limit: number, bookingId: string | null): Promise<SyncRow[]>;
+  /** Lease at most ONE due booking (or the given one); [] when nothing is due. */
+  claimOne(bookingId: string | null): Promise<SyncRow[]>;
   finish(row: SyncRow, outcome: "synced" | "retry", result: SyncResult | null, error: string | null, retryAfterMinutes: number): Promise<void>;
   provider: CalendarProvider;
 };
@@ -55,12 +58,23 @@ export function calendarRetryMinutes(attempts: number): number {
 const CANCEL_COMMENT = "This Drylake consultation has been cancelled. Your confirmation email from Drylake has the details.";
 const MOVED_COMMENT = "This Drylake consultation has moved to another Drylake representative. A new invitation follows.";
 
-/** Every live event for the booking, in any representative's calendar. */
-async function findAll(provider: CalendarProvider, bookingId: string): Promise<Array<{ rep: Representative; event: CalendarEvent }>> {
-  const found: Array<{ rep: Representative; event: CalendarEvent }> = [];
+type Found = { rep: Representative; event: CalendarEvent };
+
+/*
+ * Every live event for the booking, in every representative's calendar: found by booking tag,
+ * plus the recorded event id read directly in case the tag search misses it. The recorded id is
+ * a HINT, never trusted on its own: it can be stale after a crash mid-reassignment, or deleted in
+ * Outlook. Searching every time is what makes a retry safe (no duplicate invitations).
+ */
+async function liveEvents(provider: CalendarProvider, row: SyncRow): Promise<Found[]> {
+  const found: Found[] = [];
   for (const rep of REPRESENTATIVES) {
-    const event = await provider.findEvent(rep, bookingId);
-    if (event) found.push({ rep, event });
+    for (const event of await provider.findEvents(rep, row.id)) found.push({ rep, event });
+  }
+  const owner = representativeByKey(row.calendar_event_owner);
+  if (row.calendar_event_id && owner && !found.some((f) => f.event.id === row.calendar_event_id)) {
+    const event = await provider.getEvent(owner, row.calendar_event_id);
+    if (event) found.push({ rep: owner, event });
   }
   return found;
 }
@@ -70,26 +84,29 @@ export async function reconcileBooking(provider: CalendarProvider, row: SyncRow)
   const start = new Date(row.start_time);
   const end = new Date(row.end_time);
   const assigned = representativeByKey(row.assigned_representative);
-  const owner = representativeByKey(row.calendar_event_owner);
-
-  // Known events first; with no recorded id, search by booking tag (crash recovery, races).
-  const events = row.calendar_event_id && owner ? [{ rep: owner, event: { id: row.calendar_event_id, joinUrl: row.calendar_join_url, start: null } }] : await findAll(provider, row.id);
+  const events = await liveEvents(provider, row);
 
   if (!ACTIVE.has(row.status) || !assigned) {
     for (const { rep, event } of events) await provider.cancelEvent(rep, event.id, CANCEL_COMMENT);
     return { eventId: null, owner: null, joinUrl: null };
   }
 
-  let keep: { rep: Representative; event: CalendarEvent } | null = null;
+  // Keep one event in the assigned calendar (the recorded one when it is there); cancel the rest.
+  const mine = events.filter((f) => f.rep.key === assigned.key);
+  let keep: Found | null = mine.find((f) => f.event.id === row.calendar_event_id) ?? mine[0] ?? null;
   for (const candidate of events) {
-    if (!keep && candidate.rep.key === assigned.key) keep = candidate;
-    else await provider.cancelEvent(candidate.rep, candidate.event.id, MOVED_COMMENT);
+    if (candidate !== keep) await provider.cancelEvent(candidate.rep, candidate.event.id, candidate.rep.key === assigned.key ? CANCEL_COMMENT : MOVED_COMMENT);
   }
 
-  if (keep) {
-    if (keep.event.start !== start.getTime()) await provider.moveEvent(assigned, keep.event.id, start, end);
-    return { eventId: keep.event.id, owner: assigned.key, joinUrl: keep.event.joinUrl };
+  if (keep && keep.event.start !== start.getTime()) {
+    try {
+      await provider.moveEvent(assigned, keep.event.id, start, end);
+    } catch (error) {
+      if (!(error instanceof CalendarEventMissingError)) throw error;
+      keep = null; // deleted in Outlook between the lookup and the move: create a fresh one
+    }
   }
+  if (keep) return { eventId: keep.event.id, owner: assigned.key, joinUrl: keep.event.joinUrl };
 
   const created = await provider.createEvent(assigned, {
     bookingId: row.id,
@@ -105,11 +122,18 @@ export async function reconcileBooking(provider: CalendarProvider, row: SyncRow)
   return { eventId: created.id, owner: assigned.key, joinUrl: created.joinUrl };
 }
 
+/*
+ * Claims and syncs ONE booking at a time, up to `limit`, so each lease only has to outlast one
+ * booking's Graph calls (at most a handful, each with an 8 s timeout), never a whole batch.
+ */
 export async function runCalendarSyncPass(deps: CalendarSyncDeps, options: { limit?: number; bookingId?: string | null } = {}): Promise<CalendarSyncSummary> {
-  const rows = await deps.claim(options.limit ?? 10, options.bookingId ?? null);
-  const summary: CalendarSyncSummary = { claimed: rows.length, synced: 0, retried: 0 };
+  const limit = options.bookingId ? 1 : options.limit ?? 10;
+  const summary: CalendarSyncSummary = { claimed: 0, synced: 0, retried: 0 };
 
-  for (const row of rows) {
+  for (let i = 0; i < limit; i += 1) {
+    const [row] = await deps.claimOne(options.bookingId ?? null);
+    if (!row) break;
+    summary.claimed += 1;
     try {
       const result = await reconcileBooking(deps.provider, row);
       await deps.finish(row, "synced", result, null, 0);

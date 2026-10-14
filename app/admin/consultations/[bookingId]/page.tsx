@@ -155,7 +155,9 @@ export default async function AdminConsultationPage({ params }: { params: Promis
               {record.calendar_last_error && record.calendar_sync_state !== "SYNCED" && (
                 <p className="mt-1 text-xs text-red-700">Last error: {record.calendar_last_error}</p>
               )}
-              {calendarMode === "microsoft" && record.calendar_sync_state === "FAILED" && <AdminCalendarRetry bookingId={record.id} />}
+              {calendarMode === "microsoft" &&
+                record.calendar_synced_version < record.version &&
+                (record.calendar_sync_state === "FAILED" || record.calendar_sync_attempts >= 10) && <AdminCalendarRetry bookingId={record.id} />}
             </div>
             <AdminConsultationActions
               bookingId={record.id}

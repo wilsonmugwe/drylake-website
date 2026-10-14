@@ -27,6 +27,7 @@ import {
   type CalendarEvent,
   type CalendarProvider,
   type ConsultationEventInput,
+  CalendarEventMissingError,
   CalendarUnavailableError,
 } from "./types.ts";
 
@@ -214,16 +215,25 @@ export function createMicrosoftGraphProvider(
       return busy;
     },
 
-    async findEvent(representative, bookingId) {
+    async findEvents(representative, bookingId) {
+      // bookingId is always the database UUID (never user input); refuse anything else outright.
+      if (!/^[0-9a-f-]{36}$/i.test(bookingId)) throw new CalendarUnavailableError("Event lookup refused: malformed booking id");
       const filter = `singleValueExtendedProperties/Any(ep: ep/id eq '${BOOKING_PROPERTY_ID}' and ep/value eq '${bookingId}')`;
       const response = await graph(
         "GET",
-        `${mailbox(representative)}/events?$filter=${encodeURIComponent(filter)}&$select=id,start,onlineMeeting,isCancelled&$top=5`
+        `${mailbox(representative)}/events?$filter=${encodeURIComponent(filter)}&$select=id,start,onlineMeeting,isCancelled&$top=10`
       );
       if (!response.ok) throw await graphError(response, "Event lookup");
       const body = (await response.json().catch(() => null)) as { value?: Array<Record<string, unknown>> } | null;
-      const live = (body?.value ?? []).find((e) => e.isCancelled !== true);
-      return live ? toEvent(live) : null;
+      return (body?.value ?? []).filter((e) => e.isCancelled !== true).map(toEvent);
+    },
+
+    async getEvent(representative, eventId) {
+      const response = await graph("GET", `${mailbox(representative)}/events/${encodeURIComponent(eventId)}?$select=id,start,onlineMeeting,isCancelled`);
+      if (response.status === 404) return null;
+      if (!response.ok) throw await graphError(response, "Event read");
+      const raw = (await response.json()) as Record<string, unknown>;
+      return raw.isCancelled === true ? null : toEvent(raw);
     },
 
     async createEvent(representative, input) {
@@ -243,6 +253,7 @@ export function createMicrosoftGraphProvider(
         start: utc(start),
         end: utc(end),
       });
+      if (response.status === 404) throw new CalendarEventMissingError();
       if (!response.ok) throw await graphError(response, "Event move");
     },
 

@@ -192,6 +192,7 @@ export async function dispatchConsultationNotifications(deps: DispatchDeps, limi
         joinUrl: joinUrlFor(booking),
         calendarConnected: deps.calendarConnected,
         calendarError: booking.calendar_last_error,
+        bookingCancelled: booking.status === "CANCELLED",
         manageUrl: link,
         assetOrigin: deps.baseUrl,
       });

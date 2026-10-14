@@ -26,11 +26,12 @@ export async function runCalendarSync(
     return await runCalendarSyncPass(
       {
         provider: setting.provider,
-        async claim(limit, bookingId) {
+        async claimOne(bookingId) {
           const { data, error } = await supabase.rpc("consultation_claim_calendar_sync", {
-            p_limit: limit,
-            p_lease: "2 minutes",
+            p_limit: 1,
+            p_lease: "5 minutes",
             p_booking_id: bookingId,
+            p_founder_emails: [...FOUNDER_NOTIFICATION_EMAILS],
           });
           if (error) throw new Error(`calendar claim failed: ${error.code ?? ""} ${error.message}`);
           return (data ?? []) as SyncRow[];
@@ -39,6 +40,7 @@ export async function runCalendarSync(
           const { error } = await supabase.rpc("consultation_finish_calendar_sync", {
             p_booking_id: row.id,
             p_version: row.version,
+            p_lease_until: row.calendar_lease_until,
             p_outcome: outcome,
             p_event_id: result?.eventId ?? null,
             p_event_owner: result?.owner ?? null,
@@ -47,7 +49,8 @@ export async function runCalendarSync(
             p_retry_after: `${retryAfterMinutes} minutes`,
             p_founder_emails: [...FOUNDER_NOTIFICATION_EMAILS],
           });
-          // The lease expires and the booking is retried; lookups by booking tag prevent duplicates.
+          // The lease expires and the booking is retried; every attempt searches by booking tag
+          // first, so a retry adopts or cancels what an earlier attempt created.
           if (error) console.error("Consultation calendar sync: finish failed:", error.code ?? "", error.message);
         },
       },

@@ -35,13 +35,26 @@ export type CalendarEvent = { id: string; joinUrl: string | null; start: number 
 export interface CalendarProvider {
   readonly name: string;
   getBusy(representatives: readonly Representative[], from: Date, to: Date): Promise<BusyMap>;
-  /** The event tagged with this booking id in the representative's calendar, if one exists. */
-  findEvent(representative: Representative, bookingId: string): Promise<CalendarEvent | null>;
+  /** Every live event tagged with this booking id in the representative's calendar. */
+  findEvents(representative: Representative, bookingId: string): Promise<CalendarEvent[]>;
+  /** One event by id, or null when it no longer exists (deleted in Outlook, already cancelled). */
+  getEvent(representative: Representative, eventId: string): Promise<CalendarEvent | null>;
   createEvent(representative: Representative, input: ConsultationEventInput): Promise<CalendarEvent>;
-  /** Moves the event; changes start/end ONLY, so a Teams meeting is never stripped from the body. */
+  /**
+   * Moves the event; changes start/end ONLY, so a Teams meeting is never stripped from the body.
+   * Throws CalendarEventMissingError when the event no longer exists.
+   */
   moveEvent(representative: Representative, eventId: string, start: Date, end: Date): Promise<void>;
   /** Cancels and notifies attendees. An event that no longer exists counts as cancelled. */
   cancelEvent(representative: Representative, eventId: string, comment: string): Promise<void>;
+}
+
+/** The event to move is gone (deleted in Outlook). The sync worker creates a new one instead. */
+export class CalendarEventMissingError extends Error {
+  constructor() {
+    super("Calendar event no longer exists");
+    this.name = "CalendarEventMissingError";
+  }
 }
 
 /** The calendar could not be checked or written. Callers fail safe: no unverified times. */

@@ -52,10 +52,12 @@ export async function POST(request: Request, context: RouteContext) {
     let outcome: string;
 
     if (action === "retry_calendar") {
-      const { data, error } = await supabase.rpc("consultation_retry_calendar_sync", { p_booking_id: bookingId });
+      const { data, error } = await supabase.rpc("consultation_retry_calendar_sync", {
+        p_booking_id: bookingId,
+        p_actor_clerk_user_id: gate.userId,
+      });
       if (error) throw new Error(`retry calendar: ${error.code ?? ""} ${error.message}`);
       if (data !== "queued") return jsonError("This consultation has no failed calendar sync to retry.", 409, "not_failed");
-      console.info("Admin consultation calendar retry queued by", gate.userId);
       after(() => runCalendarSync(supabase, { bookingId, limit: 1 }));
       return jsonResponse({ success: true, outcome: "calendar_retry_queued", message: "Calendar sync queued again." });
     }

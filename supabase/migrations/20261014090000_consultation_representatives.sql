@@ -107,7 +107,7 @@ alter table public.consultation_booking_events drop constraint if exists consult
 alter table public.consultation_booking_events add constraint consultation_booking_events_action_check check (action in (
   'CREATED', 'RESCHEDULED', 'CANCELLED', 'COMPLETED',
   'REMINDER_QUEUED', 'REMINDER_CANCELLED', 'NOTIFICATION_SENT', 'NOTIFICATION_FAILED',
-  'CALENDAR_SYNCED', 'CALENDAR_SYNC_FAILED'
+  'CALENDAR_SYNCED', 'CALENDAR_SYNC_FAILED', 'CALENDAR_RETRY_REQUESTED'
 ));
 
 alter table public.consultation_notifications drop constraint if exists consultation_notifications_kind_check;
@@ -124,6 +124,10 @@ drop function if exists public.consultation_create_booking(uuid, uuid, text, tex
 drop function if exists public.consultation_reschedule_booking(uuid, integer, timestamptz, text, text, text, text[], interval, interval, interval);
 drop function if exists public.consultation_cancel_booking(uuid, integer, text, text, text, text[]);
 drop function if exists public.consultation_busy_slots(timestamptz, timestamptz);
+-- Earlier drafts of this migration's own queue functions (re-runnable on a database that had one).
+drop function if exists public.consultation_claim_calendar_sync(integer, interval, uuid, integer);
+drop function if exists public.consultation_finish_calendar_sync(uuid, integer, text, text, text, text, text, interval, text[], integer);
+drop function if exists public.consultation_retry_calendar_sync(uuid);
 
 -- ------------------------------------------------------------------ helpers
 
@@ -499,21 +503,65 @@ $$;
 
 -- ------------------------------------------------------------------ calendar sync queue
 
--- Lease bookings whose Outlook event is behind the booking (created, moved, reassigned or
--- cancelled since the last successful sync). SKIP LOCKED + a lease: concurrent workers never
--- take the same booking, and a crashed worker's lease simply expires. Optional p_booking_id
--- lets a request sync its own booking immediately after committing it.
+-- Both founders are told once per booking version when its calendar sync gives up.
+create or replace function public.consultation_queue_calendar_alert(
+  p_booking public.consultation_bookings,
+  p_version integer,
+  p_founder_emails text[]
+)
+returns void
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_founder text;
+begin
+  foreach v_founder in array coalesce(p_founder_emails, array[]::text[]) loop
+    insert into public.consultation_notifications (booking_id, event_key, kind, recipient, payload)
+    values (p_booking.id, format('%s:calendar-failed:%s:%s', p_booking.id, p_version, lower(v_founder)),
+            'FOUNDER_CALENDAR_FAILED', v_founder,
+            jsonb_build_object('start_time', p_booking.start_time, 'end_time', p_booking.end_time,
+                               'status', p_booking.status, 'representative', p_booking.assigned_representative))
+    on conflict (event_key) do nothing;
+  end loop;
+end;
+$$;
+
+-- Lease ONE OR MORE bookings whose Outlook event is behind the booking (created, moved,
+-- reassigned or cancelled since the last successful sync). SKIP LOCKED + a lease: concurrent
+-- workers never take the same booking while the lease holds. The worker claims ONE row at a time
+-- (p_limit 1) so a slow Microsoft Graph cannot outlive the lease of rows still waiting.
+-- A worker that died during its final permitted attempt leaves the booking PENDING with no
+-- attempts left: it is settled as FAILED here, with the founder alert, so it is never stuck.
 create or replace function public.consultation_claim_calendar_sync(
   p_limit integer,
-  p_lease interval default interval '2 minutes',
+  p_lease interval default interval '5 minutes',
   p_booking_id uuid default null,
-  p_max_attempts integer default 10
+  p_max_attempts integer default 10,
+  p_founder_emails text[] default array[]::text[]
 )
 returns setof public.consultation_bookings
 language plpgsql
 set search_path = ''
 as $$
+declare
+  v_dead public.consultation_bookings;
 begin
+  for v_dead in
+    update public.consultation_bookings b
+       set calendar_sync_state = 'FAILED', calendar_lease_until = null,
+           calendar_last_error = coalesce(b.calendar_last_error, 'lease expired on the final attempt')
+     where b.calendar_sync_state = 'PENDING'
+       and b.calendar_sync_attempts >= p_max_attempts
+       and b.calendar_lease_until < now()
+    returning b.*
+  loop
+    insert into public.consultation_booking_events (booking_id, action, actor_type, next)
+    values (v_dead.id, 'CALENDAR_SYNC_FAILED', 'SYSTEM',
+            jsonb_build_object('version', v_dead.version, 'attempt', v_dead.calendar_sync_attempts, 'final', true));
+    perform public.consultation_queue_calendar_alert(v_dead, v_dead.version, p_founder_emails);
+  end loop;
+
   return query
   update public.consultation_bookings b
      set calendar_sync_attempts = b.calendar_sync_attempts + 1,
@@ -538,13 +586,17 @@ begin
 end;
 $$;
 
--- Record one sync attempt for the booking version the worker acted on.
---   synced -> event id / owner / join url stored (null event id = no event any more);
---             if the booking changed meanwhile it stays PENDING and is picked up again
---   retry  -> back off; after p_max_attempts the booking is FAILED and the founders are emailed
+-- Record one sync attempt for the booking VERSION the worker acted on, fenced by its lease.
+--   synced -> a result older than one already recorded is ignored (and, if it reports a different
+--             event, the booking is queued again so the extra event is found and cancelled);
+--             otherwise event id / owner / join url are stored; a booking changed meanwhile stays
+--             PENDING and is claimed again for the newer version
+--   retry  -> only the CURRENT version's lease holder backs off and counts towards FAILED; a
+--             superseded worker just lets go, so it cannot delay or fail the newer version
 create or replace function public.consultation_finish_calendar_sync(
   p_booking_id uuid,
   p_version integer,
+  p_lease_until timestamptz,
   p_outcome text,
   p_event_id text,
   p_event_owner text,
@@ -561,7 +613,7 @@ as $$
 declare
   v_b public.consultation_bookings;
   v_state text;
-  v_founder text;
+  v_owns boolean;
 begin
   if p_outcome not in ('synced', 'retry') then
     raise exception 'invalid outcome %', p_outcome;
@@ -571,24 +623,45 @@ begin
   if not found then
     return 'ignored';
   end if;
+  v_owns := v_b.calendar_lease_until is not distinct from p_lease_until;
 
   if p_outcome = 'synced' then
+    if p_version < v_b.calendar_synced_version then
+      if p_event_id is not null and p_event_id is distinct from v_b.calendar_event_id then
+        update public.consultation_bookings
+           set calendar_sync_state = 'PENDING',
+               calendar_synced_version = least(calendar_synced_version, version - 1),
+               calendar_sync_attempts = 0,
+               calendar_next_attempt_at = now()
+         where id = p_booking_id;
+      end if;
+      return 'ignored';
+    end if;
+
     v_state := case when v_b.version > p_version then 'PENDING' else 'SYNCED' end;
     update public.consultation_bookings
        set calendar_event_id = p_event_id,
            calendar_event_owner = case when p_event_id is null then null else p_event_owner end,
            calendar_join_url = case when p_event_id is null then null else p_join_url end,
-           calendar_synced_version = greatest(calendar_synced_version, p_version),
+           calendar_synced_version = p_version,
            calendar_sync_state = v_state,
            calendar_sync_attempts = case when v_state = 'PENDING' then 0 else calendar_sync_attempts end,
            calendar_next_attempt_at = now(),
-           calendar_lease_until = null,
+           calendar_lease_until = case when v_owns then null else calendar_lease_until end,
            calendar_last_error = null
      where id = p_booking_id;
     insert into public.consultation_booking_events (booking_id, action, actor_type, next)
     values (p_booking_id, 'CALENDAR_SYNCED', 'SYSTEM',
             jsonb_build_object('version', p_version, 'owner', p_event_owner, 'has_event', p_event_id is not null));
     return v_state;
+  end if;
+
+  -- A superseded or lease-less worker's failure says nothing about the current version.
+  if v_b.version > p_version or not v_owns then
+    if v_owns then
+      update public.consultation_bookings set calendar_lease_until = null where id = p_booking_id;
+    end if;
+    return 'superseded';
   end if;
 
   v_state := case when v_b.calendar_sync_attempts >= p_max_attempts then 'FAILED' else 'PENDING' end;
@@ -603,30 +676,43 @@ begin
           jsonb_build_object('version', p_version, 'attempt', v_b.calendar_sync_attempts, 'final', v_state = 'FAILED'));
 
   if v_state = 'FAILED' then
-    foreach v_founder in array coalesce(p_founder_emails, array[]::text[]) loop
-      insert into public.consultation_notifications (booking_id, event_key, kind, recipient, payload)
-      values (p_booking_id, format('%s:calendar-failed:%s:%s', p_booking_id, p_version, lower(v_founder)),
-              'FOUNDER_CALENDAR_FAILED', v_founder,
-              jsonb_build_object('start_time', v_b.start_time, 'end_time', v_b.end_time, 'status', v_b.status,
-                                 'representative', v_b.assigned_representative))
-      on conflict (event_key) do nothing;
-    end loop;
+    perform public.consultation_queue_calendar_alert(v_b, p_version, p_founder_emails);
   end if;
   return v_state;
 end;
 $$;
 
--- Admin "retry calendar sync" for a FAILED booking: back to the queue with a fresh budget.
-create or replace function public.consultation_retry_calendar_sync(p_booking_id uuid)
+-- Admin "retry calendar sync": a FAILED booking, or one stuck PENDING with no attempts left,
+-- goes back to the queue with a fresh budget. Audited with the admin's Clerk id.
+create or replace function public.consultation_retry_calendar_sync(
+  p_booking_id uuid,
+  p_actor_clerk_user_id text,
+  p_max_attempts integer default 10
+)
 returns text
-language sql
+language plpgsql
 set search_path = ''
 as $$
-  update public.consultation_bookings
+declare
+  v_b public.consultation_bookings;
+begin
+  update public.consultation_bookings b
      set calendar_sync_state = 'PENDING', calendar_sync_attempts = 0, calendar_next_attempt_at = now(),
          calendar_lease_until = null
-   where id = p_booking_id and calendar_sync_state = 'FAILED' and calendar_synced_version < version
-  returning 'queued'::text;
+   where b.id = p_booking_id
+     and b.calendar_synced_version < b.version
+     and (b.calendar_sync_state = 'FAILED'
+          or (b.calendar_sync_state = 'PENDING' and b.calendar_sync_attempts >= p_max_attempts
+              and (b.calendar_lease_until is null or b.calendar_lease_until < now())))
+  returning * into v_b;
+  if not found then
+    return 'not_failed';
+  end if;
+
+  insert into public.consultation_booking_events (booking_id, action, actor_type, actor_clerk_user_id, next)
+  values (p_booking_id, 'CALENDAR_RETRY_REQUESTED', 'ADMIN', p_actor_clerk_user_id, jsonb_build_object('version', v_b.version));
+  return 'queued';
+end;
 $$;
 
 -- Notification defer: the email is waiting for something else (a Teams link from the calendar
@@ -656,9 +742,10 @@ begin
     'public.consultation_reschedule_booking(uuid, integer, timestamptz, text, text, text, text[], text[], interval, interval, interval, interval)',
     'public.consultation_cancel_booking(uuid, integer, text, text, text, text[], interval)',
     'public.consultation_busy_slots(timestamptz, timestamptz)',
-    'public.consultation_claim_calendar_sync(integer, interval, uuid, integer)',
-    'public.consultation_finish_calendar_sync(uuid, integer, text, text, text, text, text, interval, text[], integer)',
-    'public.consultation_retry_calendar_sync(uuid)',
+    'public.consultation_queue_calendar_alert(public.consultation_bookings, integer, text[])',
+    'public.consultation_claim_calendar_sync(integer, interval, uuid, integer, text[])',
+    'public.consultation_finish_calendar_sync(uuid, integer, timestamptz, text, text, text, text, text, interval, text[], integer)',
+    'public.consultation_retry_calendar_sync(uuid, text, integer)',
     'public.consultation_defer_notification(uuid, interval)'
   ] loop
     execute format('revoke all on function %s from public', f);

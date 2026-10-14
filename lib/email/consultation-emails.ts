@@ -67,6 +67,8 @@ export type ConsultationEmailInput = {
   /* Microsoft 365 connected: the calendar invitation carries the Teams link. */
   calendarConnected?: boolean;
   calendarError?: string | null;
+  /* The booking has been cancelled (calendar failure alert wording). */
+  bookingCancelled?: boolean;
   /* Customer emails for an active booking carry the management link. */
   manageUrl?: string | null;
   assetOrigin: string;
@@ -124,9 +126,8 @@ function meetingBlocks(input: ConsultationEmailInput): { blocks: string[]; lines
       lines: [`Microsoft Teams meeting: ${input.joinUrl}`],
     };
   }
-  const text = input.calendarConnected
-    ? "Your Microsoft Teams link is in the calendar invitation sent to this email address. If you cannot find it, reply to this email and we will send it again."
-    : "We will email your Microsoft Teams link before the consultation.";
+  // No link yet means the invitation may not exist either: never claim it was sent.
+  const text = "Your Microsoft Teams link will follow in a calendar invitation from Drylake. If it has not arrived by the day before, reply to this email and we will send it.";
   return { blocks: [messageBlock({ title: "Microsoft Teams video call", text })], lines: [`Microsoft Teams video call: ${text}`] };
 }
 
@@ -294,6 +295,7 @@ function compose(input: ConsultationEmailInput): Parts {
         preheader: `${when}. Reference ${ref}.`,
         blocks: [
           detailTable([...founderRows, ...founderLink]),
+          ...manualInvite(input),
           detailTable(customerDetailRows(input)),
           messageBlock({ title: "About their business or project", text: input.projectDescription }),
           paragraph("Reply to this email to write to the customer directly.", { muted: true, small: true }),
@@ -304,6 +306,7 @@ function compose(input: ConsultationEmailInput): Parts {
           `Booking reference: ${ref}`,
           `When: ${when}`,
           ...methodLines(input),
+          ...manualInviteLines(input),
           `Name: ${input.customerName}`,
           `Email: ${input.customerEmail}`,
           `Phone: ${input.customerPhone || "Not provided"}`,
@@ -322,6 +325,7 @@ function compose(input: ConsultationEmailInput): Parts {
         blocks: [
           paragraph(`Rescheduled by ${actorPhrase(input.actor)}.`),
           detailTable([...founderRows, { label: "Previous time", value: previous }, ...founderLink]),
+          ...manualInvite(input),
           detailTable(customerDetailRows(input)),
         ],
         lines: [
@@ -331,6 +335,7 @@ function compose(input: ConsultationEmailInput): Parts {
           `New time: ${when}`,
           `Previous time: ${previous}`,
           ...methodLines(input),
+          ...manualInviteLines(input),
           `Email: ${input.customerEmail}`,
         ],
       };
@@ -357,8 +362,9 @@ function compose(input: ConsultationEmailInput): Parts {
       };
 
     case "FOUNDER_CALENDAR_FAILED": {
-      const intro =
-        "Drylake could not update Microsoft 365 for this consultation after repeated attempts. The booking itself stands and the customer has their email, but the Outlook event, the calendar invitation or the Teams link may be missing or out of date.";
+      const intro = input.bookingCancelled
+        ? "This consultation is CANCELLED, but Drylake could not cancel its Outlook event after repeated attempts. The calendar invitation and any Teams link may still be live for the customer. Cancel the event in Outlook by hand."
+        : "Drylake could not update Microsoft 365 for this consultation after repeated attempts. The booking itself stands and the customer has their email, but the Outlook event, the calendar invitation or the Teams link may be missing or out of date.";
       const action = "Open Admin > Consultations, check the booking, and use Retry calendar sync once Microsoft 365 is working.";
       return {
         eyebrow: "Action needed",
@@ -376,6 +382,19 @@ function compose(input: ConsultationEmailInput): Parts {
       };
     }
   }
+}
+
+/* Founders: with no calendar connected, nobody sends the Teams invitation unless they do. */
+function manualInvite(input: ConsultationEmailInput): string[] {
+  return input.method === "TEAMS" && input.calendarConnected === false
+    ? [messageBlock({ title: "Action needed", text: "Calendar integration is off. Send this customer a Microsoft Teams invitation from the representative's Outlook." })]
+    : [];
+}
+
+function manualInviteLines(input: ConsultationEmailInput): string[] {
+  return input.method === "TEAMS" && input.calendarConnected === false
+    ? ["Action needed: Calendar integration is off. Send this customer a Microsoft Teams invitation from the representative's Outlook."]
+    : [];
 }
 
 function methodLines(input: ConsultationEmailInput): string[] {

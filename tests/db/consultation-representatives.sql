@@ -156,7 +156,7 @@ begin
   perform pg_temp.eq(claimed, 1, 'booking claimed for calendar sync');
   perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id)), 0, 'a leased booking is not claimed twice');
 
-  st := public.consultation_finish_calendar_sync(b.id, b.version, 'synced', 'evt-1', 'wilson', 'https://teams.microsoft.com/l/meetup-join/x',
+  st := public.consultation_finish_calendar_sync(b.id, b.version, (select calendar_lease_until from public.consultation_bookings where id = b.id), 'synced', 'evt-1', 'wilson', 'https://teams.microsoft.com/l/meetup-join/x',
                                                  null, interval '0', array[]::text[]);
   perform pg_temp.eq(st, 'SYNCED', 'sync recorded');
   perform pg_temp.eq((select calendar_join_url from public.consultation_bookings where id = b.id), 'https://teams.microsoft.com/l/meetup-join/x', 'join URL stored');
@@ -166,7 +166,7 @@ begin
   perform public.consultation_cancel_booking(b.id, b.version, 'CUSTOMER', null, null, array[]::text[]);
   perform pg_temp.eq((select calendar_sync_state from public.consultation_bookings where id = b.id), 'PENDING', 'cancellation queues the event cancellation');
   perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id)), 1, 'cancelled booking with an event is claimed');
-  st := public.consultation_finish_calendar_sync(b.id, b.version + 1, 'synced', null, null, null, null, interval '0', array[]::text[]);
+  st := public.consultation_finish_calendar_sync(b.id, b.version + 1, (select calendar_lease_until from public.consultation_bookings where id = b.id), 'synced', null, null, null, null, interval '0', array[]::text[]);
   perform pg_temp.eq((select calendar_event_id from public.consultation_bookings where id = b.id), null::text, 'event id cleared after cancellation');
   perform pg_temp.eq(pg_temp.book_outcome(pg_temp.fri(9, 0), 'r6@example.com', array['wilson']), 'created', 'cancelled slot is bookable again for Wilson');
 end $$;
@@ -175,16 +175,77 @@ end $$;
 do $$
 declare
   b public.consultation_bookings;
+  lease timestamptz;
   st text;
 begin
   select * into b from public.consultation_bookings where customer_email = 'r2@example.com';
-  perform public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id);
+  perform public.consultation_claim_calendar_sync(1, interval '2 minutes', b.id);
+  select calendar_lease_until into lease from public.consultation_bookings where id = b.id;
   perform public.consultation_cancel_booking(b.id, b.version, 'ADMIN', 'user_admin', null, array[]::text[]);  -- races the worker
-  st := public.consultation_finish_calendar_sync(b.id, b.version, 'synced', 'evt-2', 'benedict', null, null, interval '0', array[]::text[]);
+  st := public.consultation_finish_calendar_sync(b.id, b.version, lease, 'synced', 'evt-2', 'benedict', null, null, interval '0', array[]::text[]);
   perform pg_temp.eq(st, 'PENDING', 'a sync for an older version keeps the booking queued');
-  update public.consultation_bookings set calendar_lease_until = null where id = b.id;
-  perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id)), 1,
+  perform pg_temp.eq((select calendar_lease_until from public.consultation_bookings where id = b.id), null::timestamptz, 'the lease holder releases its lease');
+  perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(1, interval '2 minutes', b.id)), 1,
                      'the event created by the losing worker is picked up for cancellation');
+end $$;
+
+-- A LATE result (older than one already recorded) changes nothing, and never strands the booking.
+do $$
+declare
+  b public.consultation_bookings;
+  st text;
+begin
+  select * into b from public.consultation_bookings where customer_email = 'p1@example.com';
+  -- Version 2 (reschedule) is synced first with event E2 ...
+  perform public.consultation_reschedule_booking(b.id, b.version, pg_temp.fri(16, 0), 'ADMIN', 'user_admin', repeat('8', 64),
+    array[]::text[], array['wilson']);
+  perform public.consultation_claim_calendar_sync(1, interval '2 minutes', b.id);
+  st := public.consultation_finish_calendar_sync(b.id, b.version + 1, (select calendar_lease_until from public.consultation_bookings where id = b.id),
+                                                 'synced', 'evt-E2', 'wilson', null, null, interval '0', array[]::text[]);
+  perform pg_temp.eq(st, 'SYNCED', 'newer version synced');
+  -- ... then the worker that handled version 1 reports E1, lease long gone.
+  st := public.consultation_finish_calendar_sync(b.id, b.version, now() - interval '1 hour', 'synced', 'evt-E1', 'wilson', 'https://old', null,
+                                                 interval '0', array[]::text[]);
+  perform pg_temp.eq(st, 'ignored', 'a late result for an older version is ignored');
+  perform pg_temp.eq((select calendar_event_id from public.consultation_bookings where id = b.id), 'evt-E2', 'the newer event id is kept');
+  perform pg_temp.eq((select calendar_sync_state from public.consultation_bookings where id = b.id), 'PENDING', 'the stray event is queued for cleanup');
+  perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(1, interval '2 minutes', b.id)), 1,
+                     'and the booking is claimable again (not stranded)');
+  update public.consultation_bookings set calendar_lease_until = null where id = b.id;
+end $$;
+
+-- A superseded worker's failure neither delays nor fails the newer version.
+do $$
+declare
+  b public.consultation_bookings;
+  lease timestamptz;
+  st text;
+begin
+  select * into b from public.consultation_bookings where customer_email = 'r6@example.com';
+  perform public.consultation_claim_calendar_sync(1, interval '2 minutes', b.id);
+  select calendar_lease_until into lease from public.consultation_bookings where id = b.id;
+  perform public.consultation_reschedule_booking(b.id, b.version, pg_temp.fri(16, 30), 'ADMIN', 'user_admin', repeat('9', 64),
+    array[]::text[], array['wilson', 'benedict']);
+  st := public.consultation_finish_calendar_sync(b.id, b.version, lease, 'retry', null, null, null, 'graph 503', interval '60 minutes', array[]::text[]);
+  perform pg_temp.eq(st, 'superseded', 'old-version failure reported as superseded');
+  perform pg_temp.eq((select calendar_next_attempt_at <= now() from public.consultation_bookings where id = b.id), true, 'the newer version is not pushed back');
+  perform pg_temp.eq((select calendar_last_error from public.consultation_bookings where id = b.id), null::text, 'no stale error recorded');
+end $$;
+
+-- A worker that dies on its final attempt: settled as FAILED at the next claim, founders told.
+do $$
+declare
+  b public.consultation_bookings;
+begin
+  select * into b from public.consultation_bookings where customer_email = 'r6@example.com';
+  update public.consultation_bookings set calendar_sync_attempts = 10, calendar_lease_until = now() - interval '1 second' where id = b.id;
+  perform public.consultation_claim_calendar_sync(10, interval '2 minutes', null, 10, array['wilson@drylake.com.au', 'benedict@drylake.com.au']);
+  perform pg_temp.eq((select calendar_sync_state from public.consultation_bookings where id = b.id), 'FAILED', 'dead final attempt settled as FAILED');
+  perform pg_temp.eq((select count(*)::int from public.consultation_notifications where booking_id = b.id and kind = 'FOUNDER_CALENDAR_FAILED'), 2,
+                     'both founders alerted for the dead final attempt');
+  perform pg_temp.eq(public.consultation_retry_calendar_sync(b.id, 'user_admin'), 'queued', 'admin can retry it');
+  perform pg_temp.eq((select actor_clerk_user_id from public.consultation_booking_events where booking_id = b.id and action = 'CALENDAR_RETRY_REQUESTED'),
+                     'user_admin', 'the admin retry is audited with the admin id');
 end $$;
 
 -- Retries back off; the last failure marks FAILED and emails both founders once.
@@ -196,15 +257,15 @@ declare
 begin
   select * into b from public.consultation_bookings where customer_email = 'r4@example.com';
   for i in 1..3 loop
-    perform public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id, 3);
-    st := public.consultation_finish_calendar_sync(b.id, b.version, 'retry', null, null, null, 'graph 503', interval '0',
+    perform public.consultation_claim_calendar_sync(1, interval '2 minutes', b.id, 3);
+    st := public.consultation_finish_calendar_sync(b.id, b.version, (select calendar_lease_until from public.consultation_bookings where id = b.id), 'retry', null, null, null, 'graph 503', interval '0',
                                                    array['wilson@drylake.com.au', 'benedict@drylake.com.au'], 3);
   end loop;
   perform pg_temp.eq(st, 'FAILED', 'third failure marks the booking FAILED');
   perform pg_temp.eq((select count(*)::int from public.consultation_notifications where booking_id = b.id and kind = 'FOUNDER_CALENDAR_FAILED'), 2,
                      'both founders told the calendar sync failed');
   perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id, 3)), 0, 'a FAILED booking is not retried automatically');
-  perform pg_temp.eq(public.consultation_retry_calendar_sync(b.id), 'queued', 'admin retry re-queues it');
+  perform pg_temp.eq(public.consultation_retry_calendar_sync(b.id, 'user_admin'), 'queued', 'admin retry re-queues it');
   perform pg_temp.eq((select count(*)::int from public.consultation_claim_calendar_sync(10, interval '2 minutes', b.id, 3)), 1, 'retried booking claimed again');
 end $$;
 

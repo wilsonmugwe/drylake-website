@@ -121,6 +121,8 @@ export function describeEvent(event: ConsultationEvent): string {
     }
     case "CALENDAR_SYNCED":
       return event.next?.has_event ? "Microsoft 365 calendar updated" : "Microsoft 365 event removed";
+    case "CALENDAR_RETRY_REQUESTED":
+      return `Calendar sync retried by ${who.toLowerCase()}`;
     case "CALENDAR_SYNC_FAILED":
       return `Microsoft 365 calendar update failed${event.next?.final ? " (gave up, founders alerted)" : " (will retry)"}`;
     case "CANCELLED":

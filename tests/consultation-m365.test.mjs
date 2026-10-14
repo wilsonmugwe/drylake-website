@@ -13,7 +13,7 @@ import { freeRepresentativeChecker } from "../lib/consultations/availability.ts"
 import { calendarRetryMinutes, reconcileBooking, runCalendarSyncPass } from "../lib/consultations/calendar-sync.ts";
 import { BOOKING_PROPERTY_ID, createMicrosoftGraphProvider, eventBody, parseGraphUtc } from "../lib/consultations/calendar/microsoft-graph.ts";
 import { calendarSetting } from "../lib/consultations/calendar/provider.ts";
-import { CalendarUnavailableError } from "../lib/consultations/calendar/types.ts";
+import { CalendarEventMissingError, CalendarUnavailableError } from "../lib/consultations/calendar/types.ts";
 import { CALENDAR_WAIT_MINUTES, dispatchConsultationNotifications, joinUrlFor, waitingForCalendar } from "../lib/consultations/dispatch.ts";
 import { describeOutcome } from "../lib/consultations/outcomes.ts";
 import { REPRESENTATIVES, REPRESENTATIVE_KEYS } from "../lib/consultations/representatives.ts";
@@ -256,18 +256,28 @@ describe("Microsoft Graph provider", () => {
     await assert.rejects(() => failing.cancelEvent(WILSON, "evt-1", "x"), CalendarUnavailableError);
   });
 
-  it("finds an event by its booking tag", async () => {
-    const { provider, calls } = fakeGraph(() => Response.json({ value: [{ id: "evt-9", isCancelled: false, start: { dateTime: graphTime(slot) } }] }));
-    const found = await provider.findEvent(WILSON, "b-9");
-    assert.equal(found.id, "evt-9");
-    assert.equal(found.start, ms(slot));
-    assert.match(decodeURIComponent(calls.at(-1).url), /ep\/value eq 'b-9'/);
+  it("finds live events by booking tag, and refuses a non-UUID id (no $filter injection)", async () => {
+    const id = "4f7a5c1e-1111-4222-8333-444455556666";
+    const { provider, calls } = fakeGraph(() =>
+      Response.json({ value: [{ id: "evt-9", isCancelled: false, start: { dateTime: graphTime(slot) } }, { id: "evt-8", isCancelled: true }] })
+    );
+    const found = await provider.findEvents(WILSON, id);
+    assert.deepEqual(found.map((e) => e.id), ["evt-9"]);
+    assert.equal(found[0].start, ms(slot));
+    assert.match(decodeURIComponent(calls.at(-1).url), new RegExp(`ep/value eq '${id}'`));
+    await assert.rejects(() => provider.findEvents(WILSON, "x' or true"), CalendarUnavailableError);
+  });
+
+  it("reads one event by id; gone means null; a move of a gone event says so", async () => {
+    const { provider } = fakeGraph(() => new Response("{}", { status: 404 }));
+    assert.equal(await provider.getEvent(WILSON, "evt-1"), null);
+    await assert.rejects(() => provider.moveEvent(WILSON, "evt-1", slot, slot), CalendarEventMissingError);
   });
 });
 
 /* ------------------------------------------------------------------ calendar sync */
 
-function fakeProvider(initial = {}) {
+function fakeProvider(initial = {}, { hiddenFromSearch = false } = {}) {
   const events = new Map(Object.entries(initial)); // id -> { rep, bookingId, start }
   const log = [];
   let n = 0;
@@ -277,9 +287,13 @@ function fakeProvider(initial = {}) {
     provider: {
       name: "fake",
       async getBusy() { return new Map(); },
-      async findEvent(rep, bookingId) {
-        for (const [id, e] of events) if (e.rep === rep.key && e.bookingId === bookingId) return { id, joinUrl: e.joinUrl ?? null, start: e.start };
-        return null;
+      async findEvents(rep, bookingId) {
+        if (hiddenFromSearch) return [];
+        return [...events].filter(([, e]) => e.rep === rep.key && e.bookingId === bookingId).map(([id, e]) => ({ id, joinUrl: e.joinUrl ?? null, start: e.start }));
+      },
+      async getEvent(rep, id) {
+        const e = events.get(id);
+        return e && e.rep === rep.key ? { id, joinUrl: e.joinUrl ?? null, start: e.start } : null;
       },
       async createEvent(rep, input) {
         const id = `evt-${++n}`;
@@ -288,6 +302,7 @@ function fakeProvider(initial = {}) {
         return { id, joinUrl: events.get(id).joinUrl, start: ms(input.start) };
       },
       async moveEvent(rep, id, start) {
+        if (!events.has(id)) throw new CalendarEventMissingError();
         events.get(id).start = ms(start);
         log.push(["move", rep.key, id]);
       },
@@ -305,6 +320,7 @@ const syncRow = (over = {}) => ({
   assigned_representative: "wilson", meeting_method: "TEAMS",
   customer_name: "Sam", customer_email: "sam@example.com", customer_phone: null,
   calendar_event_id: null, calendar_event_owner: null, calendar_join_url: null, calendar_sync_attempts: 1,
+  calendar_lease_until: "2026-10-14T04:05:00.123456+00:00",
   ...over,
 });
 
@@ -336,6 +352,32 @@ describe("calendar reconciliation", () => {
     assert.equal(result.owner, "benedict");
     assert.equal(f.events.size, 1);
   });
+  it("a crash mid-reassignment never produces a second invitation (recorded id is only a hint)", async () => {
+    // Attempt 1 cancelled Wilson's E1 and created Benedict's E2, then died before recording it.
+    const f = fakeProvider({ "evt-2": { rep: "benedict", bookingId: "b-1", start: ms(slot) } });
+    const result = await reconcileBooking(f.provider, syncRow({ version: 2, assigned_representative: "benedict", calendar_event_id: "evt-1", calendar_event_owner: "wilson" }));
+    assert.deepEqual(f.log, [], "adopts E2, creates nothing");
+    assert.equal(result.eventId, "evt-2");
+  });
+  it("duplicates in the assigned calendar are cancelled, keeping the recorded one", async () => {
+    const f = fakeProvider({ "evt-a": { rep: "wilson", bookingId: "b-1", start: ms(slot) }, "evt-b": { rep: "wilson", bookingId: "b-1", start: ms(slot) } });
+    const result = await reconcileBooking(f.provider, syncRow({ calendar_event_id: "evt-b", calendar_event_owner: "wilson" }));
+    assert.equal(result.eventId, "evt-b");
+    assert.deepEqual(f.log, [["cancel", "wilson", "evt-a"]]);
+  });
+  it("an event deleted in Outlook is recreated instead of failing forever", async () => {
+    const later = new Date(ms(slot) + 3_600_000);
+    const f = fakeProvider();
+    const result = await reconcileBooking(f.provider, syncRow({ version: 2, start_time: later.toISOString(), end_time: new Date(ms(later) + 1_800_000).toISOString(), calendar_event_id: "evt-gone", calendar_event_owner: "wilson" }));
+    assert.deepEqual(f.log.map((l) => l[0]), ["create"]);
+    assert.ok(result.eventId);
+  });
+  it("if the tag search misses, the recorded event is still found and moved (no duplicate)", async () => {
+    const later = new Date(ms(slot) + 3_600_000);
+    const f = fakeProvider({ "evt-1": { rep: "wilson", bookingId: "b-1", start: ms(slot) } }, { hiddenFromSearch: true });
+    await reconcileBooking(f.provider, syncRow({ version: 2, start_time: later.toISOString(), end_time: new Date(ms(later) + 1_800_000).toISOString(), calendar_event_id: "evt-1", calendar_event_owner: "wilson" }));
+    assert.deepEqual(f.log, [["move", "wilson", "evt-1"]]);
+  });
   it("on cancellation cancels the event, found by tag when no id was recorded", async () => {
     const f = fakeProvider({ "evt-x": { rep: "benedict", bookingId: "b-1", start: ms(slot) } });
     const result = await reconcileBooking(f.provider, syncRow({ status: "CANCELLED", version: 2 }));
@@ -346,14 +388,30 @@ describe("calendar reconciliation", () => {
     const f = fakeProvider();
     const broken = { ...f.provider, createEvent: async () => { throw new CalendarUnavailableError("Event creation failed (503)"); } };
     const finished = [];
+    let handed = 0;
     const summary = await runCalendarSyncPass({
       provider: broken,
-      claim: async () => [syncRow({ calendar_sync_attempts: 3 })],
+      claimOne: async () => (handed++ === 0 ? [syncRow({ calendar_sync_attempts: 3 })] : []),
       finish: async (row, outcome, result, error, retry) => finished.push({ outcome, error, retry }),
     });
     assert.deepEqual(summary, { claimed: 1, synced: 0, retried: 1 });
     assert.deepEqual(finished, [{ outcome: "retry", error: "Event creation failed (503)", retry: 4 }]);
     assert.equal(calendarRetryMinutes(20), 60);
+  });
+  it("claims ONE booking at a time (each lease only covers one booking's Graph calls)", async () => {
+    const f = fakeProvider();
+    const claims = [];
+    const queue = [syncRow({ id: "4f7a5c1e-1111-4222-8333-000000000001" }), syncRow({ id: "4f7a5c1e-1111-4222-8333-000000000002" })];
+    const summary = await runCalendarSyncPass({
+      provider: f.provider,
+      claimOne: async (bookingId) => {
+        claims.push(bookingId);
+        return queue.length ? [queue.shift()] : [];
+      },
+      finish: async () => {},
+    }, { limit: 10 });
+    assert.equal(summary.synced, 2);
+    assert.equal(claims.length, 3, "one claim per booking, plus the empty one that ends the pass");
   });
 });
 
@@ -416,9 +474,16 @@ describe("consultation emails with method and representative", () => {
     assert.match(e.html, /Wilson/);
     assert.match(e.html, /2 hours before/);
   });
-  it("Teams without a link points at the calendar invitation, or promises it when no calendar is connected", () => {
-    assert.match(renderConsultationEmail({ ...base, kind: "CUSTOMER_CONFIRMATION", method: "TEAMS", calendarConnected: true }).text, /calendar invitation/);
-    assert.match(renderConsultationEmail({ ...base, kind: "CUSTOMER_CONFIRMATION", method: "TEAMS", calendarConnected: false }).text, /We will email your Microsoft Teams link/);
+  it("Teams without a link never claims an invitation was already sent", () => {
+    for (const calendarConnected of [true, false]) {
+      const text = renderConsultationEmail({ ...base, kind: "CUSTOMER_CONFIRMATION", method: "TEAMS", calendarConnected }).text;
+      assert.match(text, /will follow in a calendar invitation/);
+      assert.doesNotMatch(text, /is in the calendar invitation sent/);
+    }
+  });
+  it("with no calendar connected, founders are told to send the Teams invitation by hand", () => {
+    assert.match(renderConsultationEmail({ ...base, kind: "FOUNDER_NEW_BOOKING", method: "TEAMS", calendarConnected: false }).text, /Calendar integration is off/);
+    assert.doesNotMatch(renderConsultationEmail({ ...base, kind: "FOUNDER_NEW_BOOKING", method: "TEAMS", calendarConnected: true }).text, /Calendar integration is off/);
   });
   it("phone confirmation says Drylake will call, with the number, and no Teams wording", () => {
     const e = renderConsultationEmail({ ...base, kind: "CUSTOMER_CONFIRMATION", method: "PHONE" });
@@ -435,6 +500,9 @@ describe("consultation emails with method and representative", () => {
     assert.match(e.subject, /Calendar Sync Failed/);
     assert.match(e.text, /Retry calendar sync/);
     assert.match(e.text, /ErrorAccessDenied/);
+    const cancelled = renderConsultationEmail({ ...base, kind: "FOUNDER_CALENDAR_FAILED", method: "TEAMS", bookingCancelled: true });
+    assert.match(cancelled.text, /CANCELLED, but Drylake could not cancel its Outlook event/);
+    assert.doesNotMatch(cancelled.text, /booking itself stands/);
   });
   it("no em dashes in any consultation email", () => {
     for (const kind of ["CUSTOMER_CONFIRMATION", "CUSTOMER_REMINDER", "CUSTOMER_RESCHEDULED", "CUSTOMER_CANCELLED", "FOUNDER_NEW_BOOKING", "FOUNDER_RESCHEDULED", "FOUNDER_CANCELLED", "FOUNDER_CALENDAR_FAILED"]) {
