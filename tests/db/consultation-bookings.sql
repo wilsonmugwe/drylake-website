@@ -1,4 +1,7 @@
--- Database tests for supabase/migrations/20261013120000_consultation_bookings.sql.
+-- Database tests for supabase/migrations/20261013120000_consultation_bookings.sql as amended by
+-- 20261014090000_consultation_representatives.sql (one representative here: Benedict, so the
+-- original single-calendar rules are exercised unchanged; multi-representative rules live in
+-- tests/db/consultation-representatives.sql).
 -- Run by tests/db/run-consultation-db-tests.sh against a throwaway Postgres. Any failed
 -- assertion raises and stops the run (psql -v ON_ERROR_STOP=1).
 
@@ -26,7 +29,7 @@ returns text language sql as $$
   select outcome from public.consultation_create_booking(
     gen_random_uuid(), p_key, 'DL-' || substr(md5(random()::text), 1, 6), 'Test Person', p_email, null, null,
     'About my business', p_start, md5(random()::text) || md5(random()::text),
-    array['wilson@drylake.com.au', 'benedict@drylake.com.au']);
+    array['wilson@drylake.com.au', 'benedict@drylake.com.au'], 'TEAMS', array['benedict']);
 $$;
 
 set client_min_messages = notice;
@@ -52,9 +55,9 @@ select pg_temp.eq(pg_temp.book(pg_temp.slot(0, 10, 0, 6)), 'too_far', 'beyond th
 do $$
 begin
   insert into public.consultation_bookings (id, reference, customer_name, customer_email, project_description,
-    start_time, end_time, idempotency_key, management_token_hash, management_token_expires_at)
+    start_time, end_time, idempotency_key, management_token_hash, management_token_expires_at, assigned_representative, meeting_method)
   values (gen_random_uuid(), 'DL-DIRECT', 'X', 'x@example.com', 'x', pg_temp.slot(2, 10, 0), pg_temp.slot(2, 10, 30),
-    gen_random_uuid(), repeat('a', 64), now() + interval '30 days');
+    gen_random_uuid(), repeat('a', 64), now() + interval '30 days', 'benedict', 'TEAMS');
   raise exception 'FAIL direct Wednesday insert was accepted';
 exception when check_violation then
   raise notice 'ok  CHECK constraint refuses a direct Wednesday insert';
@@ -66,9 +69,9 @@ select pg_temp.eq(pg_temp.book(pg_temp.slot(0, 10, 0), 'd@example.com'), 'slot_t
 do $$
 begin
   insert into public.consultation_bookings (id, reference, customer_name, customer_email, project_description,
-    start_time, end_time, idempotency_key, management_token_hash, management_token_expires_at)
+    start_time, end_time, idempotency_key, management_token_hash, management_token_expires_at, assigned_representative, meeting_method)
   values (gen_random_uuid(), 'DL-DIRECT2', 'X', 'x@example.com', 'x', pg_temp.slot(0, 10, 0), pg_temp.slot(0, 10, 30),
-    gen_random_uuid(), repeat('b', 64), now() + interval '30 days');
+    gen_random_uuid(), repeat('b', 64), now() + interval '30 days', 'benedict', 'TEAMS');
   raise exception 'FAIL direct overlapping insert was accepted';
 exception when exclusion_violation then
   raise notice 'ok  EXCLUDE constraint refuses a direct overlapping insert';
@@ -120,20 +123,20 @@ begin
 
   -- Into an occupied slot: refused, original untouched.
   select * into r from public.consultation_reschedule_booking(b.id, b.version, pg_temp.slot(1, 10, 0), 'CUSTOMER', null, repeat('c', 64),
-    array['wilson@drylake.com.au', 'benedict@drylake.com.au']);
+    array['wilson@drylake.com.au', 'benedict@drylake.com.au'], array['benedict']);
   perform pg_temp.eq(r.outcome, 'slot_taken', 'reschedule into a booked slot refused');
   perform pg_temp.eq((select start_time from public.consultation_bookings where id = b.id), b.start_time, 'original slot preserved after failed reschedule');
   perform pg_temp.eq((select status from public.consultation_notifications where id = old_reminder), 'PENDING', 'reminder untouched after failed reschedule');
 
   -- Invalid day and stale version.
-  select * into r from public.consultation_reschedule_booking(b.id, b.version, pg_temp.slot(2, 10, 0), 'CUSTOMER', null, repeat('c', 64), array[]::text[]);
+  select * into r from public.consultation_reschedule_booking(b.id, b.version, pg_temp.slot(2, 10, 0), 'CUSTOMER', null, repeat('c', 64), array[]::text[], array['benedict']);
   perform pg_temp.eq(r.outcome, 'invalid_slot', 'reschedule to Wednesday refused');
-  select * into r from public.consultation_reschedule_booking(b.id, b.version + 5, pg_temp.slot(0, 11, 0), 'CUSTOMER', null, repeat('c', 64), array[]::text[]);
+  select * into r from public.consultation_reschedule_booking(b.id, b.version + 5, pg_temp.slot(0, 11, 0), 'CUSTOMER', null, repeat('c', 64), array[]::text[], array['benedict']);
   perform pg_temp.eq(r.outcome, 'stale', 'reschedule with a stale version refused');
 
   -- Success: same row moves, old slot is free, reminder re-queued.
   select * into r from public.consultation_reschedule_booking(b.id, b.version, pg_temp.slot(0, 11, 0), 'ADMIN', 'user_admin', repeat('c', 64),
-    array['wilson@drylake.com.au', 'benedict@drylake.com.au']);
+    array['wilson@drylake.com.au', 'benedict@drylake.com.au'], array['benedict']);
   perform pg_temp.eq(r.outcome, 'rescheduled', 'reschedule to a free slot succeeds');
   perform pg_temp.eq(r.version, b.version + 1, 'version bumped');
   perform pg_temp.eq((select status from public.consultation_bookings where id = b.id), 'RESCHEDULED', 'status RESCHEDULED');
@@ -194,15 +197,15 @@ declare
 begin
   reset role;  -- seed a past booking directly (the function refuses past times by design)
   insert into public.consultation_bookings (id, reference, customer_name, customer_email, project_description,
-    start_time, end_time, idempotency_key, management_token_hash, management_token_expires_at)
+    start_time, end_time, idempotency_key, management_token_hash, management_token_expires_at, assigned_representative, meeting_method)
   values (past_id, 'DL-PAST01', 'Past', 'past@example.com', 'x', pg_temp.slot(0, 10, 0, -1), pg_temp.slot(0, 10, 30, -1),
-    gen_random_uuid(), repeat('d', 64), now() + interval '30 days');
+    gen_random_uuid(), repeat('d', 64), now() + interval '30 days', 'benedict', 'TEAMS');
   set role service_role;
 
-  select * into r from public.consultation_reschedule_booking(past_id, 1, pg_temp.slot(1, 15, 0), 'CUSTOMER', null, repeat('e', 64), array[]::text[]);
-  perform pg_temp.eq(r.outcome, 'already_started', 'customer cannot move a started appointment');
+  select * into r from public.consultation_reschedule_booking(past_id, 1, pg_temp.slot(1, 15, 0), 'CUSTOMER', null, repeat('e', 64), array[]::text[], array['benedict']);
+  perform pg_temp.eq(r.outcome, 'change_window_closed', 'customer cannot move a started appointment');
   select * into r from public.consultation_cancel_booking(past_id, 1, 'CUSTOMER', null, null, array[]::text[]);
-  perform pg_temp.eq(r.outcome, 'already_started', 'customer cannot cancel a started appointment');
+  perform pg_temp.eq(r.outcome, 'change_window_closed', 'customer cannot cancel a started appointment');
 
   select * into future from public.consultation_bookings where start_time = pg_temp.slot(1, 10, 0);
   select * into r from public.consultation_complete_booking(future.id, future.version, 'user_admin');
@@ -224,7 +227,9 @@ begin
     from (select (row(gen_random_uuid(), 'DL-SHORT', 'S', 's@example.com', null, null, 'x',
                       now() + interval '20 hours', now() + interval '20 hours 30 minutes', 'Australia/Perth',
                       'CONFIRMED', 1, gen_random_uuid(), repeat('f', 64), now(), 0, null, null, null, null, null,
-                      now(), now())::public.consultation_bookings) as x) s;
+                      now(), now(),
+                      -- representative, method, then the calendar sync columns (20261014090000)
+                      'benedict', 'TEAMS', null, null, null, 0, 'PENDING', 0, now(), null, null)::public.consultation_bookings) as x) s;
   set role service_role;
   perform pg_temp.eq((select count(*)::int from public.consultation_notifications where recipient = 's@example.com'), 0,
                      'no reminder queued for a booking inside 24h');
@@ -275,7 +280,7 @@ end $$;
 reset role;
 select pg_temp.eq(
   (select pg_get_function_result(p.oid) from pg_proc p where p.proname = 'consultation_busy_slots'),
-  'TABLE(start_time timestamp with time zone)', 'busy-slot function returns start times only');
+  'TABLE(start_time timestamp with time zone, representative text)', 'busy-slot function returns start times and roster keys only');
 
 -- ---------------------------------------------------------------- audit log is append-only
 do $$
