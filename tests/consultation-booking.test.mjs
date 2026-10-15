@@ -236,9 +236,9 @@ describe("consultation emails", () => {
       assert.doesNotMatch(email.html, /<b>lost<\/b>/, `${kind} did not escape customer text`);
     }
   });
-  it("customer confirmation carries what to expect, duration and the Manage Appointment button", () => {
+  it("customer confirmation carries what to expect, duration and the Manage Booking button", () => {
     const email = renderConsultationEmail({ ...base, kind: "CUSTOMER_CONFIRMATION" });
-    assert.match(email.html, /Manage Appointment/);
+    assert.match(email.html, /Manage Booking/);
     assert.match(email.html, /What to expect/);
     assert.match(email.html, /30 minutes/);
     assert.match(email.html, /no obligation/i);
@@ -259,7 +259,7 @@ describe("consultation emails", () => {
   it("a cancellation by Drylake includes the reason; no manage link on cancellations", () => {
     const email = renderConsultationEmail({ ...base, kind: "CUSTOMER_CANCELLED", actor: "ADMIN", cancellationReason: "Founder unwell", manageUrl: null });
     assert.match(email.html, /Founder unwell/);
-    assert.doesNotMatch(email.html, /Manage Appointment/);
+    assert.doesNotMatch(email.html, /Manage Booking/);
   });
 });
 

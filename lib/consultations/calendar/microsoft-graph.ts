@@ -74,7 +74,7 @@ export function eventBody(input: ConsultationEventInput): string {
     input.method === "PHONE"
       ? `This is a phone consultation. Drylake will call you on ${escapeHtml(input.customerPhone ?? "the number you gave us")} at the appointment time.`
       : "This is a Microsoft Teams video call. Join with the Teams link in this invitation.";
-  const change = "To reschedule or cancel, use the Manage Appointment link in your confirmation email from Drylake.";
+  const change = "To reschedule or cancel, use the Manage Booking button in your confirmation email from Drylake.";
   return `<p>${intro}</p><p>${how}</p><p>${change}</p>`;
 }
 
