@@ -194,6 +194,8 @@ export async function dispatchConsultationNotifications(deps: DispatchDeps, limi
         calendarError: booking.calendar_last_error,
         bookingCancelled: booking.status === "CANCELLED",
         manageUrl: link,
+        // Founders only: the booking's page in the signed-in admin. Customers never see the booking id.
+        adminUrl: isCustomer ? null : new URL(`/admin/consultations/${encodeURIComponent(booking.id)}`, deps.baseUrl).toString(),
         assetOrigin: deps.baseUrl,
       });
 

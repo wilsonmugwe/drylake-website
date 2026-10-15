@@ -1,7 +1,7 @@
 # Drylake email design system
 
 Every email the application itself sends is built from one layout: `lib/email/layout.ts`.
-Last reviewed 2026-10-09.
+Last reviewed 2026-10-15 (consultation emails redesigned on the charcoal header).
 
 ## Inventory (audited 2026-10-09)
 
@@ -13,6 +13,8 @@ Last reviewed 2026-10-09.
 | Invoice issued | Admin issues an invoice | Client billing email | `lib/email/invoice-email.ts` (`kind: "ISSUED"`) | `lib/invoices/invoice-notifications.ts` |
 | Invoice reminder / overdue | Admin sends a reminder | Client billing email | `lib/email/invoice-email.ts` (`kind: "REMINDER"`) | `lib/invoices/invoice-notifications.ts` |
 | Website / portal enquiry | Contact form or "Message Drylake" in Workspace | Drylake inbox (`CONTACT_TO_EMAIL`), Reply goes to the enquirer | `lib/email/contact-enquiry-email.ts` | `lib/email/contact-enquiry.ts` |
+| Consultation: confirmation, reschedule, cancellation, 24-hour reminder | Booking / change / cron | Customer (Reply goes to `hello@`) | `lib/email/consultation-emails.ts` (`header: "dark"`) | `lib/consultations/dispatch.ts` (outbox) |
+| Consultation: new booking, reschedule, cancellation, calendar sync failed | Same | Both founders (Reply goes to the customer) | same | same |
 
 ### Not present in the application (checked, not built)
 
@@ -35,9 +37,13 @@ built, it uses the layout below.
 
 ## The layout
 
-`renderEmailLayout({ title, preheader, eyebrow, heading, bodyHtml, assetOrigin, legalLine? })`
+`renderEmailLayout({ title, preheader, eyebrow, heading, bodyHtml, assetOrigin, legalLine?, header? })`
 
-- **Header:** `drylake-email-logo-light.png`. This is the approved light-background lockup
+- **`header: "dark"`** (consultation emails): a charcoal (`#1a1a17`, `--color-ink-3`) band with
+  `drylake-email-logo-dark.png`, the approved dark-background lockup flattened onto that exact
+  charcoal (same script, same size as the light one), over a 4 px Drylake orange rule. `bgcolor`
+  is set as well as CSS for Outlook desktop. The card body stays white.
+- **Header (default `"light"`):** `drylake-email-logo-light.png`. This is the approved light-background lockup
   (dark "Drylake" wordmark) flattened onto opaque white by `scripts/build-email-logo.mjs`, so a
   client that forces dark mode still shows it on a white chip. There is no extra text label.
 - **Eyebrow + heading:** the eyebrow is orange-ink (`#b83f0c`), uppercased with CSS so the
@@ -51,13 +57,27 @@ built, it uses the layout below.
 | Block | Use |
 |---|---|
 | `paragraph(text, { muted?, small? })` | Body copy |
-| `button({ href, label })` | The one primary action. Ink text on Drylake orange (6.9:1); full width on phones |
+| `button({ href, label, variant? })` | `primary` (default): the one main action, ink on Drylake orange (6.9:1). `secondary`: off-white on charcoal (15:1), for a second real action. Full width on phones |
 | `fallbackLink({ href, linkText })` | "Button not working? *Open your … in your browser*." Same destination as the button; **the URL is never printed** |
 | `checklist({ title, items })` | What the client gets (invitation) |
 | `detailTable(rows)` | Label/value pairs; `emphasis: true` for a total line |
 | `messageBlock({ title, text })` | Free text with line breaks kept (enquiries) |
 
 All arguments are plain text and are escaped by the block.
+
+Appointment blocks (`lib/email/appointment-blocks.ts`, consultation emails):
+
+| Block | Use |
+|---|---|
+| `appointmentCard({ title, date, time, zone, rows, inactive? })` | The appointment at a glance: date 20 px bold, time, zone, then hairline rows (stack label-over-value on phones). Orange top rule when active; muted and struck through when `inactive` (cancelled) |
+| `notice({ title, text, tone? })` | Titled note with a left rule: `action` orange (how to join, Teams link to follow), default charcoal (policy, reason) |
+| `sectionLabel(text)` | Small uppercase heading between sections |
+| `textSection(title, lines)`, `textRows(rows)` | The plain-text part in the same order as the HTML |
+
+**Buttons only for real destinations.** Join Microsoft Teams Meeting appears only with the join URL
+of the CURRENT calendar event; Manage Booking only with a link the database accepts; Open in
+Drylake admin only on founder notices; Book a New Consultation only on a customer cancellation.
+`tests/consultation-email-design.test.mjs` asserts every href in every kind and method.
 
 ### Adding a new email
 

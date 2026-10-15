@@ -65,7 +65,7 @@ describe("one design system for every application-sent email", () => {
       assert.ok(!/<!doctype html/i.test(source), `${file} renders its own document`);
       assert.ok(!/replaceAll\("&", "&amp;"\)|replace\(\/&\/g/.test(source), `${file} has its own escapeHtml`);
     }
-    for (const file of ["client-invitation-email.ts", "invoice-email.ts", "contact-enquiry-email.ts"]) {
+    for (const file of ["client-invitation-email.ts", "invoice-email.ts", "contact-enquiry-email.ts", "consultation-emails.ts"]) {
       assert.match(read(`lib/email/${file}`), /renderEmailLayout\(/, file);
     }
   });

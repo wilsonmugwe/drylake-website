@@ -29,11 +29,16 @@ export type RenderedEmail = {
 /* Opaque, trimmed copy of the approved light-background lockup; 531x137 source, shown at 140x36. */
 export const EMAIL_LOGO_PATH = "/brand/drylake-email-logo-light.png";
 export const EMAIL_LOGO_SIZE = { width: 140, height: 36 } as const;
+/* The approved dark-background lockup flattened onto opaque charcoal, for `header: "dark"`.
+ * Same trim and size as the light one (scripts/build-email-logo.mjs builds both). */
+export const EMAIL_LOGO_DARK_PATH = "/brand/drylake-email-logo-dark.png";
 
 export const EMAIL_WEBSITE = { label: "drylake.com.au", href: "https://drylake.com.au" } as const;
 
 /* Brand tokens (app/globals.css). Contrast on white: INK 19:1, BODY 10:1, MUTED 5.3:1,
- * LINK 5.6:1. The button is INK on SIGNAL (about 6.9:1); white on SIGNAL would be 3:1. */
+ * LINK 5.6:1. The button is INK on SIGNAL (about 6.9:1); white on SIGNAL would be 3:1.
+ * CHARCOAL is --color-ink-3, the dark header band and the secondary button; ON_DARK on it is
+ * about 15:1. All pairs are asserted in tests/email-design-system.test.mjs. */
 export const EMAIL_COLORS = {
   page: "#f4f4f1",
   card: "#ffffff",
@@ -44,10 +49,13 @@ export const EMAIL_COLORS = {
   muted: "#6b6a64",
   signal: "#f26a2e",
   link: "#b83f0c",
+  charcoal: "#1a1a17",
+  onDark: "#f4f3ee",
 } as const;
 
 const C = EMAIL_COLORS;
-const FONT = "Arial,Helvetica,sans-serif";
+export const EMAIL_FONT = "Arial,Helvetica,sans-serif";
+const FONT = EMAIL_FONT;
 
 export function escapeHtml(value: string): string {
   return value
@@ -71,11 +79,16 @@ export function paragraph(text: string, options: { muted?: boolean; small?: bool
   return `<p style="margin:0 0 14px;font-family:${FONT};font-size:${size};color:${color};">${e(text)}</p>`;
 }
 
-export function button(params: { href: string; label: string }): string {
+/* primary: ink on Drylake orange, the ONE main action. secondary: off-white on charcoal, for a
+ * second real action beside it (e.g. Manage Booking under Join Teams Meeting). */
+export function button(params: { href: string; label: string; variant?: "primary" | "secondary" }): string {
+  const secondary = params.variant === "secondary";
+  const bg = secondary ? C.charcoal : C.signal;
+  const fg = secondary ? C.onDark : C.ink;
   return `<table role="presentation" class="dl-btn-wrap" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 18px;">
   <tr>
-    <td bgcolor="${C.signal}" style="background-color:${C.signal};border-radius:10px;">
-      <a href="${e(params.href)}" target="_blank" class="dl-btn" style="display:inline-block;padding:14px 26px;font-family:${FONT};font-size:15px;line-height:20px;font-weight:bold;color:${C.ink};text-decoration:none;border-radius:10px;">${e(params.label)}</a>
+    <td bgcolor="${bg}" style="background-color:${bg};border-radius:10px;">
+      <a href="${e(params.href)}" target="_blank" class="dl-btn" style="display:inline-block;padding:14px 26px;font-family:${FONT};font-size:15px;line-height:20px;font-weight:bold;color:${fg};text-decoration:none;border-radius:10px;">${e(params.label)}</a>
     </td>
   </tr>
 </table>`;
@@ -154,10 +167,36 @@ export type EmailLayoutInput = {
   assetOrigin: string;
   /* Extra footer line, e.g. legal name + ABN on invoices. */
   legalLine?: string;
+  /* "light" (default): logo on the white card. "dark": a charcoal band carrying the dark-background
+   * lockup over a thin orange rule (consultation emails). The card body is white either way. */
+  header?: "light" | "dark";
 };
 
+/* The logo row of the card. The dark band sets bgcolor as well as CSS (Outlook desktop) and its
+ * logo is opaque charcoal, so a client that forces dark mode has nothing to invert. */
+function headerRows(input: EmailLayoutInput): string {
+  const dark = input.header === "dark";
+  const logo = new URL(dark ? EMAIL_LOGO_DARK_PATH : EMAIL_LOGO_PATH, input.assetOrigin).toString();
+  const img = `<a href="${EMAIL_WEBSITE.href}" target="_blank" style="text-decoration:none;"><img src="${e(logo)}" width="${EMAIL_LOGO_SIZE.width}" height="${EMAIL_LOGO_SIZE.height}" alt="Drylake" style="display:block;border:0;outline:none;width:${EMAIL_LOGO_SIZE.width}px;height:${EMAIL_LOGO_SIZE.height}px;"></a>`;
+
+  if (!dark) {
+    return `<tr>
+                  <td class="dl-pad" style="padding:28px 36px 0;">
+                    ${img}
+                  </td>
+                </tr>`;
+  }
+  return `<tr>
+                  <td class="dl-pad" bgcolor="${C.charcoal}" style="background-color:${C.charcoal};padding:24px 36px;border-radius:15px 15px 0 0;">
+                    ${img}
+                  </td>
+                </tr>
+                <tr>
+                  <td height="4" bgcolor="${C.signal}" style="background-color:${C.signal};height:4px;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td>
+                </tr>`;
+}
+
 export function renderEmailLayout(input: EmailLayoutInput): string {
-  const logo = new URL(EMAIL_LOGO_PATH, input.assetOrigin).toString();
 
   return `<!doctype html>
 <html lang="en-AU" xmlns="http://www.w3.org/1999/xhtml">
@@ -175,6 +214,8 @@ export function renderEmailLayout(input: EmailLayoutInput): string {
       .dl-h1 { font-size: 24px !important; line-height: 30px !important; }
       .dl-btn-wrap { width: 100% !important; }
       .dl-btn { display: block !important; text-align: center !important; }
+      .dl-row-cell { display: block !important; width: 100% !important; text-align: left !important; padding-right: 0 !important; }
+      .dl-row-value { border-top: 0 !important; padding-top: 0 !important; }
     }
   </style>
 </head>
@@ -188,13 +229,9 @@ export function renderEmailLayout(input: EmailLayoutInput): string {
           <tr>
             <td bgcolor="${C.card}" style="background-color:${C.card};border:1px solid ${C.border};border-radius:16px;">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                ${headerRows(input)}
                 <tr>
-                  <td class="dl-pad" style="padding:28px 36px 0;">
-                    <a href="${EMAIL_WEBSITE.href}" target="_blank" style="text-decoration:none;"><img src="${e(logo)}" width="${EMAIL_LOGO_SIZE.width}" height="${EMAIL_LOGO_SIZE.height}" alt="Drylake" style="display:block;border:0;outline:none;width:${EMAIL_LOGO_SIZE.width}px;height:${EMAIL_LOGO_SIZE.height}px;"></a>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="dl-pad" style="padding:24px 36px 14px;">
+                  <td class="dl-pad" style="padding:${input.header === "dark" ? "28px" : "24px"} 36px 14px;">
                     <p style="margin:0;font-family:${FONT};font-size:12px;line-height:16px;letter-spacing:1.5px;font-weight:bold;text-transform:uppercase;color:${C.link};">${e(input.eyebrow)}</p>
                     <h1 class="dl-h1" style="margin:10px 0 0;font-family:${FONT};font-size:28px;line-height:34px;font-weight:bold;color:${C.ink};">${e(input.heading)}</h1>
                   </td>
