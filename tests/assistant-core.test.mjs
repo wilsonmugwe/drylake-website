@@ -157,6 +157,22 @@ describe("output validation (server-side guards)", () => {
     assert.equal(validateReply(good, ids).ok, true);
   });
 
+  it("blocks stated prices but not talk about what drives cost", () => {
+    const say = (answer) => validateReply({ ...good, answer }, ids);
+    for (const priced of [
+      "A website costs around $3,000.",
+      "Prices start from 2000 for a small site.",
+      "The cost is about five thousand dollars.",
+      "Fees are roughly a few thousand for most sites.",
+      "It is $90 per hour.",
+      "Our rate is 120 aud an hour.",
+    ]) assert.equal(say(priced).reason, "price", priced);
+    for (const fine of [
+      "The biggest things that change the cost are the number of pages and integrations.",
+      "Drylake does not publish a price list; every project is quoted after a conversation.",
+    ]) assert.equal(say(fine).ok, true, fine);
+  });
+
   it("rejects bad shapes and enums", () => {
     for (const bad of [null, [], "text", {}, { ...good, answer: 5 }, { ...good, basis: "certain" }, { ...good, intent: "delete_all" }, { ...good, sources: FAQ_ID }, { ...good, sources: ["faq:invented"] }, { ...good, answer: "" }, { ...good, answer: "x".repeat(901) }]) {
       assert.equal(validateReply(bad, ids).ok, false, JSON.stringify(bad)?.slice(0, 60));

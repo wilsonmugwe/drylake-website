@@ -229,14 +229,50 @@ None of these has been run against the real tenant. Run `m365-verify` first; onl
 | 8 | Outbound mail from the tenant | Owner manual step | See "5.7.708" below. Drylake's own customer emails go through Resend, so the Teams link still arrives |
 
 Also owner-manual, not on the original list of eight:
-- **Graph failure recovery.** Temporarily break the secret in a Preview environment (or revoke the
-  role assignment for a test), make a booking: the booking succeeds, the calendar state is
-  PENDING, and `/admin/consultations/<id>` shows the retry. Restore the access and use **Retry
-  calendar sync** (or wait for the minute cron: backoff 1, 2, 4 ... 60 minutes, FAILED after 10
-  attempts). The event must appear exactly once.
+- **Graph failure recovery: mocked only.** A Preview deployment cannot be given a bad secret on the
+  Hobby plan and the production tenant must not be altered, so there is no safe live test. The
+  failure classes (expired secret, 401, 403, 404, 429, 5xx), retry timing, the admin status and the
+  alert email are covered by `tests/consultation-m365-hardening.test.mjs` and
+  `tests/consultation-health.test.mjs`. If it happens for real: the booking page shows "could not
+  confirm with our calendars" (nothing is booked), admins get "Action Needed: Microsoft 365 ...",
+  and `/api/health` shows the credential status. See "When Microsoft 365 stops working" below.
 - **Perth time zone.** `m365-verify` D and E check the mailbox zone and that 12:00 UTC reads as
   20:00 Perth. Also book a slot from a browser set to another time zone and confirm the confirmation
   email and the Outlook event both say the same Perth time.
+
+### When Microsoft 365 stops working
+
+How a fault shows up, and the fix. Failure kinds are stored as a `[kind]` prefix on
+`consultation_bookings.calendar_last_error` and shown in plain words in the admin.
+
+| Symptom | Kind | Meaning | Fix |
+|---|---|---|---|
+| `/api/health` is `degraded`, `consultations.calendar.credentials` is `expired`; admins got "Client Secret Expired"; the booking page says it could not confirm times | `credential_expired` | Client secret expired (AADSTS7000222) or wrong (`invalid_client`) | Entra > App registrations > the app > Certificates & secrets > new secret; set `MS_GRAPH_CLIENT_SECRET` in Vercel; redeploy; delete the old secret |
+| `credentials` is `auth_failed`; admins got "Refused Access" | `auth` | Sign-in accepted but Graph answered 401/403: the Exchange role assignment or management scope changed, or the app was disabled | Re-check `Test-ServicePrincipalAuthorization`, the scope members, and that the tenant-wide Graph `Calendars.ReadWrite` is still absent (do not restore it). Run `scripts/m365-verify.mjs` |
+| One representative never offered | `mailbox` | 404 or per-mailbox error: no licence, wrong address, out of scope | Licence and scope; `m365-verify` B |
+| Calendar updates delayed | `throttled` / `unavailable` | 429 (the wait is honoured) or Microsoft outage | Nothing; they retry and clear |
+
+The admin alert is emailed at most once per failure kind per Perth day, from the booking path, the
+availability path, the admin and customer reschedule paths, and the calendar worker (from the third
+failed attempt). It carries no secret and no customer detail. Once the cause is fixed, queued
+bookings clear on the next minute run; a booking already FAILED needs **Retry calendar sync**.
+
+### `/api/health`: consultation block
+
+`consultations` (public, no personal data):
+`dispatch.lastSuccessfulAt` (newest email actually sent), `dispatch.oldestPendingAgeSeconds` (how
+long the oldest DUE unsent email has waited; healthy is under about 120), `dispatch.minuteTrigger`
+(`running` = an outbox attempt in the last 10 minutes; `stalled` = due email waiting over 10 minutes
+with no attempt; `unknown` = idle outbox, nothing to observe), `dispatch.failedNotifications`,
+`calendar.provider`, `calendar.credentials` (`not_connected`, `ok`, `expired`, `auth_failed`,
+`unknown`) and `calendar.unresolvedSyncFailures`. `credentials` comes from a live token request
+(cached 5 minutes per instance) plus the stored errors of unresolved bookings; it proves the secret,
+not the Exchange role. Only `expired` and `auth_failed` turn the endpoint `degraded` (HTTP 503), so
+an uptime monitor can alert; `stalled` is reported but does not, because until the pg_cron job is
+scheduled it is expected. Whether the pg_cron job exists is only visible in Supabase (P4 of the
+live test). If the database cannot be read the block is `{ "available": false }`.
+
+The step-by-step production verification is `docs/operations/consultation-live-test.md`.
 
 ### Exchange outbound `5.7.708` (MEDIUM confidence)
 

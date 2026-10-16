@@ -14,7 +14,14 @@
  * Never logs customer names, addresses or meeting links.
  */
 
-import { type CalendarEvent, CalendarEventMissingError, type CalendarProvider } from "./calendar/types.ts";
+import {
+  type CalendarEvent,
+  CalendarEventMissingError,
+  type CalendarFailureKind,
+  type CalendarProvider,
+  CalendarUnavailableError,
+  isAuthFailure,
+} from "./calendar/types.ts";
 import { redactSensitive } from "../security/redact.ts";
 import { type MeetingMethod, REPRESENTATIVES, type Representative, representativeByKey } from "./representatives.ts";
 
@@ -45,15 +52,27 @@ export type CalendarSyncDeps = {
   claimOne(bookingId: string | null): Promise<SyncRow[]>;
   finish(row: SyncRow, outcome: "synced" | "retry", result: SyncResult | null, error: string | null, retryAfterMinutes: number): Promise<void>;
   provider: CalendarProvider;
+  /**
+   * Called when a booking failed to sync because Microsoft refused our credentials, from the
+   * AUTH_ALERT_AFTER_ATTEMPTS-th attempt on. The server wiring emails the admins (deduplicated
+   * per day); a failure to alert is logged and never affects the sync.
+   */
+  alertAuthFailure?(kind: CalendarFailureKind): Promise<void>;
 };
+
+/* One expired secret fails every booking the same way; three tries rule out a blip. */
+export const AUTH_ALERT_AFTER_ATTEMPTS = 3;
 
 export type CalendarSyncSummary = { claimed: number; synced: number; retried: number };
 
 const ACTIVE = new Set(["CONFIRMED", "RESCHEDULED"]);
 
 /* 1, 2, 4 ... minutes, capped at one hour (ten attempts span roughly five hours). */
-export function calendarRetryMinutes(attempts: number): number {
-  return Math.min(2 ** Math.max(0, attempts - 1), 60);
+export function calendarRetryMinutes(attempts: number, retryAfterSeconds: number | null = null): number {
+  const backoff = Math.min(2 ** Math.max(0, attempts - 1), 60);
+  // Microsoft's own Retry-After (throttling) wins when it asks for longer than our backoff.
+  const asked = retryAfterSeconds === null ? 0 : Math.min(Math.ceil(retryAfterSeconds / 60), 60);
+  return Math.max(backoff, asked);
 }
 
 const CANCEL_COMMENT = "This Drylake consultation has been cancelled. Your confirmation email from Drylake has the details.";
@@ -141,9 +160,18 @@ export async function runCalendarSyncPass(deps: CalendarSyncDeps, options: { lim
       summary.synced += 1;
     } catch (error) {
       const message = redactSensitive(error instanceof Error ? error.message : null);
+      const calendarError = error instanceof CalendarUnavailableError ? error : null;
       console.error("Consultation calendar sync failed:", row.reference, `attempt ${row.calendar_sync_attempts}:`, message);
-      await deps.finish(row, "retry", null, message, calendarRetryMinutes(row.calendar_sync_attempts));
+      await deps.finish(row, "retry", null, message, calendarRetryMinutes(row.calendar_sync_attempts, calendarError?.retryAfterSeconds ?? null));
       summary.retried += 1;
+
+      if (calendarError && isAuthFailure(calendarError.kind) && row.calendar_sync_attempts >= AUTH_ALERT_AFTER_ATTEMPTS && deps.alertAuthFailure) {
+        try {
+          await deps.alertAuthFailure(calendarError.kind);
+        } catch (alertError) {
+          console.error("Consultation calendar auth alert failed:", redactSensitive(alertError instanceof Error ? alertError.message : null));
+        }
+      }
     }
   }
   return summary;

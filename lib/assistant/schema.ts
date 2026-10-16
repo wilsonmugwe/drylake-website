@@ -26,7 +26,9 @@ export type ReplyCheck = { ok: true; value: ValidReply } | { ok: false; reason: 
 const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 const MARKUP = /<\/?[a-z!][^>]*>|javascript:|data:text\/html|on[a-z]+\s*=\s*["']|&lt;\s*script/i;
 const PRICE =
-  /(?:\$|aud\s?|a\$)\s?\d|\b\d[\d,.]*\s?(?:dollars?|bucks|aud|k\b)|\b(?:per|a)\s+(?:hour|month|week|year|day)\b|\b(?:costs?|prices?|fees?|rates?|charges?)\s+(?:is|are|from|starts?|around|about|roughly|approximately|between)\b|\bstarting (?:at|from) \d/i;
+  /* "costs are around ..." only counts when an amount follows within a few words: the published FAQ says
+     "the biggest things that change the cost are the number of pages", which states no price. */
+  /(?:\$|aud\s?|a\$)\s?\d|\b\d[\d,.]*\s?(?:dollars?|bucks|aud|k\b)|\b(?:hundred|thousand|million)\s+(?:dollars?|aud)\b|\b(?:per|a)\s+(?:hour|month|week|year|day)\b|\b(?:costs?|prices?|fees?|rates?|charges?)\s+(?:is|are|from|starts?|around|about|roughly|approximately|between)\s+(?:\w+\s+){0,3}?(?:\$|a\$|aud\b|\d|one|two|three|four|five|six|seven|eight|nine|ten|twenty|fifty|a few hundred|a few thousand)|\bstarting (?:at|from) \d/i;
 const TIMELINE =
   /\b(?:within|in|takes?|take about|around|about|roughly|approximately|under|over)\s+(?:a |an |one |two |three |four |five |six |seven |eight |nine |ten |\d+(?:\s?(?:-|to)\s?\d+)?\s?)(?:business |working )?(?:hours?|days?|weeks?|months?|years?)\b|\b\d+\s?(?:-|to)\s?\d+\s?(?:business |working )?(?:days?|weeks?|months?)\b|\bguarantee[sd]?\b|\bby (?:monday|tuesday|wednesday|thursday|friday|next week|end of)\b|\b(?:will|can) be (?:ready|live|delivered|done|finished)\b/i;
 const HUMAN_CLAIM =

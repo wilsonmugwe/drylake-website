@@ -68,7 +68,7 @@ F5 free consultation, F6 BRONNIE collaboration (each A4 + social), V main video,
 
 | Claim | Assets | Source |
 |---|---|---|
-| AI-powered, multi-tenant business operations and automation platform | F6 sub | BF (verbatim terms) |
+| AI-powered platform being developed by Drylake (owner sentence 2026-10-16; PDFs and PNGs need regenerating) | F6 sub | BF (verbatim terms) |
 | In development; not yet available for general use | F6 eyebrow, headline, status box | BF ("IN DEVELOPMENT", "never present it as production-ready") |
 | Initial focus customer operations: enquiry handling, routing, appointment coordination | F6 sub and bullets | BF |
 | Pilot and early-access discussions welcome | F6 eyebrow, bullet, CTA | BF |

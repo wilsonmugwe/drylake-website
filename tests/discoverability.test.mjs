@@ -379,7 +379,7 @@ describe("crawler policy: search and AI search in, training out, private closed"
   });
 
   it("private prefixes cover every private application surface", () => {
-    assert.deepEqual([...PRIVATE_PREFIXES].sort(), ["/admin", "/api", "/client", "/consultation/manage", "/portal", "/sign-in", "/sign-up"]);
+    assert.deepEqual([...PRIVATE_PREFIXES].sort(), ["/admin", "/api", "/client", "/consultation/manage", "/feedback", "/portal", "/sign-in", "/sign-up"]);
   });
 
   it("private surfaces also send X-Robots-Tag noindex", () => {

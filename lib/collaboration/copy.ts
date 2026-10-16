@@ -26,10 +26,21 @@ export const COLLABORATE_NOT_THIS = {
 
 export const BRONNIE = {
   name: "BRONNIE",
-  description:
-    "BRONNIE is an AI-powered, multi-tenant business operations and automation platform in development. Its initial focus is customer operations: intelligent enquiry handling, routing and appointment coordination.",
-  status:
-    "BRONNIE is in development. Nothing about it is production-ready, and we are not claiming any partners, customers or deployments.",
+  /* Owner-approved sentence (2026-10-16), used verbatim wherever BRONNIE is introduced. */
+  description: "BRONNIE is an AI-powered platform being developed by Drylake.",
+  /* What exists today, what is in development, what is planned. Owner statement only (2026-10-16). */
+  stages: [
+    { heading: "Available today", text: "No BRONNIE feature is generally available yet." },
+    {
+      heading: "In development",
+      text: "A multi-tenant platform. The initial product focus is customer operations: intelligent enquiry handling, routing and appointment coordination.",
+    },
+    {
+      heading: "Planned",
+      text: "Pilots and early access, arranged by discussion. If your business might be a fit, tell us through the form on this page.",
+    },
+  ],
+  status: "We are not claiming any customers, completed pilots, results or deployments.",
   interestedIn: [
     "Pilots",
     "Product feedback",

@@ -6,6 +6,7 @@ import {
   FolderKanban,
   Handshake,
   LayoutDashboard,
+  MessageSquareText,
   type LucideIcon,
   Receipt,
 } from "lucide-react";
@@ -23,6 +24,7 @@ export const ADMIN_NAV_GROUPS: Array<{ label: string; items: AdminNavItem[] }> =
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { label: "Consultations", href: "/admin/consultations", icon: CalendarClock },
+      { label: "Reviews", href: "/admin/reviews", icon: MessageSquareText },
       { label: "Collaborations", href: "/admin/collaborations", icon: Handshake },
     ],
   },

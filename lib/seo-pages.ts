@@ -79,10 +79,10 @@ export const PAGE_SEO = {
   },
   faq: {
     path: "/faq",
-    title: "Questions About Working With Drylake | Perth, WA",
+    title: "Website, Software and AI Questions Answered | Drylake Perth",
     description:
-      "Plain answers about working with Drylake, a Perth technology company: services, quotes and timing, ownership, security, privacy and collaboration.",
-    shareDescription: "Plain answers about services, quotes, timing, security, privacy and collaboration at Drylake.",
+      "Plain answers on website and software costs, timing, AI and automation, security and working with Drylake, a Perth technology company in Western Australia.",
+    shareDescription: "Plain answers on website and software costs, timing, AI and automation, and security at Drylake.",
     image: "/og/faq.png",
     imageAlt: "Drylake: your questions, answered plainly",
   },

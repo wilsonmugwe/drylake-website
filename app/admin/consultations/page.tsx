@@ -7,7 +7,7 @@ import { ilikePattern, readEnumParam, readFilterParam, type AdminSearchParams } 
 import { ADMIN_LIST_LIMIT } from "@/lib/admin/search";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import {
-  CALENDAR_STATE_LABELS,
+  calendarListFlag,
   CONSULTATION_DATE_OPTIONS,
   CONSULTATION_DATE_RANGES,
   CONSULTATION_FILTER_OPTIONS,
@@ -38,6 +38,7 @@ type Row = {
   assigned_representative: string;
   meeting_method: string;
   calendar_sync_state: string;
+  calendar_last_error: string | null;
   created_at: string;
 };
 
@@ -62,7 +63,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
   let query = supabase
     .from("consultation_bookings")
     .select(
-      "id, reference, customer_name, customer_email, business_name, start_time, status, assigned_representative, meeting_method, calendar_sync_state, created_at",
+      "id, reference, customer_name, customer_email, business_name, start_time, status, assigned_representative, meeting_method, calendar_sync_state, calendar_last_error, created_at",
       { count: "exact" }
     );
 
@@ -165,8 +166,8 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
                           <p className="font-medium text-neutral-900">{representativeName(row.assigned_representative)}</p>
                           <p className="mt-0.5 text-xs text-neutral-600">
                             {METHOD_SHORT[row.meeting_method] ?? row.meeting_method}
-                            {row.calendar_sync_state === "FAILED" ? (
-                              <span className="ml-1.5 font-medium text-red-700">· {CALENDAR_STATE_LABELS.FAILED}</span>
+                            {calendarListFlag(row.calendar_sync_state, row.calendar_last_error) ? (
+                              <span className="ml-1.5 font-medium text-red-700">· {calendarListFlag(row.calendar_sync_state, row.calendar_last_error)}</span>
                             ) : null}
                           </p>
                         </td>
@@ -211,7 +212,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
                       <p className="text-xs text-neutral-600">{formatPerthRange(start)} · {row.reference}</p>
                       <p className="mt-1 text-xs text-neutral-600">
                         {representativeName(row.assigned_representative)} · {METHOD_SHORT[row.meeting_method] ?? row.meeting_method}
-                        {row.calendar_sync_state === "FAILED" ? <span className="font-medium text-red-700"> · {CALENDAR_STATE_LABELS.FAILED}</span> : null}
+                        {calendarListFlag(row.calendar_sync_state, row.calendar_last_error) ? <span className="font-medium text-red-700"> · {calendarListFlag(row.calendar_sync_state, row.calendar_last_error)}</span> : null}
                       </p>
                     </Link>
                   </li>

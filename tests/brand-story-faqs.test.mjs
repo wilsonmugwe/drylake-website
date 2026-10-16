@@ -10,7 +10,7 @@
  *   WEIGHT     new content is server components (no "use client", no new client imports).
  */
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -25,7 +25,11 @@ import {
 } from "../lib/brand-story.ts";
 import { PUBLIC_PAGES } from "../lib/discovery/entity.ts";
 import { llmsFullText, llmsText } from "../lib/discovery/llms.ts";
-import { faqNode } from "../lib/discovery/structured-data.ts";
+import { faqNode, founderNodes, organizationNode } from "../lib/discovery/structured-data.ts";
+import { FOUNDERS } from "../lib/discovery/entity.ts";
+import { QUOTE_FIRST } from "../lib/consultations/copy.ts";
+import { SERVICES } from "../lib/discovery/services.ts";
+import { LOCATION_PAGES, jaccard, locationShingles } from "../lib/service-area-pages.ts";
 import { FAQ_CATEGORIES, FAQ_ITEMS, HOMEPAGE_FAQ_IDS, REQUIRED_FAQ_IDS, faqs } from "../lib/faqs.ts";
 import { FOOTER_COLUMNS } from "../lib/navigation/services-menu.ts";
 import { PAGE_SEO } from "../lib/seo-pages.ts";
@@ -36,6 +40,14 @@ const code = (rel) => read(rel).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\{\/\*
 
 const EM_DASH = "—";
 
+function listFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) return entry.name === "node_modules" || entry.name === ".next" ? [] : listFiles(full);
+    return /\.(ts|tsx|mjs|txt|json|md)$/.test(entry.name) ? [full] : [];
+  });
+}
+
 describe("FAQ data", () => {
   it("covers every required question by id, with no duplicates", () => {
     const ids = FAQ_ITEMS.map((item) => item.id);
@@ -44,8 +56,8 @@ describe("FAQ data", () => {
     assert.equal(new Set(FAQ_ITEMS.map((item) => item.question)).size, FAQ_ITEMS.length, "unique questions");
   });
 
-  it("groups every item into one of the four categories, all non-empty", () => {
-    assert.deepEqual(FAQ_CATEGORIES.map((c) => c.id), ["services", "pricing-delivery", "security-privacy", "collaboration"]);
+  it("groups every item into one of the five categories, all non-empty", () => {
+    assert.deepEqual(FAQ_CATEGORIES.map((c) => c.id), ["websites", "software", "ai-automation", "working-with-drylake", "security-privacy"]);
     for (const category of FAQ_CATEGORIES) {
       assert.ok(FAQ_ITEMS.some((item) => item.category === category.id), category.id);
     }
@@ -96,28 +108,49 @@ describe("FAQ honesty", () => {
 
   it("does not promise the client owns the work", () => {
     assert.doesNotMatch(text, /you (will )?own|you keep (all )?(the )?(ownership|rights|IP)|full ownership|own (all|the) (code|ip|work)/i);
-    const ownership = FAQ_ITEMS.find((item) => item.id === "price-ownership").answer;
-    assert.match(ownership, /proposal and agreement/);
-    assert.match(ownership, /do not assume/);
+    const after = FAQ_ITEMS.find((item) => item.id === "web-after").answer;
+    assert.match(after, /proposal and agreement/);
+    assert.match(after, /do not assume/);
   });
 
   it("gives no fixed timeline and says the proposal states it", () => {
-    const length = FAQ_ITEMS.find((item) => item.id === "price-length").answer;
+    const length = FAQ_ITEMS.find((item) => item.id === "web-time").answer;
     assert.match(length, /depends on the scope/);
     assert.match(length, /proposal/);
   });
 
-  it("describes BRONNIE as in development, not production-ready, pilots by discussion", () => {
+  it("quotes first: never a price, and the approved quote-first wording on the cost answers", () => {
+    for (const id of ["web-cost", "sw-cost", "start"]) {
+      assert.ok(FAQ_ITEMS.find((item) => item.id === id).answer.includes(QUOTE_FIRST), id);
+    }
+  });
+
+  it("makes no search-ranking promise", () => {
+    const google = FAQ_ITEMS.find((item) => item.id === "web-google").answer;
+    assert.match(google, /nobody can promise a ranking/);
+    assert.doesNotMatch(text, /first page|page one|#1|top of google|rank(ing)? (higher|first)/i);
+  });
+
+  it("states the AI privacy position as an approach, not a promise", () => {
+    const ai = FAQ_ITEMS.find((item) => item.id === "ai-privacy").answer;
+    assert.match(ai, /currently sends no personal information to AI services/);
+    assert.match(ai, /where they are available/);
+    assert.doesNotMatch(ai, /always|never leaves|fully|100%/i);
+  });
+
+  it("describes BRONNIE with the owner sentence verbatim and claims nothing shipped", () => {
     const answer = FAQ_ITEMS.find((item) => item.id === "collab-bronnie").answer;
-    for (const fact of ["in development", "customer operations", "enquiry handling", "routing", "appointment coordination", "not production-ready", "by discussion"]) {
+    assert.ok(answer.startsWith("BRONNIE is an AI-powered platform being developed by Drylake."));
+    for (const fact of ["no BRONNIE feature is generally available", "multi-tenant", "customer operations", "enquiry handling", "routing", "appointment coordination", "by discussion"]) {
       assert.ok(answer.includes(fact), fact);
     }
+    assert.doesNotMatch(answer, /launched|live now|paying customers|completed pilot|results|exclusive|owns the IP/i);
   });
 
   it("points proposals at /collaborate only while that route exists (PR #86), else the contact page", () => {
     const routeExists = existsSync(join(ROOT, "app/collaborate/page.tsx"));
     const mentions = /\/collaborate/.test(text);
-    const submit = FAQ_ITEMS.find((item) => item.id === "collab-submit").answer;
+    const submit = FAQ_ITEMS.find((item) => item.id === "collab-work").answer;
     if (routeExists) {
       assert.match(submit, /drylake\.com\.au\/collaborate/);
       assert.match(submit, /not a formal partnership/);
@@ -130,7 +163,7 @@ describe("FAQ honesty", () => {
   it("makes only verifiable security claims", () => {
     const security = FAQ_ITEMS.filter((item) => item.category === "security-privacy").map((i) => i.answer).join("\n");
     assert.match(security, /TLS/);
-    assert.doesNotMatch(security, /military|bank-grade|unhackable|100% secure|SOC|ISO|penetration|pen test|insured|breach-proof|AU-hosted|Australian data/i);
+    assert.doesNotMatch(security, /military|bank-grade|unhackable|100% secure|\bSOC\b|\bISO\b|penetration|pen test|insured|breach-proof|AU-hosted|Australian data/i);
   });
 });
 
@@ -230,6 +263,36 @@ describe("brand story", () => {
     assert.match(founders, /name: "Benedict Wambugu"/);
     assert.match(founders, /name: "Wilson Mugwe"/);
   });
+
+  it("uses the owner-confirmed founder names, and only those, on every public surface", () => {
+    const NAMES = ["Wilson Mugwe", "Benedict Wambugu"];
+    const surfaces = {
+      "Founders.tsx": read("components/sections/Founders.tsx"),
+      "entity.ts": read("lib/discovery/entity.ts"),
+      "llms.txt": llmsText(),
+      "Person JSON-LD": JSON.stringify(founderNodes()),
+    };
+    for (const [surface, text] of Object.entries(surfaces)) {
+      for (const name of NAMES) assert.ok(text.includes(name), `${surface} lacks ${name}`);
+    }
+    assert.deepEqual(founderNodes().map((n) => n.name), ["Benedict Wambugu", "Wilson Mugwe"]);
+    assert.deepEqual(FOUNDERS.map((f) => f.name), ["Benedict Wambugu", "Wilson Mugwe"]);
+    // The Organization node references founders by @id only, so a name cannot diverge there.
+    assert.deepEqual(organizationNode().founder, FOUNDERS.map((f) => ({ "@id": f.id })));
+    // The retired surname must not appear in any shipped source, public file or machine surface.
+    const files = ["app", "components", "lib", "public", "scripts"].flatMap((dir) => listFiles(join(ROOT, dir)));
+    for (const file of files) assert.doesNotMatch(readFileSync(file, "utf8"), /Gathii/i, file);
+    assert.doesNotMatch(llmsFullText(), /Gathii/i);
+  });
+
+  it("references no portrait or photograph of either founder", () => {
+    const surfaces = [read("components/sections/Founders.tsx"), read("app/about/page.tsx"), read("lib/discovery/entity.ts"), read("lib/discovery/structured-data.ts")].map((t) => t.replace(/\/\*[\s\S]*?\*\//g, ""));
+    for (const text of surfaces) {
+      assert.doesNotMatch(text, /<Image|<img|\.(jpe?g|webp|avif)\b|portrait|headshot/i);
+    }
+    for (const node of founderNodes()) assert.equal(node.image, undefined);
+    assert.equal(readdirSync(join(ROOT, "public")).some((f) => /wilson|benedict|founder|portrait|headshot/i.test(f)), false);
+  });
 });
 
 describe("decorative texture", () => {
@@ -281,5 +344,98 @@ describe("no em dashes in visitor-facing strings", () => {
     for (const rel of ["components/sections/BrandStory.tsx", "components/brand/DryLakebedTexture.tsx", "app/faq/page.tsx"]) {
       assert.ok(!code(rel).includes(EM_DASH), rel);
     }
+  });
+});
+
+describe("FAQ quality (customer questions, no filler, no duplication)", () => {
+  const WORDS = (text) => text.trim().split(/\s+/).length;
+
+  it("answers are short summaries: 120 words or fewer (longer needs a dedicated section, see PR body)", () => {
+    for (const item of FAQ_ITEMS) assert.ok(WORDS(item.answer) <= 120, `${item.id}: ${WORDS(item.answer)} words`);
+  });
+
+  it("every answer opens with a direct sentence", () => {
+    for (const item of FAQ_ITEMS) assert.ok(item.answer.split(/(?<=[.?!])\s+/)[0].length < 260, item.id);
+  });
+
+  it("no answer is a near-duplicate (word 3-shingle Jaccard > 0.6) of a service-page or location-page FAQ answer", () => {
+    const others = [
+      ...SERVICES.flatMap((service) => service.faqs.map((faq) => [`service ${service.slug}`, faq.answer])),
+      ...Object.entries(LOCATION_PAGES).flatMap(([slug, page]) => page.faqs.map((faq) => [`location ${slug}`, faq.answer])),
+    ];
+    for (const item of FAQ_ITEMS) {
+      const a = locationShingles(item.answer);
+      for (const [source, answer] of others) {
+        const score = jaccard(a, locationShingles(answer));
+        assert.ok(score <= 0.6, `${item.id} vs ${source}: ${score.toFixed(2)}`);
+      }
+    }
+  });
+
+  it("no two FAQ answers are near-duplicates of each other", () => {
+    for (const [i, x] of FAQ_ITEMS.entries()) {
+      for (const y of FAQ_ITEMS.slice(i + 1)) {
+        assert.ok(jaccard(locationShingles(x.answer), locationShingles(y.answer)) <= 0.6, `${x.id} vs ${y.id}`);
+      }
+    }
+  });
+
+  it("every contextual link points at a real public route", () => {
+    const routes = new Set(PUBLIC_PAGES.map((page) => page.path));
+    for (const item of FAQ_ITEMS) {
+      for (const link of item.links ?? []) {
+        assert.ok(routes.has(link.href), `${item.id} links to unknown route ${link.href}`);
+        assert.ok(!link.label.includes(EM_DASH));
+      }
+    }
+  });
+
+  it("commercial-intent questions link to their service page", () => {
+    const want = {
+      "web-cost": "/services/web-development",
+      "sw-cost": "/services/custom-software-development",
+      "sw-connect": "/services/systems-integration",
+      "sw-admin": "/services/business-automation",
+      "ai-help": "/services/ai-automation",
+      "web-google": "/perth",
+      "collab-bronnie": "/collaborate",
+      "ai-privacy": "/security-privacy",
+      "price-consultation": "/consultation",
+    };
+    for (const [id, href] of Object.entries(want)) {
+      assert.ok(FAQ_ITEMS.find((item) => item.id === id).links.some((link) => link.href === href), `${id} -> ${href}`);
+    }
+  });
+
+  it("never names a street address or says Drylake is based in Joondalup", () => {
+    const text = FAQ_ITEMS.map((item) => item.answer).join(" ");
+    assert.doesNotMatch(text, /joondalup/i);
+    assert.doesNotMatch(text, /\b\d+\s+[A-Z][a-z]+\s+(Street|St|Road|Rd|Avenue|Ave|Drive|Dr)\b/);
+  });
+});
+
+describe("/faq search copy", () => {
+  it("has a unique title (65 chars max) and a 140 to 160 character description, self canonical", () => {
+    assert.ok(PAGE_SEO.faq.title.length <= 65, String(PAGE_SEO.faq.title.length));
+    assert.ok(PAGE_SEO.faq.description.length >= 140 && PAGE_SEO.faq.description.length <= 160, String(PAGE_SEO.faq.description.length));
+    for (const [key, entry] of Object.entries(PAGE_SEO).filter(([key]) => key !== "faq")) {
+      assert.notEqual(entry.title, PAGE_SEO.faq.title, key);
+      assert.notEqual(entry.description, PAGE_SEO.faq.description, key);
+    }
+    assert.equal(PAGE_SEO.faq.path, "/faq");
+  });
+
+  it("emits BreadcrumbList and FAQPage JSON-LD with required properties", () => {
+    assert.match(code("app/faq/page.tsx"), /breadcrumbNode\(SEO\.path, CRUMBS\)/);
+    const node = JSON.parse(JSON.stringify(faqNode("/faq", FAQ_ITEMS)));
+    assert.equal(node["@type"], "FAQPage");
+    for (const q of node.mainEntity) {
+      assert.equal(q["@type"], "Question");
+      assert.ok(q.name && q.acceptedAnswer["@type"] === "Answer" && q.acceptedAnswer.text);
+    }
+  });
+
+  it("llms-full.txt carries the related links for each answer", () => {
+    assert.match(llmsFullText(), /Related: \[Websites and web development\]\(https:\/\/drylake\.com\.au\/services\/web-development\)/);
   });
 });

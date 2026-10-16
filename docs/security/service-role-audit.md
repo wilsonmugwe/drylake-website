@@ -16,6 +16,7 @@ behind an explicit check. `SUPABASE_SECRET_KEY` is read in exactly one file.
 | Invitation completion | `app/api/client/invitations/complete/route.ts` | Writing the audit row | Clerk session, strict Origin, verified-email invitations only |
 | Checkout | `app/api/stripe/checkout/route.ts` | Reading and recording the Stripe session id (server bookkeeping column) | Org and invoice first read through RLS; every service query filters by that invoice id **and** organisation id |
 | Stripe webhook | `app/api/stripe/webhook/route.ts` | Marking invoices PAID, audit rows; there is no user token on a webhook | Stripe signature verified first; writes conditional on the status read |
+| Health check | `app/api/health/route.ts` | Reading consultation outbox timestamps, counts and calendar error text to report dispatch liveness and Microsoft 365 credential status | Public by design; selects timestamps and counts only (no name, email, reference or token column; tested in `tests/consultation-health.test.mjs`); output has no personal data; any failure reports `available: false` |
 | Contact form | `app/api/contact/route.ts` | Single-use Turnstile token claims (`turnstile_token_claims`) | Field validation first; only the token fingerprint table is touched |
 
 Any new file that creates the service client outside these locations fails

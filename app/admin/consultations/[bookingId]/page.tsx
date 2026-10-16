@@ -7,8 +7,9 @@ import AdminConsultationActions from "@/components/admin/AdminConsultationAction
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { requirePlatformAdmin } from "@/lib/auth/guards";
 import {
-  CALENDAR_STATE_LABELS,
   type ConsultationEvent,
+  calendarErrorText,
+  calendarStatusView,
   STATUS_BADGE,
   STATUS_LABELS,
   describeEvent,
@@ -74,6 +75,14 @@ export default async function AdminConsultationPage({ params }: { params: Promis
   const emails = (notifications.data ?? []) as Notification[];
   const started = hasStarted(start);
   const calendarMode = calendarSetting(process.env).mode;
+  const calendarView = calendarStatusView({
+    mode: calendarMode,
+    state: record.calendar_sync_state,
+    version: record.version,
+    syncedVersion: record.calendar_synced_version,
+    lastError: record.calendar_last_error,
+    attempts: record.calendar_sync_attempts,
+  });
 
   return (
     <main className="min-h-screen p-5 sm:p-8 lg:p-10">
@@ -143,17 +152,11 @@ export default async function AdminConsultationPage({ params }: { params: Promis
             <h2 id="actions-heading" className="font-semibold text-neutral-950">Actions</h2>
             <div className="mb-5 rounded-xl border border-neutral-200 bg-[#fbfbf9] p-4 text-sm" data-testid="admin-calendar-status">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">Microsoft 365 calendar</p>
-              <p className={`mt-1 font-medium ${record.calendar_sync_state === "FAILED" ? "text-red-700" : "text-neutral-900"}`}>
-                {calendarMode === "none"
-                  ? "Calendar integration is off. Add this consultation to the calendar by hand."
-                  : calendarMode === "misconfigured"
-                    ? "Calendar integration is misconfigured. Check the Microsoft 365 settings."
-                    : record.calendar_synced_version >= record.version && record.calendar_sync_state === "SYNCED"
-                      ? CALENDAR_STATE_LABELS.SYNCED
-                      : CALENDAR_STATE_LABELS[record.calendar_sync_state] ?? record.calendar_sync_state}
+              <p className={`mt-1 font-medium ${calendarView.needsAttention ? "text-red-700" : "text-neutral-900"}`} data-reconciliation={calendarView.reconciliation} data-failure-kind={calendarView.kind ?? ""}>
+                {calendarView.label}
               </p>
               {record.calendar_last_error && record.calendar_sync_state !== "SYNCED" && (
-                <p className="mt-1 text-xs text-red-700">Last error: {record.calendar_last_error}</p>
+                <p className="mt-1 text-xs text-red-700">Last error: {calendarErrorText(record.calendar_last_error)}</p>
               )}
               {calendarMode === "microsoft" &&
                 record.calendar_synced_version < record.version &&

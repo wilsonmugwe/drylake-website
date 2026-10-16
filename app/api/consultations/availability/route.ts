@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 
 import { clientIp } from "@/lib/contact/turnstile";
+import { reportCalendarFailure } from "@/lib/consultations/calendar-alert-server";
 import { calendarSetting } from "@/lib/consultations/calendar/provider";
 import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
 import { loadAvailability } from "@/lib/consultations/service";
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
       calendar ? "Consultation availability: calendar check failed:" : "Consultation availability failed:",
       error instanceof Error ? error.message : "unknown error"
     );
+    after(() => reportCalendarFailure(error));
     return NextResponse.json(
       {
         error: "Consultation times could not be loaded right now. Please try again shortly.",

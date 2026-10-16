@@ -7,7 +7,7 @@
 # 1. Creates the Supabase roles (anon, authenticated, service_role) the migration grants against.
 # 2. Applies every migration in supabase/migrations that does not need the production schema.
 # 3. Applies the two consultation migrations TWICE each (they must be re-runnable).
-# 4. Runs tests/db/consultation-bookings.sql and consultation-representatives.sql (assertions;
+# 4. Runs tests/db/consultation-bookings.sql, consultation-representatives.sql and consultation-health.sql (assertions;
 #    any failure stops the run).
 # 5. Races 20 concurrent bookings for one slot with two representatives: exactly two may succeed,
 #    one per representative.
@@ -48,6 +48,7 @@ psql_run < "$REPS_MIGRATION"
 echo "== assertions"
 psql_run < "$ROOT/tests/db/consultation-bookings.sql" 2>&1 | sed 's/^psql:<stdin>:[0-9]*: NOTICE:  /  /'
 psql_run < "$ROOT/tests/db/consultation-representatives.sql" 2>&1 | sed 's/^psql:<stdin>:[0-9]*: NOTICE:  /  /'
+psql_run < "$ROOT/tests/db/consultation-health.sql" 2>&1 | sed 's/^psql:<stdin>:[0-9]*: NOTICE:  /  /'
 
 echo "== concurrency: 20 simultaneous bookings for one slot, two representatives"
 SLOT_SQL="((date_trunc('week', now() at time zone 'Australia/Perth') + interval '21 days') + time '13:30') at time zone 'Australia/Perth'"

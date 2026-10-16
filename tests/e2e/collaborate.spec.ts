@@ -52,9 +52,9 @@ test.describe("collaborate page @local", () => {
       await expect(page.getByText(item, { exact: true }).first()).toBeVisible();
     }
     const body = page.locator("main");
-    await expect(body).toContainText("BRONNIE is an AI-powered, multi-tenant business operations and automation platform in development.");
-    await expect(body).toContainText("Nothing about it is production-ready");
-    await expect(body).toContainText("not claiming any partners, customers or deployments");
+    await expect(body).toContainText("BRONNIE is an AI-powered platform being developed by Drylake.");
+    await expect(body).toContainText("No BRONNIE feature is generally available yet");
+    await expect(body).toContainText("not claiming any customers, completed pilots, results or deployments");
     await expect(page.getByRole("link", { name: "Contact Drylake" })).toHaveAttribute("href", "/contact");
     await expect(page.getByRole("link", { name: "Book a free consultation" })).toHaveAttribute("href", "/consultation");
     await expect(page.getByTestId("collaboration-microcopy")).toContainText("not a formal partnership");
