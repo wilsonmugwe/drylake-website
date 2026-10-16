@@ -95,7 +95,7 @@ merged, deployed or enabled without the owner's explicit approval.
   Exchange and Teams; check the price in the admin centre); (b) keep the shared-mailbox plan and
   route every Teams consultation to Wilson, Benedict takes phone consultations only; (c) Wilson is
   the only representative.
-- **D-B Location pages at launch.** Recommended: all ~75 areas in a structured `/perth` directory,
+- **D-B Location pages at launch. DECIDED 2026-10-16 (Ben): the recommended option.** all ~75 areas in a structured `/perth` directory,
   plus 8 standalone pages with genuinely distinct content (Osborne Park, Malaga, Canning Vale,
   West Perth, Joondalup, Fremantle, Rockingham, Midland), adding more only when there is distinct
   content to justify them.
