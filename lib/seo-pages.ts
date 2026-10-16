@@ -96,6 +96,15 @@ export const PAGE_SEO = {
     image: "/og/consultation.png",
     imageAlt: "Book a free 30-minute consultation with Drylake",
   },
+  collaborate: {
+    path: "/collaborate",
+    title: "Collaborate With Drylake | Partnerships & Pilots",
+    description:
+      "Propose a technology collaboration, pilot, integration or partnership with Drylake, a Perth technology company. BRONNIE is still in development.",
+    shareDescription: "Propose a technology collaboration, pilot, integration or partnership with Drylake.",
+    image: "/og/collaborate.png",
+    imageAlt: "Collaborate with Drylake: proposals for pilots, integrations and partnerships",
+  },
   privacy: {
     path: "/privacy",
     title: "Privacy Policy | Drylake",
