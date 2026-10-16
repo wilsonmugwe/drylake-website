@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowUpRight, Check } from "lucide-react";
+import Link from "next/link";
 
 import ConsultationBooking from "@/components/consultations/ConsultationBooking";
 import Footer from "@/components/layout/Footer";
@@ -77,6 +78,14 @@ export default function ConsultationPage() {
                     <ArrowUpRight aria-hidden="true" size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </SiteLink>
                 </div>
+
+                <p className="mt-6 max-w-md text-xs leading-5 text-black/60" data-testid="consultation-privacy-note">
+                  Wondering what happens to your details? Read{" "}
+                  <Link href="/security-privacy" className="underline underline-offset-2 hover:text-black">
+                    how we handle and protect your information
+                  </Link>
+                  .
+                </p>
               </div>
 
               <div>

@@ -49,7 +49,9 @@ export type NavItem = { label: string; href: string };
  * header. Next prefetches every <Link> that is in view, and the header is always in view, so a
  * "Solutions" link made the homepage download the /solutions client chunks (the motion library,
  * 43 KB) in the background: homepage JS 168 KB -> 213 KB, over the 200 KB budget. The click still
- * navigates; it just is not paid for on every page view.
+ * navigates; it just is not paid for on every page view. Same for "Perth" (8.4 KB of route chunks):
+ * together the two took the homepage to 205,298 bytes, over the 204,800 budget. The consultation CTA
+ * stays prefetched on purpose: it is the primary action and the likeliest next click.
  */
 export type PrimaryNavEntry = NavItem & { menu?: true; prefetch?: false };
 
@@ -57,7 +59,7 @@ export const PRIMARY_NAV: readonly PrimaryNavEntry[] = [
   { label: "Services", href: "/services", menu: true },
   { label: "Solutions", href: "/solutions", prefetch: false },
   { label: "Our Approach", href: "/#approach" },
-  { label: "Perth", href: "/perth" },
+  { label: "Perth", href: "/perth", prefetch: false },
   { label: "About", href: "/#about" },
   { label: "Contact", href: CONTACT_PATH },
 ];

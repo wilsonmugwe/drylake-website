@@ -49,8 +49,12 @@ export const ENV_REGISTRY = [
   { name: "MS_GRAPH_CLIENT_SECRET", exposure: "secret", required: false, readBy: "lib/consultations/calendar/microsoft-graph.ts (via provider.ts)", purpose: "Client secret of the consultation calendar app (expires: put the expiry on the calendar); scoped by Exchange RBAC for Applications to the two consultation mailboxes only" },
   { name: "CONSULTATION_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/consultations/dispatch-server.ts", purpose: "Optional sender for consultation emails; defaults to EMAIL_FROM's address as \"Drylake consultations\"" },
 
+  // Collaborate With Drylake (/collaborate)
+  { name: "COLLABORATION_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/email/collaboration.ts", purpose: "Optional sender for collaboration emails; defaults to EMAIL_FROM's address as \"Drylake Partnerships\". Replies go to hello@drylake.com.au" },
+  { name: "COLLABORATION_ABBICARE_ENABLED", exposure: "server", required: false, readBy: "lib/collaboration/projects.ts", purpose: "Owner-gated, default off. Leave unset until the owners of the named organisation give written permission; \"true\" adds it as a project option and shows a neutral section on /collaborate (needs a redeploy)" },
+
   // Cloudflare Turnstile
-  { name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", exposure: "public", required: true, readBy: "components/forms/ProjectForm.tsx, components/client/MessageDrylake.tsx", purpose: "Turnstile widget site key" },
+  { name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", exposure: "public", required: true, readBy: "components/forms/ProjectForm.tsx, components/collaboration/CollaborationForm.tsx, components/client/MessageDrylake.tsx", purpose: "Turnstile widget site key" },
   { name: "TURNSTILE_SECRET_KEY", exposure: "secret", required: true, readBy: "lib/contact/turnstile.ts", purpose: "Server-side Turnstile verification" },
   { name: "TURNSTILE_ALLOWED_HOSTNAMES", exposure: "server", required: false, readBy: "lib/contact/turnstile.ts", purpose: "Extra hostnames accepted in Turnstile responses" },
 

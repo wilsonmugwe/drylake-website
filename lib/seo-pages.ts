@@ -105,6 +105,15 @@ export const PAGE_SEO = {
     image: "/og/consultation.png",
     imageAlt: "Book a free 30-minute consultation with Drylake",
   },
+  collaborate: {
+    path: "/collaborate",
+    title: "Collaborate With Drylake | Partnerships & Pilots",
+    description:
+      "Propose a technology collaboration, pilot, integration or partnership with Drylake, a Perth technology company. BRONNIE is still in development.",
+    shareDescription: "Propose a technology collaboration, pilot, integration or partnership with Drylake.",
+    image: "/og/collaborate.png",
+    imageAlt: "Collaborate with Drylake: proposals for pilots, integrations and partnerships",
+  },
   privacy: {
     path: "/privacy",
     title: "Privacy Policy | Drylake",
@@ -112,6 +121,15 @@ export const PAGE_SEO = {
       "How Drylake Pty Ltd collects, uses, stores and protects personal information provided through the Drylake website, enquiry forms and client services.",
     image: "/og/privacy.png",
     imageAlt: "Drylake privacy policy",
+  },
+  securityPrivacy: {
+    path: "/security-privacy",
+    title: "Security and Privacy | How Drylake Handles Your Information",
+    description:
+      "What Drylake collects through enquiries, bookings and the client Workspace, who can see it, which providers handle it, and how to ask for access or deletion.",
+    shareDescription: "What Drylake collects, who can see it, which providers handle it and how to ask for access or deletion.",
+    image: "/og/security-privacy.png",
+    imageAlt: "Drylake security and privacy: what we collect and who can see it",
   },
   terms: {
     path: "/terms",
