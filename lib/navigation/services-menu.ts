@@ -40,6 +40,7 @@ export const FOOTER_COLUMNS: readonly { title: string; links: readonly NavItem[]
       { label: "About", href: "/about" },
       { label: "Contact", href: CONTACT_PATH },
       { label: "Free consultation", href: CONSULTATION_PATH },
+      { label: "Collaborate", href: "/collaborate" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
       { label: "Client Login", href: "/portal" },
