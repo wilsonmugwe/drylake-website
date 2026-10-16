@@ -6,6 +6,7 @@
 
 import { ENTITY, FOUNDERS, PERTH_PATH, PUBLIC_PAGES, SERVICES, SERVICES_PATH, absoluteUrl, findService } from "./entity.ts";
 import { BUSINESS_PROBLEMS, problemPath } from "./problems.ts";
+import { AREA_REGIONS, AREA_TYPES, SERVICE_AREAS, STANDALONE_AREA_SLUGS, findArea, locationPath, type AreaRegion } from "../service-areas.ts";
 
 /*
  * How Drylake approaches work, stated once for machines. Each line restates what the service
@@ -34,6 +35,30 @@ function problemLines(): string[] {
 /* Newest page date, from the same source as the sitemap's lastmod, so the two never disagree. */
 export function lastUpdated(): string {
   return PUBLIC_PAGES.map((page) => page.lastModified).sort().at(-1) ?? "";
+}
+
+/*
+ * Service-area coverage, stated once for machines (PR 5, 2026-10-16). Drylake is based in Perth
+ * with no office in any listed area; it works with businesses there remotely and on site by
+ * arrangement. Generated from the same registry as the /perth directory.
+ */
+export function serviceAreaLines(): string[] {
+  const regions = Object.keys(AREA_REGIONS) as AreaRegion[];
+
+  return [
+    `Drylake is based in ${ENTITY.locality} and has no office or premises in any suburb below. It works with businesses across the Perth metropolitan area remotely, and on site by arrangement.`,
+    "",
+    ...STANDALONE_AREA_SLUGS.map((slug) => `- [${findArea(slug)?.name}](${absoluteUrl(locationPath(slug))}): websites, software and automation for businesses in ${findArea(slug)?.name}`),
+    "",
+    `Full directory: [${ENTITY.locality} service areas](${absoluteUrl(PERTH_PATH)}).`,
+    "",
+    ...regions.map((region) => {
+      const names = SERVICE_AREAS.filter((area) => area.region === region).map((area) => area.name).join(", ");
+      return `- ${AREA_REGIONS[region].label}: ${names}`;
+    }),
+    "",
+    `Area types: ${Object.values(AREA_TYPES).map((type) => type.label).join("; ")}.`,
+  ];
 }
 
 export function llmsText(): string {
@@ -73,12 +98,16 @@ export function llmsText(): string {
     "",
     ...APPROACH_FACTS.map((fact) => `- ${fact}`),
     "",
+    "## Service areas",
+    "",
+    ...serviceAreaLines(),
+    "",
     "## Pages",
     "",
     `- [Home](${absoluteUrl("/")}): what Drylake does and who it works with`,
     `- [Solutions](${absoluteUrl("/solutions")}): common business problems, how the capabilities fit together and which service solves each`,
     `- [Services](${absoluteUrl(SERVICES_PATH)}): the five service lines`,
-    `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company`,
+    `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company, and the directory of Perth metro service areas`,
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Free consultation](${absoluteUrl("/consultation")}): book a free 30-minute consultation (Monday, Tuesday and Friday, Perth time)`,
@@ -118,6 +147,10 @@ export function llmsFullText(): string {
     "## Approach",
     "",
     ...APPROACH_FACTS.map((fact) => `- ${fact}`),
+    "",
+    "## Service areas",
+    "",
+    ...serviceAreaLines(),
     "",
   ];
 

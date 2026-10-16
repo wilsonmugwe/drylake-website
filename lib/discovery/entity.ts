@@ -13,6 +13,7 @@
 
 import { DRYLAKE_BUSINESS } from "../business.ts";
 import { BUSINESS_PHONE } from "../site.ts";
+import { STANDALONE_AREA_SLUGS, locationPath } from "../service-areas.ts";
 import { SERVICES, SERVICES_PATH } from "./services.ts";
 
 export const SITE_URL = "https://drylake.com.au";
@@ -112,7 +113,14 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     changeFrequency: "monthly" as const,
     priority: 0.8,
   })),
-  { path: "/perth", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/perth", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.7 },
+  /* Standalone service-area pages (lib/service-areas.ts); every other area lives in the /perth directory. */
+  ...STANDALONE_AREA_SLUGS.map((slug) => ({
+    path: locationPath(slug),
+    lastModified: "2026-10-16",
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  })),
   { path: "/about", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.8 },
   { path: "/contact", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.7 },
   { path: "/consultation", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.8 },

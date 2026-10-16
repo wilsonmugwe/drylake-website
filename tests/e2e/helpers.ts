@@ -14,12 +14,25 @@ export const SERVICE_PATHS = [
   "/services/web-development",
 ] as const;
 
+/* Standalone service-area pages (lib/service-areas.ts STANDALONE_AREA_SLUGS). */
+export const LOCATION_PATHS = [
+  "/locations/osborne-park",
+  "/locations/malaga",
+  "/locations/canning-vale",
+  "/locations/west-perth",
+  "/locations/joondalup",
+  "/locations/fremantle",
+  "/locations/rockingham",
+  "/locations/midland",
+] as const;
+
 export const PUBLIC_PATHS = [
   "/",
   "/solutions",
   "/services",
   ...SERVICE_PATHS,
   "/perth",
+  ...LOCATION_PATHS,
   "/about",
   "/contact",
   "/consultation",

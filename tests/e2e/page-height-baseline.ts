@@ -27,7 +27,10 @@ export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
   "/services/systems-integration": { 320: 6892, 360: 6584, 375: 6594, 390: 6466, 393: 6412, 414: 6282, 430: 6180, 768: 5804, 1024: 5229, 1440: 5164 },
   "/services/ai-automation": { 320: 6548, 360: 6460, 375: 6414, 390: 6318, 393: 6296, 414: 6162, 430: 6084, 768: 5752, 1024: 5177, 1440: 5144 },
   "/services/web-development": { 320: 6856, 360: 6600, 375: 6523, 390: 6433, 393: 6408, 414: 6319, 430: 6207, 768: 5822, 1024: 5361, 1440: 5283 },
-  "/perth": { 320: 5191, 360: 5009, 375: 4999, 390: 4964, 393: 4967, 414: 4847, 430: 4798, 768: 4708, 1024: 4160, 1440: 4218 },
+  // Re-baselined 2026-10-16 (Perth location SEO): /perth became the service-area directory, an A to Z
+  // index plus all 73 areas grouped by region and type, roughly 3-4x taller by design. Was
+  // { 320: 5191, 360: 5009, 375: 4999, 390: 4964, 393: 4967, 414: 4847, 430: 4798, 768: 4708, 1024: 4160, 1440: 4218 }.
+  "/perth": { 320: 21859, 360: 20616, 375: 20334, 390: 20052, 393: 20005, 414: 19558, 430: 19273, 768: 15051, 1024: 13963, 1440: 13629 },
   "/about": { 320: 5962, 360: 5802, 375: 5762, 390: 5726, 393: 5728, 414: 5621, 430: 5614, 768: 5406, 1024: 4443, 1440: 4281 },
   // Re-baselined 2026-10-13 (consultation booking): /contact gained "Option A: Book a free
   // consultation" above the unchanged enquiry form, +12-16% by design. Was
