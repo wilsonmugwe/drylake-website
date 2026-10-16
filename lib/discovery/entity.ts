@@ -125,7 +125,9 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/faq", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.7 },
   { path: "/consultation", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/privacy", lastModified: "2026-10-13", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/collaborate", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/privacy", lastModified: "2026-10-16", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/security-privacy", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.5 },
   { path: "/terms", lastModified: "2026-10-09", changeFrequency: "yearly", priority: 0.3 },
 ];
 

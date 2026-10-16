@@ -114,11 +114,17 @@ describe("FAQ honesty", () => {
     }
   });
 
-  it("only links to /collaborate if that route exists (it is built in a separate PR)", () => {
+  it("points proposals at /collaborate only while that route exists (PR #86), else the contact page", () => {
     const routeExists = existsSync(join(ROOT, "app/collaborate/page.tsx"));
     const mentions = /\/collaborate/.test(text);
-    if (!routeExists) assert.equal(mentions, false);
-    assert.match(FAQ_ITEMS.find((item) => item.id === "collab-submit").answer, /contact page/);
+    const submit = FAQ_ITEMS.find((item) => item.id === "collab-submit").answer;
+    if (routeExists) {
+      assert.match(submit, /drylake\.com\.au\/collaborate/);
+      assert.match(submit, /not a formal partnership/);
+    } else {
+      assert.equal(mentions, false);
+      assert.match(submit, /contact page/);
+    }
   });
 
   it("makes only verifiable security claims", () => {

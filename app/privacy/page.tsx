@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/ui/Container";
@@ -10,6 +11,7 @@ import { PAGE_SEO } from "@/lib/seo-pages";
 import JsonLd from "@/components/seo/JsonLd";
 import { breadcrumbNode, webPageNode } from "@/lib/discovery/structured-data";
 import { pageLastUpdated } from "@/lib/discovery/entity";
+import ProcessorList from "@/components/privacy/ProcessorList";
 
 /*
  * Privacy Policy (website audit, 2026-10-10). Written against what the code actually does, not
@@ -27,6 +29,10 @@ import { pageLastUpdated } from "@/lib/discovery/entity";
  *   - Clerk is US hosted (clerk.com/security, checked 2026-10-08), hence "including the United
  *     States". Supabase and Resend regions are NOT verified, so no data-residency claim is made.
  * Deliberately no retention periods: none are verified. Legal wording is for Wilson/Ben approval.
+ *
+ * Privacy workstream (2026-10-16): reviewed against APP 1.4 (a to g). The Cookies section follows the
+ * audit (docs/privacy/2026-10-16-cookie-audit.md); the provider list is rendered from
+ * lib/privacy/processors.ts, the same source as /security-privacy, so the two pages cannot disagree.
  */
 const SEO = PAGE_SEO.privacy;
 
@@ -80,7 +86,12 @@ export default function PrivacyPage() {
                   Workspace (the signed-in area where clients follow their projects, documents
                   and invoices) and to our dealings with clients and prospective clients. We
                   handle personal information in line with the Australian Privacy Principles in
-                  the Privacy Act 1988 (Cth).
+                  the Privacy Act 1988 (Cth). For a plain-language summary of what we collect, who
+                  can see it and how to switch analytics off, see{" "}
+                  <Link href="/security-privacy" className={linkClass}>
+                    Security and privacy
+                  </Link>
+                  .
                 </p>
               </PolicySection>
 
@@ -124,8 +135,14 @@ export default function PrivacyPage() {
                 <p className="mt-3">
                   We collect personal information directly from you, or from your organisation
                   when it invites you to Drylake Workspace. You do not have to give us your
-                  details, but without them we may not be able to reply to you or provide our
-                  services.
+                  details, and you can browse the website without giving us any. If you contact
+                  us, you can ask to deal with us without using your name where that is practical.
+                  Without your details we may not be able to reply to you or provide our services.
+                </p>
+                <p className="mt-3">
+                  We hold personal information in our business email and in our database and
+                  document storage for Drylake Workspace and consultation bookings, which are
+                  run by the service providers listed below.
                 </p>
               </PolicySection>
 
@@ -142,11 +159,20 @@ export default function PrivacyPage() {
 
               <PolicySection title="4. Cookies and analytics">
                 <p>
-                  Our public pages do not set cookies. We use Vercel Web Analytics to count
-                  visits and enquiries in aggregate; it does not use cookies. Signing in to
-                  Drylake Workspace uses cookies that are needed to keep you signed in. We use
-                  Cloudflare Turnstile on the contact and booking forms to check that a submission
-                  comes from a person rather than an automated program.
+                  Our public pages do not set cookies or store anything in your browser. We use
+                  Vercel Web Analytics to count visits and enquiries in aggregate; it does not use
+                  cookies, and you can switch it off. If you choose a setting, we remember that
+                  one choice in your browser (a single item of browser storage, not a cookie, that
+                  is never sent to us). Opening the sign-in screen or signing in to Drylake
+                  Workspace uses cookies that are needed to keep you signed in and to protect the
+                  sign-in service. We use Cloudflare Turnstile on the contact and booking forms to
+                  check that a submission comes from a person rather than an automated program. We
+                  use no advertising or cross-site tracking cookies. The full list, with what each
+                  item is for and how long it lasts, and the switch for analytics, are on{" "}
+                  <Link href="/security-privacy#cookie-settings" className={linkClass}>
+                    Security and privacy
+                  </Link>
+                  .
                 </p>
               </PolicySection>
 
@@ -164,15 +190,7 @@ export default function PrivacyPage() {
                   systems. They handle personal information on our behalf, only as needed to
                   provide their service:
                 </p>
-                <ul className="mt-3 list-disc space-y-2 pl-5">
-                  <li>Vercel: website hosting and aggregate visit analytics</li>
-                  <li>Clerk: Drylake Workspace sign-in and account security</li>
-                  <li>Supabase: database and document storage for Drylake Workspace, and consultation bookings</li>
-                  <li>Stripe: card payments for invoices</li>
-                  <li>Resend: delivery of enquiry notifications, consultation emails, invitations and invoice emails</li>
-                  <li>Cloudflare: protection of the contact and booking forms against automated abuse</li>
-                  <li>Microsoft 365: our business email</li>
-                </ul>
+                <ProcessorList compact />
                 <p className="mt-3">
                   We may also disclose personal information where the law requires or allows
                   it, or with your consent.
@@ -181,10 +199,14 @@ export default function PrivacyPage() {
 
               <PolicySection title="7. Overseas disclosure">
                 <p>
-                  Some of these providers store or process information outside Australia,
-                  including in the United States. Where we use an overseas provider, we take
-                  reasonable steps to ensure it handles personal information consistently with
-                  the Australian Privacy Principles.
+                  Some of these providers store or process information outside Australia.
+                  The country we can name is the United States, where Clerk (sign-in for Drylake
+                  Workspace) holds account data. For Stripe, Resend, Cloudflare and Microsoft 365
+                  we have not confirmed where they process the information, so it may be handled
+                  in other countries too; the list above says &quot;region not stated&quot; for those. Our
+                  Supabase database and document storage is in Sydney, Australia. Where we use an
+                  overseas provider, we take reasonable steps to ensure it handles personal
+                  information consistently with the Australian Privacy Principles.
                 </p>
               </PolicySection>
 
@@ -195,7 +217,11 @@ export default function PrivacyPage() {
                   administrative changes. No method of transmitting or storing information is
                   completely secure, and if a data breach is likely to cause serious harm we
                   will notify you and the Office of the Australian Information Commissioner as
-                  the law requires.
+                  the law requires. A plain-language summary is on{" "}
+                  <Link href="/security-privacy" className={linkClass}>
+                    Security and privacy
+                  </Link>
+                  .
                 </p>
               </PolicySection>
 
@@ -207,6 +233,13 @@ export default function PrivacyPage() {
                   no longer need information, we take reasonable steps to delete or de-identify
                   it. You can ask us to delete your information, and we will do so unless the
                   law requires us to keep it.
+                </p>
+                <p className="mt-3">
+                  In practice: enquiries and consultation bookings are kept until you ask us to
+                  delete them or we no longer need them, and we have not set an automatic
+                  deletion period. Client records in Drylake Workspace are kept while we work
+                  together and afterwards for as long as we need them for support, disputes and
+                  record keeping. Analytics are anonymous counts held by Vercel.
                 </p>
               </PolicySection>
 
@@ -243,7 +276,7 @@ export default function PrivacyPage() {
                   </li>
                 </ul>
                 <p className="mt-3">
-                  We will look into a complaint and reply to you. If you are not satisfied with
+                  We will acknowledge a complaint, look into it and reply to you. If you are not satisfied with
                   our response, you can complain to the Office of the Australian Information
                   Commissioner at{" "}
                   <a href="https://www.oaic.gov.au" className={linkClass}>

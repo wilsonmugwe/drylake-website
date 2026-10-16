@@ -215,7 +215,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: "collaboration",
     question: "What is BRONNIE, and can I join a pilot?",
     answer:
-      "BRONNIE is an AI-powered, multi-tenant business operations and automation platform that is in development. The initial focus is customer operations, such as enquiry handling, routing and appointment coordination. It is not production-ready and we do not claim otherwise. Pilots and early access are arranged by discussion, so get in touch if your business might be a fit.",
+      "BRONNIE is an AI-powered, multi-tenant business operations and automation platform that is in development. The initial focus is customer operations, such as enquiry handling, routing and appointment coordination. It is not production-ready and we do not claim otherwise. Pilots and early access are arranged by discussion: if your business might be a fit, use the collaboration form at drylake.com.au/collaborate.",
   },
   {
     id: "collab-integration",
@@ -228,9 +228,8 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     id: "collab-submit",
     category: "collaboration",
     question: "How do I submit a collaboration proposal?",
-    /* TODO(dependency): once the /collaborate pathway PR merges, point this answer at it. */
     answer:
-      "Through the contact page. Tell us who you are, what you would like to do together and why it could work, and a founder will reply.",
+      "Use the collaboration form at drylake.com.au/collaborate. Tell us who you are, what you would like to do together and why it could work, and we will reply. Sending a proposal is an enquiry, not a formal partnership, and it does not give access to any Drylake system.",
   },
 ];
 

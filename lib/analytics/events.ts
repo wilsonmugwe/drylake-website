@@ -1,5 +1,7 @@
 import { track } from "@vercel/analytics";
 
+import { isAnalyticsAllowed, type StorageLike } from "../privacy/cookie-preferences.ts";
+
 /*
  * The one typed place Drylake sends analytics events from (programme PR 4, 2026-10-16).
  * Same vendor and same call as the enquiry event (Vercel Analytics `track`); no new dependency.
@@ -29,7 +31,14 @@ export const CTA_CLICK_EVENT = "cta_click";
  * Sends one event. Never throws: analytics must not break a booking or a click, so a missing or
  * blocked script (ad blockers, privacy extensions) is ignored.
  */
-export function sendEvent(name: string, properties?: EventProperties, trackImpl: TrackImpl = track): void {
+export function sendEvent(
+  name: string,
+  properties?: EventProperties,
+  trackImpl: TrackImpl = track,
+  storage?: StorageLike | null,
+): void {
+  // The visitor's analytics switch (lib/privacy). beforeSend enforces it too; this stops the call earlier.
+  if (!isAnalyticsAllowed(storage)) return;
   try {
     trackImpl(name, properties);
   } catch {
