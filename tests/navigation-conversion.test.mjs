@@ -71,6 +71,11 @@ describe("footer as a navigation hub", () => {
     }
   });
 
+  it("links the Security & Privacy page (PR #84) next to the privacy policy", () => {
+    assert.ok(hrefs.includes("/security-privacy"));
+    assert.ok(hrefs.includes("/privacy"));
+  });
+
   it("has no duplicate destinations within the footer", () => {
     assert.equal(new Set(hrefs).size, hrefs.length);
   });

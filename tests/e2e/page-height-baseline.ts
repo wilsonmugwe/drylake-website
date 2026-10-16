@@ -26,13 +26,17 @@ export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
   // already within 0.1-1% of the +15% band on main (web-development and systems-integration were over it on main
   // before this branch; the other two cleared it by 30 and 2 px), and the footer Questions link (+44 px) tipped
   // all four over. Other widths untouched. Measured 2026-10-16 on the production build.
-  "/services/custom-software-development": { 320: 7093, 360: 6773, 375: 6655, 390: 6495, 393: 6497, 414: 6403, 430: 6341, 768: 5910, 1024: 5409, 1440: 5287 },
-  "/services/business-automation": { 320: 7778, 360: 6499, 375: 6486, 390: 6396, 393: 6399, 414: 6298, 430: 6234, 768: 5781, 1024: 5212, 1440: 5214 },
+  // Re-baselined 2026-10-16 (all widths, all five service pages), measured on a local production build of
+  // main d1c18fe + the footer Security & privacy link. The 2026-10-07 values had drifted ~14% under the real
+  // heights through small additions in #68-#91 (each inside the band; no single regression found), so one more
+  // footer link tipped them over. Old values are in git history.
+  "/services/custom-software-development": { 320: 8154, 360: 7758, 375: 7641, 390: 7489, 393: 7466, 414: 7357, 430: 7245, 768: 6644, 1024: 6161, 1440: 6025 },
+  "/services/business-automation": { 320: 7822, 360: 7483, 375: 7469, 390: 7354, 393: 7331, 414: 7149, 430: 7083, 768: 6542, 1024: 5981, 1440: 5943 },
   // 320 px +44 on 2026-10-16: the footer Company column gained the Questions link (one 44 px row); these two pages sat 1 px under the +15% band.
-  "/services/systems-integration": { 320: 7997, 360: 6584, 375: 6594, 390: 6466, 393: 6412, 414: 6282, 430: 6180, 768: 5804, 1024: 5229, 1440: 5164 },
-  "/services/ai-automation": { 320: 7572, 360: 6460, 375: 6414, 390: 6318, 393: 6296, 414: 6162, 430: 6084, 768: 5752, 1024: 5177, 1440: 5144 },
+  "/services/systems-integration": { 320: 8041, 360: 7594, 375: 7577, 390: 7453, 393: 7374, 414: 7217, 430: 7117, 768: 6602, 1024: 6017, 1440: 5967 },
+  "/services/ai-automation": { 320: 7616, 360: 7365, 375: 7291, 390: 7196, 393: 7149, 414: 6981, 430: 6907, 768: 6462, 1024: 5929, 1440: 5863 },
   // 320 px +44 on 2026-10-16: footer Questions link row (see systems-integration).
-  "/services/web-development": { 320: 7949, 360: 6600, 375: 6523, 390: 6433, 393: 6408, 414: 6319, 430: 6207, 768: 5822, 1024: 5361, 1440: 5283 },
+  "/services/web-development": { 320: 7993, 360: 7546, 375: 7445, 390: 7385, 393: 7334, 414: 7217, 430: 7133, 768: 6589, 1024: 6051, 1440: 6059 },
   // Re-baselined 2026-10-16 (Perth location SEO): /perth became the service-area directory, an A to Z
   // index plus all 73 areas grouped by region and type, roughly 3-4x taller by design. Was
   // { 320: 5191, 360: 5009, 375: 4999, 390: 4964, 393: 4967, 414: 4847, 430: 4798, 768: 4708, 1024: 4160, 1440: 4218 }.
