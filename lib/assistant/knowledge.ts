@@ -24,11 +24,12 @@ import {
 import { SERVICES } from "../discovery/services.ts";
 import { FAQ_ITEMS } from "../faqs.ts";
 import { BRAND_STORY_PARAGRAPHS, BRAND_STORY_STEPS, TAGLINE } from "../brand-story.ts";
+import * as collaboration from "../collaboration/copy.ts";
 import { BUSINESS_PHONE, CONTACT_EMAIL, RESPONSE_TIME } from "../site.ts";
 
 export type KnowledgeChunk = {
   id: string;
-  kind: "faq" | "service" | "consultation" | "brand" | "privacy" | "contact";
+  kind: "faq" | "service" | "consultation" | "brand" | "privacy" | "contact" | "collaboration";
   title: string;
   text: string;
   /* Public page the visitor can open for the full answer. */
@@ -41,7 +42,56 @@ const hours = (minutes: number) => minutes / 60;
 
 /* Hand-kept summary of /privacy. The privacy page is the authority; keep this short and literal. */
 const PRIVACY_SUMMARY =
-  "Drylake explains how it handles personal information on its Privacy Policy page. Information is sent over encrypted connections, access is limited by role, and personal information is deleted on request unless the law requires a record to be kept. This chat assistant is an AI: messages you type are processed by an AI model hosted in Australia to write a reply, and Drylake does not save chat transcripts. Messages sent through the enquiry form are emailed to the Drylake team. Please do not share health, financial or government ID details, or passwords, in the chat.";
+  "Drylake explains how it handles personal information on its Privacy Policy and Security and Privacy pages. Information is sent over encrypted connections, access is limited by role, and personal information is deleted on request unless the law requires a record to be kept. This chat assistant is an AI: messages you type are processed by an AI model hosted in Australia to write a reply, and Drylake does not save chat transcripts. Messages sent through the enquiry form are emailed to the Drylake team. Please do not share health, financial or government ID details, or passwords, in the chat.";
+
+/*
+ * /collaborate and BRONNIE. Read GENERICALLY from lib/collaboration/copy.ts (the page's own copy):
+ * only exports that exist and are strings or string lists are used, so a rewrite of that file
+ * cannot break the build or leave stale wording here. Nothing is hard-coded about BRONNIE.
+ */
+const text = (value: unknown): string => (typeof value === "string" ? value : "");
+const list = (value: unknown): string =>
+  Array.isArray(value) ? value.filter((v) => typeof v === "string").join("; ") : "";
+
+function collaborationChunks(): KnowledgeChunk[] {
+  const copy = collaboration as Record<string, unknown>;
+  const notThis = (copy.COLLABORATE_NOT_THIS ?? {}) as Record<string, unknown>;
+  const bronnie = (copy.BRONNIE ?? {}) as Record<string, unknown>;
+  const out: KnowledgeChunk[] = [];
+
+  const overview = [
+    text(copy.COLLABORATE_INTRO),
+    list(copy.COLLABORATE_AUDIENCES) && `Who it is for: ${list(copy.COLLABORATE_AUDIENCES)}.`,
+    text(notThis.customer),
+    text(notThis.consultation),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (overview) {
+    out.push({ id: "collaborate:overview", kind: "collaboration", title: "Collaborating with Drylake", text: overview, url: "/collaborate" });
+  }
+
+  const about = [
+    text(bronnie.description),
+    text(bronnie.status),
+    list(bronnie.interestedIn) && `Drylake is interested in: ${list(bronnie.interestedIn)}.`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (about) {
+    out.push({
+      id: "collaborate:bronnie",
+      kind: "collaboration",
+      title: text(bronnie.name) || "Drylake's own product in development",
+      text: about,
+      url: "/collaborate",
+    });
+  }
+
+  return out;
+}
 
 function buildChunks(): KnowledgeChunk[] {
   const chunks: KnowledgeChunk[] = [];
@@ -96,6 +146,8 @@ function buildChunks(): KnowledgeChunk[] {
     text: PRIVACY_SUMMARY,
     url: "/privacy",
   });
+
+  chunks.push(...collaborationChunks());
 
   chunks.push({
     id: "contact:routes",

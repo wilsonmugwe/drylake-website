@@ -19,7 +19,9 @@ import { FAQ_ITEMS } from "../lib/faqs.ts";
 
 const pack = getKnowledgePack();
 const ids = new Set(pack.chunks.map((c) => c.id));
-const good = { answer: "We build websites and business software.", basis: "published", sources: ["faq:svc-what"], intent: null };
+// No FAQ id is hard-coded: the FAQ is owner-edited, so every test derives its source from the pack.
+const FAQ_ID = pack.chunks.find((c) => c.kind === "faq").id;
+const good = { answer: "We build websites and business software.", basis: "published", sources: [FAQ_ID], intent: null };
 
 describe("provider interface", () => {
   it("defaults to the disabled provider, which never produces output", async () => {
@@ -106,6 +108,19 @@ describe("knowledge pack and retrieval", () => {
       assert.ok(pack.chunks.some((c) => c.id.startsWith(prefix)), prefix);
     }
     assert.equal(pack.chunks.filter((c) => c.kind === "faq").length, FAQ_ITEMS.length);
+    // Every FAQ entry is covered, whatever its id, wording or category.
+    for (const item of FAQ_ITEMS) {
+      const chunk = pack.chunks.find((c) => c.id === `faq:${item.id}`);
+      assert.ok(chunk, `FAQ ${item.id} missing from the pack`);
+      assert.equal(chunk.title, item.question);
+      assert.equal(chunk.text, item.answer);
+    }
+  });
+
+  it("includes the collaboration page and links it", () => {
+    const collab = pack.chunks.filter((c) => c.kind === "collaboration");
+    assert.ok(collab.length >= 1);
+    assert.ok(collab.every((c) => c.url === "/collaborate"));
   });
 
   it("contains no em dashes", () => {
@@ -143,14 +158,14 @@ describe("output validation (server-side guards)", () => {
   });
 
   it("rejects bad shapes and enums", () => {
-    for (const bad of [null, [], "text", {}, { ...good, answer: 5 }, { ...good, basis: "certain" }, { ...good, intent: "delete_all" }, { ...good, sources: "faq:svc-what" }, { ...good, sources: ["faq:invented"] }, { ...good, answer: "" }, { ...good, answer: "x".repeat(901) }]) {
+    for (const bad of [null, [], "text", {}, { ...good, answer: 5 }, { ...good, basis: "certain" }, { ...good, intent: "delete_all" }, { ...good, sources: FAQ_ID }, { ...good, sources: ["faq:invented"] }, { ...good, answer: "" }, { ...good, answer: "x".repeat(901) }]) {
       assert.equal(validateReply(bad, ids).ok, false, JSON.stringify(bad)?.slice(0, 60));
     }
   });
 
   it("published without a source is rejected; general drops sources", () => {
     assert.equal(validateReply({ ...good, sources: [] }, ids).ok, false);
-    const general = validateReply({ ...good, basis: "general", sources: ["faq:svc-what"] }, ids);
+    const general = validateReply({ ...good, basis: "general", sources: [FAQ_ID] }, ids);
     assert.equal(general.ok, true);
     assert.deepEqual(general.value.sources, []);
   });
