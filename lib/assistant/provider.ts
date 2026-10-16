@@ -4,6 +4,8 @@
  * LLM_GATEWAY_PROVIDER env var:
  *
  *   disabled        (default) never calls a model
+ *   guided          NOT a model: the handler answers from the knowledge pack (mode.ts, guided.ts)
+ *                   and never calls getProvider(); if it were reached it would return disabled
  *   bedrock-sydney  Claude via Amazon Bedrock, region forced to ap-southeast-2, AU-only model id
  *   mock            deterministic, for tests and e2e; REFUSES to load when VERCEL_ENV=production
  *
