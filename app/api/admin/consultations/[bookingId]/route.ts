@@ -1,6 +1,7 @@
 import { after } from "next/server";
 
 import { authorizeAdminApi, jsonError, jsonResponse } from "@/lib/auth/admin-api";
+import { reportCalendarFailure } from "@/lib/consultations/calendar-alert-server";
 import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
 import { calendarSetting } from "@/lib/consultations/calendar/provider";
 import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
@@ -68,6 +69,7 @@ export async function POST(request: Request, context: RouteContext) {
         candidates = await freeRepresentativesAt(calendarSetting(process.env), newStart as Date);
       } catch (error) {
         if (!(error instanceof CalendarUnavailableError)) throw error;
+        after(() => reportCalendarFailure(error));
         const described = describeOutcome("calendar_unavailable");
         return jsonError("Microsoft 365 calendars could not be checked, so nothing was changed. Try again shortly.", described.status, "calendar_unavailable");
       }

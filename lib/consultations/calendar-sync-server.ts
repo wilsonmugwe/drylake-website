@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { alertCalendarAuthFailure } from "./calendar-alert-server";
 import { type CalendarSyncSummary, type SyncRow, runCalendarSyncPass } from "./calendar-sync";
 import { calendarSetting } from "./calendar/provider";
 import { FOUNDER_NOTIFICATION_EMAILS } from "./config";
@@ -26,6 +27,7 @@ export async function runCalendarSync(
     return await runCalendarSyncPass(
       {
         provider: setting.provider,
+        alertAuthFailure: alertCalendarAuthFailure,
         async claimOne(bookingId) {
           const { data, error } = await supabase.rpc("consultation_claim_calendar_sync", {
             p_limit: 1,

@@ -25,6 +25,7 @@ import {
   type BusyInterval,
   type BusyMap,
   type CalendarEvent,
+  type CalendarFailureKind,
   type CalendarProvider,
   type ConsultationEventInput,
   CalendarEventMissingError,
@@ -88,12 +89,42 @@ export function eventPayload(input: ConsultationEventInput): Record<string, unkn
     attendees: [{ type: "required", emailAddress: { address: input.customerEmail, name: input.customerName } }],
     ...(teams
       ? { isOnlineMeeting: true, onlineMeetingProvider: "teamsForBusiness" }
-      : { location: { displayName: `Phone call to ${input.customerPhone ?? "customer"}` } }),
+      : // Explicit false: a tenant default of "online meeting for every event" must not put a Teams
+        // link on a phone consultation.
+        { isOnlineMeeting: false, location: { displayName: `Phone call to ${input.customerPhone ?? "customer"}` } }),
     allowNewTimeProposals: false,
     showAs: "busy",
     transactionId: input.transactionId,
     singleValueExtendedProperties: [{ id: BOOKING_PROPERTY_ID, value: input.bookingId }],
   };
+}
+
+type TokenBody = { access_token?: string; expires_in?: number; error?: string; error_codes?: unknown; error_description?: string } | null;
+
+const AAD_EXPIRED_SECRET = 7000222; // "The provided client secret keys are expired"
+const AAD_INVALID_SECRET = 7000215; // "Invalid client secret provided"
+
+/**
+ * Why Microsoft refused a sign-in. Reads the OAuth error code and AADSTS number only; the
+ * description text is inspected but never copied anywhere, because it can echo request detail.
+ */
+export function classifyTokenFailure(status: number, body: TokenBody): CalendarFailureKind {
+  const codes = Array.isArray(body?.error_codes) ? (body?.error_codes as unknown[]) : [];
+  const description = typeof body?.error_description === "string" ? body.error_description : "";
+  if (codes.includes(AAD_EXPIRED_SECRET) || /AADSTS7000222/.test(description)) return "credential_expired";
+  if (body?.error === "invalid_client" || codes.includes(AAD_INVALID_SECRET) || /AADSTS7000215/.test(description)) return "credential_expired";
+  if (status === 429) return "throttled";
+  if (status >= 500) return "unavailable";
+  return "auth";
+}
+
+const safeCode = (value: unknown): string => (typeof value === "string" && /^[A-Za-z0-9_.-]{1,60}$/.test(value) ? value : "");
+
+function parseRetryAfter(response: Response): number | null {
+  const raw = response.headers.get("retry-after");
+  if (raw === null) return null;
+  const seconds = Number(raw);
+  return Number.isFinite(seconds) && seconds >= 0 ? Math.ceil(seconds) : null;
 }
 
 type TokenCache = { token: string; expiresAt: number } | null;
@@ -125,9 +156,15 @@ export function createMicrosoftGraphProvider(
     } catch {
       throw new CalendarUnavailableError("Microsoft sign-in unreachable");
     }
-    const body = (await response.json().catch(() => null)) as { access_token?: string; expires_in?: number; error?: string } | null;
+    const body = (await response.json().catch(() => null)) as TokenBody;
     if (!response.ok || !body?.access_token) {
-      throw new CalendarUnavailableError(`Microsoft sign-in refused (${response.status} ${body?.error ?? ""})`.trim());
+      const kind = classifyTokenFailure(response.status, body);
+      const aadsts = Array.isArray(body?.error_codes) ? (body?.error_codes as unknown[]).filter((c) => typeof c === "number").slice(0, 2).map((c) => `AADSTS${c}`).join(" ") : "";
+      throw new CalendarUnavailableError(`Microsoft sign-in refused (${response.status} ${safeCode(body?.error)} ${aadsts})`.replace(/\s+\)/, ")").replace(/\s{2,}/g, " "), {
+        kind,
+        status: response.status,
+        retryAfterSeconds: parseRetryAfter(response),
+      });
     }
     // Refresh five minutes early; client-credential tokens have no refresh token.
     cache = { token: body.access_token, expiresAt: now() + Math.max(60, (body.expires_in ?? 3599) - 300) * 1000 };
@@ -166,7 +203,14 @@ export function createMicrosoftGraphProvider(
 
   async function graphError(response: Response, what: string): Promise<CalendarUnavailableError> {
     const body = (await response.json().catch(() => null)) as { error?: { code?: string } } | null;
-    return new CalendarUnavailableError(`${what} failed (${response.status} ${body?.error?.code ?? ""})`.trim());
+    const status = response.status;
+    const kind: CalendarFailureKind =
+      status === 401 || status === 403 ? "auth" : status === 404 ? "mailbox" : status === 429 ? "throttled" : "unavailable";
+    return new CalendarUnavailableError(`${what} failed (${status} ${safeCode(body?.error?.code)})`.replace(/\s+\)/, ")"), {
+      kind,
+      status,
+      retryAfterSeconds: parseRetryAfter(response),
+    });
   }
 
   const mailbox = (r: Representative) => `/users/${encodeURIComponent(r.email)}`;
@@ -240,6 +284,8 @@ export function createMicrosoftGraphProvider(
       const response = await graph("POST", `${mailbox(representative)}/events`, eventPayload(input));
       if (!response.ok) throw await graphError(response, "Event creation");
       const created = toEvent((await response.json()) as Record<string, unknown>);
+      // A phone consultation never exposes a meeting link, whatever the tenant defaults do.
+      if (input.method === "PHONE") return { ...created, joinUrl: null };
       if (input.method === "TEAMS" && !created.joinUrl) {
         // Teams provisioning can lag the create; one read picks the link up when it is ready.
         const again = await graph("GET", `${mailbox(representative)}/events/${encodeURIComponent(created.id)}?$select=id,start,onlineMeeting`);
@@ -261,6 +307,15 @@ export function createMicrosoftGraphProvider(
       const response = await graph("POST", `${mailbox(representative)}/events/${encodeURIComponent(eventId)}/cancel`, { comment });
       if (response.ok || response.status === 404) return;
       throw await graphError(response, "Event cancellation");
+    },
+
+    async checkCredentials() {
+      try {
+        await token(true);
+        return "ok";
+      } catch (error) {
+        return error instanceof CalendarUnavailableError ? error.kind : "unavailable";
+      }
     },
   };
 }

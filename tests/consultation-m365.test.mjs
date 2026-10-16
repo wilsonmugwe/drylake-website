@@ -230,7 +230,7 @@ describe("Microsoft Graph provider", () => {
       method: "PHONE", customerName: "<b>Sam</b>", customerEmail: "sam@example.com", customerPhone: "0400 000 000",
     });
     const body = calls.find((c) => c.method === "POST" && c.url.endsWith("/events")).body;
-    assert.equal(body.isOnlineMeeting, undefined);
+    assert.equal(body.isOnlineMeeting, false, "explicitly not an online meeting (a tenant default must not add a Teams link)");
     assert.match(body.location.displayName, /0400 000 000/);
     assert.match(body.body.content, /Drylake will call you on 0400 000 000/);
     assert.doesNotMatch(eventBody({ method: "PHONE", reference: "<x>", customerPhone: "<script>" }), /<script>|<x>/);
@@ -395,7 +395,7 @@ describe("calendar reconciliation", () => {
       finish: async (row, outcome, result, error, retry) => finished.push({ outcome, error, retry }),
     });
     assert.deepEqual(summary, { claimed: 1, synced: 0, retried: 1 });
-    assert.deepEqual(finished, [{ outcome: "retry", error: "Event creation failed (503)", retry: 4 }]);
+    assert.deepEqual(finished, [{ outcome: "retry", error: "[unavailable] Event creation failed (503)", retry: 4 }]);
     assert.equal(calendarRetryMinutes(20), 60);
   });
   it("claims ONE booking at a time (each lease only covers one booking's Graph calls)", async () => {

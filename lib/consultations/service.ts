@@ -94,7 +94,7 @@ async function calendarBusy(calendar: CalendarSetting, from: Date, to: Date, fre
   if (calendar.mode === "misconfigured") throw new CalendarUnavailableError(`calendar misconfigured: ${calendar.reason}`);
   if (!fresh && busyCache && Date.now() - busyCache.at < BUSY_CACHE_MS) return busyCache.busy;
   const busy = await calendar.provider.getBusy(REPRESENTATIVES, from, to);
-  if (busy.size === 0) throw new CalendarUnavailableError("no representative calendar could be read");
+  if (busy.size === 0) throw new CalendarUnavailableError("no representative calendar could be read", { kind: "mailbox" });
   if (!fresh) busyCache = { at: Date.now(), busy };
   return busy;
 }
