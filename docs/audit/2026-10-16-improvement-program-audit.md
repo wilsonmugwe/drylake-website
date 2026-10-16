@@ -75,7 +75,7 @@ redesign (Part I) and the navigation (Part J).
 
 | # | PR | Builds on | Parallel-safe with | Main work |
 |---|---|---|---|---|
-| 1 | M365 live verification + least-privilege proof | none | 3, 4, 5, 6, 8 | A read-only verification script (token, `getSchedule` for both mailboxes, out-of-scope mailbox must fail), then go-live checks 1 to 8 with the real tenant, ops doc corrected for shared mailboxes, Teams routing per decision D-A |
+| 1 | M365 live verification + least-privilege proof | none | 3, 4, 5, 6, 8 | A read-only verification script (token, `getSchedule` for both mailboxes, out-of-scope mailbox must fail), then go-live checks 1 to 8 with the real tenant, licence note in the ops doc per decision D-A |
 | 2 | Booking hardening + admin screens | 1 (for Teams routing) | 3 to 8 | Teams-capable assignment rule, empty-calendar fallback check, admin-screen e2e, reminder liveness check surfaced on `/api/health` |
 | 3 | Email polish | 2's data model (unchanged so far) | 4 to 8 | Real-client rendering matrix, contact-form confirmation on the same blocks, BIMI path written up (no DNS change) |
 | 4 | Analytics events + search console setup | none | all | `booking_started`, `booking_completed`, CTA click events (no personal data), GSC/Bing/GBP/Bing Places runbook |
