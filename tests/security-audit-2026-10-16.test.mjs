@@ -102,6 +102,8 @@ const ROUTE_CLASSES = {
   "app/api/clerk/webhook/route.ts": "Svix signature",
   "app/api/cron/consultation-notifications/route.ts": "CRON_SECRET bearer, constant time",
   "app/api/contact/route.ts": "public: Turnstile + rate limit + validation",
+  "app/api/feedback/route.ts": "public: single-use 256-bit token (hashed) + rate limit + validation",
+  "app/api/feedback/unsubscribe/route.ts": "public: unsubscribe token (hashed) + rate limit, POST only",
   "app/api/consultations/route.ts": "public: Turnstile + rate limit + validation",
   "app/api/consultations/availability/route.ts": "public read: rate limit, no personal data",
   "app/api/consultations/manage/route.ts": "public: HMAC management token + rate limit",
