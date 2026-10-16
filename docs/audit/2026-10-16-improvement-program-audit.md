@@ -49,12 +49,12 @@ redesign (Part I) and the navigation (Part J).
 
 ## 3. Blockers and risks found
 
-1. **Benedict and Teams (decision).** On 16 Oct the plan became: one paid licence to Wilson,
-   benedict@ converted to a shared mailbox before 2 Nov. A shared mailbox's calendar can likely
-   still be read and written by the app (shared mailboxes need no licence) [MEDIUM], but a Teams
-   meeting needs a Teams-licensed organiser, so Teams consultations assigned to Benedict would get
-   no join link [MEDIUM]. The existing ops doc says "an unlicensed mailbox cannot be read", which
-   is too strong for a shared mailbox and will be corrected in PR 1. Options are in section 5.
+1. **Licence count from 2 Nov (decision).** Corrected 2026-10-16 by Ben: benedict@ is a normal
+   licensed user with admin rights, not a shared mailbox. Both representatives can host Teams today.
+   The risk is the paid subscription that starts on 2 Nov with ONE licence for two users: an admin
+   role does not include a mailbox or Teams licence, so whichever account loses the licence stops
+   being bookable for Teams (and its calendar may stop being readable) [MEDIUM]. Set the
+   subscription to 2 licences before 2 Nov. Shared mailboxes are not part of this plan.
 2. **Exchange outbound from this tenant bounces externally (5.7.708)** for Graph-originated mail
    (seen 13 Oct). Exchange's own meeting invitations to customers are Graph-originated, so they may
    bounce until the trial converts or Microsoft grants an exception [MEDIUM]. Drylake's Resend
@@ -91,10 +91,8 @@ merged, deployed or enabled without the owner's explicit approval.
 
 ## 5. Decisions the owner must make
 
-- **D-A Teams and Benedict.** (a) Buy a second licence for Benedict (Business Basic includes
-  Exchange and Teams; check the price in the admin centre); (b) keep the shared-mailbox plan and
-  route every Teams consultation to Wilson, Benedict takes phone consultations only; (c) Wilson is
-  the only representative.
+- **D-A Licences.** Keep both representatives licensed (2 licences on the 2 Nov paid
+  subscription). If only one licence is kept, every Teams booking has to go to the licensed person.
 - **D-B Location pages at launch. DECIDED 2026-10-16 (Ben): the recommended option.** all ~75 areas in a structured `/perth` directory,
   plus 8 standalone pages with genuinely distinct content (Osborne Park, Malaga, Canning Vale,
   West Perth, Joondalup, Fremantle, Rockingham, Midland), adding more only when there is distinct
@@ -107,7 +105,7 @@ merged, deployed or enabled without the owner's explicit approval.
 
 | Item | Who | Notes |
 |---|---|---|
-| Microsoft 365 licence change before 2 Nov | Ben | Decision D-A |
+| Paid subscription set to 2 licences before 2 Nov | Ben | Decision D-A |
 | `CONSULTATION_CALENDAR_PROVIDER=microsoft` + redeploy | Ben or Wilson | Only after PR 1's read-only checks pass |
 | pg_cron minute job | Supabase admin | `docs/operations/sql/2026-10-13-consultation-dispatch-cron.sql` |
 | Google Search Console, Bing Webmaster Tools | Ben | DNS TXT or the existing Bing meta env |
