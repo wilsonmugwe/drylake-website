@@ -53,9 +53,9 @@ describe("homepage composition", () => {
     // Experience polish: no AI chapter; the FAQ sits inside the closing conversation.
     assert.deepEqual(order, [
       "Hero", "Problems", "Integrations", "WhatWeDo", "Production",
-      "Founders", "Approach", "ContactCTA", "FAQ",
+      "Founders", "BrandStory", "Approach", "ContactCTA", "FAQ",
     ]);
-    assert.match(body, /<ContactCTA aside=\{<FAQ \/>\} \/>/);
+    assert.match(body, /<ContactCTA aside=\{<FAQ items=\{faqs\} \/>\} \/>/);
   });
 
   it("keeps every section id the navigation and the page use, exactly once", () => {
@@ -77,7 +77,7 @@ describe("homepage composition", () => {
 
   it("keeps the FAQPage schema and the FAQ section on the homepage", () => {
     assert.match(PAGE, /faqNode\("\/", faqs\)/);
-    assert.match(PAGE, /<FAQ \/>/);
+    assert.match(PAGE, /<FAQ items=\{faqs\} \/>/);
   });
 });
 

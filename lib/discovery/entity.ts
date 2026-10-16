@@ -104,7 +104,7 @@ export type PublicPage = {
 };
 
 export const PUBLIC_PAGES: readonly PublicPage[] = [
-  { path: "/", lastModified: "2026-10-10", changeFrequency: "weekly", priority: 1 },
+  { path: "/", lastModified: "2026-10-16", changeFrequency: "weekly", priority: 1 },
   { path: "/solutions", lastModified: "2026-10-08", changeFrequency: "monthly", priority: 0.9 },
   { path: SERVICES_PATH, lastModified: "2026-10-08", changeFrequency: "monthly", priority: 0.9 },
   ...SERVICES.map((service) => ({
@@ -121,7 +121,8 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     changeFrequency: "monthly" as const,
     priority: 0.6,
   })),
-  { path: "/about", lastModified: "2026-10-07", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/about", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/faq", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.7 },
   { path: "/consultation", lastModified: "2026-10-13", changeFrequency: "monthly", priority: 0.8 },
   { path: "/collaborate", lastModified: "2026-10-16", changeFrequency: "monthly", priority: 0.5 },

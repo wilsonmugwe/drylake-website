@@ -287,7 +287,8 @@ describe("the redesign kept the approved homepage copy", () => {
   });
 
   it("the FAQ still renders the shared FAQ data (same as the FAQPage schema)", () => {
-    assert.match(read("components/sections/FAQ.tsx"), /faqs\.map\(/);
+    assert.match(read("components/sections/FAQ.tsx"), /items\.map\(/);
+    assert.match(read("app/page.tsx"), /<FAQ items=\{faqs\} \/>/);
     assert.equal(faqs.length, 5);
   });
 

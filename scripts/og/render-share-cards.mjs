@@ -35,6 +35,7 @@ const CARDS = [
   { image: PAGE_SEO.services.image, headline: "Software, automation, integration, AI and web", line: "Five service lines for Australian businesses" },
   { image: PAGE_SEO.perth.image, headline: "A Perth technology company", line: "Software, automation and AI for businesses in Perth, WA and Australia" },
   { image: PAGE_SEO.about.image, headline: "Built close to the problem.", line: "About Drylake, a Perth technology company" },
+  { image: PAGE_SEO.faq.image, headline: "Your questions, answered plainly.", line: "Services, quotes, security, privacy and collaboration" },
   { image: PAGE_SEO.contact.image, headline: "Tell us what's getting in the way.", line: `A founder replies within ${RESPONSE_TIME}` },
   { image: PAGE_SEO.consultation.image, headline: "Book a free consultation.", line: "30 minutes, no obligation. Monday, Tuesday and Friday, Perth time" },
   { image: PAGE_SEO.collaborate.image, headline: "Collaborate with Drylake.", line: "Pilots, integrations and partnerships. BRONNIE is in development" },

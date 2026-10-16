@@ -34,6 +34,7 @@ export const PUBLIC_PATHS = [
   "/perth",
   ...LOCATION_PATHS,
   "/about",
+  "/faq",
   "/contact",
   "/consultation",
   "/collaborate",

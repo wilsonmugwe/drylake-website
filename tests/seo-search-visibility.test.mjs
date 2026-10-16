@@ -178,7 +178,7 @@ describe("sitemap and page registry", () => {
     for (const path of ["/", "/solutions", "/services", ...SERVICES.map((s) => s.path), "/perth", "/about", "/contact", "/consultation", "/collaborate", "/privacy", "/security-privacy", "/terms"]) {
       assert.equal(paths.filter((p) => p === path).length, 1, path);
     }
-    assert.equal(paths.length, 16 + STANDALONE_AREA_SLUGS.length); // /terms 2026-10-08, /consultation 2026-10-13, 8 /locations pages 2026-10-16, /security-privacy 2026-10-16, /collaborate 2026-10-16
+    assert.equal(paths.length, 17 + STANDALONE_AREA_SLUGS.length); // /terms 2026-10-08, /consultation 2026-10-13, 8 /locations pages, /security-privacy, /collaborate and /faq 2026-10-16
   });
 
   it("lists nothing private, no auth route and no trailing slash", () => {
