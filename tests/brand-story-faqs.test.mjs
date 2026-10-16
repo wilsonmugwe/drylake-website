@@ -133,8 +133,10 @@ describe("FAQ honesty", () => {
 
   it("states the AI privacy position as an approach, not a promise", () => {
     const ai = FAQ_ITEMS.find((item) => item.id === "ai-privacy").answer;
-    assert.match(ai, /currently sends no personal information to AI services/);
-    assert.match(ai, /where they are available/);
+    /* Owner brief 2026-10-16: qualified after auditing the data flows (assistant off in production,
+       no other AI dependency); Australian hosting depends on provider and model. */
+    assert.match(ai, /does not currently send your information to an AI service/);
+    assert.match(ai, /Some providers offer Australian hosting for some models/);
     assert.doesNotMatch(ai, /always|never leaves|fully|100%/i);
   });
 
