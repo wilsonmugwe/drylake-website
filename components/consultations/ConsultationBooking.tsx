@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CalendarCheck, LoaderCircle, Mail, Phone, Rotate
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
+import { trackBookingCompleted, trackBookingStarted } from "@/lib/analytics/events";
 import SlotPicker, { NO_AVAILABILITY_MESSAGE } from "@/components/consultations/SlotPicker";
 import TurnstileWidget, { type TurnstileHandle } from "@/components/forms/TurnstileWidget";
 import PrimaryCta from "@/components/ui/PrimaryCta";
@@ -67,6 +68,7 @@ export default function ConsultationBooking() {
 
   const idempotencyKey = useRef<string>("");
   const inFlight = useRef(false);
+  const startTracked = useRef(false);
   const turnstileRef = useRef<TurnstileHandle>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -170,6 +172,7 @@ export default function ConsultationBooking() {
     setSending(false);
 
     if (result.ok) {
+      trackBookingCompleted(details.method);
       setConfirmed(result.data.booking);
       setStep("done");
       return;
@@ -194,6 +197,7 @@ export default function ConsultationBooking() {
 
   function bookAnother() {
     idempotencyKey.current = "";
+    startTracked.current = false;
     setConfirmed(null);
     setStart(null);
     setDate(null);
@@ -315,7 +319,14 @@ export default function ConsultationBooking() {
                 setDate(d);
                 setStart(null);
               }}
-              onStartChange={setStart}
+              onStartChange={(slot) => {
+                // Once per booking attempt: the first time a visitor chooses a time.
+                if (!startTracked.current) {
+                  startTracked.current = true;
+                  trackBookingStarted();
+                }
+                setStart(slot);
+              }}
             />
           )}
           <div className="flex justify-end border-t border-black/10 pt-5">

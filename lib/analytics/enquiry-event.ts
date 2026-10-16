@@ -1,4 +1,4 @@
-import { track } from "@vercel/analytics";
+import { type TrackImpl, sendEvent } from "./events.ts";
 
 /*
  * Conversion measurement for enquiries (AI discoverability PR, 2026-10-08).
@@ -66,11 +66,8 @@ export function enquiryEventProperties(projectType: string): EnquiryEventPropert
  */
 export function trackEnquirySubmitted(
   projectType: string,
-  trackImpl: (name: string, properties: EnquiryEventProperties) => void = track
+  trackImpl?: TrackImpl
 ): void {
-  try {
-    trackImpl(ENQUIRY_EVENT, enquiryEventProperties(projectType));
-  } catch {
-    // Deliberately ignored, see above.
-  }
+  // sendEvent swallows any error from analytics, see above. Shared with the other events.
+  sendEvent(ENQUIRY_EVENT, enquiryEventProperties(projectType), trackImpl);
 }

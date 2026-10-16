@@ -2,6 +2,8 @@
 
 import { Analytics, type BeforeSendEvent } from "@vercel/analytics/next";
 
+import CtaClickTracker from "@/components/analytics/CtaClickTracker";
+
 /*
  * Vercel Web Analytics with two privacy rules applied before anything leaves the browser:
  *   1. The URL fragment is always removed. /consultation/manage#t=... carries a customer's
@@ -21,5 +23,10 @@ export function scrubAnalyticsEvent(event: BeforeSendEvent): BeforeSendEvent | n
 }
 
 export default function SiteAnalytics() {
-  return <Analytics beforeSend={scrubAnalyticsEvent} />;
+  return (
+    <>
+      <Analytics beforeSend={scrubAnalyticsEvent} />
+      <CtaClickTracker />
+    </>
+  );
 }
