@@ -1,6 +1,7 @@
 import { NextResponse, after } from "next/server";
 
 import { clientIp } from "@/lib/contact/turnstile";
+import { reportCalendarFailure } from "@/lib/consultations/calendar-alert-server";
 import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
 import { calendarSetting } from "@/lib/consultations/calendar/provider";
 import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
       } catch (error) {
         if (!(error instanceof CalendarUnavailableError)) throw error;
         console.error("Consultation reschedule: calendar check failed:", error.message);
+        after(() => reportCalendarFailure(error));
         const described = describeOutcome("calendar_unavailable");
         return jsonError(described.message, described.status, { code: "calendar_unavailable", booking: customerView(booking) });
       }

@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 
 import { CONSULTATION_ACTION } from "@/lib/contact/turnstile-action";
 import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
+import { reportCalendarFailure } from "@/lib/consultations/calendar-alert-server";
 import { runCalendarSync } from "@/lib/consultations/calendar-sync-server";
 import { calendarSetting } from "@/lib/consultations/calendar/provider";
 import { CalendarUnavailableError } from "@/lib/consultations/calendar/types";
@@ -75,6 +76,8 @@ export async function POST(request: Request) {
     } catch (error) {
       if (!(error instanceof CalendarUnavailableError)) throw error;
       console.error("Consultation booking: calendar check failed:", error.message);
+      // A refused credential means every visitor is being turned away: tell the admins now.
+      after(() => reportCalendarFailure(error));
       const described = describeOutcome("calendar_unavailable");
       return jsonError(described.message, described.status, { code: "calendar_unavailable" });
     }
