@@ -21,6 +21,8 @@ export type PrimaryCtaProps = {
   size?: "compact" | "default" | "large";
   surface?: "dark" | "light";
   className?: string;
+  /* Analytics label for cta_click (lib/analytics/events.ts CTA_LOCATIONS). Omit to infer it from the page. */
+  location?: string;
   onNavigate?: () => void;
 };
 
@@ -32,6 +34,7 @@ export default function PrimaryCta({
   size = "default",
   surface = "dark",
   className,
+  location,
   onNavigate,
 }: PrimaryCtaProps) {
   return (
@@ -40,6 +43,7 @@ export default function PrimaryCta({
       onNavigate={onNavigate}
       data-size={size}
       data-surface={surface}
+      data-cta-location={location}
       className={className ? `btn-primary ${className}` : "btn-primary"}
     >
       <span>{children}</span>

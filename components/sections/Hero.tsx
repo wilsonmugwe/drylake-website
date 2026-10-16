@@ -92,7 +92,7 @@ export default function Hero() {
               desktop (sub-pixel AA). Nothing overlaps the actions at any width. */}
           <div className="lg:max-w-[38rem]">
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
-              <PrimaryCta href={PRIMARY_CTA.href} className="w-full sm:w-auto sm:min-w-[232px]">
+              <PrimaryCta href={PRIMARY_CTA.href} location="hero" className="w-full sm:w-auto sm:min-w-[232px]">
                 {PRIMARY_CTA.label}
               </PrimaryCta>
 

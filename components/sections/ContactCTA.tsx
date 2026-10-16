@@ -60,7 +60,7 @@ export default function ContactCTA({ aside }: { aside?: ReactNode }) {
               is taking your team too much time.
             </p>
 
-            <PrimaryCta href={PRIMARY_CTA.href} size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
+            <PrimaryCta href={PRIMARY_CTA.href} location="closing" size="large" className="mt-7 w-full sm:mt-9 sm:w-auto sm:min-w-[280px]">
               {PRIMARY_CTA.label}
             </PrimaryCta>
             <p className="mt-3 text-[0.8rem] leading-5 text-white/60">{PRIMARY_CTA_NOTE}</p>
