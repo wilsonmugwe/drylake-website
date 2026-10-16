@@ -17,9 +17,9 @@ const STOPWORDS = new Set(
   )
 );
 
-export function tokenize(text: string): string[] {
+export function tokenize(text: string, extraStopwords?: ReadonlySet<string>): string[] {
   return (text.toLowerCase().match(/[a-z0-9]+/g) ?? [])
-    .filter((word) => (word.length > 2 || word === "ai") && !STOPWORDS.has(word))
+    .filter((word) => (word.length > 2 || word === "ai") && !STOPWORDS.has(word) && !extraStopwords?.has(word))
     .map((word) => (word.length > 4 && word.endsWith("s") ? word.slice(0, -1) : word));
 }
 
@@ -35,14 +35,25 @@ export type ScoredChunk = {
   titleMatched: number;
 };
 
-export function scoreChunks(query: string, chunks: readonly KnowledgeChunk[]): ScoredChunk[] {
-  const terms = [...new Set(tokenize(query))];
+/* Optional tuning used by guided mode. Model mode passes none, so its behaviour is unchanged. */
+export type ScoreOptions = {
+  /* Words too generic in this site's copy to identify any one chunk. Dropped from query, titles and bodies. */
+  extraStopwords?: ReadonlySet<string>;
+  /* Extra tokens appended to the QUERY (synonym concepts), computed from its plain tokens. */
+  queryConcepts?: (tokens: readonly string[]) => readonly string[];
+  /* Extra tokens appended to a chunk's TITLE only (never its body), so a synonym cannot match body text. */
+  titleConcepts?: (chunk: KnowledgeChunk) => readonly string[];
+};
+
+export function scoreChunks(query: string, chunks: readonly KnowledgeChunk[], options: ScoreOptions = {}): ScoredChunk[] {
+  const plain = tokenize(query, options.extraStopwords);
+  const terms = [...new Set([...plain, ...(options.queryConcepts?.(plain) ?? [])])];
   if (terms.length === 0) return [];
 
   const docs = chunks.map((chunk) => ({
     chunk,
-    title: new Set(tokenize(chunk.title)),
-    body: tokenize(chunk.text),
+    title: new Set([...tokenize(chunk.title, options.extraStopwords), ...(options.titleConcepts?.(chunk) ?? [])]),
+    body: tokenize(chunk.text, options.extraStopwords),
   }));
 
   const idf = new Map<string, number>();

@@ -20,7 +20,7 @@
  */
 import type { AssistantFollowUp, AssistantReplyPayload } from "./constants.ts";
 import type { KnowledgeChunk } from "./knowledge.ts";
-import { scoreChunks } from "./retrieve.ts";
+import { scoreChunks, type ScoreOptions } from "./retrieve.ts";
 import { RESPONSE_TIME } from "../site.ts";
 
 /* The privacy chunk describes the AI mode ("processed by an AI model hosted in Australia"), which
@@ -30,6 +30,43 @@ export const GUIDED_EXCLUDED_IDS: ReadonlySet<string> = new Set(["privacy:summar
 
 /* Never offered as a chip: it duplicates a FAQ, and its one-word title would retrieve that FAQ instead. */
 export const NO_CHIP_IDS: ReadonlySet<string> = new Set(["collaborate:bronnie"]);
+
+/*
+ * Precision tuning (a confident wrong verbatim answer is worse than not-found).
+ *
+ * 1. Words that appear all over this site's copy identify nothing, so they never score:
+ *    "do you offer hosting" must not match a chunk because it says "offer" somewhere.
+ * 2. Synonym CONCEPTS: a visitor's word and the pack's word often differ (hosting vs "after the
+ *    website launches"). A concept token is added to the query when one of its words is typed, and
+ *    to the TITLE (never the body) of the chunks that own that topic. Body text cannot match a
+ *    concept, so "hosting" cannot pull in an AI-privacy answer that merely mentions hosting.
+ * 3. Margin: if the runner-up scores nearly as high, the match is ambiguous. We then offer both
+ *    as chips and assert neither.
+ */
+export const GUIDED_STOPWORDS: ReadonlySet<string> = new Set(["drylake", "service", "offer", "provide", "business", "company", "team"]);
+
+const CONCEPTS: ReadonlyArray<{ name: string; words: readonly string[]; chunks: readonly string[] }> = [
+  { name: "c-aftercare", words: ["hosting", "host", "hosted", "maintenance", "maintain", "support", "update", "launch", "live", "after", "handover"], chunks: ["faq:web-after"] },
+  { name: "c-manage-booking", words: ["cancel", "reschedule", "rebook"], chunks: ["consultation:rules"] },
+  { name: "c-google", words: ["google", "search", "seo", "ranking", "rank", "visible", "visibility"], chunks: ["faq:web-google"] },
+  { name: "c-improve", words: ["improve", "fix", "repair", "upgrade", "revamp", "refresh", "redesign", "rebuild"], chunks: ["faq:web-redesign", "faq:sw-improve"] },
+  { name: "c-mobile", words: ["phone", "mobile", "tablet", "responsive", "iphone", "android"], chunks: ["faq:web-mobile"] },
+  { name: "c-security", words: ["safe", "secure", "security", "protect", "private", "confidential"], chunks: ["faq:sec-protect"] },
+  { name: "c-where", words: ["outside", "interstate", "overseas", "regional", "remote", "nationwide", "travel"], chunks: ["faq:wk-who"] },
+  { name: "c-pricing", words: ["cost", "price", "pricing", "quote", "quoted", "charge", "fee", "budget"], chunks: ["faq:web-cost", "faq:sw-cost", "faq:price-quote"] },
+  { name: "c-booking", words: ["booking", "book", "appointment", "meeting", "schedule"], chunks: ["consultation:rules", "faq:price-consultation"] },
+  { name: "c-portal", words: ["portal", "dashboard"], chunks: ["faq:sw-portals"] },
+  { name: "c-connect", words: ["integrate", "integration", "connect", "sync"], chunks: ["faq:sw-connect", "service:systems-integration"] },
+];
+
+const SCORE_OPTIONS: ScoreOptions = {
+  extraStopwords: GUIDED_STOPWORDS,
+  queryConcepts: (tokens) => CONCEPTS.filter((c) => c.words.some((w) => tokens.includes(w))).map((c) => c.name),
+  titleConcepts: (chunk) => CONCEPTS.filter((c) => c.chunks.includes(chunk.id)).map((c) => c.name),
+};
+
+/* Runner-up within this share of the best score: ambiguous. */
+export const AMBIGUITY_RATIO = 0.8;
 
 export const MIN_SCORE = 6;
 export const MIN_COVERAGE = 0.5;
@@ -56,6 +93,8 @@ const ROUTES: ReadonlyArray<readonly [RegExp, string]> = [
     /^(?:so |hi,? |hello,? )?(?:what (?:exactly |actually )?(?:does|do) (?:drylake|you|the company|your company|your business)(?: guys)?(?: actually| exactly)? (?:do|offer|provide|build|sell|specialise in|specialize in)|what services (?:does|do) (?:drylake|you|the company) (?:offer|provide)|what can (?:you|drylake) (?:do|build|offer)(?: for (?:me|us))?|what is drylake|who (?:are you|is drylake))[?.! ]*$/i,
     "faq:svc-what",
   ],
+  [/^(?:tell me about|what about|what is|do you (?:do|build|make))\s+(?:drylake'?s?\s+)?(?:websites?|web (?:development|design))(?: services?)?[?.! ]*$/i, "service:web-development"],
+  [/^(?:tell me about|what about|what is|do you (?:do|build|make))\s+(?:drylake'?s?\s+)?(?:custom )?software(?: development| and apps| services?)?[?.! ]*$/i, "service:custom-software-development"],
   [
     /^(?:how (?:do|can|could|would) (?:i|we) |can (?:i|we) |i (?:want|would like|need) to |where (?:do|can) (?:i|we) )?(?:book|booking|schedule|arrange|make an appointment|set up)\b[^?.!]{0,30}\b(?:consultation|consult|meeting|appointment|call|chat|time)[?.! a-z]*$/i,
     "consultation:rules",
@@ -75,7 +114,7 @@ export const NOT_FOUND_REPLY: AssistantReplyPayload = {
   escalation: true,
 };
 
-export type GuidedOutcome = "answered" | "not-found" | "refused";
+export type GuidedOutcome = "answered" | "not-found" | "refused" | "ambiguous";
 
 export type GuidedResult = { reply: AssistantReplyPayload; outcome: GuidedOutcome; chunkId: string | null };
 
@@ -96,10 +135,14 @@ export function answerGuided(question: string, chunks: readonly KnowledgeChunk[]
 
   const ranked = scoreChunks(
     question,
-    chunks.filter((chunk) => !GUIDED_EXCLUDED_IDS.has(chunk.id))
+    chunks.filter((chunk) => !GUIDED_EXCLUDED_IDS.has(chunk.id)),
+    SCORE_OPTIONS
   );
+  // A chip click sends the chip's exact question: answer that chunk, so a chip never lands elsewhere.
+  const normalised = question.trim().toLowerCase();
+  const chipChunk = chunks.find((chunk) => !GUIDED_EXCLUDED_IDS.has(chunk.id) && !NO_CHIP_IDS.has(chunk.id) && followUpQuestion(chunk).toLowerCase() === normalised);
   const routed = ROUTES.find(([pattern]) => pattern.test(question.trim()));
-  const routedChunk = routed ? chunks.find((chunk) => chunk.id === routed[1]) : undefined;
+  const routedChunk = chipChunk ?? (routed ? chunks.find((chunk) => chunk.id === routed[1]) : undefined);
   const best = routedChunk
     ? { chunk: routedChunk, score: Number.POSITIVE_INFINITY }
     : ranked[0] &&
@@ -111,11 +154,31 @@ export function answerGuided(question: string, chunks: readonly KnowledgeChunk[]
 
   if (!best) return { reply: NOT_FOUND_REPLY, outcome: "not-found", chunkId: null };
 
+  if (!routedChunk) {
+    // A chunk that duplicates the leader (NO_CHIP_IDS) is not a competing answer.
+    const runnerUp = ranked.find((entry) => entry.chunk.id !== best.chunk.id && !NO_CHIP_IDS.has(entry.chunk.id) && !NO_CHIP_IDS.has(best.chunk.id));
+    if (runnerUp && runnerUp.score >= best.score * AMBIGUITY_RATIO && runnerUp.titleMatched >= (best as { titleMatched: number }).titleMatched) {
+      return {
+        reply: {
+          answer: "I found more than one possible match in Drylake’s published information, so I will not pick one for you. Choose a question below, or reach a person.",
+          basis: "unknown",
+          sources: [],
+          intent: null,
+          followUps: [best.chunk, runnerUp.chunk].map((chunk) => ({ label: chunk.title, question: followUpQuestion(chunk) })),
+          escalation: true,
+          ambiguous: true,
+        },
+        outcome: "ambiguous",
+        chunkId: null,
+      };
+    }
+  }
+
   // Related questions: neighbours of the question, else of the answered chunk, so a routed answer
   // (which has no distinctive words) still gets chips. Never the answered chunk itself.
   const pool = chunks.filter((chunk) => !GUIDED_EXCLUDED_IDS.has(chunk.id) && chunk.id !== best.chunk.id && !NO_CHIP_IDS.has(chunk.id));
   const neighbours = (query: string) => {
-    const scored = scoreChunks(query, pool);
+    const scored = scoreChunks(query, pool, SCORE_OPTIONS);
     const top = scored[0]?.score ?? 0;
     return scored.filter((entry) => entry.score >= top * FOLLOW_UP_FLOOR);
   };

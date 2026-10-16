@@ -174,7 +174,7 @@ export default function AssistantPanel({ onClose, guided: GUIDED = false }: { on
               ) : (
                 <div key={m.id} className="mr-4 break-words bg-[#f4f2ec] px-3 py-2">
                   <p className="whitespace-pre-line">{m.reply.answer}</p>
-                  <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-black/60">{BASIS_LABEL[m.reply.basis]}</p>
+                  {!m.reply.ambiguous && <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-black/60">{BASIS_LABEL[m.reply.basis]}</p>}
                   {m.reply.sources.length > 0 && (
                     <ul className="mt-1 text-xs">
                       {m.reply.sources.map((s) =>
