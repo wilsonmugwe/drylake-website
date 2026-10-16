@@ -307,7 +307,7 @@ describe("Admin shell: same family, permissions untouched", () => {
 
   it("one admin nav list, every entry an existing admin route", () => {
     const hrefs = [...adminNav.matchAll(/href: "(\/admin[^"]*)"/g)].map((m) => m[1]);
-    assert.deepEqual(hrefs, ["/admin", "/admin/consultations", "/admin/reviews", "/admin/clients", "/admin/projects", "/admin/documents", "/admin/invoices", "/admin/payments"]);
+    assert.deepEqual(hrefs, ["/admin", "/admin/consultations", "/admin/reviews", "/admin/collaborations", "/admin/clients", "/admin/projects", "/admin/documents", "/admin/invoices", "/admin/payments"]);
     for (const href of hrefs) assert.ok(existsSync(join(ROOT, "app", href, "page.tsx")), href);
     for (const file of [sidebar, mobile]) assert.match(file, /ADMIN_NAV_GROUPS\.map/);
   });

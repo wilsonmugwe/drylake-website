@@ -52,9 +52,12 @@ export const ENV_REGISTRY = [
   // Review requests (/admin/reviews, /feedback)
   { name: "FEEDBACK_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/email/review-request.ts", purpose: "Optional sender for review request emails; defaults to EMAIL_FROM's address as \"Drylake Feedback\". Replies go to hello@drylake.com.au" },
   { name: "REVIEW_PLATFORM_URL", exposure: "server", required: false, readBy: "lib/email/review-request.ts, app/feedback/page.tsx, components/reviews/ApprovedQuotes.tsx", purpose: "Optional https link to a review platform Drylake does not control (for example a Google Business Profile review link). Shown only when set; the site never copies reviews from it" },
+  // Collaborate With Drylake (/collaborate)
+  { name: "COLLABORATION_EMAIL_FROM", exposure: "server", required: false, readBy: "lib/email/collaboration.ts", purpose: "Optional sender for collaboration emails; defaults to EMAIL_FROM's address as \"Drylake Partnerships\". Replies go to hello@drylake.com.au" },
+  { name: "COLLABORATION_ABBICARE_ENABLED", exposure: "server", required: false, readBy: "lib/collaboration/projects.ts", purpose: "Owner-gated, default off. Leave unset until the owners of the named organisation give written permission; \"true\" adds it as a project option and shows a neutral section on /collaborate (needs a redeploy)" },
 
   // Cloudflare Turnstile
-  { name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", exposure: "public", required: true, readBy: "components/forms/ProjectForm.tsx, components/client/MessageDrylake.tsx", purpose: "Turnstile widget site key" },
+  { name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY", exposure: "public", required: true, readBy: "components/forms/ProjectForm.tsx, components/collaboration/CollaborationForm.tsx, components/client/MessageDrylake.tsx", purpose: "Turnstile widget site key" },
   { name: "TURNSTILE_SECRET_KEY", exposure: "secret", required: true, readBy: "lib/contact/turnstile.ts", purpose: "Server-side Turnstile verification" },
   { name: "TURNSTILE_ALLOWED_HOSTNAMES", exposure: "server", required: false, readBy: "lib/contact/turnstile.ts", purpose: "Extra hostnames accepted in Turnstile responses" },
 

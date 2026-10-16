@@ -111,6 +111,7 @@ export function llmsText(): string {
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Free consultation](${absoluteUrl("/consultation")}): book a free 30-minute consultation (Monday, Tuesday and Friday, Perth time)`,
+    `- [Collaborate](${absoluteUrl("/collaborate")}): propose a technology collaboration, pilot, integration or partnership`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,
     `- [Security and privacy](${absoluteUrl("/security-privacy")}): what Drylake collects, who can access it, which providers handle it, cookies and analytics, and how to ask for access or deletion`,
     `- [Terms](${absoluteUrl("/terms")}): the terms of use for this website`,

@@ -4,6 +4,7 @@ import {
   CreditCard,
   FileText,
   FolderKanban,
+  Handshake,
   LayoutDashboard,
   MessageSquareText,
   type LucideIcon,
@@ -24,6 +25,7 @@ export const ADMIN_NAV_GROUPS: Array<{ label: string; items: AdminNavItem[] }> =
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { label: "Consultations", href: "/admin/consultations", icon: CalendarClock },
       { label: "Reviews", href: "/admin/reviews", icon: MessageSquareText },
+      { label: "Collaborations", href: "/admin/collaborations", icon: Handshake },
     ],
   },
   {
