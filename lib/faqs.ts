@@ -114,7 +114,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: "websites",
     question: "Will the website work properly on phones?",
     answer:
-      "Yes. Drylake builds sites to work on phones, tablets and computers, and checks key pages at small screen sizes before launch.",
+      "Yes. Every site Drylake delivers is tested before launch at phone, tablet and desktop widths, from 320 pixels wide up, for layout, readable text and buttons large enough to tap. That check is part of how we hand over work, not an optional extra.",
     links: [SVC.web],
   },
   {
@@ -122,7 +122,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: "websites",
     question: "Will our website appear in Google Search?",
     answer:
-      "We build sites so search engines can find and read them, but nobody can promise a ranking or position. That means crawlable pages, page titles and descriptions, a sitemap, Google Search Console set up and, for local businesses, pages that say where you work. Results then depend on competition, content and time.",
+      "We build sites so search engines can find and read them, but nobody can promise a ranking or position. That means crawlable pages, page titles and descriptions, a sitemap and, for local businesses, pages that say where you work. Setting up Google Search Console for your business is available as part of the work if you want it. Results then depend on competition, content and time.",
     links: [SVC.web, PERTH],
   },
   {
@@ -213,7 +213,7 @@ export const FAQ_ITEMS: readonly FaqItem[] = [
     category: "ai-automation",
     question: "How is customer information protected when AI is used?",
     answer:
-      "This website currently sends no personal information to AI services. For AI in client projects, the approach is designed per project: share only the data the task needs, keep a person reviewing important results, and use Australian-hosted options where they are available. What applies to your project is set out in your proposal.",
+      "The Drylake website does not currently send your information to an AI service: its AI assistant is switched off, and our privacy policy will be updated before it is switched on. For client projects, AI is designed per project: share only the data the task needs and keep a person reviewing important results. Some providers offer Australian hosting for some models, so we confirm which provider, model and hosting region apply in your proposal.",
     links: [SECURITY, SVC.ai],
   },
   {
