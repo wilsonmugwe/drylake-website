@@ -4,6 +4,7 @@ import Link from "next/link";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import ContactCTA from "@/components/sections/ContactCTA";
+import ApprovedQuotes from "@/components/reviews/ApprovedQuotes";
 import ServiceIndex from "@/components/sections/ServiceIndex";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
@@ -18,6 +19,10 @@ const TITLE = SEO.title;
 const DESCRIPTION = SEO.description;
 
 export const metadata: Metadata = pageMetadata(SEO);
+
+/* Static page, refreshed hourly so newly approved feedback appears without a redeploy (the admin
+   approve action also revalidates this path at once). ApprovedQuotes renders nothing when empty. */
+export const revalidate = 3600;
 
 const CRUMBS = [
   { name: "Home", path: "/" },
@@ -76,6 +81,8 @@ export default function ServicesPage() {
           label="Five service lines"
           heading="What Drylake builds"
         />
+
+        <ApprovedQuotes />
 
         <ContactCTA />
       </main>

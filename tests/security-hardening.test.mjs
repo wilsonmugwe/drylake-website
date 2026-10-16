@@ -306,7 +306,11 @@ describe("service-role and secret confinement", () => {
     (f) => !f.startsWith("tests/") && !f.startsWith("scripts/")
   );
 
-  const ALLOWED_SERVICE_ROLE = /^(app\/api\/|app\/admin\/|lib\/auth\/client-context\.ts$|lib\/auth\/platform-admin\.ts$|lib\/supabase\/admin\.ts$)/;
+  /* lib/reviews/public.ts is the one reviewed exception outside routes and admin pages: it serves the
+   public "What people say" section and selects ONLY the display columns of rows that are consented,
+   approved and not removed (it returns [] on any failure). It is server-only and tested in
+   tests/review-requests.test.mjs. */
+  const ALLOWED_SERVICE_ROLE = /^(app\/api\/|app\/admin\/|lib\/auth\/client-context\.ts$|lib\/auth\/platform-admin\.ts$|lib\/supabase\/admin\.ts$|lib\/reviews\/public\.ts$)/;
 
   it("the service-role client is created only in server routes, admin pages and the two auth helpers", () => {
     const users = sources.filter((f) => /createAdminSupabaseClient\(/.test(read(f)));
