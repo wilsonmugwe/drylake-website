@@ -3,6 +3,7 @@
  * wording and the Perth week used by the dashboard summary. PURE (unit-tested in tests/consultation-admin.test.mjs).
  */
 
+import { type CalendarFailureKind, classifyStoredError } from "./calendar/types.ts";
 import { REPRESENTATIVES } from "./representatives.ts";
 import { perthParts, perthToInstant } from "./rules.ts";
 
@@ -67,6 +68,58 @@ export const CALENDAR_STATE_LABELS: Record<string, string> = {
   SYNCED: "In calendar",
   FAILED: "Calendar sync failed",
 };
+
+/* Plain-words reason a calendar update is stuck, keyed by the failure kind stored with the error. */
+export const CALENDAR_FAILURE_LABELS: Record<CalendarFailureKind, string> = {
+  credential_expired: "Microsoft 365 credential expired or invalid",
+  auth: "Microsoft 365 refused access",
+  mailbox: "Mailbox not reachable",
+  throttled: "Microsoft 365 is throttling requests",
+  unavailable: "Microsoft 365 unavailable",
+};
+
+/** The stored error text without its "[kind] " tag, for display. */
+export const calendarErrorText = (text: string | null | undefined): string => (text ?? "").replace(/^\[[a-z_]+\]\s*/, "");
+
+/**
+ * What the admin sees for one booking's calendar: a label, and whether it needs a person.
+ * `reconciliation` is the plain reconciliation status (in sync, pending retry, gave up).
+ */
+export function calendarStatusView(input: {
+  mode: "none" | "microsoft" | "misconfigured";
+  state: string;
+  version: number;
+  syncedVersion: number;
+  lastError: string | null;
+  attempts: number;
+}): { label: string; reconciliation: "off" | "in_sync" | "retrying" | "gave_up"; kind: CalendarFailureKind | null; needsAttention: boolean } {
+  if (input.mode === "none") return { label: "Calendar integration is off. Add this consultation to the calendar by hand.", reconciliation: "off", kind: null, needsAttention: false };
+  if (input.mode === "misconfigured") {
+    return { label: "Calendar integration is misconfigured. Check the Microsoft 365 settings.", reconciliation: "off", kind: null, needsAttention: true };
+  }
+  if (input.state === "SYNCED" && input.syncedVersion >= input.version) {
+    return { label: CALENDAR_STATE_LABELS.SYNCED, reconciliation: "in_sync", kind: null, needsAttention: false };
+  }
+  const kind = classifyStoredError(input.lastError);
+  const failed = input.state === "FAILED";
+  const base = CALENDAR_STATE_LABELS[input.state] ?? input.state;
+  // A refused credential is the one failure retrying cannot fix: name it, whatever the retry state.
+  const label = kind === "credential_expired" || kind === "auth" ? `${base}: ${CALENDAR_FAILURE_LABELS[kind]}` : base;
+  return {
+    label,
+    reconciliation: failed ? "gave_up" : "retrying",
+    kind,
+    needsAttention: failed || kind === "credential_expired" || kind === "auth",
+  };
+}
+
+/** Short flag for the list view; null when nothing needs the admin's eye. */
+export function calendarListFlag(state: string, lastError: string | null): string | null {
+  const kind = classifyStoredError(lastError);
+  if (kind === "credential_expired") return CALENDAR_FAILURE_LABELS.credential_expired;
+  if (kind === "auth") return CALENDAR_FAILURE_LABELS.auth;
+  return state === "FAILED" ? CALENDAR_STATE_LABELS.FAILED : null;
+}
 
 export const STATUS_LABELS: Record<string, string> = {
   CONFIRMED: "Confirmed",
