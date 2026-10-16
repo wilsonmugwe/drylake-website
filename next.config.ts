@@ -55,6 +55,9 @@ const nextConfig: NextConfig = {
   // still reads CHAT_ASSISTANT_ENABLED at request time. Vercel rebuilds on any env change.
   env: {
     ASSISTANT_LAUNCHER_BUILD: ["true", "1"].includes((process.env.CHAT_ASSISTANT_ENABLED ?? "").trim().toLowerCase()) ? "true" : "",
+    // Guided mode uses no AI, so the launcher label and panel copy must not claim one. Same build-time
+    // reasoning: the panel is a client component and cannot read server env.
+    ASSISTANT_GUIDED_BUILD: (process.env.LLM_GATEWAY_PROVIDER ?? "").trim().toLowerCase() === "guided" ? "true" : "",
   },
 
   // The original service pages moved from /solutions/* to /services/* (2026-10-07). 308s keep

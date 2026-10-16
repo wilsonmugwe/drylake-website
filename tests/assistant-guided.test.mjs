@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-import { GUIDED_QUICK_QUESTIONS } from "../lib/assistant/constants.ts";
+import { GUIDED_DISCLOSURE, GUIDED_QUICK_QUESTIONS } from "../lib/assistant/constants.ts";
 import { SENSITIVE_REPLY, UNAVAILABLE_REPLY } from "../lib/assistant/guards.ts";
 import { GUIDED_EXCLUDED_IDS, NO_CHIP_IDS, NOT_FOUND_REPLY, answerGuided, followUpQuestion } from "../lib/assistant/guided.ts";
 import { createAssistantState, handleAssistant } from "../lib/assistant/handler.ts";
@@ -231,8 +231,6 @@ describe("handler in guided mode", () => {
   });
 
   it("existing guards still apply: turnstile, session, input length, turn cap, daily cap, flag", async () => {
-    const rejected = { ...setup().post, };
-    void rejected;
     const t = setup();
     assert.equal((await t.post({ action: "message", sessionToken: "bad", text: "hi" })).status, 401);
     const { token } = await chat(t, "What does Drylake do?");
@@ -252,13 +250,11 @@ describe("handler in guided mode", () => {
     const off = setup({ ...ENV, CHAT_ASSISTANT_ENABLED: "" });
     assert.equal((await off.post({ action: "start", turnstileToken: "t" })).status, 404);
 
-    const noTurnstile = setup();
     const deny = await handleAssistant(
       new Request("http://localhost/api/assistant", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "start", turnstileToken: "x" }) }),
       { env: ENV, state: createAssistantState(ENV), ip: () => "1.1.1.1", verifyHuman: async () => "rejected", getProvider: async () => { throw new Error("no"); } }
     );
     assert.equal(deny.status, 403);
-    void noTurnstile;
   });
 
   it("logs outcome and pack version only, never the visitor's words", async () => {
@@ -279,6 +275,30 @@ describe("handler in guided mode", () => {
 
 describe("static guarantees", () => {
   const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+
+  it("guided copy never claims AI, and keeps the not-a-person disclosure", () => {
+    assert.ok(!/\bAI\b|artificial|model/i.test(GUIDED_DISCLOSURE), GUIDED_DISCLOSURE);
+    assert.match(GUIDED_DISCLOSURE, /not a person/);
+    assert.match(GUIDED_DISCLOSURE, /published information/);
+    assert.ok(!GUIDED_DISCLOSURE.includes("—"));
+    assert.ok(!NOT_FOUND_REPLY.answer.includes("—"));
+  });
+
+  it("the panel and launcher switch copy on the build-time guided flag, which next.config derives from the provider env", () => {
+    const panel = read("components/assistant/AssistantPanel.tsx");
+    assert.match(panel, /process\.env\.ASSISTANT_GUIDED_BUILD === "true"/);
+    assert.match(panel, /GUIDED \? GUIDED_DISCLOSURE : DISCLOSURE/);
+    assert.match(read("components/assistant/AssistantLauncher.tsx"), /ASSISTANT_GUIDED_BUILD === "true" \? "Chat with Drylake's assistant"/);
+    assert.match(read("next.config.ts"), /ASSISTANT_GUIDED_BUILD:[^\n]*LLM_GATEWAY_PROVIDER[^\n]*"guided"/);
+  });
+
+  it("the runbook documents the exact guided env, a verification checklist and the privacy caveat", () => {
+    const doc = read("docs/operations/chat-assistant.md");
+    for (const needle of ["LLM_GATEWAY_PROVIDER=guided", "CHAT_ASSISTANT_ENABLED", "ASSISTANT_SESSION_SECRET", "redeploy", "Production verification checklist", "/api/health", "same deploy", "Esc"]) {
+      assert.ok(doc.includes(needle), needle);
+    }
+    assert.ok(!doc.includes("—"), "no em dashes");
+  });
 
   it("guided.ts and mode.ts import nothing that can reach a network", () => {
     for (const file of ["lib/assistant/guided.ts", "lib/assistant/mode.ts"]) {

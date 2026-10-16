@@ -26,7 +26,21 @@ describe("health report", () => {
       environment: "production",
       commit: "abcdef1",
       timestamp: "2026-10-08T00:00:00.000Z",
+      assistant: { enabled: false, provider: "disabled" },
     });
+  });
+
+  it("reports the assistant switch by name only, and never lets it change status", () => {
+    const on = { ...full, CHAT_ASSISTANT_ENABLED: "true", ASSISTANT_SESSION_SECRET: "s".repeat(32), LLM_GATEWAY_PROVIDER: "guided" };
+    const report = healthReport(on, NOW);
+    assert.deepEqual(report.assistant, { enabled: true, provider: "guided" });
+    assert.equal(report.status, "ok");
+    // Flag on but no usable secret: not serving.
+    assert.deepEqual(healthReport({ ...on, ASSISTANT_SESSION_SECRET: "short" }, NOW).assistant, { enabled: false, provider: "guided" });
+    // Unknown provider collapses to disabled; the raw value is never echoed.
+    assert.deepEqual(healthReport({ ...on, LLM_GATEWAY_PROVIDER: "whatever-secret" }, NOW).assistant.provider, "disabled");
+    assert.ok(!JSON.stringify(report).includes("s".repeat(32)));
+    assert.equal(healthReport({ ...full, [required[0]]: undefined, CHAT_ASSISTANT_ENABLED: "true" }, NOW).status, "degraded");
   });
 
   it("is degraded with a count when required variables are missing or blank", () => {

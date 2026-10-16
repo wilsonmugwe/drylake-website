@@ -7,6 +7,8 @@ import TurnstileWidget, { type TurnstileHandle } from "@/components/forms/Turnst
 import {
   BASIS_LABEL,
   DISCLOSURE,
+  GUIDED_DISCLOSURE,
+  GUIDED_QUICK_QUESTIONS,
   MAX_INPUT_CHARS,
   PRIVACY_NOTE,
   type AssistantIntent,
@@ -22,6 +24,8 @@ import { ASSISTANT_ACTION } from "@/lib/contact/turnstile-action";
  * Nothing is persisted: the conversation lives in component state and ends when the panel closes.
  */
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+/* Guided mode uses no AI (LLM_GATEWAY_PROVIDER=guided), so the copy must not claim one. Inlined at build. */
+const GUIDED = process.env.ASSISTANT_GUIDED_BUILD === "true";
 
 type Message =
   | { id: number; from: "visitor"; text: string }
@@ -103,7 +107,7 @@ export default function AssistantPanel({ onClose }: { onClose: () => void }) {
   }
 
   function intentButton(intent: AssistantIntent) {
-    const style = "mt-2 inline-flex min-h-[44px] items-center border border-black bg-black px-4 text-sm font-semibold text-white";
+    const style = "mt-2 inline-flex min-h-[44px] items-center border border-black bg-black px-4 text-sm font-semibold !text-white";
     if (intent === "open_booking") {
       return (
         <a href="/consultation" className={style}>
@@ -120,6 +124,7 @@ export default function AssistantPanel({ onClose }: { onClose: () => void }) {
   }
 
   const ready = Boolean(session);
+  const quickQuestions = GUIDED ? GUIDED_QUICK_QUESTIONS : QUICK_QUESTIONS;
 
   return (
     <dialog
@@ -138,7 +143,7 @@ export default function AssistantPanel({ onClose }: { onClose: () => void }) {
           <h2 id="assistant-title" ref={headingRef} tabIndex={-1} className="text-base font-semibold outline-none">
             Drylake assistant
           </h2>
-          <p className="mt-0.5 text-sm font-semibold text-black/80">{DISCLOSURE}</p>
+          <p className="mt-0.5 text-sm font-semibold text-black/80">{GUIDED ? GUIDED_DISCLOSURE : DISCLOSURE}</p>
         </div>
         <button
           type="button"
@@ -184,11 +189,29 @@ export default function AssistantPanel({ onClose }: { onClose: () => void }) {
                       )}
                     </ul>
                   )}
+                  {m.reply.followUps && m.reply.followUps.length > 0 && (
+                    <ul aria-label="Related questions" className="mt-2 flex flex-col gap-2">
+                      {m.reply.followUps.map((f) => (
+                        <li key={f.question}>
+                          <button type="button" disabled={busy} onClick={() => ask(f.question)} className={`${chip} w-full disabled:opacity-50`}>
+                            {f.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {m.reply.escalation && (
+                    <div className="mt-2 flex flex-col items-start">
+                      {intentButton("open_booking")}
+                      {intentButton("open_enquiry")}
+                      {intentButton("request_human")}
+                    </div>
+                  )}
                   {m.reply.intent && intentButton(m.reply.intent)}
                 </div>
               )
             )}
-            {busy && <p className="text-black/60">Thinking</p>}
+            {busy && <p className="text-black/60">{GUIDED ? "Finding an answer" : "Thinking"}</p>}
           </div>
 
           <div className="space-y-3 border-t border-black/15 px-4 py-3">
@@ -211,7 +234,7 @@ export default function AssistantPanel({ onClose }: { onClose: () => void }) {
               </p>
             )}
             <div className="grid grid-cols-2 gap-2">
-              {QUICK_QUESTIONS.map(([label, question]) => (
+              {quickQuestions.map(([label, question]) => (
                 <button key={label} type="button" disabled={!ready || busy} onClick={() => ask(question)} className={`${chip} disabled:opacity-50`}>
                   {label}
                 </button>

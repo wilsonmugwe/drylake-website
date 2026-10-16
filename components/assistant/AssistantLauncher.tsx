@@ -92,7 +92,7 @@ export default function AssistantLauncher() {
         <button
           ref={buttonRef}
           type="button"
-          aria-label="Chat with Drylake's AI assistant"
+          aria-label={process.env.ASSISTANT_GUIDED_BUILD === "true" ? "Chat with Drylake's assistant" : "Chat with Drylake's AI assistant"}
           aria-haspopup="dialog"
           data-assistant-launcher
           onPointerEnter={load}

@@ -90,7 +90,8 @@ export default defineConfig({
           ...(process.env.E2E_ASSISTANT
             ? {
                 CHAT_ASSISTANT_ENABLED: "true",
-                LLM_GATEWAY_PROVIDER: "mock",
+                // E2E_ASSISTANT=guided exercises guided mode (no AI). The provider is read at BUILD time too.
+                LLM_GATEWAY_PROVIDER: process.env.E2E_ASSISTANT === "guided" ? "guided" : "mock",
                 ASSISTANT_SESSION_SECRET: "e2e-assistant-session-secret-0123456789",
                 ASSISTANT_IP_LIMIT_10MIN: "500",
                 ASSISTANT_START_LIMIT_10MIN: "500",

@@ -3,8 +3,9 @@
 Workstream 5. A floating chat on the public site that answers from an approved knowledge pack and
 hands people to the existing enquiry form and consultation booking. It ships **switched off**.
 
-Status when merged: no AWS account exists yet, so real Bedrock has never been called. Everything
-below "Owner setup" is the checklist to turn it on.
+Status when merged: no AWS account exists yet, so real Bedrock has never been called. **Guided mode
+(below) needs no AWS account and can go live first.** Everything below "Owner setup" is the checklist
+for the Bedrock (AI) mode.
 
 ## What it is
 
@@ -23,6 +24,95 @@ checked (length, sensitive-data screen, limits), matched against the pack, sent 
 pack excerpts, and the model's reply is validated before it is shown. "Send an enquiry" and "Speak to
 a representative" post to the existing `/api/contact` pipeline with `source: "assistant"`. "Book a free
 consultation" links to `/consultation`. No transcript is stored by Drylake.
+
+## Guided mode: go live without an AI provider
+
+`LLM_GATEWAY_PROVIDER=guided` runs the assistant with **no AI at all**. The server matches the
+visitor's question against the approved knowledge pack (`lib/assistant/guided.ts`, using
+`retrieve.ts`) and returns the best-matching chunk's text **verbatim** (a FAQ answer or a service
+summary), labelled "From Drylake's published information", with its source link (the FAQ anchor on
+`/faq#<id>` or the service page) and one or two related questions as chips. If nothing matches
+well enough it says "I could not find that in Drylake's published information" and offers the
+three ways to reach a person (book a consultation, send an enquiry, speak to a representative).
+
+What guided mode does **not** do: paraphrase, generate, summarise, call any external service,
+build an LLM provider, or store anything. No transcript is saved, no new data is kept, so
+`/privacy` section 5 and the FAQ `ai-privacy` stay true as written ("the website does not send your
+information to an AI service"). A test stubs `fetch` and asserts zero calls.
+
+Every existing guard still runs: Turnstile to start a session, HMAC session, per-IP limits, turn cap,
+daily cap, 500 character input limit, the sensitive-information reply, escalation through the
+existing `/api/contact` pipeline (`source: "assistant"`), the booking link to `/consultation`, and
+text-only rendering. Two extra refusals run before retrieval: text that tries to steer the assistant
+(ignore instructions, reveal the prompt, role-play) and demands for a specific price, rate, deadline
+or guarantee both get the not-found reply. A general "how much does a website cost?" is answered
+by the published FAQ, which says Drylake does not publish a price list.
+
+Design choice: guided is a handler mode (`lib/assistant/mode.ts`), not an `LlmGatewayProvider`.
+That interface carries a prompt, a tool schema and a model output to validate; guided has none of
+those, so forcing it through would mean building a fake request just to discard it. The handler
+asks `isGuided(env)` and never names a vendor. Every vendor stays behind `provider.ts`.
+
+The panel copy is switched at build time (`ASSISTANT_GUIDED_BUILD`, derived in `next.config.ts`
+from `LLM_GATEWAY_PROVIDER`) because the panel is a client component: "Drylake's assistant. I
+answer from Drylake's published information. I am not a person." The launcher label drops "AI".
+In bedrock mode the existing AI disclosure is unchanged.
+
+### Production enablement (guided)
+
+Set in Vercel, Production, then **redeploy** (the launcher flag is inlined at build time, so an
+env change alone does not take effect on an existing deployment):
+
+| Variable | Value |
+|---|---|
+| `CHAT_ASSISTANT_ENABLED` | `true` |
+| `LLM_GATEWAY_PROVIDER` | `guided` |
+| `ASSISTANT_SESSION_SECRET` | 32+ random characters, for example `openssl rand -base64 48` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | already set (the assistant uses Turnstile action `assistant`) |
+
+No AWS variables are needed. Optional caps: `ASSISTANT_DAILY_REQUEST_CAP` (default 500 per Perth day
+per instance; guided answers cost nothing, but the cap still bounds abuse), `ASSISTANT_MAX_TURNS`
+(12), `ASSISTANT_IP_LIMIT_10MIN` (30), `ASSISTANT_START_LIMIT_10MIN` (6).
+
+Confirm the switch took effect: `GET /api/health` now includes
+`"assistant": { "enabled": true, "provider": "guided" }` (names only, no secrets). `enabled` is
+true only when the flag is on **and** the session secret is 32+ characters. It never changes the
+health status. (The health route cannot see the build-time flag; if `enabled` is true but the
+launcher is missing from the homepage, the deployment was not rebuilt.)
+
+### Production verification checklist (guided)
+
+Run by hand on production after the redeploy. Production is not covered by the automated tests.
+
+- [ ] `GET /api/health` shows `assistant: { enabled: true, provider: "guided" }`.
+- [ ] Desktop: the launcher is bottom right; it opens the dialog, the close button and **Esc** close it, and focus returns to the launcher.
+- [ ] Mobile (real phone or device mode, 375 px): the launcher does not cover the footer, form submit buttons or the sticky call to action; the dialog fills the screen and closes.
+- [ ] The dialog says "Drylake's assistant. I answer from Drylake's published information. I am not a person." and nowhere says AI.
+- [ ] Turnstile completes (the input unlocks without a visible error).
+- [ ] Ask three questions ("What does Drylake do?", "How much does a business website cost?", "What happens in the free consultation?"): each gets the matching published text, the "From Drylake's published information" label, a working source link, and related-question chips that answer when clicked.
+- [ ] Not-found path: ask "What is the weather in Perth today?". The reply says it could not find that, with Book, Send an enquiry and Speak to a representative.
+- [ ] Each escalation creates a **real enquiry in the inbox**: submit "Send an enquiry" and "Speak to a representative" once each with your own email. Both arrive at `CONTACT_TO_EMAIL` tagged "Source: AI assistant" (the wording is internal; see Known limits), and the representative one is marked as wanting a person. The booking link opens `/consultation`.
+- [ ] Sensitive reply: type "my password is hunter22". The assistant refuses it and says nothing was sent anywhere.
+- [ ] Rate limit: send 7 session starts from one IP inside 10 minutes (open and reload the dialog) or exceed `ASSISTANT_MAX_TURNS`; the visitor sees the plain "Too many ..." or "message limit" text, not an error page.
+- [ ] Keyboard only: Tab stays inside the dialog, Enter sends, Esc closes.
+- [ ] Axe (browser extension or `npm run test:e2e` against production for the public pages) reports no violations with the dialog open.
+- [ ] `/privacy` section 5 and `/faq#ai-privacy` still read correctly (they must, because nothing is sent to an AI service).
+- [ ] Vercel logs filtered on `assistant` show `outcome: guided-answered`, `guided-not-found` or `guided-refused` and `provider: "guided"`, and no visitor text.
+
+### Switching to Bedrock later
+
+Setting `LLM_GATEWAY_PROVIDER=bedrock-sydney` makes `/privacy` section 5 and the FAQ `ai-privacy`
+untrue. The privacy page paragraph, the FAQ answer and `PRIVACY_SUMMARY` in `knowledge.ts` must be
+changed **in the same deploy**. Guided mode excludes the `privacy:summary` chunk because that chunk
+describes the AI mode.
+
+### Tuning guided retrieval
+
+`MIN_SCORE`, `MIN_COVERAGE` and `MIN_MATCHED` in `guided.ts` are pinned by `tests/assistant-guided.test.mjs`
+(20 realistic questions with expected chunk ids, 12 off-topic or adversarial questions that must
+get the not-found reply, and a check that every chip question retrieves its own chunk). When you add
+or reword FAQ content, run the suite. A missed question is fixed by improving the wording in the
+source copy; a wrong answer by raising `MIN_COVERAGE`. Raising it trades recall for precision.
 
 ## Sovereignty finding (checked 2026-10-16)
 
