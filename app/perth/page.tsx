@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import AreaDirectory from "@/components/sections/AreaDirectory";
 import ContactCTA from "@/components/sections/ContactCTA";
 import ServiceIndex from "@/components/sections/ServiceIndex";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
@@ -13,12 +14,15 @@ import { PRIMARY_CTA, PRIMARY_CTA_NOTE } from "@/lib/navigation/site-nav";
 import { ENTITY, PERTH_PATH } from "@/lib/discovery/entity";
 import { breadcrumbNode, faqNode, webPageNode } from "@/lib/discovery/structured-data";
 import { pageMetadata } from "@/lib/seo";
+import { SERVICE_AREAS, STANDALONE_AREA_SLUGS } from "@/lib/service-areas";
 import { PAGE_SEO } from "@/lib/seo-pages";
 
 /*
- * The one local page (no suburb or city variants). States only what is true and public:
- * Drylake is based in Perth, works with Perth and WA businesses and across Australia, and
- * publishes no street address (no public premises). No local clients, reviews or statistics.
+ * The Perth hub and service-area directory (PR 5, 2026-10-16). States only what is true and
+ * public: Drylake is based in Perth, works with Perth and WA businesses and across Australia,
+ * and publishes no street address (no public premises). Every metro service area is listed in
+ * <AreaDirectory> (lib/service-areas.ts); only a first batch has its own /locations page, so
+ * no suburb is a thin doorway page. No local clients, reviews or statistics.
  * Structured data stays Organization + WebPage: no LocalBusiness without a real address.
  */
 
@@ -67,6 +71,10 @@ const FAQS = [
       "No. Drylake works with businesses in Perth and across Western Australia, and much of the work can be done remotely, so it also works with businesses elsewhere in Australia.",
   },
   {
+    question: "Which Perth suburbs does Drylake work in?",
+    answer: `Businesses across the Perth metropolitan area, including all ${SERVICE_AREAS.length} areas listed on this page, from Joondalup and Wanneroo in the north to Rockingham and Mandurah in the south. ${STANDALONE_AREA_SLUGS.length} of them have a page of their own. Drylake has no office in any suburb and works with businesses there remotely and on site by arrangement.`,
+  },
+  {
     question: "Can we meet in person?",
     answer:
       "Yes, where that helps. Drylake does not publish a street address because it has no public office, so meetings are arranged at a place that suits or held online.",
@@ -101,13 +109,22 @@ export default function PerthPage() {
           <p className="mt-6 max-w-2xl text-base leading-7 text-black/65 sm:text-lg sm:leading-8">
             {ENTITY.brand} is a technology company based in {ENTITY.locality}, {ENTITY.region}. We
             build websites, business software, automations and AI tools, and connect the systems
-            businesses already use, for businesses in Perth, across WA and around Australia.
+            businesses already use, for businesses in Perth, across WA and around Australia. Find
+            your area below, from {SERVICE_AREAS.length} Perth suburbs and business districts.
           </p>
 
           <PrimaryCta href={PRIMARY_CTA.href} surface="light" className="mt-8">
             {PRIMARY_CTA.label}
           </PrimaryCta>
           <p className="mt-3 text-sm leading-6 text-black/60">{PRIMARY_CTA_NOTE}</p>
+          <p className="mt-6">
+            <Link
+              href="#areas"
+              className="inline-flex min-h-[44px] items-center text-sm font-semibold underline underline-offset-4"
+            >
+              Jump to the service areas
+            </Link>
+          </p>
         </Container>
 
         <section aria-labelledby="local-heading" className="mineral-texture bg-[#f2f0e9] py-(--section-y-compact)">
@@ -126,6 +143,8 @@ export default function PerthPage() {
             </ul>
           </Container>
         </section>
+
+        <AreaDirectory />
 
         <ServiceIndex
           id="perth-services"

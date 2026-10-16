@@ -21,6 +21,8 @@ import { fileURLToPath } from "node:url";
 import { PAGE_SEO, serviceShareImage } from "../../lib/seo-pages.ts";
 import { SERVICES } from "../../lib/discovery/services.ts";
 import { RESPONSE_TIME } from "../../lib/site.ts";
+import { LOCATION_PAGES, locationShareImage } from "../../lib/service-area-pages.ts";
+import { findArea } from "../../lib/service-areas.ts";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const require = createRequire(import.meta.url);
@@ -38,6 +40,11 @@ const CARDS = [
   { image: PAGE_SEO.privacy.image, headline: "Privacy Policy", line: "How Drylake Pty Ltd handles personal information" },
   { image: PAGE_SEO.terms.image, headline: "Terms of Use", line: "The terms for the Drylake website and Drylake Workspace" },
   ...SERVICES.map((service) => ({ image: serviceShareImage(service.slug), headline: service.name, line: service.summary })),
+  ...Object.keys(LOCATION_PAGES).map((slug) => ({
+    image: locationShareImage(slug),
+    headline: `Websites and software in ${findArea(slug).name}`,
+    line: "A Perth technology company. Remote, and on site by arrangement",
+  })),
 ];
 
 function geistFontFaces() {
