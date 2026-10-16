@@ -12,5 +12,7 @@ export default async function AssistantMount() {
 
   const { default: AssistantLauncher } = await import("./AssistantLauncher");
 
-  return <AssistantLauncher />;
+  // Guided mode (no AI): the launcher and panel must not claim one. Passed as a prop because client
+  // components may not read non-public env (tests/security-hardening.test.mjs).
+  return <AssistantLauncher guided={process.env.ASSISTANT_GUIDED_BUILD === "true"} />;
 }

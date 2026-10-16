@@ -23,9 +23,9 @@ const AVOID =
 const MAX_LIFT_RATIO = 0.4;
 const HIDDEN_PREFIXES = ["/admin", "/portal", "/client", "/sign-in", "/sign-up", "/consultation/manage"];
 
-type PanelProps = { onClose: () => void };
+type PanelProps = { onClose: () => void; guided: boolean };
 
-export default function AssistantLauncher() {
+export default function AssistantLauncher({ guided }: { guided: boolean }) {
   const pathname = usePathname() ?? "/";
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [Panel, setPanel] = useState<ComponentType<PanelProps> | null>(null);
@@ -92,7 +92,7 @@ export default function AssistantLauncher() {
         <button
           ref={buttonRef}
           type="button"
-          aria-label={process.env.ASSISTANT_GUIDED_BUILD === "true" ? "Chat with Drylake's assistant" : "Chat with Drylake's AI assistant"}
+          aria-label={guided ? "Chat with Drylake's assistant" : "Chat with Drylake's AI assistant"}
           aria-haspopup="dialog"
           data-assistant-launcher
           onPointerEnter={load}
@@ -119,6 +119,7 @@ export default function AssistantLauncher() {
       )}
       {open && Panel && (
         <Panel
+          guided={guided}
           onClose={() => {
             setOpen(false);
             // Return focus to the launcher once it has re-rendered.

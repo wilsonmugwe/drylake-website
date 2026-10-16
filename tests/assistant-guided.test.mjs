@@ -286,9 +286,10 @@ describe("static guarantees", () => {
 
   it("the panel and launcher switch copy on the build-time guided flag, which next.config derives from the provider env", () => {
     const panel = read("components/assistant/AssistantPanel.tsx");
-    assert.match(panel, /process\.env\.ASSISTANT_GUIDED_BUILD === "true"/);
+    assert.match(read("components/assistant/AssistantMount.tsx"), /guided=\{process\.env\.ASSISTANT_GUIDED_BUILD === "true"\}/);
+    assert.ok(!/process\.env\.ASSISTANT/.test(panel), "client code reads no non-public env");
     assert.match(panel, /GUIDED \? GUIDED_DISCLOSURE : DISCLOSURE/);
-    assert.match(read("components/assistant/AssistantLauncher.tsx"), /ASSISTANT_GUIDED_BUILD === "true" \? "Chat with Drylake's assistant"/);
+    assert.match(read("components/assistant/AssistantLauncher.tsx"), /guided \? "Chat with Drylake's assistant"/);
     assert.match(read("next.config.ts"), /ASSISTANT_GUIDED_BUILD:[^\n]*LLM_GATEWAY_PROVIDER[^\n]*"guided"/);
   });
 

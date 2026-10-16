@@ -257,7 +257,7 @@ test.describe("guided mode @local", () => {
     await expect(dialog.getByText("Please do not share that kind of detail here")).toBeVisible();
   });
 
-  test("escalation from a not-found reply posts to the contact pipeline with the assistant tag", async ({ page }) => {
+  test("escalation from a not-found reply posts to the contact pipeline with the assistant tag @local", async ({ page }) => {
     const posts: Array<Record<string, unknown>> = [];
     await page.route("**/api/contact", async (route) => {
       posts.push(route.request().postDataJSON());

@@ -24,8 +24,6 @@ import { ASSISTANT_ACTION } from "@/lib/contact/turnstile-action";
  * Nothing is persisted: the conversation lives in component state and ends when the panel closes.
  */
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
-/* Guided mode uses no AI (LLM_GATEWAY_PROVIDER=guided), so the copy must not claim one. Inlined at build. */
-const GUIDED = process.env.ASSISTANT_GUIDED_BUILD === "true";
 
 type Message =
   | { id: number; from: "visitor"; text: string }
@@ -44,7 +42,8 @@ const QUICK_QUESTIONS: ReadonlyArray<[label: string, question: string]> = [
 const chip =
   "min-h-[44px] border border-black/25 bg-white px-3 py-2 text-left text-sm font-semibold text-black hover:border-black";
 
-export default function AssistantPanel({ onClose }: { onClose: () => void }) {
+/* guided: LLM_GATEWAY_PROVIDER=guided uses no AI, so the copy must not claim one (set by AssistantMount). */
+export default function AssistantPanel({ onClose, guided: GUIDED = false }: { onClose: () => void; guided?: boolean }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
