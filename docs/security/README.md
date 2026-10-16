@@ -16,6 +16,9 @@ treated as a security boundary.
 | [security-headers.md](security-headers.md) | CSP, HSTS and the other headers, current and planned |
 | [production-security-acceptance.md](production-security-acceptance.md) | exact checks for Wilson on production |
 | [sql/rls-inventory.sql](sql/rls-inventory.sql) | read-only SQL that dumps RLS, policies, grants, storage, functions |
+| [2026-10-16-security-audit.md](2026-10-16-security-audit.md) | current-state audit (Workstream 2): risk register, route table, owner actions |
+| [incident-response.md](incident-response.md) | security incident runbook |
+| [manual-verification-checklist.md](manual-verification-checklist.md) | owner steps: Vercel, Supabase, Clerk, GitHub |
 
 ## Threat model
 
