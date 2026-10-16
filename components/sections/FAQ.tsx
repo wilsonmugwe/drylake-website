@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-import { faqs } from "@/lib/faqs";
-
 /*
  * The homepage questions, folded into the closing conversation (experience polish, 2026-10-07,
  * brief section 9): the same five questions and answers, under the call to action they support
@@ -18,11 +16,14 @@ import { faqs } from "@/lib/faqs";
  * remaining two thirds, so questions get room to breathe instead of a narrow column. The
  * Container's max width bounds it on very large screens. Phones stack: heading, note, accordion.
  *
+ * The five items arrive as props from app/page.tsx (lib/faqs.ts holds all FAQ content and is too large
+ * to ship in this client component: importing it grew the homepage JS by ~3 KB).
+ *
  * Accessible accordion (button inside the heading). Answers stay in the DOM when collapsed, so
  * search engines and the FAQPage schema (app/page.tsx, lib/faqs.ts) see exactly the text a
  * visitor can open; the open/close is a CSS grid-row transition, no animation library.
  */
-export default function FAQ() {
+export default function FAQ({ items }: { items: ReadonlyArray<{ question: string; answer: string }> }) {
   const [active, setActive] = useState<number | null>(null);
 
   return (
@@ -44,7 +45,7 @@ export default function FAQ() {
       </div>
 
       <div className="border-t border-white/14 lg:col-span-8">
-        {faqs.map((faq, index) => {
+        {items.map((faq, index) => {
           const isOpen = active === index;
 
           return (

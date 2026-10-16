@@ -24,14 +24,19 @@ export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
   "/services": { 320: 2864, 360: 2831, 375: 2811, 390: 2794, 393: 2795, 414: 2783, 430: 2768, 768: 2948, 1024: 2312, 1440: 2392 },
   "/services/custom-software-development": { 320: 7093, 360: 6773, 375: 6655, 390: 6495, 393: 6497, 414: 6403, 430: 6341, 768: 5910, 1024: 5409, 1440: 5287 },
   "/services/business-automation": { 320: 6751, 360: 6499, 375: 6486, 390: 6396, 393: 6399, 414: 6298, 430: 6234, 768: 5781, 1024: 5212, 1440: 5214 },
-  "/services/systems-integration": { 320: 6892, 360: 6584, 375: 6594, 390: 6466, 393: 6412, 414: 6282, 430: 6180, 768: 5804, 1024: 5229, 1440: 5164 },
+  // 320 px +44 on 2026-10-16: the footer Company column gained the Questions link (one 44 px row); these two pages sat 1 px under the +15% band.
+  "/services/systems-integration": { 320: 6936, 360: 6584, 375: 6594, 390: 6466, 393: 6412, 414: 6282, 430: 6180, 768: 5804, 1024: 5229, 1440: 5164 },
   "/services/ai-automation": { 320: 6548, 360: 6460, 375: 6414, 390: 6318, 393: 6296, 414: 6162, 430: 6084, 768: 5752, 1024: 5177, 1440: 5144 },
-  "/services/web-development": { 320: 6856, 360: 6600, 375: 6523, 390: 6433, 393: 6408, 414: 6319, 430: 6207, 768: 5822, 1024: 5361, 1440: 5283 },
+  // 320 px +44 on 2026-10-16: footer Questions link row (see systems-integration).
+  "/services/web-development": { 320: 6900, 360: 6600, 375: 6523, 390: 6433, 393: 6408, 414: 6319, 430: 6207, 768: 5822, 1024: 5361, 1440: 5283 },
   // Re-baselined 2026-10-16 (Perth location SEO): /perth became the service-area directory, an A to Z
   // index plus all 73 areas grouped by region and type, roughly 3-4x taller by design. Was
   // { 320: 5191, 360: 5009, 375: 4999, 390: 4964, 393: 4967, 414: 4847, 430: 4798, 768: 4708, 1024: 4160, 1440: 4218 }.
   "/perth": { 320: 21859, 360: 20616, 375: 20334, 390: 20052, 393: 20005, 414: 19558, 430: 19273, 768: 15051, 1024: 13963, 1440: 13629 },
-  "/about": { 320: 5962, 360: 5802, 375: 5762, 390: 5726, 393: 5728, 414: 5621, 430: 5614, 768: 5406, 1024: 4443, 1440: 4281 },
+  // Re-baselined 2026-10-16 (brand story): /about gained the full brand story section (name, metaphor,
+  // three-step approach, tagline), +21-29% by design. Was
+  // { 320: 5962, 360: 5802, 375: 5762, 390: 5726, 393: 5728, 414: 5621, 430: 5614, 768: 5406, 1024: 4443, 1440: 4281 }.
+  "/about": { 320: 7714, 360: 7430, 375: 7407, 390: 7352, 393: 7306, 414: 7150, 430: 7122, 768: 6605, 1024: 5645, 1440: 5492 },
   // Re-baselined 2026-10-13 (consultation booking): /contact gained "Option A: Book a free
   // consultation" above the unchanged enquiry form, +12-16% by design. Was
   // { 320: 3909, 360: 3738, 375: 3737, 390: 3723, 393: 3724, 414: 3689, 430: 3696, 768: 3586, 1024: 2579, 1440: 2654 }.

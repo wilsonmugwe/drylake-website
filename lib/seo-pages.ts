@@ -77,6 +77,15 @@ export const PAGE_SEO = {
     image: "/og/about.png",
     imageAlt: "About Drylake, a Perth technology company",
   },
+  faq: {
+    path: "/faq",
+    title: "Questions About Working With Drylake | Perth, WA",
+    description:
+      "Plain answers about working with Drylake, a Perth technology company: services, quotes and timing, ownership, security, privacy and collaboration.",
+    shareDescription: "Plain answers about services, quotes, timing, security, privacy and collaboration at Drylake.",
+    image: "/og/faq.png",
+    imageAlt: "Drylake: your questions, answered plainly",
+  },
   contact: {
     path: "/contact",
     title: "Contact Drylake | Software & Automation Enquiries",

@@ -164,9 +164,9 @@ describe("PUBLIC: homepage content", () => {
 
   it("the FAQ moved, it did not vanish: same data on the page and in FAQPage schema", () => {
     assert.match(PAGE, /faqNode\("\/", faqs\)/);
-    assert.match(PAGE, /<ContactCTA aside=\{<FAQ \/>\} \/>/);
+    assert.match(PAGE, /<ContactCTA aside=\{<FAQ items=\{faqs\} \/>\} \/>/);
     const faq = code("components/sections/FAQ.tsx");
-    assert.match(faq, /faqs\.map\(/);
+    assert.match(faq, /items\.map\(/);
     assert.match(faq, /\{faq\.question\}/);
     assert.match(faq, /\{faq\.answer\}/);
     assert.match(faq, /id="faq"/);

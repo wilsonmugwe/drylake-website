@@ -5,6 +5,7 @@
  */
 
 import { ENTITY, FOUNDERS, PERTH_PATH, PUBLIC_PAGES, SERVICES, SERVICES_PATH, absoluteUrl, findService } from "./entity.ts";
+import { FAQ_CATEGORIES, FAQ_ITEMS } from "../faqs.ts";
 import { BUSINESS_PROBLEMS, problemPath } from "./problems.ts";
 import { AREA_REGIONS, AREA_TYPES, SERVICE_AREAS, STANDALONE_AREA_SLUGS, findArea, locationPath, type AreaRegion } from "../service-areas.ts";
 
@@ -109,6 +110,7 @@ export function llmsText(): string {
     `- [Services](${absoluteUrl(SERVICES_PATH)}): the five service lines`,
     `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company, and the directory of Perth metro service areas`,
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
+    `- [Questions](${absoluteUrl("/faq")}): answers on services, pricing and delivery, security and privacy, and collaboration`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Free consultation](${absoluteUrl("/consultation")}): book a free 30-minute consultation (Monday, Tuesday and Friday, Perth time)`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,
@@ -152,6 +154,13 @@ export function llmsFullText(): string {
     "",
     ...serviceAreaLines(),
     "",
+    "## Frequently asked questions",
+    "",
+    ...FAQ_CATEGORIES.flatMap((category) => [
+      `### ${category.title}`,
+      "",
+      ...FAQ_ITEMS.filter((item) => item.category === category.id).flatMap((item) => [`Q: ${item.question}`, `A: ${item.answer}`, ""]),
+    ]),
   ];
 
   for (const service of SERVICES) {

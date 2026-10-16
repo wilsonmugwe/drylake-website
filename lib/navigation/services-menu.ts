@@ -38,6 +38,7 @@ export const FOOTER_COLUMNS: readonly { title: string; links: readonly NavItem[]
       { label: "Solutions", href: "/solutions" },
       { label: "Perth service areas", href: "/perth" },
       { label: "About", href: "/about" },
+      { label: "Questions", href: "/faq" },
       { label: "Contact", href: CONTACT_PATH },
       { label: "Free consultation", href: CONSULTATION_PATH },
       { label: "Privacy", href: "/privacy" },

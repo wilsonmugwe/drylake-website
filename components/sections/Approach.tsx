@@ -1,5 +1,6 @@
 import InView from "@/components/motion/InView";
 import Container from "@/components/ui/Container";
+import { APPROACH_UNDERSTAND_FIRST } from "@/lib/brand-story";
 
 /*
  * Homepage clarity (2026-10-10): the whole engagement, from the first call to handover, so an
@@ -72,6 +73,7 @@ export default function Approach() {
             <p className="type-lede mt-5 sm:mt-7 max-w-xl text-black/62">
               Getting started shouldn&apos;t be complicated. Here&apos;s what working with Drylake looks like.
             </p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-black/62">{APPROACH_UNDERSTAND_FIRST}</p>
           </div>
         </div>
 

@@ -5,6 +5,7 @@ import { PAGE_SEO } from "@/lib/seo-pages";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import BrandStory from "@/components/sections/BrandStory";
 import Founders from "@/components/sections/Founders";
 import ContactCTA from "@/components/sections/ContactCTA";
 import ServiceIndex from "@/components/sections/ServiceIndex";
@@ -114,6 +115,8 @@ export default function AboutPage() {
             </div>
           </Container>
         </section>
+
+        <BrandStory variant="page" />
 
         <ServiceIndex
           id="about-services"
