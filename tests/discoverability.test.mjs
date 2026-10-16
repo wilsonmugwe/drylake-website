@@ -31,6 +31,7 @@ import {
 import { INDEXNOW_KEY, indexNowPayload, isSubmittableUrl } from "../lib/discovery/indexnow.ts";
 import { llmsText } from "../lib/discovery/llms.ts";
 import { PAGE_SEO } from "../lib/seo-pages.ts";
+import { STANDALONE_AREA_SLUGS, locationPath } from "../lib/service-areas.ts";
 import {
   breadcrumbNode,
   faqNode,
@@ -215,6 +216,7 @@ describe("every public page is listed, titled and canonical", () => {
     const route = `/${file.replace(/^app\//, "").replace(/\/?page\.tsx$/, "")}`.replace(/\/$/, "") || "/";
 
     if (route === "/services/[slug]") return SERVICES.map((service) => service.path);
+    if (route === "/locations/[slug]") return STANDALONE_AREA_SLUGS.map(locationPath);
     assert.ok(!route.includes("["), `unexpected dynamic public route ${route}: list its pages in PUBLIC_PAGES`);
 
     return [route];

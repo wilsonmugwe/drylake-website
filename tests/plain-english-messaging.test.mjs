@@ -170,7 +170,8 @@ describe("problems are in the owner's words and every link lands", () => {
 });
 
 describe("no street address on any public surface", () => {
-  const STREET = /Davidson|Joondalup|\b6027\b|\b\d+\/\d+\s+\w+\s+(Terrace|Street|St|Road|Rd|Avenue|Ave|Drive|Dr)\b/i;
+  // Joondalup removed 2026-10-16: a suburb name is a service area (PR 5), not a street address.
+  const STREET = /Davidson|\b6027\b|\b\d+\/\d+\s+\w+\s+(Terrace|Street|St|Road|Rd|Avenue|Ave|Drive|Dr)\b/i;
 
   it("source: app, components, lib, public text files", () => {
     const files = [

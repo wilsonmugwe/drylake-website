@@ -34,6 +34,8 @@ import {
   webPageNode,
 } from "../lib/discovery/structured-data.ts";
 import { PAGE_SEO, serviceShareImage } from "../lib/seo-pages.ts";
+import { STANDALONE_AREA_SLUGS } from "../lib/service-areas.ts";
+import { locationPageSeo } from "../lib/service-area-pages.ts";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -176,7 +178,7 @@ describe("sitemap and page registry", () => {
     for (const path of ["/", "/solutions", "/services", ...SERVICES.map((s) => s.path), "/perth", "/about", "/contact", "/consultation", "/privacy", "/terms"]) {
       assert.equal(paths.filter((p) => p === path).length, 1, path);
     }
-    assert.equal(paths.length, 14); // /terms added 2026-10-08, /consultation 2026-10-13
+    assert.equal(paths.length, 14 + STANDALONE_AREA_SLUGS.length); // /terms 2026-10-08, /consultation 2026-10-13, 8 /locations pages 2026-10-16
   });
 
   it("lists nothing private, no auth route and no trailing slash", () => {
@@ -259,6 +261,10 @@ const PAGE_ENTRIES = Object.values(PAGE_SEO);
 const ALL_SEO = [
   ...PAGE_ENTRIES.map((entry) => ({ path: entry.path, title: entry.title, description: entry.description, image: entry.image, alt: entry.imageAlt })),
   ...SERVICES.map((service) => ({ path: service.path, title: service.title, description: service.description, image: serviceShareImage(service.slug), alt: `Drylake: ${service.name} for Australian businesses` })),
+  ...STANDALONE_AREA_SLUGS.map((slug) => {
+    const seo = locationPageSeo(slug);
+    return { path: seo.path, title: seo.title, description: seo.description, image: seo.image, alt: seo.imageAlt };
+  }),
 ];
 
 function pngSize(file) {
@@ -294,7 +300,9 @@ describe("PR 6: one registry for page search copy", () => {
 
   it("no surface publishes a street address (remote-first, locality only)", () => {
     const surfaces = [JSON.stringify(PAGE_SEO), JSON.stringify(siteGraph()), llmsText(), llmsFullText()].join("\n");
-    assert.ok(!/Joondalup|Davidson|\b6027\b|streetAddress/i.test(surfaces));
+    // Joondalup dropped from this list 2026-10-16: it is now a named service area (PR 5, owner D-B).
+    // The street and postcode that once leaked stay banned, as does any street-address property.
+    assert.ok(!/Davidson|\b6027\b|streetAddress/i.test(surfaces));
   });
 });
 
