@@ -39,5 +39,9 @@ export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
   // build has no database and shows the error state), so a fixed number would be meaningless.
   "/contact": { 320: 4407, 360: 4259, 375: 4266, 390: 4244, 393: 4246, 414: 4211, 430: 4194, 768: 4032, 1024: 2995, 1440: 3050 },
   // /privacy re-baselined 2026-10-10: the policy now covers APP 1.4 in full (12 sections).
-  "/privacy": { 320: 6708, 360: 6158, 375: 6080, 390: 5889, 393: 5834, 414: 5617, 430: 5538, 768: 4506, 1024: 4031, 1440: 4107 },
+  // Re-baselined again 2026-10-16 (privacy workstream), +31-39% by design: the provider bullets became
+  // the shared provider list (name, purpose, region each), the cookies, retention, overseas and
+  // anonymity wording grew to meet APP 1.4, and two links to Security and privacy were added. Was
+  // { 320: 6708, 360: 6158, 375: 6080, 390: 5889, 393: 5834, 414: 5617, 430: 5538, 768: 4506, 1024: 4031, 1440: 4107 }.
+  "/privacy": { 320: 9320, 360: 8558, 375: 8348, 390: 8021, 393: 7966, 414: 7777, 430: 7530, 768: 5942, 1024: 5317, 1440: 5393 },
 };
