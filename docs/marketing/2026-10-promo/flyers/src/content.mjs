@@ -112,7 +112,7 @@ export const FLYERS = [
     eyebrow: "In development: pilot and early access",
     headline: ["Meet BRONNIE.", "Now in development."],
     accentLine: 1,
-    sub: "BRONNIE is an AI-powered, multi-tenant business operations and automation platform that Drylake is building. Its first focus is customer operations.",
+    sub: "BRONNIE is an AI-powered platform being developed by Drylake. Its initial focus is customer operations.",
     bullets: [
       "Intelligent handling of incoming enquiries",
       "Routing each enquiry to the right person",

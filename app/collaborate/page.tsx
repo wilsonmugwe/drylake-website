@@ -32,7 +32,7 @@ const CRUMBS = [
  * Collaborate With Drylake. Server-rendered and indexable, and deliberately separate from the
  * customer enquiry form (/contact) and the free consultation (/consultation).
  *
- * Statements here must stay true: BRONNIE is in development, nothing is production-ready, and no
+ * Statements here must stay true: BRONNIE is being developed, no feature is generally available, and no
  * partners, customers or deployments are claimed. The owner-gated project (see
  * lib/collaboration/projects.ts) is rendered only when its flag is on, so while it is off the page
  * HTML, RSC payload and client JavaScript contain no reference to it.
@@ -85,6 +85,14 @@ export default function CollaboratePage() {
                 <section aria-labelledby="bronnie" className="mt-10 border-t border-black/10 pt-6">
                   <h2 id="bronnie" className="text-xl font-semibold tracking-[-0.04em]">{BRONNIE.name}</h2>
                   <p className="mt-3 text-sm leading-6 text-black/70">{BRONNIE.description}</p>
+                  <dl className="mt-4 grid gap-3">
+                    {BRONNIE.stages.map((stage) => (
+                      <div key={stage.heading} className="border-t border-black/10 pt-3">
+                        <dt className="text-sm font-medium text-black/80">{stage.heading}</dt>
+                        <dd className="mt-1 text-sm leading-6 text-black/70">{stage.text}</dd>
+                      </div>
+                    ))}
+                  </dl>
                   <p className="mt-3 border-l-2 border-[#f26a2e] pl-4 text-sm font-medium leading-6 text-black/75">
                     {BRONNIE.status}
                   </p>

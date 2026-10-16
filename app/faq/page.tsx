@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
@@ -49,7 +50,7 @@ export default function FaqPage() {
                   <span className="text-black/50">answered plainly.</span>
                 </h1>
                 <p className="type-lede mt-5 max-w-xl text-black/62 sm:mt-7">
-                  What owners usually want to know about working with Drylake. If yours is not here, call or email us and we will answer it directly.
+                  What owners usually ask before they build a website, replace a spreadsheet or add automation. If yours is not here, call or email us and we will answer it directly.
                 </p>
               </div>
             </div>
@@ -90,7 +91,20 @@ export default function FaqPage() {
                           <span className="absolute left-1/2 top-0 h-3.5 w-px bg-current group-open:hidden" />
                         </span>
                       </summary>
-                      <p className="max-w-[62ch] pb-6 pr-6 text-[0.98rem] leading-7 text-black/70">{item.answer}</p>
+                      <div className="pb-6 pr-6">
+                        <p className="max-w-[62ch] text-[0.98rem] leading-7 text-black/70">{item.answer}</p>
+                        {item.links?.length ? (
+                          <ul aria-label="Related pages" className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                            {item.links.map((link) => (
+                              <li key={link.href}>
+                                <Link href={link.href} prefetch={false} className="inline-flex min-h-[44px] items-center text-black underline decoration-black/30 underline-offset-4 hover:decoration-black">
+                                  {link.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
                     </details>
                   ))}
                 </div>

@@ -31,7 +31,7 @@ test("/faq: questions are native details, answers are in the HTML while closed, 
   const response = await page.request.get("/faq");
   const html = await response.text();
   expect(html).toContain("<details");
-  expect(html).toContain("Who owns the finished work?");
+  expect(html).toContain("What happens after the website launches?");
   expect(html).toContain("proposal and agreement");
 
   await page.goto("/faq");
@@ -66,7 +66,7 @@ test("/faq: FAQPage JSON-LD equals the visible questions and answers", async ({ 
 
   const markup = faqPages[0].mainEntity.map((q: { name: string; acceptedAnswer: { text: string } }) => [q.name, q.acceptedAnswer.text]);
   expect(markup).toEqual(visible);
-  expect(visible.length).toBeGreaterThanOrEqual(23);
+  expect(visible.length).toBeGreaterThanOrEqual(28);
 });
 
 test("homepage: hero still says websites, software and automation; brand band sits below it", async ({ page }) => {

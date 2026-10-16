@@ -110,7 +110,7 @@ export function llmsText(): string {
     `- [Services](${absoluteUrl(SERVICES_PATH)}): the five service lines`,
     `- [Perth](${absoluteUrl(PERTH_PATH)}): Drylake as a Perth, Western Australia technology company, and the directory of Perth metro service areas`,
     `- [About](${absoluteUrl("/about")}): the company, its founders and company details`,
-    `- [Questions](${absoluteUrl("/faq")}): answers on services, pricing and delivery, security and privacy, and collaboration`,
+    `- [Questions](${absoluteUrl("/faq")}): answers on website and software costs and timing, connecting systems, AI and automation, working with Drylake, security and privacy, and BRONNIE`,
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Free consultation](${absoluteUrl("/consultation")}): book a free 30-minute consultation (Monday, Tuesday and Friday, Perth time)`,
     `- [Collaborate](${absoluteUrl("/collaborate")}): propose a technology collaboration, pilot, integration or partnership`,
@@ -161,7 +161,12 @@ export function llmsFullText(): string {
     ...FAQ_CATEGORIES.flatMap((category) => [
       `### ${category.title}`,
       "",
-      ...FAQ_ITEMS.filter((item) => item.category === category.id).flatMap((item) => [`Q: ${item.question}`, `A: ${item.answer}`, ""]),
+      ...FAQ_ITEMS.filter((item) => item.category === category.id).flatMap((item) => [
+        `Q: ${item.question}`,
+        `A: ${item.answer}`,
+        ...(item.links?.length ? [`Related: ${item.links.map((link) => `[${link.label}](${absoluteUrl(link.href)})`).join(", ")}`] : []),
+        "",
+      ]),
     ]),
   ];
 
