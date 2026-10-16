@@ -56,4 +56,6 @@ export type AssistantReplyPayload = {
   followUps?: ReadonlyArray<AssistantFollowUp>;
   /* Guided mode only: show all three ways to reach a person (booking, enquiry, representative). */
   escalation?: boolean;
+  /* Guided mode only: two answers scored too close to pick one; the chips offer both and no answer is asserted. */
+  ambiguous?: boolean;
 };
