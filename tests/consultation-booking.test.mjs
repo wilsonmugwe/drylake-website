@@ -484,8 +484,10 @@ describe("route security contracts", () => {
     assert.doesNotMatch(read("app/layout.tsx"), /<Analytics \/>/);
     const wrapper = read("components/analytics/SiteAnalytics.tsx");
     assert.match(wrapper, /beforeSend=\{scrubAnalyticsEvent\}/);
-    assert.match(wrapper, /url\.hash = ""/);
-    assert.match(wrapper, /startsWith\("\/consultation\/manage"\)\) return null/);
+    // The pure scrubber moved to lib/analytics/scrub-event.ts (privacy workstream) so it can be unit tested.
+    const scrub = read("lib/analytics/scrub-event.ts");
+    assert.match(scrub, /url\.hash = ""/);
+    assert.match(scrub, /startsWith\("\/consultation\/manage"\)\) return null/);
   });
 
   it("the availability API returns start times only", () => {

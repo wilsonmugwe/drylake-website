@@ -112,6 +112,7 @@ export function llmsText(): string {
     `- [Contact](${absoluteUrl("/contact")}): how to start a conversation`,
     `- [Free consultation](${absoluteUrl("/consultation")}): book a free 30-minute consultation (Monday, Tuesday and Friday, Perth time)`,
     `- [Privacy](${absoluteUrl("/privacy")}): how personal information is handled`,
+    `- [Security and privacy](${absoluteUrl("/security-privacy")}): what Drylake collects, who can access it, which providers handle it, cookies and analytics, and how to ask for access or deletion`,
     `- [Terms](${absoluteUrl("/terms")}): the terms of use for this website`,
     "",
     "## Optional",
