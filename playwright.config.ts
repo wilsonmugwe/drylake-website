@@ -85,6 +85,17 @@ export default defineConfig({
           CONTACT_TO_EMAIL: "",
           EMAIL_FROM: "",
           NEXT_TELEMETRY_DISABLED: "1",
+          // AI assistant e2e (tests/e2e/assistant.spec.ts): mock model, impossible in production.
+          // The launcher is build-time gated, so build with CHAT_ASSISTANT_ENABLED=true as well.
+          ...(process.env.E2E_ASSISTANT
+            ? {
+                CHAT_ASSISTANT_ENABLED: "true",
+                LLM_GATEWAY_PROVIDER: "mock",
+                ASSISTANT_SESSION_SECRET: "e2e-assistant-session-secret-0123456789",
+                ASSISTANT_IP_LIMIT_10MIN: "500",
+                ASSISTANT_START_LIMIT_10MIN: "500",
+              }
+            : {}),
         },
       },
 });

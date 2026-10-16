@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       return jsonError(validation.message, validation.status);
     }
 
-    const { name, email, company, projectType, helpType, message, turnstileToken } =
+    const { name, email, company, projectType, helpType, message, turnstileToken, phone, source, wantsHuman } =
       validation.fields;
 
     // Per-instance burst limit, after the cheap field checks and before Turnstile and email
@@ -124,6 +124,9 @@ export async function POST(request: Request) {
       helpType,
       message,
       receivedAt: new Date().toISOString(),
+      phone,
+      source,
+      wantsHuman,
       // Signed-in senders (the portal's "Start a conversation") carry server-verified
       // account and workspace context; anonymous visitors carry none.
       portal: await getPortalContext(),

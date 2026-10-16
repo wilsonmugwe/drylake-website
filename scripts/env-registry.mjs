@@ -59,6 +59,20 @@ export const ENV_REGISTRY = [
   { name: "GOOGLE_SITE_VERIFICATION", exposure: "server", required: false, readBy: "app/layout.tsx", purpose: "Search Console HTML-tag token (public by design)" },
   { name: "BING_SITE_VERIFICATION", exposure: "server", required: false, readBy: "app/layout.tsx", purpose: "Bing Webmaster HTML-tag token (public by design)" },
 
+  // AI chat assistant (docs/operations/chat-assistant.md). Ships OFF; all optional until enabled.
+  { name: "CHAT_ASSISTANT_ENABLED", exposure: "server", required: false, readBy: "lib/assistant/handler.ts, components/assistant/AssistantMount.tsx", purpose: "\"true\" turns the AI chat assistant on (launcher renders, /api/assistant answers). Default off: no launcher, API returns 404. Redeploy after changing" },
+  { name: "ASSISTANT_LAUNCHER_BUILD", exposure: "server", required: false, readBy: "next.config.ts, components/assistant/AssistantMount.tsx", purpose: "DERIVED at build from CHAT_ASSISTANT_ENABLED so the launcher is excluded from the bundle while the assistant is off. Never set by hand" },
+  { name: "LLM_GATEWAY_PROVIDER", exposure: "server", required: false, readBy: "lib/assistant/provider.ts", purpose: "disabled (default) | bedrock-sydney (Claude on Amazon Bedrock, ap-southeast-2) | mock (tests; refused when VERCEL_ENV=production)" },
+  { name: "ASSISTANT_MODEL_ID", exposure: "server", required: false, readBy: "lib/assistant/providers/bedrock-sydney.ts", purpose: "Bedrock model id. Must be anthropic.claude-* or au.anthropic.claude-* (Australia only); apac., global., us., eu. ids are refused. Default au.anthropic.claude-haiku-4-5-20251001-v1:0" },
+  { name: "ASSISTANT_SESSION_SECRET", exposure: "secret", required: false, readBy: "lib/assistant/handler.ts", purpose: "HMAC key for chat session tokens (32+ random characters). Required when the assistant is enabled" },
+  { name: "ASSISTANT_DAILY_REQUEST_CAP", exposure: "server", required: false, readBy: "lib/assistant/handler.ts", purpose: "Maximum assistant model calls per Perth day, per server instance (default 500). 0 closes the assistant" },
+  { name: "ASSISTANT_MAX_TURNS", exposure: "server", required: false, readBy: "lib/assistant/handler.ts", purpose: "Maximum visitor messages per chat session (default 12)" },
+  { name: "ASSISTANT_IP_LIMIT_10MIN", exposure: "server", required: false, readBy: "lib/assistant/handler.ts", purpose: "Maximum assistant messages per IP address per 10 minutes, per instance (default 30)" },
+  { name: "ASSISTANT_START_LIMIT_10MIN", exposure: "server", required: false, readBy: "lib/assistant/handler.ts", purpose: "Maximum chat sessions started per IP address per 10 minutes, per instance (default 6)" },
+  { name: "AWS_ACCESS_KEY_ID", exposure: "secret", required: false, readBy: "lib/assistant/providers/bedrock-sydney.ts", purpose: "Access key of the IAM user limited to bedrock:InvokeModel on the exact model ARNs (see the policy in the assistant runbook). Server only" },
+  { name: "AWS_SECRET_ACCESS_KEY", exposure: "secret", required: false, readBy: "lib/assistant/providers/bedrock-sydney.ts", purpose: "Secret for AWS_ACCESS_KEY_ID. Server only; never in the browser bundle (tested)" },
+  { name: "AWS_SESSION_TOKEN", exposure: "secret", required: false, readBy: "lib/assistant/providers/bedrock-sydney.ts", purpose: "Only when using temporary credentials (an assumed role). Not needed for a long-lived IAM user key" },
+
   // Platform
   { name: "VERCEL_ENV", exposure: "platform", required: false, readBy: "lib/clients/invitations.ts (via process.env)", purpose: "production | preview | development" },
   { name: "VERCEL_REGION", exposure: "platform", required: false, readBy: "lib/perf/request-timing.ts, lib/health/health-report.ts", purpose: "Region in timing logs and /api/health; must read syd1 in production" },

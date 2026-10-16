@@ -8,3 +8,6 @@ export const CONTACT_ACTION = "contact";
 /* Consultation booking form (/consultation). Its own action, so a contact-form token cannot be
  * replayed against the booking API, nor a booking token against the contact API. */
 export const CONSULTATION_ACTION = "consultation";
+
+/* AI assistant session start. Its own action, so a contact or booking token cannot open a chat. */
+export const ASSISTANT_ACTION = "assistant";

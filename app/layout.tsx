@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import AssistantMount from "@/components/assistant/AssistantMount";
 import SiteAnalytics from "@/components/analytics/SiteAnalytics";
 
 import "./globals.css";
@@ -134,6 +135,7 @@ export default function RootLayout({
         {children}
 
         <SiteAnalytics />
+        <AssistantMount />
       </body>
     </html>
   );

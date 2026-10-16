@@ -298,6 +298,9 @@ describe("dependency and script hygiene", () => {
 
   it("no new runtime dependency arrives without a reviewed entry here (no heavy libraries)", () => {
     assert.deepEqual(Object.keys(pkg.dependencies).sort(), [
+      // Reviewed 2026-10-16 (AI assistant PR): Claude on Amazon Bedrock Sydney, imported only by
+      // lib/assistant/providers/bedrock-sydney.ts (server-only; tests/assistant-static.test.mjs).
+      "@anthropic-ai/bedrock-sdk",
       "@clerk/nextjs",
       "@supabase/supabase-js",
       "@vercel/analytics",
