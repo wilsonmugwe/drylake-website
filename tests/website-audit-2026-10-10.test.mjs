@@ -42,8 +42,12 @@ describe("Privacy Policy covers what the site actually does (APP 1.4)", () => {
   const page = read("app/privacy/page.tsx");
 
   it("names every provider that handles personal information", () => {
+    // Since the privacy workstream the list lives in lib/privacy/processors.ts and is rendered by
+    // <ProcessorList /> on this page (tests/privacy-cookies.test.mjs checks the single source).
+    const list = read("lib/privacy/processors.ts");
+    assert.match(page, /<ProcessorList( compact)? \/>/);
     for (const provider of ["Vercel", "Clerk", "Supabase", "Stripe", "Resend", "Cloudflare", "Microsoft 365"]) {
-      assert.ok(page.includes(provider), provider);
+      assert.ok(list.includes(provider), provider);
     }
   });
 

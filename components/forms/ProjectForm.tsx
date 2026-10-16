@@ -377,6 +377,10 @@ export default function ProjectForm() {
             We use these details to reply to your enquiry. See our{" "}
             <Link href="/privacy" className="underline underline-offset-2 hover:text-black">
               Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/security-privacy" className="underline underline-offset-2 hover:text-black">
+              how we protect it
             </Link>
             .
           </p>

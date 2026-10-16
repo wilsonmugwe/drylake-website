@@ -481,7 +481,8 @@ export default function ConsultationBooking() {
           )}
           <p className="text-xs leading-5 text-black/60">
             We use your details only to arrange and hold this consultation. See our{" "}
-            <Link href="/privacy" className="underline underline-offset-2 hover:text-black">Privacy Policy</Link>.
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-black">Privacy Policy</Link> and{" "}
+            <Link href="/security-privacy" className="underline underline-offset-2 hover:text-black">how we protect your information</Link>.
           </p>
           <div className="flex flex-col-reverse gap-3 border-t border-black/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
             <button type="button" onClick={() => setStep("details")} disabled={sending} className="consult-secondary">

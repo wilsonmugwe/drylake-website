@@ -39,6 +39,7 @@ const CARDS = [
   { image: PAGE_SEO.consultation.image, headline: "Book a free consultation.", line: "30 minutes, no obligation. Monday, Tuesday and Friday, Perth time" },
   { image: PAGE_SEO.collaborate.image, headline: "Collaborate with Drylake.", line: "Pilots, integrations and partnerships. BRONNIE is in development" },
   { image: PAGE_SEO.privacy.image, headline: "Privacy Policy", line: "How Drylake Pty Ltd handles personal information" },
+  { image: PAGE_SEO.securityPrivacy.image, headline: "Security and privacy", line: "What we collect, who can see it and how to ask for access or deletion" },
   { image: PAGE_SEO.terms.image, headline: "Terms of Use", line: "The terms for the Drylake website and Drylake Workspace" },
   ...SERVICES.map((service) => ({ image: serviceShareImage(service.slug), headline: service.name, line: service.summary })),
   ...Object.keys(LOCATION_PAGES).map((slug) => ({
@@ -90,7 +91,11 @@ mkdirSync(join(ROOT, "public/og"), { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
 
+// ONLY_CARDS=/og/a.png,/og/b.png renders just those cards and leaves every other PNG byte-identical.
+const only = process.env.ONLY_CARDS ? process.env.ONLY_CARDS.split(",") : null;
+
 for (const card of CARDS) {
+  if (only && !only.includes(card.image)) continue;
   await page.setContent(cardHtml(card, fonts), { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
   const usesGeist = await page.evaluate(() => [...document.fonts].some((face) => face.family === "Geist" && face.status === "loaded"));
@@ -106,5 +111,7 @@ for (const card of CARDS) {
 }
 
 await browser.close();
-copyFileSync(join(ROOT, "public", PAGE_SEO.home.image), join(ROOT, "public/opengraph-image.png"));
-console.log("wrote /opengraph-image.png (fallback, same as the home card)");
+if (!only) {
+  copyFileSync(join(ROOT, "public", PAGE_SEO.home.image), join(ROOT, "public/opengraph-image.png"));
+  console.log("wrote /opengraph-image.png (fallback, same as the home card)");
+}

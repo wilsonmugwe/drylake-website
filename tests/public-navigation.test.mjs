@@ -153,6 +153,18 @@ describe("navigation labels and destinations", () => {
   });
 });
 
+describe("header prefetch budget", () => {
+  // WHY: Next prefetches every in-view <Link>, the header is always in view, and a prefetch pulls the
+  // destination route client chunks into the homepage network budget (tests/e2e/performance.spec.ts,
+  // 200 KB). Measured on a production build: /solutions cost 43 KB (motion), /perth cost 8.4 KB, which
+  // pushed the homepage to 205,298 bytes. Secondary destinations opt out; the click still navigates.
+  it("secondary header destinations do not prefetch on every page view", () => {
+    const optedOut = PRIMARY_NAV.filter((item) => item.prefetch === false).map((item) => item.href);
+
+    assert.deepEqual(optedOut, ["/solutions", "/perth"]);
+  });
+});
+
 describe("scroll and sign-out root causes", () => {
   it("Bug 1/3/4: <html> opts into Next's smooth-scroll suspension during navigation", () => {
     assert.match(code("app/layout.tsx"), /<html lang="en-AU" data-scroll-behavior="smooth">/);

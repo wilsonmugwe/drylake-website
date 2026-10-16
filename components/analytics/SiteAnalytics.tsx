@@ -1,27 +1,16 @@
 "use client";
 
-import { Analytics, type BeforeSendEvent } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/next";
 
 import CtaClickTracker from "@/components/analytics/CtaClickTracker";
+import { scrubAnalyticsEvent } from "@/lib/analytics/scrub-event";
 
 /*
- * Vercel Web Analytics with two privacy rules applied before anything leaves the browser:
- *   1. The URL fragment is always removed. /consultation/manage#t=... carries a customer's
- *      appointment-management credential, and analytics must never receive it.
- *   2. The manage page is not recorded at all: it is one customer's own appointment.
- * Pure function exported for tests (tests/consultation-booking.test.mjs).
+ * Vercel Web Analytics (cookieless), with every event passed through scrubAnalyticsEvent
+ * (lib/analytics/scrub-event.ts) before it leaves the browser: it honours the visitor's
+ * analytics switch on the Security and Privacy page, skips the private manage page and strips
+ * the URL fragment. beforeSend covers page views and custom events alike.
  */
-export function scrubAnalyticsEvent(event: BeforeSendEvent): BeforeSendEvent | null {
-  try {
-    const url = new URL(event.url);
-    if (url.pathname.startsWith("/consultation/manage")) return null;
-    url.hash = "";
-    return { ...event, url: url.toString() };
-  } catch {
-    return null;
-  }
-}
-
 export default function SiteAnalytics() {
   return (
     <>
