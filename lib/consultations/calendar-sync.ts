@@ -15,6 +15,7 @@
  */
 
 import { type CalendarEvent, CalendarEventMissingError, type CalendarProvider } from "./calendar/types.ts";
+import { redactSensitive } from "../security/redact.ts";
 import { type MeetingMethod, REPRESENTATIVES, type Representative, representativeByKey } from "./representatives.ts";
 
 export type SyncRow = {
@@ -139,7 +140,7 @@ export async function runCalendarSyncPass(deps: CalendarSyncDeps, options: { lim
       await deps.finish(row, "synced", result, null, 0);
       summary.synced += 1;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "unknown error";
+      const message = redactSensitive(error instanceof Error ? error.message : null);
       console.error("Consultation calendar sync failed:", row.reference, `attempt ${row.calendar_sync_attempts}:`, message);
       await deps.finish(row, "retry", null, message, calendarRetryMinutes(row.calendar_sync_attempts));
       summary.retried += 1;

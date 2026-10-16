@@ -22,6 +22,7 @@
  */
 
 import { type ConsultationEmailKind, CUSTOMER_KINDS, renderConsultationEmail } from "../email/consultation-emails.ts";
+import { redactSensitive } from "../security/redact.ts";
 import { type MeetingMethod, representativeName } from "./representatives.ts";
 import { deriveManageToken, hashManageToken, manageUrl } from "./token.ts";
 
@@ -212,7 +213,7 @@ export async function dispatchConsultationNotifications(deps: DispatchDeps, limi
       summary.sent += 1;
     } catch (error) {
       // Provider or configuration message only (never the recipient or the body).
-      const message = error instanceof Error ? error.message : "unknown error";
+      const message = redactSensitive(error instanceof Error ? error.message : null);
       console.error("Consultation email failed:", row.kind, `attempt ${row.attempts}/${row.max_attempts}:`, message);
       await deps.finish(row.id, "retry", null, message, retryDelayMinutes(row.attempts));
       summary.retried += 1;

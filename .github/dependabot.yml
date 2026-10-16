@@ -31,4 +31,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Australia/Perth
