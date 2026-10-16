@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { ArrowUpRight, X } from "lucide-react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ArrowUpRight, ChevronDown, X } from "lucide-react";
 
 import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import ClientAccessLink from "@/components/navigation/ClientAccessLink";
@@ -9,7 +9,8 @@ import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
 import PrimaryCta from "@/components/ui/PrimaryCta";
 import { ENTITY } from "@/lib/discovery/entity";
-import { PRIMARY_CTA, PRIMARY_NAV } from "@/lib/navigation/site-nav";
+import { PRIMARY_CTA, PRIMARY_NAV, type ServicesMenuData } from "@/lib/navigation/site-nav";
+import { BUSINESS_PHONE } from "@/lib/site";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -21,13 +22,17 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  * there is no timer and no visible jump.
  */
 export default function MobileMenu({
+  servicesMenu,
   onClose,
   onNavigate,
 }: {
+  servicesMenu: ServicesMenuData;
   onClose: () => void;
   onNavigate: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const servicesId = useId();
+  const [servicesOpen, setServicesOpen] = useState(false);
   const previousOverflowRef = useRef("");
 
   /*
@@ -126,19 +131,62 @@ export default function MobileMenu({
                   className="mobile-menu-item border-b border-white/10"
                   style={{ ["--i" as string]: index }}
                 >
-                  <SiteLink
-                    href={item.href}
-                    onNavigate={handleNavigate}
-                    className="group flex min-h-[68px] items-center justify-between gap-4 py-3"
-                  >
-                    <span className="flex items-baseline gap-4">
-                      <span className="font-mono text-[0.7rem] text-white/45">0{index + 1}</span>
-                      <span className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white">
-                        {item.label}
+                  {item.menu ? (
+                    <>
+                      <button
+                        type="button"
+                        aria-expanded={servicesOpen}
+                        aria-controls={servicesId}
+                        onClick={() => setServicesOpen((value) => !value)}
+                        className="group flex min-h-[68px] w-full items-center justify-between gap-4 py-3 text-left"
+                      >
+                        <span className="flex items-baseline gap-4">
+                          <span className="font-mono text-[0.7rem] text-white/45">0{index + 1}</span>
+                          <span className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white">
+                            {item.label}
+                          </span>
+                        </span>
+                        <ChevronDown
+                          aria-hidden="true"
+                          size={20}
+                          className={`text-white/45 transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      <div id={servicesId} hidden={!servicesOpen} className="pb-4 pl-9">
+                        <p className="pb-1 text-sm leading-6 text-white/60">{servicesMenu.descriptor}</p>
+                        <ul>
+                          {servicesMenu.links.map((link) => (
+                            <li key={link.href + link.label}>
+                              <SiteLink
+                                href={link.href}
+                                onNavigate={handleNavigate}
+                                className="flex min-h-[48px] items-center text-base text-white/80 hover:text-white"
+                              >
+                                {link.label}
+                              </SiteLink>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="pt-2 text-xs leading-5 text-white/55">{servicesMenu.solutionsHint}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <SiteLink
+                      href={item.href}
+                      prefetch={item.prefetch}
+                      onNavigate={handleNavigate}
+                      className="group flex min-h-[68px] items-center justify-between gap-4 py-3"
+                    >
+                      <span className="flex items-baseline gap-4">
+                        <span className="font-mono text-[0.7rem] text-white/45">0{index + 1}</span>
+                        <span className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white">
+                          {item.label}
+                        </span>
                       </span>
-                    </span>
-                    <ArrowUpRight aria-hidden="true" size={20} className="text-white/35 transition-colors group-hover:text-[#f26a2e]" />
-                  </SiteLink>
+                      <ArrowUpRight aria-hidden="true" size={20} className="text-white/35 transition-colors group-hover:text-[#f26a2e]" />
+                    </SiteLink>
+                  )}
                 </li>
               ))}
             </ul>
@@ -167,9 +215,14 @@ export default function MobileMenu({
             </PrimaryCta>
 
             <div className="mt-8 flex items-center justify-between gap-4 border-t border-white/10 pt-5 text-xs text-white/55">
-              <a href={`mailto:${ENTITY.email}`} className="inline-flex min-h-[44px] items-center">
-                {ENTITY.email}
-              </a>
+              <span className="flex flex-col">
+                <a href={`mailto:${ENTITY.email}`} className="inline-flex min-h-[44px] items-center">
+                  {ENTITY.email}
+                </a>
+                <a href={BUSINESS_PHONE.href} className="inline-flex min-h-[44px] items-center">
+                  {BUSINESS_PHONE.display}
+                </a>
+              </span>
               <span className="flex items-center gap-2">
                 <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#f26a2e]" />
                 {ENTITY.locality}, {ENTITY.regionCode}

@@ -76,7 +76,7 @@ test("menu lists the destinations, Client Login and the primary action, all 44px
   await openMenu(page);
 
   const menu = dialog(page);
-  for (const name of ["What We Do", "Our Approach", "About", "Contact", "Client Login", "Start Free Consultation"]) {
+  for (const name of ["Solutions", "Our Approach", "Perth", "About", "Contact", "Client Login", "Start Free Consultation"]) {
     const link = menu.getByRole("link", { name: new RegExp(name) }).first();
     await expect(link).toBeVisible();
     const box = await link.boundingBox();
@@ -107,12 +107,12 @@ test("a section link from another page navigates home to the section", async ({ 
   await page.goto("/contact");
   await openMenu(page);
 
-  await dialog(page).getByRole("link", { name: /What We Do/ }).click();
+  await dialog(page).getByRole("link", { name: /Our Approach/ }).click();
 
-  await expect(page).toHaveURL(/\/#solutions$/);
+  await expect(page).toHaveURL(/\/#approach$/);
   await expect(dialog(page)).toHaveCount(0);
   await expect
-    .poll(() => page.evaluate(() => document.getElementById("solutions")?.getBoundingClientRect().top ?? NaN))
+    .poll(() => page.evaluate(() => document.getElementById("approach")?.getBoundingClientRect().top ?? NaN))
     .toBeLessThan(120);
 });
 

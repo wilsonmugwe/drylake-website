@@ -187,7 +187,8 @@ describe("PUBLIC: homepage content", () => {
     for (const fact of ["ENTITY.legalName", "ENTITY.abn", "ENTITY.locality", "ENTITY.region", "new Date().getFullYear()"]) {
       assert.ok(footer.includes(fact), fact);
     }
-    assert.match(footer, /SERVICES\.map\(/);
+    assert.match(footer, /FOOTER_COLUMNS\.map\(/);
+    assert.match(code("lib/navigation/services-menu.ts"), /SERVICES\.map\(/);
     assert.match(footer, /aria-label="Footer navigation"/);
   });
 });

@@ -160,7 +160,7 @@ describe("legacy /solutions/* service URLs", () => {
       read("components/sections/Solutions.tsx"),
       read("components/sections/WhatWeDo.tsx"),
       read("components/layout/Footer.tsx"),
-      read("components/layout/Navbar.tsx"),
+      read("components/layout/NavbarClient.tsx"),
       llmsText(),
       JSON.stringify(PUBLIC_PAGES),
     ].join("\n");
