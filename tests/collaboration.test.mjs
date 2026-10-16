@@ -344,14 +344,16 @@ describe("visitor copy", () => {
     }
   });
 
-  it("describes BRONNIE exactly as approved and says it is in development", () => {
-    assert.equal(
-      BRONNIE.description,
-      "BRONNIE is an AI-powered, multi-tenant business operations and automation platform in development. Its initial focus is customer operations: intelligent enquiry handling, routing and appointment coordination."
-    );
-    assert.match(BRONNIE.status, /in development/);
-    assert.match(BRONNIE.status, /Nothing about it is production-ready/);
-    assert.match(BRONNIE.status, /not claiming any partners, customers or deployments/);
+  it("describes BRONNIE with the owner sentence and separates today, in development and planned", () => {
+    assert.equal(BRONNIE.description, "BRONNIE is an AI-powered platform being developed by Drylake.");
+    assert.deepEqual(BRONNIE.stages.map((stage) => stage.heading), ["Available today", "In development", "Planned"]);
+    assert.match(BRONNIE.stages[0].text, /No BRONNIE feature is generally available yet/);
+    assert.match(BRONNIE.stages[1].text, /multi-tenant/);
+    for (const fact of ["customer operations", "intelligent enquiry handling", "routing", "appointment coordination"]) {
+      assert.ok(BRONNIE.stages[1].text.includes(fact), fact);
+    }
+    assert.match(BRONNIE.stages[2].text, /arranged by discussion/);
+    assert.match(BRONNIE.status, /not claiming any customers, completed pilots, results or deployments/);
     for (const topic of ["Pilots", "Product feedback", "Early access", "Integrations", "Automation use cases", "Technical collaboration", "Commercial discussions"]) {
       assert.ok(BRONNIE.interestedIn.includes(topic), topic);
     }
