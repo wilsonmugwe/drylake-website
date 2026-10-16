@@ -49,6 +49,14 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
 
+  // AI chat assistant launcher: the flag is inlined at BUILD time so that, while it is off, the
+  // launcher is dead-code-eliminated and adds zero JavaScript to every page (a runtime-only flag
+  // still ships the launcher in the layout chunk: +1,200 bytes on the homepage). The API route
+  // still reads CHAT_ASSISTANT_ENABLED at request time. Vercel rebuilds on any env change.
+  env: {
+    ASSISTANT_LAUNCHER_BUILD: ["true", "1"].includes((process.env.CHAT_ASSISTANT_ENABLED ?? "").trim().toLowerCase()) ? "true" : "",
+  },
+
   // The original service pages moved from /solutions/* to /services/* (2026-10-07). 308s keep
   // existing links and any indexed URLs working and pass their signals to the new pages.
   async redirects() {

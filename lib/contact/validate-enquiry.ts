@@ -15,6 +15,7 @@ export const LIMITS = {
   projectType: 100,
   helpType: 100,
   message: 5000,
+  phone: 40,
 } as const;
 
 export type EnquiryFields = {
@@ -25,6 +26,10 @@ export type EnquiryFields = {
   helpType: string;
   message: string;
   turnstileToken: string;
+  /* Optional extras used by the AI assistant's escalation form; empty/false for the contact page. */
+  phone: string;
+  source: "" | "assistant";
+  wantsHuman: boolean;
 };
 
 export type EnquiryValidation =
@@ -63,10 +68,19 @@ export function validateEnquiry(body: unknown): EnquiryValidation {
     helpType: getString(raw.helpType) || getString(raw.budget),
     message: getString(raw.message),
     turnstileToken: getString(raw.turnstileToken),
+    phone: getString(raw.phone),
+    // Only the known tag is honoured: arbitrary text must never reach the email.
+    source: raw.source === "assistant" ? "assistant" : "",
+    wantsHuman: raw.source === "assistant" && raw.wantsHuman === true,
   };
 
   if (!fields.name || !fields.email || !fields.message) {
     return { ok: false, status: 400, message: "Name, email and project details are required." };
+  }
+
+  // The assistant's form states what consent covers; an assistant enquiry without it is refused.
+  if (fields.source === "assistant" && raw.consent !== true) {
+    return { ok: false, status: 400, message: "Please tick the box to confirm we may reply to you." };
   }
 
   const tooLong = (Object.keys(LIMITS) as Array<keyof typeof LIMITS>).some(
@@ -81,7 +95,7 @@ export function validateEnquiry(body: unknown): EnquiryValidation {
     return { ok: false, status: 400, message: "Please enter a valid email address." };
   }
 
-  const singleLine = [fields.name, fields.email, fields.company, fields.projectType, fields.helpType];
+  const singleLine = [fields.name, fields.email, fields.company, fields.projectType, fields.helpType, fields.phone];
 
   if (
     [...singleLine, fields.message].some((value) => CONTROL.test(value)) ||

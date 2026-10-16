@@ -9,6 +9,11 @@ export interface EnquiryPayload {
   helpType: string;
   message: string;
   turnstileToken: string;
+  /* AI assistant escalation only. */
+  phone?: string;
+  source?: "assistant";
+  wantsHuman?: boolean;
+  consent?: boolean;
 }
 
 export type SubmitResult =

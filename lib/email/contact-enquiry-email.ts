@@ -18,6 +18,10 @@ export interface ContactEnquiry {
   helpType: string;
   message: string;
   receivedAt: string;
+  /* Set only by the AI assistant's escalation form (source tag "assistant"). */
+  phone?: string;
+  source?: "" | "assistant";
+  wantsHuman?: boolean;
   /* Present only when sent by a signed-in user; values are server-verified. */
   portal?: PortalContext | null;
 }
@@ -35,7 +39,11 @@ export function enquiryRows(enquiry: ContactEnquiry): DetailRow[] {
     ["Company", enquiry.company || "Not provided"],
     ["Topic", enquiry.projectType || "Not provided"],
     ["Help wanted", enquiry.helpType || "Not provided"],
+    ...(enquiry.phone ? ([["Phone", enquiry.phone]] as Array<[string, string]>) : []),
     ["Received", enquiry.receivedAt],
+    ...(enquiry.source === "assistant"
+      ? ([["Source", enquiry.wantsHuman ? "AI assistant: asked to speak to a person" : "AI assistant: enquiry"]] as Array<[string, string]>)
+      : []),
     ...(enquiry.portal
       ? ([
           ["Source", "Signed-in Drylake account"],
