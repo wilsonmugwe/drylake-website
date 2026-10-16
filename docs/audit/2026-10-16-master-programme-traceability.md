@@ -11,7 +11,7 @@ Confidence: **HIGH** = read in code or measured; **MEDIUM** = inferred or vendor
 
 | Decision | Answer |
 |---|---|
-| Joondalup | Permitted everywhere (landing page, directory, SEO). Banned: the residential street address in any form, and any claim that Drylake is physically based in Joondalup. Enforced by #78 |
+| Joondalup | Permitted everywhere (landing page, directory, SEO). Banned: the residential street address in any form, and any statement placing the business physically in Joondalup (it is based in Perth). Enforced by #78 |
 | Chatbot AI | **Claude via AWS Bedrock, Sydney (ap-southeast-2)** so chat text stays in Australia |
 | Biographies | Owner will send verified details; bios unchanged until then |
 | Abbicare | Hidden behind a server flag until Abbicare confirms permission in writing |
