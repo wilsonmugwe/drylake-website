@@ -291,7 +291,9 @@ describe("every public page is listed, titled and canonical", () => {
     for (const page of ["app/services/page.tsx", "app/solutions/page.tsx", "app/perth/page.tsx", "app/about/page.tsx"]) {
       assert.match(code(page), /<ServiceIndex\b(?![^>]*services=)/, page);
     }
-    assert.match(code("components/layout/Footer.tsx"), /SERVICES\.map\(/);
+    // PR 8: the footer renders FOOTER_COLUMNS, whose Services column is derived from SERVICES.
+    assert.match(code("components/layout/Footer.tsx"), /FOOTER_COLUMNS\.map\(/);
+    assert.match(code("lib/navigation/services-menu.ts"), /SERVICES\.map\(/);
   });
 
   it("the homepage What We Do section links into the service pages", () => {

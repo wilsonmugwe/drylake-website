@@ -98,7 +98,7 @@ describe("the canonical Drylake wordmark", () => {
 describe("every brand slot renders the canonical wordmark", () => {
   const slots = {
     "components/brand/BrandHomeLink.tsx": /<DrylakeWordmark\b/,
-    "components/layout/Navbar.tsx": /<BrandHomeLink \/>/,
+    "components/layout/NavbarClient.tsx": /<BrandHomeLink \/>/,
     "components/layout/MobileMenu.tsx": /<BrandHomeLink onNavigate=\{handleNavigate\} \/>/,
     "components/layout/Footer.tsx": /<BrandHomeLink size="footer" \/>/,
     "app/sign-in/[[...sign-in]]/page.tsx": /<DrylakeWordmark tone="dark"[\s\S]*<DrylakeWordmark tone="light"/,
@@ -133,7 +133,7 @@ describe("the canonical primary CTA (white, dark text)", () => {
     }
     // Navbar, mobile menu, hero, closing CTA, service pages, Perth.
     for (const file of [
-      "components/layout/Navbar.tsx",
+      "components/layout/NavbarClient.tsx",
       "components/layout/MobileMenu.tsx",
       "components/sections/Hero.tsx",
       "components/sections/ContactCTA.tsx",

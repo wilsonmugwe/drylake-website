@@ -48,7 +48,7 @@ describe("Client Login reaches the workspace without the sign-in detour", () => 
   });
 
   it("the header and the mobile menu both use it", () => {
-    assert.match(code("components/layout/Navbar.tsx"), /<ClientAccessLink\b/);
+    assert.match(code("components/layout/NavbarClient.tsx"), /<ClientAccessLink\b/);
     assert.match(code("components/layout/MobileMenu.tsx"), /<ClientAccessLink\b/);
   });
 });

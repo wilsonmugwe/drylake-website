@@ -4,8 +4,9 @@ import SiteLink from "@/components/navigation/SiteLink";
 import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 
-import Navbar from "@/components/layout/Navbar";
+import NavbarClient from "@/components/layout/NavbarClient";
 import Container from "@/components/ui/Container";
+import { SERVICES_MENU_FALLBACK } from "@/lib/navigation/site-nav";
 
 const onwardLinks = [
   { label: "What We Do", href: "/solutions" },
@@ -34,7 +35,7 @@ export default function SystemScreen({
 }: SystemScreenProps) {
   return (
     <>
-    <Navbar />
+    <NavbarClient servicesMenu={SERVICES_MENU_FALLBACK} />
 
     <main id="main-content" tabIndex={-1} className="relative flex min-h-[100svh] flex-col overflow-hidden bg-black text-white outline-none">
 

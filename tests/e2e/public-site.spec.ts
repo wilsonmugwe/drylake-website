@@ -89,10 +89,6 @@ test.describe("desktop navbar", () => {
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await nav.getByRole("link", { name: "What We Do" }).click();
-    await expect(page).toHaveURL(/\/#solutions$/);
-    await expectSectionInView(page, "solutions");
-
     await nav.getByRole("link", { name: "Our Approach" }).click();
     await expect(page).toHaveURL(/\/#approach$/);
     await expectSectionInView(page, "approach");

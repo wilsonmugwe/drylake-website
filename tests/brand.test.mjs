@@ -41,7 +41,7 @@ describe("brand artwork", () => {
   });
 
   it("header shows [mark] Drylake, footer the wordmark, and every brand src exists", () => {
-    for (const file of ["components/layout/Navbar.tsx", "components/layout/Footer.tsx", "components/brand/BrandHomeLink.tsx"]) {
+    for (const file of ["components/layout/NavbarClient.tsx", "components/layout/Footer.tsx", "components/brand/BrandHomeLink.tsx"]) {
       const src = read(file);
       assert.ok(!src.includes("drylake-logo-"), `${file} still references the old logo`);
       for (const [, path] of src.matchAll(/src="(\/brand\/[^"]+)"/g)) {
@@ -51,7 +51,7 @@ describe("brand artwork", () => {
 
     // Brand system (2026-10-07): header and footer both render the canonical lockup
     // ([tile] + wordmark with the ochre y) through BrandHomeLink; no plain-text "Drylake".
-    assert.match(read("components/layout/Navbar.tsx"), /<BrandHomeLink \/>/);
+    assert.match(read("components/layout/NavbarClient.tsx"), /<BrandHomeLink \/>/);
     assert.match(read("components/layout/Footer.tsx"), /<BrandHomeLink size="footer" \/>/);
     const lockup = read("components/brand/BrandHomeLink.tsx");
     assert.match(lockup, /<DrylakeWordmark\s[^>]*\blockup\b/);

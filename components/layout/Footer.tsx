@@ -2,33 +2,9 @@ import BrandHomeLink from "@/components/brand/BrandHomeLink";
 import DrylakeWordmark from "@/components/brand/DrylakeWordmark";
 import SiteLink from "@/components/navigation/SiteLink";
 import Container from "@/components/ui/Container";
-import { ENTITY, SERVICES, SERVICES_PATH } from "@/lib/discovery/entity";
-import { CLIENT_LOGIN } from "@/lib/navigation/site-nav";
+import { ENTITY } from "@/lib/discovery/entity";
+import { FOOTER_COLUMNS } from "@/lib/navigation/services-menu";
 import { BUSINESS_PHONE } from "@/lib/site";
-
-const columns = [
-  {
-    title: "What we do",
-    links: [
-      { label: "What We Do", href: "/solutions" },
-      { label: "Services", href: SERVICES_PATH },
-      ...SERVICES.map((service) => ({ label: service.name, href: service.path })),
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "Our Approach", href: "/#approach" },
-      { label: "About", href: "/about" },
-      { label: "Perth", href: "/perth" },
-      { label: "Contact", href: "/contact" },
-      { label: "Free consultation", href: "/consultation" },
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-      { label: CLIENT_LOGIN.label, href: CLIENT_LOGIN.href },
-    ],
-  },
-];
 
 /*
  * Shared footer, composed as the page's full stop (experience polish, 2026-10-07): the site map
@@ -63,7 +39,7 @@ export default function Footer() {
           </div>
 
           <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 lg:col-span-7 lg:col-start-6">
-            {columns.map((column) => (
+            {FOOTER_COLUMNS.map((column) => (
               <div key={column.title}>
                 <p className="tech-label text-white/58">{column.title}</p>
                 <ul className="mt-2">

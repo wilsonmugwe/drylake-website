@@ -86,12 +86,14 @@ describe("navigation decisions (resolveNavClick)", () => {
 });
 
 describe("navigation labels and destinations", () => {
-  it("uses Wilson's option B wording, in order, on the existing destinations", () => {
+  it("keeps the option B wording where it still applies, in order, on the existing destinations (PR 8 adds Services, Solutions, Perth)", () => {
     assert.deepEqual(
       PRIMARY_NAV.map((item) => [item.label, item.href]),
       [
-        ["What We Do", "/#solutions"],
+        ["Services", "/services"],
+        ["Solutions", "/solutions"],
         ["Our Approach", "/#approach"],
+        ["Perth", "/perth"],
         ["About", "/#about"],
         ["Contact", "/contact"],
       ]
@@ -118,7 +120,7 @@ describe("navigation labels and destinations", () => {
   });
 
   it("the header: one brand control, all links through SiteLink, Start a conversation kept", () => {
-    const navbar = code("components/layout/Navbar.tsx");
+    const navbar = code("components/layout/NavbarClient.tsx");
     const lockup = read("components/brand/BrandHomeLink.tsx");
 
     // No em dash in an accessible name (visitor-facing string rule).
@@ -143,7 +145,7 @@ describe("navigation labels and destinations", () => {
     assert.match(menu, /<ClientAccessLink\b/);
     assert.match(menu, /PRIMARY_CTA\.href/);
     assert.match(code("components/navigation/ClientAccessLink.tsx"), /CLIENT_LOGIN\.href/);
-    assert.match(code("components/layout/Navbar.tsx"), /<ClientAccessLink\b/);
+    assert.match(code("components/layout/NavbarClient.tsx"), /<ClientAccessLink\b/);
     // Menu destinations release the scroll lock before SiteLink scrolls (measured 59 px short otherwise).
     assert.match(menu, /onNavigate=\{handleNavigate\}/);
     assert.ok(!/onNavigate=\{onNavigate\}/.test(menu));
@@ -180,7 +182,7 @@ describe("scroll and sign-out root causes", () => {
   });
 
   it("no timer-based scroll hacks in the navigation code", () => {
-    for (const file of ["components/navigation/SiteLink.tsx", "components/layout/Navbar.tsx", "components/layout/MobileMenu.tsx", "lib/navigation/site-nav.ts"]) {
+    for (const file of ["components/navigation/SiteLink.tsx", "components/layout/NavbarClient.tsx", "components/layout/MobileMenu.tsx", "lib/navigation/site-nav.ts"]) {
       assert.ok(!/setTimeout|setInterval/.test(code(file)), file);
     }
   });

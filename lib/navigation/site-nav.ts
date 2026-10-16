@@ -30,16 +30,63 @@ export const SIGN_OUT_REDIRECT_URL = "/";
 export type NavItem = { label: string; href: string };
 
 /*
- * Wording chosen by Wilson (option B). Destinations are the existing ones: the homepage
- * sections What We Do (#solutions), How We Work (#approach) and Founder-Led (#about),
- * and the Contact page. Labels changed, URLs did not.
+ * Six items maximum plus the CTA (landing-page Pattern 6). Client Login is a utility beside the
+ * CTA, not a navigation item. Section anchors keep their existing homepage destinations.
+ *
+ * Labels come from what the pages actually contain (PR 8, 2026-10-16):
+ *   - Services  = WHAT WE BUILD (five service lines; /services lists them, each has its own page).
+ *   - Solutions = BUSINESS PROBLEMS (/solutions starts from the problem, then points at the
+ *     service that fits). Both URLs are unchanged. The previous header label "What We Do" pointed
+ *     at a homepage section and read as a third, overlapping category, so it is retired.
+ *
+ * The Services entry carries `menu: true`; its dropdown links are DERIVED from the services data in
+ * lib/navigation/services-menu.ts. That derivation lives in its own server-side module on purpose:
+ * this file is imported by client components (SiteLink), and importing the full services copy here
+ * would ship it in the browser bundle (it added about 22 KB to the homepage JS budget).
  */
-export const PRIMARY_NAV: readonly NavItem[] = [
-  { label: "What We Do", href: "/#solutions" },
+/*
+ * prefetch: false is for a destination whose page is heavy and rarely the next click from the
+ * header. Next prefetches every <Link> that is in view, and the header is always in view, so a
+ * "Solutions" link made the homepage download the /solutions client chunks (the motion library,
+ * 43 KB) in the background: homepage JS 168 KB -> 213 KB, over the 200 KB budget. The click still
+ * navigates; it just is not paid for on every page view.
+ */
+export type PrimaryNavEntry = NavItem & { menu?: true; prefetch?: false };
+
+export const PRIMARY_NAV: readonly PrimaryNavEntry[] = [
+  { label: "Services", href: "/services", menu: true },
+  { label: "Solutions", href: "/solutions", prefetch: false },
   { label: "Our Approach", href: "/#approach" },
+  { label: "Perth", href: "/perth" },
   { label: "About", href: "/#about" },
   { label: "Contact", href: CONTACT_PATH },
 ];
+
+/*
+ * Shape and copy of the Services dropdown. The LINKS are derived from the services data in
+ * lib/navigation/services-menu.ts (server side). The fallback below is for client-only surfaces
+ * (the error boundary, via SystemScreen) that cannot import that data without shipping it to every
+ * page: it offers the index only.
+ */
+export type ServicesMenuData = {
+  label: string;
+  href: string;
+  descriptor: string;
+  solutionsHint: string;
+  links: readonly NavItem[];
+};
+
+export const SERVICES_MENU_COPY = {
+  label: "Services",
+  href: "/services",
+  descriptor: "What we build for your business.",
+  solutionsHint: "Starting from a problem? See Solutions.",
+} as const;
+
+export const SERVICES_MENU_FALLBACK: ServicesMenuData = {
+  ...SERVICES_MENU_COPY,
+  links: [{ label: "All services", href: SERVICES_MENU_COPY.href }],
+};
 
 /* /portal, not /sign-in: it serves both states server-side (see ClientAccessLink). */
 export const CLIENT_LOGIN: NavItem = { label: "Client Login", href: PORTAL_PATH };
