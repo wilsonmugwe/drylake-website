@@ -156,6 +156,8 @@ export const PRIVATE_PREFIXES = [
   "/sign-up",
   /* A customer's own appointment (opened by a private link): never indexed. */
   "/consultation/manage",
+  /* Private feedback form and unsubscribe page, reached only from a review request email. */
+  "/feedback",
 ] as const;
 
 export function absoluteUrl(path: string): string {
