@@ -17,7 +17,9 @@ import {
   type AssistantReplyPayload,
 } from "./constants.ts";
 import { SAFE_FALLBACK, SENSITIVE_REPLY, UNAVAILABLE_REPLY, checkVisitorText, looksSensitive, sanitiseHistory } from "./guards.ts";
+import { answerGuided } from "./guided.ts";
 import { getKnowledgePack } from "./knowledge.ts";
+import { isAssistantEnabled, isGuided } from "./mode.ts";
 import { REPLY_TOOL, SYSTEM_PROMPT, buildUserMessage } from "./prompt.ts";
 import type { LlmGatewayProvider } from "./provider.ts";
 import { retrieve } from "./retrieve.ts";
@@ -26,10 +28,7 @@ import { createBreaker, createDailyCap, createSession, createTurnCounter, verify
 
 type Env = Record<string, string | undefined>;
 
-export function isAssistantEnabled(env: Env = process.env): boolean {
-  const flag = (env.CHAT_ASSISTANT_ENABLED ?? "").trim().toLowerCase();
-  return flag === "true" || flag === "1";
-}
+export { isAssistantEnabled };
 
 const intFrom = (value: string | undefined, fallback: number) => {
   const n = Number.parseInt(value ?? "", 10);
@@ -116,9 +115,19 @@ export async function handleAssistant(request: Request, deps: AssistantDeps): Pr
 
   const turnsLeft = state.turns.remaining(session.sid);
   if (looksSensitive(input.text)) return json({ reply: SENSITIVE_REPLY, turnsLeft });
-  if (!state.breaker.allow(now)) return json({ reply: UNAVAILABLE_REPLY, unavailable: true, turnsLeft });
 
   const pack = getKnowledgePack();
+
+  // Guided mode: no AI. Retrieval returns approved text verbatim; no provider is built and nothing
+  // leaves the server. The visitor's words are matched in memory and never logged.
+  if (isGuided(env)) {
+    const guided = answerGuided(input.text, pack.chunks);
+    console.info("assistant", JSON.stringify({ outcome: `guided-${guided.outcome}`, pack: pack.version, provider: "guided", turnsLeft }));
+    return json({ reply: guided.reply, turnsLeft });
+  }
+
+  if (!state.breaker.allow(now)) return json({ reply: UNAVAILABLE_REPLY, unavailable: true, turnsLeft });
+
   const history = sanitiseHistory(body.history);
   const chunks = retrieve([input.text, history.at(-1)?.text ?? ""].join(" "), pack.chunks);
 
