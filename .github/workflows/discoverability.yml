@@ -35,6 +35,25 @@ jobs:
       - name: Live crawler and indexing check
         run: node scripts/discoverability-check.mjs
 
+  privacy-address-sweep:
+    # Owner rule 2026-10-16: the residential street address never appears on the public site.
+    # Sweeps every public page, its Markdown twin, the machine files and the served chunks.
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: No residential address on the live site
+        run: node scripts/privacy-address-sweep.mjs
+
   live-matches-main:
     # Two production builds can race (PRs #25 and #26, 2026-10-07): the older one finished last,
     # took the domain, and every status stayed green while #26's assets 404'd. This checks out
