@@ -5,7 +5,12 @@ import { clientIp, verifyTurnstile } from "@/lib/contact/turnstile";
 import { deliverContactEnquiry } from "@/lib/email/contact-enquiry";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { MAX_REQUEST_BYTES, validateEnquiry } from "@/lib/contact/validate-enquiry";
+import { createRateLimiter } from "@/lib/security/rate-limit";
+import { redactSensitive } from "@/lib/security/redact";
 import { CONTACT_EMAIL } from "@/lib/site";
+
+/* Ten enquiries per address per ten minutes, per instance (see lib/security/rate-limit.ts). */
+const limiter = createRateLimiter(10, 10 * 60_000);
 
 function jsonError(message: string, status: number) {
   return NextResponse.json(
@@ -74,6 +79,13 @@ export async function POST(request: Request) {
     const { name, email, company, projectType, helpType, message, turnstileToken } =
       validation.fields;
 
+    // Per-instance burst limit, after the cheap field checks and before Turnstile and email
+    // (each verification and send costs money or quota). The platform-wide limit is a Vercel
+    // Firewall rule; see docs/security/manual-verification-checklist.md.
+    if (!limiter.take(clientIp(request) ?? "unknown")) {
+      return jsonError("Too many attempts in a short time. Please wait a few minutes and try again.", 429);
+    }
+
     /*
      * Server-side Turnstile verification, after the cheap field checks and before any
      * processing. Missing, invalid, expired, reused or foreign-host tokens are rejected.
@@ -127,7 +139,7 @@ export async function POST(request: Request) {
       // misconfigured mailer is invisible in the Vercel logs.
       console.error(
         "Contact enquiry delivery failed:",
-        error instanceof Error ? error.message : "unknown error"
+        redactSensitive(error instanceof Error ? error.message : null)
       );
 
       return jsonError(
