@@ -86,16 +86,16 @@ describe("navigation decisions (resolveNavClick)", () => {
 });
 
 describe("navigation labels and destinations", () => {
-  it("keeps the option B wording where it still applies, in order, on the existing destinations (PR 8 adds Services, Solutions, Perth)", () => {
+  // Exposed Ground navigation (D54, Ben 2026-10-17): Services, Solutions, Approach, BRONNIE, About.
+  it("is exactly the approved Exposed Ground set, in order, on existing destinations plus /bronnie", () => {
     assert.deepEqual(
       PRIMARY_NAV.map((item) => [item.label, item.href]),
       [
         ["Services", "/services"],
         ["Solutions", "/solutions"],
-        ["Our Approach", "/#approach"],
-        ["Perth", "/perth"],
-        ["About", "/#about"],
-        ["Contact", "/contact"],
+        ["Approach", "/#approach"],
+        ["BRONNIE", "/bronnie"],
+        ["About", "/about"],
       ]
     );
     assert.deepEqual([CLIENT_LOGIN.label, CLIENT_LOGIN.href], ["Client Login", "/portal"]);
@@ -161,7 +161,8 @@ describe("header prefetch budget", () => {
   it("secondary header destinations do not prefetch on every page view", () => {
     const optedOut = PRIMARY_NAV.filter((item) => item.prefetch === false).map((item) => item.href);
 
-    assert.deepEqual(optedOut, ["/solutions", "/perth"]);
+    // Perth left the header (D54); BRONNIE and About are secondary destinations, opted out too.
+    assert.deepEqual(optedOut, ["/solutions", "/bronnie", "/about"]);
   });
 });
 

@@ -125,7 +125,8 @@ test.describe("desktop Services dropdown", () => {
     await page.goto("/");
     const items = await NAV(page).locator("ul").first().locator("> li").count();
     expect(items).toBeLessThanOrEqual(6);
-    await expect(NAV(page).getByRole("link", { name: "Perth" })).toHaveAttribute("href", "/perth");
+    await expect(NAV(page).getByRole("link", { name: "BRONNIE" })).toHaveAttribute("href", "/bronnie");
+    await expect(page.locator("footer").getByRole("link", { name: "Perth service areas" })).toHaveAttribute("href", "/perth");
     await expect(NAV(page).getByRole("link", { name: "Start Free Consultation" })).toBeVisible();
   });
 });

@@ -76,7 +76,7 @@ test("menu lists the destinations, Client Login and the primary action, all 44px
   await openMenu(page);
 
   const menu = dialog(page);
-  for (const name of ["Solutions", "Our Approach", "Perth", "About", "Contact", "Client Login", "Start Free Consultation"]) {
+  for (const name of ["Solutions", "Approach", "BRONNIE", "About", "Client Login", "Start Free Consultation"]) {
     const link = menu.getByRole("link", { name: new RegExp(name) }).first();
     await expect(link).toBeVisible();
     const box = await link.boundingBox();
@@ -88,15 +88,16 @@ test("a section link closes the menu and lands on the section", async ({ page })
   await page.goto("/");
   await openMenu(page);
 
-  await dialog(page).getByRole("link", { name: /About/ }).click();
+  // D54: About is a page now; Approach is the header's homepage section link.
+  await dialog(page).getByRole("link", { name: /Approach/ }).click();
 
   await expect(dialog(page)).toHaveCount(0);
-  await expect(page).toHaveURL(/\/#about$/);
+  await expect(page).toHaveURL(/\/#approach$/);
   await expect
-    .poll(() => page.evaluate(() => document.getElementById("about")?.getBoundingClientRect().top ?? NaN))
+    .poll(() => page.evaluate(() => document.getElementById("approach")?.getBoundingClientRect().top ?? NaN))
     .toBeLessThan(120);
   await expect
-    .poll(() => page.evaluate(() => document.getElementById("about")?.getBoundingClientRect().top ?? NaN))
+    .poll(() => page.evaluate(() => document.getElementById("approach")?.getBoundingClientRect().top ?? NaN))
     .toBeGreaterThan(-5);
 
   // Scroll lock released: the page scrolls again.
@@ -107,7 +108,7 @@ test("a section link from another page navigates home to the section", async ({ 
   await page.goto("/contact");
   await openMenu(page);
 
-  await dialog(page).getByRole("link", { name: /Our Approach/ }).click();
+  await dialog(page).getByRole("link", { name: /Approach/ }).click();
 
   await expect(page).toHaveURL(/\/#approach$/);
   await expect(dialog(page)).toHaveCount(0);
@@ -131,7 +132,7 @@ test("Start Free Consultation from the menu opens the booking page at the top", 
 test("Back after a menu section jump returns to the top of the page", async ({ page }) => {
   await page.goto("/");
   await openMenu(page);
-  await dialog(page).getByRole("link", { name: /Our Approach/ }).click();
+  await dialog(page).getByRole("link", { name: /Approach/ }).click();
   await expect(page).toHaveURL(/\/#approach$/);
 
   await page.goBack();

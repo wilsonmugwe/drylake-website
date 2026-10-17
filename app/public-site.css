@@ -992,9 +992,15 @@ main [tabindex="-1"]:focus {
   animation: lb-label 0.95s var(--lb-ease) 0.2s both;
 }
 
-/* White on the ochre plate: 4.7:1 (ink on ochre would be 3.7:1). */
+/* White on the ochre plate measures 3.70:1 (the earlier note here had the two figures swapped:
+   ink #17191e on ochre is the 4.76:1 one). Exposed Ground (D54): the tile is preserved exactly;
+   the only change Ben allowed is a minimal weight step, 600 -> 700, for legibility. Weight does
+   not change the ratio, so at its 17 px maximum the label still sits below AA for normal text
+   (4.5:1) and meets the 3:1 large-text level only from 18.7 px bold. Recorded in the redesign
+   PR; the colour stays until Ben decides. tests/one-system-lock.test.mjs computes both ratios. */
 .lb-label-ochre {
   color: #fff;
+  font-weight: 700;
   animation: dl-fade 0.4s ease 1.25s both;
 }
 

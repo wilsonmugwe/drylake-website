@@ -38,7 +38,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 lg:col-span-7 lg:col-start-6">
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:col-span-8 lg:col-start-5">
             {FOOTER_COLUMNS.map((column) => (
               <div key={column.title}>
                 <p className="tech-label text-white/58">{column.title}</p>

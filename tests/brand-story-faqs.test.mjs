@@ -209,9 +209,10 @@ describe("/faq discoverability", () => {
     assert.ok(statSync(join(ROOT, "public/og/faq.png")).size > 1000);
   });
 
-  it("is linked from the footer Company column", () => {
-    const company = FOOTER_COLUMNS.find((column) => column.title === "Company");
-    assert.ok(company.links.some((link) => link.href === "/faq"));
+  // Exposed Ground (D54): FAQ moved out of the header into the footer's Help column.
+  it("is linked from the footer Help column", () => {
+    const help = FOOTER_COLUMNS.find((column) => column.title === "Help");
+    assert.ok(help.links.some((link) => link.href === "/faq"));
   });
 
   it("is listed in llms.txt and every answer appears in llms-full.txt", () => {

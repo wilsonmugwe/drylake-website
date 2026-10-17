@@ -55,13 +55,21 @@ export type NavItem = { label: string; href: string };
  */
 export type PrimaryNavEntry = NavItem & { menu?: true; prefetch?: false };
 
+/*
+ * Exposed Ground navigation (D54, Ben 2026-10-17): Services, Solutions, Approach, BRONNIE, About.
+ * Perth and FAQ moved to the footer (lib/navigation/services-menu.ts FOOTER_COLUMNS), where they
+ * stay linked on every page for search and internal linking. Contact is reached from the footer,
+ * the closing section of every page and the consultation page; Client Login (Drylake Workspace)
+ * and the consultation CTA stay beside the links.
+ */
+export const BRONNIE_PATH = "/bronnie";
+
 export const PRIMARY_NAV: readonly PrimaryNavEntry[] = [
   { label: "Services", href: "/services", menu: true },
   { label: "Solutions", href: "/solutions", prefetch: false },
-  { label: "Our Approach", href: "/#approach" },
-  { label: "Perth", href: "/perth", prefetch: false },
-  { label: "About", href: "/#about" },
-  { label: "Contact", href: CONTACT_PATH },
+  { label: "Approach", href: "/#approach" },
+  { label: "BRONNIE", href: BRONNIE_PATH, prefetch: false },
+  { label: "About", href: "/about", prefetch: false },
 ];
 
 /*

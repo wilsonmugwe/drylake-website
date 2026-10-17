@@ -19,7 +19,7 @@ import { HOME_PATH, PRIMARY_CTA, PRIMARY_NAV, type ServicesMenuData } from "@/li
  * Scroll state comes from an IntersectionObserver on a sentinel at the top of the document,
  * not a scroll listener.
  *
- * Hierarchy: Drylake (identity, home) / Services (dropdown), Solutions, Our Approach, Perth, About, Contact
+ * Hierarchy: Drylake (identity, home) / Services (dropdown), Solutions, Approach, BRONNIE, About
  * (exploration) / Client Login (existing-client utility) / Start a conversation (the one
  * primary action: the canonical white PrimaryCta).
  */

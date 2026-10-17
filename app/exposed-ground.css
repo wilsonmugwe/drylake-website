@@ -1,0 +1,305 @@
+/* =========================================================
+   EXPOSED GROUND: the redesign layer (D54, approved by Ben 2026-10-17)
+
+   The site behaves like a dry lake: dark ground, pale crust, one signal colour. This file holds
+   the new type scale, surfaces, hairline rules, the crack divider and the motion primitives.
+   Colours come from the existing tokens in globals.css (ink, mineral, stone, signal,
+   signal-ink); nothing new is introduced. The One System tile (.lb-*) is NOT styled here: it is
+   preserved exactly (tests/one-system-lock.test.mjs).
+
+   Motion is CSS-first and complete at rest: scroll-driven reveals only run where
+   animation-timeline is supported, and every element is fully visible without them, without
+   JavaScript, and under reduced motion.
+   ========================================================= */
+
+:root {
+  --eg-ease: cubic-bezier(0.2, 0.7, 0, 1);
+  --eg-micro: 160ms;
+  --eg-move: 320ms;
+  --eg-scene: 900ms;
+
+  --eg-crust-ink: #17191e;
+  --eg-rule-dark: #2a2824;
+  --eg-crack-dark: #4a4741;
+  --eg-rule-light: #c9c4b6;
+  /* Muted text, computed on their own surface: 7.9:1 on ink, 7.5:1 on mineral (tests/exposed-ground-foundations.test.mjs). */
+  --eg-muted-dark: #a8a49b;
+  --eg-muted-light: #4f4c45;
+}
+
+/* ---------- Surfaces ---------- */
+
+.eg-ground {
+  background: var(--color-ink);
+  color: var(--color-mineral);
+}
+
+.eg-crust {
+  background: var(--color-mineral);
+  color: var(--eg-crust-ink);
+}
+
+.eg-stone {
+  background: var(--color-stone);
+  color: var(--eg-crust-ink);
+}
+
+.eg-signal {
+  background: var(--color-signal);
+  color: var(--color-ink);
+}
+
+/* ---------- Type ---------- */
+
+/* Poster: condensed Archivo at poster scale. Type is the image. */
+.eg-poster {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: clamp(3.4rem, 11vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.eg-poster-md {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 6.4vw, 6rem);
+  line-height: 0.88;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.eg-h2 {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.eg-h3 {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.eg-numeral {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125;
+  font-weight: 200;
+  font-size: clamp(3rem, 6vw, 4rem);
+  line-height: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+.eg-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.eg-lede {
+  font-size: clamp(1.0625rem, 1.5vw, 1.375rem);
+  line-height: 1.45;
+  max-width: 40ch;
+}
+
+.eg-muted {
+  color: var(--eg-muted-light);
+}
+
+.eg-ground .eg-muted,
+.eg-ground.eg-muted {
+  color: var(--eg-muted-dark);
+}
+
+/* Small signal text on light surfaces must use the deeper ink (4.9:1 on mineral). */
+.eg-signal-text {
+  color: var(--color-signal);
+}
+
+.eg-crust .eg-signal-text,
+.eg-stone .eg-signal-text {
+  color: var(--color-signal-ink);
+}
+
+/* Mobile menu entries: the nav set as poster type. */
+.eg-menu-label {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+/* ---------- Rules over boxes ---------- */
+
+.eg-rule {
+  border-top: 1px solid var(--eg-rule-light);
+}
+
+.eg-ground .eg-rule {
+  border-top-color: var(--eg-rule-dark);
+}
+
+.eg-rule-strong {
+  border-top: 2px solid currentColor;
+}
+
+/* ---------- Actions ---------- */
+
+/* The signal pill: orange means act. 6.45:1 ink on signal. */
+.eg-pill {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0 1.4rem;
+  background: var(--color-signal);
+  color: var(--color-ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--eg-micro) var(--eg-ease), background-color var(--eg-micro) ease;
+}
+
+.eg-pill:hover {
+  background: #ff7a3d;
+}
+
+.eg-pill:active {
+  transform: translateY(1px);
+}
+
+/* Ground pill for use ON the signal band. Plain CSS on purpose: the unlayered global
+   `a { color: inherit }` in globals.css beats Tailwind's layered text colours on links. */
+.eg-pill-dark {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 1.75rem;
+  white-space: nowrap;
+  background: var(--color-ink);
+  color: var(--color-mineral);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.eg-pill-dark:hover {
+  background: #1a1a17;
+}
+
+.eg-pill-ghost {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0 1.4rem;
+  border: 1px solid currentColor;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------- Crack divider (components/visuals/CrackRule.tsx) ---------- */
+
+.eg-crack {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--eg-rule-light);
+}
+
+.eg-ground .eg-crack {
+  color: var(--eg-crack-dark);
+}
+
+.eg-crack path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.eg-crack .eg-crack-signal {
+  stroke: var(--color-signal);
+}
+
+/* ---------- Motion: scroll-driven, complete at rest ---------- */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Crack draw: the divider traces its line as it enters. */
+    .eg-crack path {
+      stroke-dasharray: 1;
+      animation: eg-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
+    }
+
+    /* Line rise: headline lines rise 12 px and fade in, staggered by --i. Never on the h1. */
+    .eg-rise > * {
+      animation: eg-rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(5% + var(--i, 0) * 4%) cover calc(25% + var(--i, 0) * 4%);
+    }
+
+    /* Tilt to flat: product screens settle as they reach the middle of the viewport. */
+    .eg-tilt {
+      transform-origin: 50% 100%;
+      animation: eg-tilt linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+  }
+}
+
+@keyframes eg-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes eg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes eg-tilt {
+  from {
+    transform: perspective(1400px) rotateX(8deg);
+  }
+  to {
+    transform: none;
+  }
+}
