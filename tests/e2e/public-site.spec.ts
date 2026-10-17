@@ -153,8 +153,8 @@ test("Back after a section jump returns to the previous position", async ({ page
   test.skip(isMobileProject(testInfo), "covered for the mobile menu in mobile-nav.spec.ts");
 
   await page.goto("/");
-  await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "About" }).click();
-  await expect(page).toHaveURL(/\/#about$/);
+  await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Approach" }).click();
+  await expect(page).toHaveURL(/\/#approach$/);
 
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);

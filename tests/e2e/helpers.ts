@@ -38,6 +38,7 @@ export const PUBLIC_PATHS = [
   "/contact",
   "/consultation",
   "/collaborate",
+  "/bronnie",
   "/privacy",
   "/security-privacy",
   "/terms",
