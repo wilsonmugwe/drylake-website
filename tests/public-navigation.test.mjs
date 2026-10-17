@@ -206,73 +206,8 @@ describe("scroll and sign-out root causes", () => {
 });
 
 describe("the redesign kept the approved homepage copy", () => {
-  // PR 2: What We Do moved from Solutions (still used by /solutions) to WhatWeDo on the homepage.
-  const files = HOME_SECTIONS;
-  const text = files
-    .map((name) => read(`components/sections/${name}.tsx`))
-    .join("\n")
-    .replace(/&apos;/g, "'")
-    .replace(/\{" "\}/g, " ")
-    .replace(/\s+/g, " ");
-
-  const APPROVED = [
-    // Hero
-    // Plain-English messaging (2026-10-13): the hero SAYS what Drylake does; "workarounds" moved to
-    // the problem chapter's heading.
-    "Perth / Western Australia", "Websites, Software &amp; Automation",
-    "Technology that makes", "running your business easier.",
-    "We build websites, business software and automation tools that save time, reduce manual work and help your business run smoothly.",
-    "Quotes, invoices, scheduling, enquiries: held together by copy, paste and email.", "Until they work together.",
-    "{PRIMARY_CTA.label}", "See what we build", "Australian company", "Founder-led", "Perth, WA",
-    // Problems: real situations, the fix, and a labelled example (lib/value-examples.ts)
-    // Homepage clarity (2026-10-10): the problem heading is now the outcome.
-    "01 / The Problem", "Less paperwork.", "Less chasing.", "More time for your business.", "Small, repeated tasks add up.",
-    "We're managing bookings and jobs through emails and spreadsheets.",
-    "Our staff enter the same customer details into three systems.",
-    "We connect those systems so the information only needs to be entered once, where the software supports it.",
-    "We keep sending the same reminders and messages to customers.",
-    "We answer the same customer questions all day.", "For example", "Assumes",
-    // Final refinement 2026-10-08: the Problems "NEXT" reassurance ("You don't need to know the
-    // technical solution...") was retired as a repeat of the closing "No technical brief required"
-    // (kept below); that slot now links to /solutions.
-    "See every business problem we solve",
-    // What We Do
-    "02 / What We Do", "What we build.", "What it does for you.",
-    "Websites that bring in work.", "Software built for how you work.", "Less repetitive work.",
-    "Your tools, working together.", "AI for the everyday admin.",
-    "Business websites / Enquiry & booking forms / Redesigns / Customer-facing web features",
-    "Customer portals / Booking systems / Staff dashboards / Job tracking",
-    "Appointment reminders / Enquiry follow-ups / Recurring reports / Routine documents",
-    "Answering common questions / Searching documents / Drafting replies / Sorting enquiries",
-    // Integrations
-    "Work With What You Have", "Don't replace", "what already works.",
-    "We can connect, extend and build around the systems your business already depends on.",
-    "Microsoft 365", "Xero", "MYOB", "Payments", "CRM", "APIs",
-    "Integrations depend on the capabilities and access provided by each platform.",
-    // Founders
-    "03 / Why Drylake", "Small team.", "Direct access.",
-    "Work directly with the people responsible for understanding the problem and delivering the solution.",
-    "Benedict Wambugu", "Wilson Mugwe", "Master of Project Management",
-    "Bachelor of Computer Science, majoring in Software Engineering",
-    // "What founder-led means" + its statement now close the founders block on /about (variant="page").
-    // Approach + production
-    // Homepage clarity (2026-10-10): the seven-stage customer journey replaced the four stages.
-    "04 / How We Work", "From first conversation", "to launch.",
-    "Getting started shouldn't be complicated. Here's what working with Drylake looks like.",
-    "We start by learning about your business, the challenges you're facing and what you'd like to achieve.",
-    "Production Matters", "The boring part", "is the hard part.",
-    "We engineer the less visible parts that make software dependable when the business starts relying on it.",
-    "Secure login", "Who can see what", "Fewer mistakes", "Connected tools", "Keeping things running", "Backups and recovery",
-    "What your team sees",
-    // FAQ + close
-    // The FAQ moved into the closing conversation (brief section 9): same five answers.
-    "Before you ask",
-    // PR 2: the closing headline is now Ben's "Have a problem worth fixing?" (brief, 7 Oct 2026);
-    // "Tell us what's slowing you down." was retired with it.
-    "Have a problem", "worth fixing?",
-    "No technical brief needed. Tell us what you want built, or what is taking your team too much time.",
-    "TALK TO A PERSON, NOT A SALES QUEUE", "{BUSINESS_PHONE.display}", "hello@drylake.com.au",
-  ];
+  // The pre-D54 homepage copy list (APPROVED) was retired with that homepage on 2026-10-17; the
+  // new homepage copy is lib/home/copy.ts, pinned by tests/home-exposed-ground.test.mjs.
 
   it("every approved string is still on the homepage", () => {
     // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
