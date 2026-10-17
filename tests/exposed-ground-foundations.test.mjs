@@ -57,6 +57,8 @@ test("redesign-layer text colours meet WCAG AA on their own surfaces", () => {
   assert.ok(ratio("#f26a2e", "#0b0b0a") >= 4.5, "signal on ground");
   assert.ok(ratio("#0b0b0a", "#f26a2e") >= 4.5, "ground on signal (pill)");
   assert.ok(ratio("#b83f0c", "#f2f0e9") >= 4.5, "signal ink on crust");
+  assert.ok(ratio("#a8380a", "#e6e3da") >= 4.5, "signal ink on stone");
+  assert.match(css, /\.eg-stone \.eg-signal-text \{\s*color: #a8380a;/);
 });
 
 test("motion is complete at rest: reveals only exist inside a scroll-timeline + motion guard", () => {

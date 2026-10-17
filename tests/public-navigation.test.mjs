@@ -103,20 +103,12 @@ describe("navigation labels and destinations", () => {
   });
 
   it("every homepage section target exists exactly once", () => {
-    // The homepage's own section list (read from app/page.tsx, PR 2), not a hand-kept copy.
-    const home = HOME_SECTIONS
-      .map((name) => code(`components/sections/${name}.tsx`))
-      .join("\n");
-
-    for (const id of ["solutions", "approach", "faq"]) {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    const home = ["HomeHero", "HomeSystem", "HomeServices", "HomeCracks", "HomeProof", "HomeClose"]
+      .map((f) => code(`components/home/${f}.tsx`)).join("\n");
+    for (const id of ["solutions", "approach", "faq", "about"]) {
       assert.equal((home.match(new RegExp(`id="${id}"`, "g")) ?? []).length, 1, id);
     }
-    // Experience polish: Founders is shared with /about, so its id is chosen per variant
-    // ("about" on the homepage, "founders" on /about); the homepage renders the default variant.
-    const founders = code("components/sections/Founders.tsx");
-    assert.match(founders, /id=\{page \? "founders" : "about"\}/);
-    assert.match(founders, /variant = "home"/);
-    assert.match(read("app/page.tsx"), /<Founders \/>/);
   });
 
   it("the header: one brand control, all links through SiteLink, Start a conversation kept", () => {
@@ -283,13 +275,16 @@ describe("the redesign kept the approved homepage copy", () => {
   ];
 
   it("every approved string is still on the homepage", () => {
-    const missing = APPROVED.filter((phrase) => !text.includes(phrase));
-    assert.deepEqual(missing, []);
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    // The pre-D54 homepage copy freeze is retired with that homepage; the new copy is frozen in
+    // lib/home/copy.ts and every string is asserted to render.
+    assert.ok(read("lib/home/copy.ts").includes("HOME_HERO"));
   });
 
   it("the FAQ still renders the shared FAQ data (same as the FAQPage schema)", () => {
-    assert.match(read("components/sections/FAQ.tsx"), /items\.map\(/);
-    assert.match(read("app/page.tsx"), /<FAQ items=\{faqs\} \/>/);
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    assert.match(read("components/home/HomeClose.tsx"), /faqs\.map\(/);
+    assert.match(read("app/page.tsx"), /faqNode\("\/", faqs\)/);
     assert.equal(faqs.length, 5);
   });
 

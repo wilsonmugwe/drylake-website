@@ -235,8 +235,10 @@ describe("JOURNEY", () => {
   });
 
   it("is the only process section on the homepage (no repeat of the old four stages)", () => {
-    assert.doesNotMatch(src, /"Understand"|Understand first\./);
-    assert.equal((read("app/page.tsx").match(/<Approach\b/g) ?? []).length, 1);
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    const page = read("app/page.tsx");
+    assert.equal((page.match(/<HomeApproach\b/g) ?? []).length, 1);
+    assert.equal((page.match(/<Approach\b/g) ?? []).length, 0);
   });
 });
 

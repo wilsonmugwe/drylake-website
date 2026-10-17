@@ -132,9 +132,13 @@
   color: var(--color-signal);
 }
 
-.eg-crust .eg-signal-text,
-.eg-stone .eg-signal-text {
+.eg-crust .eg-signal-text {
   color: var(--color-signal-ink);
+}
+
+/* Stone is darker than crust: signal-ink is 4.36:1 there (fails), this deeper step is 5.06:1. */
+.eg-stone .eg-signal-text {
+  color: #a8380a;
 }
 
 /* Mobile menu entries: the nav set as poster type. */
@@ -302,4 +306,221 @@
   to {
     transform: none;
   }
+}
+
+/* =========================================================
+   HOMEPAGE (stage 2)
+   ========================================================= */
+
+.eg-hero {
+  min-height: min(100svh, 980px);
+  display: flex;
+  align-items: flex-end;
+}
+
+.eg-hero > * {
+  width: 100%;
+}
+
+/* Hero title: one step larger than the base poster at desktop, never wider than the column. */
+.eg-hero-title {
+  font-size: clamp(2.6rem, 15.5vw, 12rem);
+}
+
+/* The tile's own stage: the old hero placed .lb-figure absolutely; here it sits in flow. The
+   tile's rules themselves (.lb-*) are untouched and locked. */
+.eg-stage .lb-figure {
+  position: static;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 0 0 auto;
+}
+
+.eg-stage .lb-tile {
+  width: 100%;
+  margin: 0;
+}
+
+.eg-stage .lb-caption {
+  margin-top: 0.75rem;
+  padding: 0;
+}
+
+/* Service rows: type is the image. */
+.eg-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding-block: 1.5rem;
+  color: var(--color-mineral);
+  text-decoration: none;
+}
+
+.eg-row-num {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--eg-muted-dark);
+}
+
+.eg-row-word {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: clamp(3.25rem, 9vw, 7.5rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  transition: color var(--eg-micro) ease, transform var(--eg-move) var(--eg-ease);
+}
+
+.eg-row-line {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: #c9c5bb;
+}
+
+.eg-row-arrow {
+  flex: none;
+  color: var(--eg-muted-dark);
+  transition: transform var(--eg-move) var(--eg-ease), color var(--eg-micro) ease;
+}
+
+.eg-row:hover .eg-row-word,
+.eg-row:focus-visible .eg-row-word {
+  color: var(--color-signal);
+}
+
+.eg-row:hover .eg-row-arrow,
+.eg-row:focus-visible .eg-row-arrow {
+  color: var(--color-signal);
+  transform: translate(3px, -3px);
+}
+
+@media (min-width: 900px) {
+  .eg-row {
+    grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 22rem);
+    gap: 2rem;
+    align-items: center;
+    padding-block: 2rem;
+  }
+
+  .eg-row-line {
+    grid-column: 3;
+  }
+
+  .eg-row:hover .eg-row-word,
+  .eg-row:focus-visible .eg-row-word {
+    transform: translateX(0.5rem);
+  }
+}
+
+/* Cracks: four short statements divided by hairlines. */
+.eg-crack-item {
+  border-top: 1px solid var(--eg-rule-light);
+}
+
+.eg-crack-item:first-child {
+  border-top: 0;
+}
+
+@media (min-width: 640px) {
+  .eg-crack-item {
+    border-top: 0;
+    padding-right: 1.75rem;
+  }
+
+  .eg-crack-item + .eg-crack-item {
+    border-left: 1px solid var(--eg-rule-light);
+    padding-left: 1.75rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .eg-crack-item:nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+.eg-numeral-xl {
+  font-size: clamp(4.5rem, 9vw, 7.5rem);
+}
+
+.eg-h3-lg {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+}
+
+/* A product screen: a real object, so it earns a frame. */
+.eg-screen {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #2a2824;
+  background: #161513;
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+}
+
+/* Inline text link on any surface. Plain CSS: beats the unlayered `a { color: inherit }`. */
+.eg-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+
+.eg-link:hover {
+  text-decoration-color: var(--color-signal);
+}
+
+/* FAQ: large questions, native disclosure (answers stay in the HTML). */
+.eg-faq {
+  border-bottom: 1px solid var(--eg-rule-light);
+}
+
+.eg-faq-q {
+  display: flex;
+  min-height: 44px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+  list-style: none;
+}
+
+.eg-faq-q::-webkit-details-marker {
+  display: none;
+}
+
+.eg-faq-icon {
+  transition: transform var(--eg-move) var(--eg-ease);
+}
+
+.eg-faq[open] .eg-faq-icon {
+  transform: rotate(45deg);
+}
+
+/* Outline pill on the signal band (ink on orange 6.45:1). */
+.eg-pill-outline-dark {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-ink);
+  padding: 0 1.75rem;
+  color: var(--color-ink);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.eg-pill-outline-dark:hover {
+  background: rgba(11, 11, 10, 0.08);
 }
