@@ -29,7 +29,6 @@ const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
 const code = (rel) => read(rel).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
 
 /* Section components the homepage actually renders, in import order. */
-const HOME_SECTIONS = [...read("app/page.tsx").matchAll(/from "@\/components\/sections\/(\w+)"/g)].map((m) => m[1]);
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
