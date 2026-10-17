@@ -11,6 +11,7 @@ staff, customers or founders; no fabricated product screens.
 | Geist, Geist Mono | self-hosted by `next/font/google` | Vercel | SIL Open Font Licence 1.1 | Body, labels | before 2026-10 | Unchanged |
 | Cracked lake-bed tile (One System) | `components/brand/DrylakeMark.tsx`, `components/visuals/LakeBed*.tsx` | Drylake (Wilson's design, D27) | Owned by Drylake | Mark, hero | 2026-10-07 | Locked by `tests/one-system-lock.test.mjs` |
 | Crack divider | `components/visuals/CrackRule.tsx` | Drawn from the tile's own crack lines | Owned by Drylake | Section dividers | 2026-10-17 | Original SVG |
+| Workspace overview screen | `public/redesign/workspace-overview.png` | Captured 2026-10-17 from a local build: the real `ClientShell` + `ClientDashboardView` components rendered with SAMPLE data ("Sample Business Pty Ltd"), 1440 x 900 at 2x, resized to 1600 px | Owned by Drylake | Homepage product section | 2026-10-17 | No client data; captioned "sample data" on the page |
 | Social share cards | `public/og/*.png` | Rendered by `scripts/og/render-share-cards.mjs` | Owned by Drylake | Open Graph images | 2026-10-06 onward | `bronnie.png` added 2026-10-17 |
 
 ## Pending (later stages)

@@ -45,7 +45,7 @@ for (const path of PUBLIC_PATHS) {
 test("homepage hero states the proposition and offers the free primary action", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.locator("h1")).toHaveText(/Technology that makes\s*running your business easier\./);
+  await expect(page.locator("h1")).toHaveText(/Websites\.\s*Software\.\s*Automation\.\s*AI\./);
 
   const cta = page.locator("main").getByRole("link", { name: /Start Free Consultation/i }).first();
   await expect(cta).toBeVisible();
@@ -139,7 +139,7 @@ test("browser Back and Forward retrace a visit", async ({ page }) => {
 
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator("h1")).toContainText("Technology that makes");
+  await expect(page.locator("h1")).toContainText("Websites.");
 
   await page.goForward();
   await expect(page).toHaveURL(/\/about$/);

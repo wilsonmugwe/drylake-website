@@ -297,14 +297,13 @@ describe("every public page is listed, titled and canonical", () => {
   });
 
   it("the homepage What We Do section links into the service pages", () => {
-    // PR 2: the homepage renders WhatWeDo (service rows); Solutions stays on /solutions.
-    const solutions = read("components/sections/WhatWeDo.tsx");
-    assert.match(read("app/page.tsx"), /<WhatWeDo \/>/);
-
-    for (const slug of ["custom-software-development", "business-automation", "systems-integration", "ai-automation"]) {
-      assert.ok(solutions.includes(`href: "/services/${slug}"`), slug);
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    const rows = code("lib/home/copy.ts");
+    for (const slug of ["custom-software-development", "business-automation", "systems-integration", "ai-automation", "web-development"]) {
+      assert.ok(rows.includes(`slug: "${slug}"`), slug);
     }
-    assert.match(solutions, /href="\/services"/);
+    assert.match(code("components/home/HomeServices.tsx"), /href=\{service\.path\}/);
+    assert.match(code("components/home/HomeServices.tsx"), /href="\/services"/);
   });
 });
 

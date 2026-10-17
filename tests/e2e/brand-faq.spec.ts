@@ -69,22 +69,24 @@ test("/faq: FAQPage JSON-LD equals the visible questions and answers", async ({ 
   expect(visible.length).toBeGreaterThanOrEqual(28);
 });
 
-test("homepage: hero still says websites, software and automation; brand band sits below it", async ({ page }) => {
+// Exposed Ground homepage (D54): the services are the headline; the philosophy is the
+// "How we work" section and the tagline closes the page. The full brand story lives on /about.
+test("homepage: the headline names what we build; the philosophy and tagline follow it", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("We build websites, business software and automation tools")).toBeVisible();
+  await expect(page.locator("h1")).toContainText("Websites. Software. Automation. AI.");
 
-  const band = page.locator("#the-name");
-  await expect(band).toContainText("Strip it back.");
-  await expect(band).toContainText("Find the cracks.");
-  await expect(band).toContainText("Build back better.");
-  await expect(band.locator('svg[aria-hidden="true"]')).toHaveCount(1);
-  await expect(band.getByRole("link", { name: "Why we are called Drylake" })).toHaveAttribute("href", "/about#our-name");
+  const approach = page.locator("#approach");
+  await expect(approach).toContainText("Strip it back.");
+  await expect(approach).toContainText("Find the cracks.");
+  await expect(approach).toContainText("Build back better.");
+  await expect(page.locator("main")).toContainText("See what lies beneath.");
+  await expect(page.locator("main")).toContainText("Build what comes next.");
 
-  // The band comes after the hero in the document.
+  // The philosophy comes after the hero in the document.
   const order = await page.evaluate(() => {
-    const hero = document.querySelector("main h1, main section");
-    const band = document.getElementById("the-name");
-    return !!hero && !!band && (hero.compareDocumentPosition(band) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    const hero = document.querySelector("main h1");
+    const section = document.getElementById("approach");
+    return !!hero && !!section && (hero.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
   });
   expect(order).toBe(true);
 });
