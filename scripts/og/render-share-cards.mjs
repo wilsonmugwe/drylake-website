@@ -38,6 +38,7 @@ const CARDS = [
   { image: PAGE_SEO.faq.image, headline: "Your questions, answered plainly.", line: "Services, quotes, security, privacy and collaboration" },
   { image: PAGE_SEO.contact.image, headline: "Tell us what's getting in the way.", line: `A founder replies within ${RESPONSE_TIME}` },
   { image: PAGE_SEO.consultation.image, headline: "Book a free consultation.", line: "30 minutes, no obligation. Monday, Tuesday and Friday, Perth time" },
+  { image: PAGE_SEO.bronnie.image, headline: "BRONNIE", line: "An AI-powered platform being developed by Drylake. In development" },
   { image: PAGE_SEO.collaborate.image, headline: "Collaborate with Drylake.", line: "Pilots, integrations and partnerships. BRONNIE is in development" },
   { image: PAGE_SEO.privacy.image, headline: "Privacy Policy", line: "How Drylake Pty Ltd handles personal information" },
   { image: PAGE_SEO.securityPrivacy.image, headline: "Security and privacy", line: "What we collect, who can see it and how to ask for access or deletion" },

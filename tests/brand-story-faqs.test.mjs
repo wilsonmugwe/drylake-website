@@ -209,9 +209,10 @@ describe("/faq discoverability", () => {
     assert.ok(statSync(join(ROOT, "public/og/faq.png")).size > 1000);
   });
 
-  it("is linked from the footer Company column", () => {
-    const company = FOOTER_COLUMNS.find((column) => column.title === "Company");
-    assert.ok(company.links.some((link) => link.href === "/faq"));
+  // Exposed Ground (D54): FAQ moved out of the header into the footer's Help column.
+  it("is linked from the footer Help column", () => {
+    const help = FOOTER_COLUMNS.find((column) => column.title === "Help");
+    assert.ok(help.links.some((link) => link.href === "/faq"));
   });
 
   it("is listed in llms.txt and every answer appears in llms-full.txt", () => {
@@ -239,14 +240,12 @@ describe("brand story", () => {
   });
 
   it("appears on /about (full) and the homepage (short, below the hero), once each", () => {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
     const about = code("app/about/page.tsx");
     assert.equal((about.match(/<BrandStory/g) ?? []).length, 1);
     assert.match(about, /<BrandStory variant="page" \/>/);
-
-    const home = code("app/page.tsx");
-    assert.equal((home.match(/<BrandStory/g) ?? []).length, 1);
-    assert.ok(home.indexOf("<Hero />") < home.indexOf("<BrandStory />"));
-    assert.ok(home.indexOf("<BrandStory />") < home.indexOf("<Approach />"));
+    assert.match(code("components/home/HomeCracks.tsx"), /PHILOSOPHY_STEPS\.map/);
+    assert.match(code("components/home/HomeClose.tsx"), /TAGLINE/);
   });
 
   it("leaves the homepage hero saying websites, software and automation", () => {
@@ -310,10 +309,10 @@ describe("decorative texture", () => {
 
 describe("no client JS added", () => {
   it("the client FAQ accordion takes its items as props and never imports the large FAQ module", () => {
-    const faq = code("components/sections/FAQ.tsx");
-    assert.doesNotMatch(faq, /from "@\/lib\/faqs"/);
-    assert.match(faq, /items\.map\(/);
-    assert.match(code("app/page.tsx"), /<FAQ items=\{faqs\} \/>/);
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    const faq = code("components/home/HomeClose.tsx");
+    assert.doesNotMatch(faq, /["']use client["']/, "homepage questions are server-rendered <details>");
+    assert.match(faq, /<details\b/);
   });
 
   it("new sections are server components", () => {

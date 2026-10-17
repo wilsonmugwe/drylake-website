@@ -1,0 +1,526 @@
+/* =========================================================
+   EXPOSED GROUND: the redesign layer (D54, approved by Ben 2026-10-17)
+
+   The site behaves like a dry lake: dark ground, pale crust, one signal colour. This file holds
+   the new type scale, surfaces, hairline rules, the crack divider and the motion primitives.
+   Colours come from the existing tokens in globals.css (ink, mineral, stone, signal,
+   signal-ink); nothing new is introduced. The One System tile (.lb-*) is NOT styled here: it is
+   preserved exactly (tests/one-system-lock.test.mjs).
+
+   Motion is CSS-first and complete at rest: scroll-driven reveals only run where
+   animation-timeline is supported, and every element is fully visible without them, without
+   JavaScript, and under reduced motion.
+   ========================================================= */
+
+:root {
+  --eg-ease: cubic-bezier(0.2, 0.7, 0, 1);
+  --eg-micro: 160ms;
+  --eg-move: 320ms;
+  --eg-scene: 900ms;
+
+  --eg-crust-ink: #17191e;
+  --eg-rule-dark: #2a2824;
+  --eg-crack-dark: #4a4741;
+  --eg-rule-light: #c9c4b6;
+  /* Muted text, computed on their own surface: 7.9:1 on ink, 7.5:1 on mineral (tests/exposed-ground-foundations.test.mjs). */
+  --eg-muted-dark: #a8a49b;
+  --eg-muted-light: #4f4c45;
+}
+
+/* ---------- Surfaces ---------- */
+
+.eg-ground {
+  background: var(--color-ink);
+  color: var(--color-mineral);
+}
+
+.eg-crust {
+  background: var(--color-mineral);
+  color: var(--eg-crust-ink);
+}
+
+.eg-stone {
+  background: var(--color-stone);
+  color: var(--eg-crust-ink);
+}
+
+.eg-signal {
+  background: var(--color-signal);
+  color: var(--color-ink);
+}
+
+/* ---------- Type ---------- */
+
+/* Poster: condensed Archivo at poster scale. Type is the image. */
+.eg-poster {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: clamp(3.4rem, 11vw, 11rem);
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.eg-poster-md {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 6.4vw, 6rem);
+  line-height: 0.88;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.eg-h2 {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.eg-h3 {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.eg-numeral {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125;
+  font-weight: 200;
+  font-size: clamp(3rem, 6vw, 4rem);
+  line-height: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+.eg-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.eg-lede {
+  font-size: clamp(1.0625rem, 1.5vw, 1.375rem);
+  line-height: 1.45;
+  max-width: 40ch;
+}
+
+.eg-muted {
+  color: var(--eg-muted-light);
+}
+
+.eg-ground .eg-muted,
+.eg-ground.eg-muted {
+  color: var(--eg-muted-dark);
+}
+
+/* Small signal text on light surfaces must use the deeper ink (4.9:1 on mineral). */
+.eg-signal-text {
+  color: var(--color-signal);
+}
+
+.eg-crust .eg-signal-text {
+  color: var(--color-signal-ink);
+}
+
+/* Stone is darker than crust: signal-ink is 4.36:1 there (fails), this deeper step is 5.06:1. */
+.eg-stone .eg-signal-text {
+  color: #a8380a;
+}
+
+/* Mobile menu entries: the nav set as poster type. */
+.eg-menu-label {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: 2.75rem;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+/* ---------- Rules over boxes ---------- */
+
+.eg-rule {
+  border-top: 1px solid var(--eg-rule-light);
+}
+
+.eg-ground .eg-rule {
+  border-top-color: var(--eg-rule-dark);
+}
+
+.eg-rule-strong {
+  border-top: 2px solid currentColor;
+}
+
+/* ---------- Actions ---------- */
+
+/* The signal pill: orange means act. 6.45:1 ink on signal. */
+.eg-pill {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0 1.4rem;
+  background: var(--color-signal);
+  color: var(--color-ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--eg-micro) var(--eg-ease), background-color var(--eg-micro) ease;
+}
+
+.eg-pill:hover {
+  background: #ff7a3d;
+}
+
+.eg-pill:active {
+  transform: translateY(1px);
+}
+
+/* Ground pill for use ON the signal band. Plain CSS on purpose: the unlayered global
+   `a { color: inherit }` in globals.css beats Tailwind's layered text colours on links. */
+.eg-pill-dark {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 1.75rem;
+  white-space: nowrap;
+  background: var(--color-ink);
+  color: var(--color-mineral);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.eg-pill-dark:hover {
+  background: #1a1a17;
+}
+
+.eg-pill-ghost {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0 1.4rem;
+  border: 1px solid currentColor;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------- Crack divider (components/visuals/CrackRule.tsx) ---------- */
+
+.eg-crack {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--eg-rule-light);
+}
+
+.eg-ground .eg-crack {
+  color: var(--eg-crack-dark);
+}
+
+.eg-crack path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.eg-crack .eg-crack-signal {
+  stroke: var(--color-signal);
+}
+
+/* ---------- Motion: scroll-driven, complete at rest ---------- */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Crack draw: the divider traces its line as it enters. */
+    .eg-crack path {
+      stroke-dasharray: 1;
+      animation: eg-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
+    }
+
+    /* Line rise: headline lines rise 12 px and fade in, staggered by --i. Never on the h1. */
+    .eg-rise > * {
+      animation: eg-rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(5% + var(--i, 0) * 4%) cover calc(25% + var(--i, 0) * 4%);
+    }
+
+    /* Tilt to flat: product screens settle as they reach the middle of the viewport. */
+    .eg-tilt {
+      transform-origin: 50% 100%;
+      animation: eg-tilt linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+  }
+}
+
+@keyframes eg-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes eg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes eg-tilt {
+  from {
+    transform: perspective(1400px) rotateX(8deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* =========================================================
+   HOMEPAGE (stage 2)
+   ========================================================= */
+
+.eg-hero {
+  min-height: min(100svh, 980px);
+  display: flex;
+  align-items: flex-end;
+}
+
+.eg-hero > * {
+  width: 100%;
+}
+
+/* Hero title: one step larger than the base poster at desktop, never wider than the column. */
+.eg-hero-title {
+  font-size: clamp(2.6rem, 15.5vw, 12rem);
+}
+
+/* The tile's own stage: the old hero placed .lb-figure absolutely; here it sits in flow. The
+   tile's rules themselves (.lb-*) are untouched and locked. */
+.eg-stage .lb-figure {
+  position: static;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 0 0 auto;
+}
+
+.eg-stage .lb-tile {
+  width: 100%;
+  margin: 0;
+}
+
+.eg-stage .lb-caption {
+  margin-top: 0.75rem;
+  padding: 0;
+}
+
+/* Service rows: type is the image. */
+.eg-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding-block: 1.5rem;
+  color: var(--color-mineral);
+  text-decoration: none;
+}
+
+.eg-row-num {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--eg-muted-dark);
+}
+
+.eg-row-word {
+  font-family: var(--font-archivo), "Arial Narrow", Arial, sans-serif;
+  font-stretch: 62%;
+  font-variation-settings: "wdth" 62;
+  font-weight: 800;
+  font-size: clamp(3.25rem, 9vw, 7.5rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  transition: color var(--eg-micro) ease, transform var(--eg-move) var(--eg-ease);
+}
+
+.eg-row-line {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: #c9c5bb;
+}
+
+.eg-row-arrow {
+  flex: none;
+  color: var(--eg-muted-dark);
+  transition: transform var(--eg-move) var(--eg-ease), color var(--eg-micro) ease;
+}
+
+.eg-row:hover .eg-row-word,
+.eg-row:focus-visible .eg-row-word {
+  color: var(--color-signal);
+}
+
+.eg-row:hover .eg-row-arrow,
+.eg-row:focus-visible .eg-row-arrow {
+  color: var(--color-signal);
+  transform: translate(3px, -3px);
+}
+
+@media (min-width: 900px) {
+  .eg-row {
+    grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 22rem);
+    gap: 2rem;
+    align-items: center;
+    padding-block: 2rem;
+  }
+
+  .eg-row-line {
+    grid-column: 3;
+  }
+
+  .eg-row:hover .eg-row-word,
+  .eg-row:focus-visible .eg-row-word {
+    transform: translateX(0.5rem);
+  }
+}
+
+/* Cracks: four short statements divided by hairlines. */
+.eg-crack-item {
+  border-top: 1px solid var(--eg-rule-light);
+}
+
+.eg-crack-item:first-child {
+  border-top: 0;
+}
+
+@media (min-width: 640px) {
+  .eg-crack-item {
+    border-top: 0;
+    padding-right: 1.75rem;
+  }
+
+  .eg-crack-item + .eg-crack-item {
+    border-left: 1px solid var(--eg-rule-light);
+    padding-left: 1.75rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .eg-crack-item:nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+.eg-numeral-xl {
+  font-size: clamp(4.5rem, 9vw, 7.5rem);
+}
+
+.eg-h3-lg {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+}
+
+/* A product screen: a real object, so it earns a frame. */
+.eg-screen {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #2a2824;
+  background: #161513;
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+}
+
+/* Inline text link on any surface. Plain CSS: beats the unlayered `a { color: inherit }`. */
+.eg-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+
+.eg-link:hover {
+  text-decoration-color: var(--color-signal);
+}
+
+/* FAQ: large questions, native disclosure (answers stay in the HTML). */
+.eg-faq {
+  border-bottom: 1px solid var(--eg-rule-light);
+}
+
+.eg-faq-q {
+  display: flex;
+  min-height: 44px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+  list-style: none;
+}
+
+.eg-faq-q::-webkit-details-marker {
+  display: none;
+}
+
+.eg-faq-icon {
+  transition: transform var(--eg-move) var(--eg-ease);
+}
+
+.eg-faq[open] .eg-faq-icon {
+  transform: rotate(45deg);
+}
+
+/* Outline pill on the signal band (ink on orange 6.45:1). */
+.eg-pill-outline-dark {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-ink);
+  padding: 0 1.75rem;
+  color: var(--color-ink);
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.eg-pill-outline-dark:hover {
+  background: rgba(11, 11, 10, 0.08);
+}

@@ -48,23 +48,22 @@ const CHANGED = [
 
 describe("homepage composition", () => {
   it("renders the chapters in the designed order", () => {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
     const body = PAGE.slice(PAGE.indexOf("<main"), PAGE.indexOf("</main>"));
     const order = [...body.matchAll(/<([A-Z]\w+)\b/g)].map((m) => m[1]);
-    // Experience polish: no AI chapter; the FAQ sits inside the closing conversation.
     assert.deepEqual(order, [
-      "Hero", "Problems", "Integrations", "WhatWeDo", "Production",
-      "Founders", "BrandStory", "Approach", "ContactCTA", "FAQ",
+      "HomeHero", "HomeSystem", "HomeServices", "HomeCracks", "HomeApproach",
+      "HomeWorkspace", "HomeFounders", "HomeQuestions", "HomeClose",
     ]);
-    assert.match(body, /<ContactCTA aside=\{<FAQ items=\{faqs\} \/>\} \/>/);
   });
 
   it("keeps every section id the navigation and the page use, exactly once", () => {
-    const all = HOME_SECTIONS.map(code).join("\n");
-    for (const id of ["problems", "solutions", "approach", "faq"]) {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    const all = ["HomeHero", "HomeSystem", "HomeServices", "HomeCracks", "HomeProof", "HomeClose"]
+      .map((f) => code(`components/home/${f}.tsx`)).join("\n");
+    for (const id of ["services", "solutions", "approach", "about", "faq"]) {
       assert.equal((all.match(new RegExp(`id="${id}"`, "g")) ?? []).length, 1, id);
     }
-    // Founders renders id="about" on the homepage and id="founders" at the top of /about.
-    assert.match(code("components/sections/Founders.tsx"), /id=\{page \? "founders" : "about"\}/);
   });
 
   it("main clips without becoming a scroll container (pinned chapters need sticky)", () => {
@@ -76,8 +75,9 @@ describe("homepage composition", () => {
   });
 
   it("keeps the FAQPage schema and the FAQ section on the homepage", () => {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
     assert.match(PAGE, /faqNode\("\/", faqs\)/);
-    assert.match(PAGE, /<FAQ items=\{faqs\} \/>/);
+    assert.match(PAGE, /<HomeQuestions \/>/);
   });
 });
 

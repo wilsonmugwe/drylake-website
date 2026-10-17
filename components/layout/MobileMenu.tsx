@@ -142,7 +142,7 @@ export default function MobileMenu({
                       >
                         <span className="flex items-baseline gap-4">
                           <span className="font-mono text-[0.7rem] text-white/45">0{index + 1}</span>
-                          <span className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white">
+                          <span className="eg-menu-label text-white">
                             {item.label}
                           </span>
                         </span>
@@ -180,7 +180,7 @@ export default function MobileMenu({
                     >
                       <span className="flex items-baseline gap-4">
                         <span className="font-mono text-[0.7rem] text-white/45">0{index + 1}</span>
-                        <span className="text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white">
+                        <span className="eg-menu-label text-white">
                           {item.label}
                         </span>
                       </span>

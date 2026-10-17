@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Geist, Geist_Mono } from "next/font/google";
 import AssistantMount from "@/components/assistant/AssistantMount";
 import SiteAnalytics from "@/components/analytics/SiteAnalytics";
 
 import "./globals.css";
 import "./public-site.css";
+import "./exposed-ground.css";
 
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import { ENTITY } from "@/lib/discovery/entity";
@@ -18,6 +19,20 @@ const geist = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+/*
+ * Display face for the Exposed Ground redesign (D54, Ben 2026-10-17): Archivo, one variable file
+ * carrying weight and width (wdth 62-125), Latin subset, self-hosted by next/font, display only.
+ * Not preloaded: it sets headings, and the hero h1 paints in the metric-matched fallback first, so
+ * the font never delays LCP. Geist stays the body face.
+ */
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  axes: ["wdth"],
+  display: "swap",
+  preload: false,
 });
 
 /*
@@ -128,7 +143,7 @@ export default function RootLayout({
      * Conversation -> /contact, Back to Drylake -> /, sign-out -> /). Do not remove.
      */
     <html lang="en-AU" data-scroll-behavior="smooth">
-      <body className={`${geist.variable} ${geistMono.variable}`}>
+      <body className={`${geist.variable} ${geistMono.variable} ${archivo.variable}`}>
         {/* No ClerkProvider here: see components/auth/ClerkScope.tsx. */}
         <OrganizationSchema />
 

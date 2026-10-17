@@ -38,11 +38,13 @@ export default function Footer() {
             </div>
           </div>
 
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 lg:col-span-7 lg:col-start-6">
-            {FOOTER_COLUMNS.map((column) => (
-              <div key={column.title}>
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:col-span-8 lg:col-start-5">
+            {/* Phones: Services spans both columns, Company and Help sit side by side below it,
+                so the third column (D54) does not add a whole extra row of links. */}
+            {FOOTER_COLUMNS.map((column, index) => (
+              <div key={column.title} className={index === 0 ? "col-span-2 sm:col-span-1" : undefined}>
                 <p className="tech-label text-white/58">{column.title}</p>
-                <ul className="mt-2">
+                <ul className={index === 0 ? "mt-2 grid grid-cols-2 gap-x-6 sm:block" : "mt-2"}>
                   {column.links.map((link) => (
                     <li key={link.href}>
                       <SiteLink

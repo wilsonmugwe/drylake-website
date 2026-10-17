@@ -9,6 +9,7 @@
 
 import { SERVICES, SERVICES_PATH } from "../discovery/services.ts";
 import {
+  BRONNIE_PATH,
   CONSULTATION_PATH,
   CONTACT_PATH,
   SERVICES_MENU_COPY,
@@ -26,7 +27,11 @@ export const SERVICES_MENU: ServicesMenuData = {
   ],
 };
 
-/* Footer as a navigation hub: every audience path and legal page, services derived from data. */
+/*
+ * Footer as a navigation hub: every audience path and legal page, services derived from data.
+ * Perth service areas and FAQ live here since the Exposed Ground nav (D54); the footer is on every
+ * public page, so both keep a sitewide internal link.
+ */
 export const FOOTER_COLUMNS: readonly { title: string; links: readonly NavItem[] }[] = [
   {
     title: "Services",
@@ -36,16 +41,23 @@ export const FOOTER_COLUMNS: readonly { title: string; links: readonly NavItem[]
     title: "Company",
     links: [
       { label: "Solutions", href: "/solutions" },
-      { label: "Perth service areas", href: "/perth" },
+      { label: "Approach", href: "/#approach" },
+      { label: "BRONNIE", href: BRONNIE_PATH },
       { label: "About", href: "/about" },
-      { label: "Questions", href: "/faq" },
-      { label: "Contact", href: CONTACT_PATH },
-      { label: "Free consultation", href: CONSULTATION_PATH },
       { label: "Collaborate", href: "/collaborate" },
+      { label: "Client Login", href: "/portal" },
+    ],
+  },
+  {
+    title: "Help",
+    links: [
+      { label: "Free consultation", href: CONSULTATION_PATH },
+      { label: "Contact", href: CONTACT_PATH },
+      { label: "Questions (FAQ)", href: "/faq" },
+      { label: "Perth service areas", href: "/perth" },
       { label: "Security & privacy", href: "/security-privacy" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms", href: "/terms" },
-      { label: "Client Login", href: "/portal" },
     ],
   },
 ];

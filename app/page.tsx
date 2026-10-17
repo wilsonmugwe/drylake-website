@@ -3,16 +3,12 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
-import Hero from "@/components/sections/Hero";
-import Problems from "@/components/sections/Problems";
-import Integrations from "@/components/sections/Integrations";
-import WhatWeDo from "@/components/sections/WhatWeDo";
-import Founders from "@/components/sections/Founders";
-import BrandStory from "@/components/sections/BrandStory";
-import Approach from "@/components/sections/Approach";
-import Production from "@/components/sections/Production";
-import FAQ from "@/components/sections/FAQ";
-import ContactCTA from "@/components/sections/ContactCTA";
+import HomeHero from "@/components/home/HomeHero";
+import HomeSystem from "@/components/home/HomeSystem";
+import HomeServices from "@/components/home/HomeServices";
+import { HomeApproach, HomeCracks } from "@/components/home/HomeCracks";
+import { HomeFounders, HomeWorkspace } from "@/components/home/HomeProof";
+import { HomeClose, HomeQuestions } from "@/components/home/HomeClose";
 import JsonLd from "@/components/seo/JsonLd";
 import { faqNode, webPageNode } from "@/lib/discovery/structured-data";
 import { faqs } from "@/lib/faqs";
@@ -23,6 +19,14 @@ const SEO = PAGE_SEO.home;
 
 export const metadata: Metadata = pageMetadata(SEO);
 
+/*
+ * Homepage, Exposed Ground (D54, stage 2). Fewer words, more picture: the services are the
+ * headline, the One System tile gets its own stage, the problem is four short cracks, the
+ * approach is the three-step philosophy, the product is a real Workspace screen, the founders are
+ * type, and the close is the tagline with the booking. Detail lives one click down (service pages,
+ * /about, /faq). Copy: lib/home/copy.ts. Every section is a server component; the only client
+ * islands are the tile's plate buttons and the phone InView, both unchanged.
+ */
 export default function Home() {
   return (
     <>
@@ -34,20 +38,16 @@ export default function Home() {
       />
       <Navbar />
 
-      {/* overflow-clip, not hidden: the pinned chapters (Problems, Integrations) need sticky.
-          Experience polish: the AI chapter is gone (AI is one row of What We Do and its own service
-          page); the final third runs credibility (Production, Founders), confidence (Approach),
-          conversation (the call to action with the FAQ beside it), then the footer's full stop. */}
-      <main id="main-content" tabIndex={-1} className="overflow-clip outline-none">
-        <Hero />
-        <Problems />
-        <Integrations />
-        <WhatWeDo />
-        <Production />
-        <Founders />
-        <BrandStory />
-        <Approach />
-        <ContactCTA aside={<FAQ items={faqs} />} />
+      <main id="main-content" tabIndex={-1} className="overflow-clip bg-[#0b0b0a] outline-none">
+        <HomeHero />
+        <HomeSystem />
+        <HomeServices />
+        <HomeCracks />
+        <HomeApproach />
+        <HomeWorkspace />
+        <HomeFounders />
+        <HomeQuestions />
+        <HomeClose />
       </main>
 
       <Footer />

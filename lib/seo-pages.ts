@@ -114,6 +114,15 @@ export const PAGE_SEO = {
     image: "/og/collaborate.png",
     imageAlt: "Collaborate with Drylake: proposals for pilots, integrations and partnerships",
   },
+  bronnie: {
+    path: "/bronnie",
+    title: "BRONNIE | An AI-Powered Platform in Development by Drylake",
+    description:
+      "BRONNIE is an AI-powered platform being developed by Drylake, a Perth technology company. It is not yet available. Pilots are arranged by discussion.",
+    shareDescription: "BRONNIE is an AI-powered platform being developed by Drylake. In development, not yet available.",
+    image: "/og/bronnie.png",
+    imageAlt: "BRONNIE, an AI-powered platform in development by Drylake",
+  },
   privacy: {
     path: "/privacy",
     title: "Privacy Policy | Drylake",

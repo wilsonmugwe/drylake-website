@@ -48,9 +48,11 @@ describe("primary navigation data", () => {
     assert.match(SERVICES_MENU.solutionsHint, /problem/i);
   });
 
-  it("links Perth, and keeps existing URLs", () => {
-    assert.equal(PRIMARY_NAV.find((item) => item.label === "Perth")?.href, "/perth");
-    assert.equal(PRIMARY_NAV.find((item) => item.label === "Contact")?.href, "/contact");
+  // Exposed Ground (D54): Perth and Contact left the header; both stay linked from the footer.
+  it("links Perth and Contact from the footer, and keeps existing URLs", () => {
+    const footer = FOOTER_COLUMNS.flatMap((column) => column.links);
+    assert.equal(footer.find((item) => item.label === "Perth service areas")?.href, "/perth");
+    assert.equal(footer.find((item) => item.label === "Contact")?.href, "/contact");
     assert.equal(PRIMARY_CTA.label, "Start Free Consultation");
     assert.equal(PRIMARY_CTA.href, "/consultation");
   });

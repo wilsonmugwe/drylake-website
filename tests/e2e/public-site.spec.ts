@@ -45,7 +45,7 @@ for (const path of PUBLIC_PATHS) {
 test("homepage hero states the proposition and offers the free primary action", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.locator("h1")).toHaveText(/Technology that makes\s*running your business easier\./);
+  await expect(page.locator("h1")).toHaveText(/Websites\.\s*Software\.\s*Automation\.\s*AI\./);
 
   const cta = page.locator("main").getByRole("link", { name: /Start Free Consultation/i }).first();
   await expect(cta).toBeVisible();
@@ -89,34 +89,35 @@ test.describe("desktop navbar", () => {
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await nav.getByRole("link", { name: "Our Approach" }).click();
+    await nav.getByRole("link", { name: "Approach" }).click();
     await expect(page).toHaveURL(/\/#approach$/);
     await expectSectionInView(page, "approach");
 
-    await nav.getByRole("link", { name: "About" }).click();
-    await expect(page).toHaveURL(/\/#about$/);
-    await expectSectionInView(page, "about");
-
     // Same link again after scrolling away: still scrolls (identical-URL <Link> was a no-op).
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await nav.getByRole("link", { name: "About" }).click();
-    await expectSectionInView(page, "about");
+    await nav.getByRole("link", { name: "Approach" }).click();
+    await expectSectionInView(page, "approach");
   });
 
   test("section links work from another page", async ({ page }) => {
     await page.goto("/privacy");
-    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Our Approach" }).click();
+    await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Approach" }).click();
 
     await expect(page).toHaveURL(/\/#approach$/);
     await expectSectionInView(page, "approach");
   });
 
-  test("Contact and Client Login go to the right places", async ({ page }) => {
-    await page.goto("/about");
+  // D54: Contact moved to the footer; BRONNIE and About are pages.
+  test("BRONNIE, About and Client Login go to the right places", async ({ page }) => {
+    await page.goto("/privacy");
     const nav = page.getByRole("navigation", { name: "Primary navigation" });
 
-    await nav.getByRole("link", { name: "Contact" }).click();
-    await expect(page).toHaveURL(/\/contact$/);
+    await nav.getByRole("link", { name: "BRONNIE" }).click();
+    await expect(page).toHaveURL(/\/bronnie$/);
+    await expect(page.locator("h1")).toBeInViewport();
+
+    await nav.getByRole("link", { name: "About" }).click();
+    await expect(page).toHaveURL(/\/about$/);
     await expect(page.locator("h1")).toBeInViewport();
 
     await expect(nav.getByRole("link", { name: "Client Login" })).toHaveAttribute("href", "/portal");
@@ -138,7 +139,7 @@ test("browser Back and Forward retrace a visit", async ({ page }) => {
 
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator("h1")).toContainText("Technology that makes");
+  await expect(page.locator("h1")).toContainText("Websites.");
 
   await page.goForward();
   await expect(page).toHaveURL(/\/about$/);
@@ -152,8 +153,8 @@ test("Back after a section jump returns to the previous position", async ({ page
   test.skip(isMobileProject(testInfo), "covered for the mobile menu in mobile-nav.spec.ts");
 
   await page.goto("/");
-  await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "About" }).click();
-  await expect(page).toHaveURL(/\/#about$/);
+  await page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Approach" }).click();
+  await expect(page).toHaveURL(/\/#approach$/);
 
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);

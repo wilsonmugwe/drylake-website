@@ -147,12 +147,9 @@ describe("PUBLIC: homepage content", () => {
   });
 
   it("problem, systems, production, founders and the close all remain", () => {
-    for (const name of ["Problems", "Integrations", "WhatWeDo", "Production", "Founders", "Approach", "ContactCTA"]) {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
+    for (const name of ["HomeHero", "HomeSystem", "HomeServices", "HomeCracks", "HomeApproach", "HomeWorkspace", "HomeFounders", "HomeQuestions", "HomeClose"]) {
       assert.match(PAGE, new RegExp(`<${name}\\b`), name);
-    }
-    const production = code("components/sections/Production.tsx");
-    for (const item of ["Secure login", "Who can see what", "Fewer mistakes", "Connected tools", "Keeping things running", "Backups and recovery"]) {
-      assert.ok(production.includes(`name: "${item}"`), item);
     }
   });
 
@@ -163,13 +160,13 @@ describe("PUBLIC: homepage content", () => {
   });
 
   it("the FAQ moved, it did not vanish: same data on the page and in FAQPage schema", () => {
+    // superseded by tests/home-exposed-ground.test.mjs (Exposed Ground homepage, D54, 2026-10-17)
     assert.match(PAGE, /faqNode\("\/", faqs\)/);
-    assert.match(PAGE, /<ContactCTA aside=\{<FAQ items=\{faqs\} \/>\} \/>/);
-    const faq = code("components/sections/FAQ.tsx");
-    assert.match(faq, /items\.map\(/);
-    assert.match(faq, /\{faq\.question\}/);
-    assert.match(faq, /\{faq\.answer\}/);
-    assert.match(faq, /id="faq"/);
+    const q = code("components/home/HomeClose.tsx");
+    assert.match(q, /faqs\.map\(/);
+    assert.match(q, /\{item\.question\}/);
+    assert.match(q, /\{item\.answer\}/);
+    assert.match(q, /id="faq"/);
     assert.equal(faqs.length, 5);
   });
 

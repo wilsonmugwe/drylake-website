@@ -76,7 +76,7 @@ test.describe("first paint without JavaScript", () => {
 
     const h1 = page.locator("h1");
     await expect(h1).toBeVisible();
-    await expect(h1).toContainText("running your business easier");
+    await expect(h1).toContainText("Websites. Software. Automation. AI.");
 
     const opacities = await h1.locator("span").evaluateAll((spans) =>
       [spans[0].parentElement!, ...spans].map((element) => Number(getComputedStyle(element).opacity))

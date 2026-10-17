@@ -13,7 +13,10 @@ export const PAGE_HEIGHT_BASELINE: Record<string, Heights> = {
   // without re-baselining, and this change adds the five Why Drylake reasons and grows How We Work
   // from four stages to seven, +29-35% in all, by design. Was
   // { 320: 10915, 360: 10540, 375: 10430, 390: 10395, 393: 10391, 414: 10351, 430: 10272, 768: 11145, 1024: 8979, 1440: 8702 }.
-  "/": { 320: 14818, 360: 14170, 375: 13965, 390: 13969, 393: 13905, 414: 13514, 430: 13345, 768: 14056, 1024: 12095, 1440: 11295 },
+  // Re-baselined 2026-10-17 (Exposed Ground homepage, D54 stage 2): the page was rebuilt to be far
+  // less wordy (about 1,950 visible words to about 350), so it is 35-44% shorter by design. Was
+  // { 320: 14818, 360: 14170, 375: 13965, 390: 13969, 393: 13905, 414: 13514, 430: 13345, 768: 14056, 1024: 12095, 1440: 11295 }.
+  "/": { 320: 8341, 360: 8191, 375: 8145, 390: 8173, 393: 8179, 414: 8195, 430: 8160, 768: 8437, 1024: 7557, 1440: 8469 },
   // Re-baselined 2026-10-08 (final refinement): /solutions gained the problem-led list
   // (ProblemIndex, nine problems linked to their services), +21-28% by design. Was
   // { 320: 9466, 360: 9108, 375: 8971, 390: 8915, 393: 8919, 414: 8824, 430: 8743, 768: 9149, 1024: 7158, 1440: 7064 }.
